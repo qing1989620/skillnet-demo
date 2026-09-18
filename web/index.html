@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SkillNet-S1 · 立理 S1 科研技能生态原型</title>
+<style>
+  :root{
+    --paper:#f7f6f3; --panel:#ffffff; --ink:#1f1d1a; --ink-2:#585349;
+    --ink-3:#8b857a; --line:#e5e1da; --line-2:#efece6;
+    --accent:#9c3d2e; --accent-soft:#f3e8e5;
+    --jade:#3d5a52; --jade-soft:#e8eeec;
+    --gold:#8a6a2f; --gold-soft:#f4efe3;
+    --radius:3px;
+    --sans:"Inter","Helvetica Neue","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono","Cascadia Mono",Consolas,"Microsoft YaHei",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--paper); color:var(--ink); font-family:var(--sans);
+    font-size:14px; line-height:1.65; -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent);text-decoration:none}
+  button{font-family:inherit;font-size:13px;cursor:pointer}
+
+  /* ---------- 布局 ---------- */
+  .app{max-width:1360px;margin:0 auto;padding:0 32px 80px}
+  header{padding:44px 0 26px;border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  .brand h1{font-size:23px;font-weight:600;letter-spacing:.14em}
+  .brand .sub{color:var(--ink-3);font-size:12.5px;letter-spacing:.08em}
+  .lede{margin-top:16px;max-width:840px;color:var(--ink-2);font-size:13.5px;line-height:1.85}
+  .lede strong{color:var(--ink);font-weight:600}
+  .metabar{display:flex;gap:0;margin-top:26px;border-top:1px solid var(--line-2)}
+  .metabar div{flex:1;padding:16px 20px 0 0;border-right:1px solid var(--line-2)}
+  .metabar div:last-child{border-right:none}
+  .metabar .v{font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+  .metabar .k{font-size:11.5px;color:var(--ink-3);letter-spacing:.1em;margin-top:2px}
+
+  nav.tabs{display:flex;gap:2px;margin:26px 0 30px;border-bottom:1px solid var(--line)}
+  nav.tabs button{
+    background:none;border:none;padding:10px 18px 12px;color:var(--ink-3);
+    font-size:13.5px;letter-spacing:.06em;border-bottom:2px solid transparent;
+    margin-bottom:-1px;transition:color .15s,border-color .15s;
+  }
+  nav.tabs button:hover{color:var(--ink-2)}
+  nav.tabs button.on{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+  .view{display:none}
+  .view.on{display:block;animation:fade .28s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+
+  .grid{display:grid;gap:20px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g-2-1{grid-template-columns:2fr 1fr}
+  .g-1-2{grid-template-columns:minmax(260px,1fr) 2fr}
+  @media(max-width:1080px){.g2,.g3,.g-2-1,.g-1-2{grid-template-columns:1fr}}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px}
+  .panel.tight{padding:16px 18px}
+  .panel h2{font-size:13px;font-weight:600;letter-spacing:.12em;color:var(--ink-2);margin-bottom:4px}
+  .panel h2 .en{color:var(--ink-3);font-weight:400;letter-spacing:.04em;font-size:11.5px;margin-left:8px}
+  .panel .hint{font-size:12px;color:var(--ink-3);line-height:1.7;margin-bottom:16px}
+  .sec-title{font-size:15px;font-weight:600;letter-spacing:.08em;margin:34px 0 14px;padding-bottom:9px;border-bottom:1px solid var(--line)}
+  .sec-title:first-child{margin-top:0}
+
+  /* ---------- 控件 ---------- */
+  .field{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  input[type=text],textarea,select{
+    font-family:inherit;font-size:13px;color:var(--ink);background:var(--paper);
+    border:1px solid var(--line);border-radius:var(--radius);padding:9px 12px;outline:none;
+    transition:border-color .15s,background .15s;
+  }
+  input[type=text]:focus,textarea:focus,select:focus{border-color:var(--accent);background:#fff}
+  textarea{resize:vertical;line-height:1.7;font-size:13px}
+  .btn{
+    background:var(--ink);color:#fff;border:1px solid var(--ink);border-radius:var(--radius);
+    padding:9px 20px;letter-spacing:.06em;transition:opacity .15s;
+  }
+  .btn:hover{opacity:.86}
+  .btn:disabled{opacity:.4;cursor:default}
+  .btn.ghost{background:transparent;color:var(--ink-2);border-color:var(--line)}
+  .btn.ghost:hover{border-color:var(--ink-3);opacity:1}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .seg button{background:#fff;border:none;border-right:1px solid var(--line);padding:8px 15px;color:var(--ink-3);font-size:12.5px;letter-spacing:.05em}
+  .seg button:last-child{border-right:none}
+  .seg button.on{background:var(--ink);color:#fff;font-weight:600}
+
+  .chip{display:inline-block;font-size:11px;letter-spacing:.04em;padding:2px 8px;border-radius:2px;
+    background:var(--line-2);color:var(--ink-2);margin:0 4px 4px 0;white-space:nowrap}
+  .chip.jade{background:var(--jade-soft);color:var(--jade)}
+  .chip.accent{background:var(--accent-soft);color:var(--accent)}
+  .chip.gold{background:var(--gold-soft);color:var(--gold)}
+  .tag{font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
+
+  /* ---------- 列表 ---------- */
+  .list{max-height:660px;overflow:auto;border:1px solid var(--line);border-radius:var(--radius);background:#fff}
+  .list .row{padding:11px 15px;border-bottom:1px solid var(--line-2);cursor:pointer;transition:background .12s}
+  .list .row:last-child{border-bottom:none}
+  .list .row:hover{background:var(--paper)}
+  .list .row.on{background:var(--accent-soft);border-left:2px solid var(--accent);padding-left:13px}
+  .list .row .n{font-family:var(--mono);font-size:12.5px;font-weight:600;color:var(--ink)}
+  .list .row .d{font-size:11.5px;color:var(--ink-3);margin-top:2px;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  /* ---------- 结果块 ---------- */
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:7px 16px;font-size:12.5px}
+  .kv dt{color:var(--ink-3);white-space:nowrap}
+  .kv dd{color:var(--ink)}
+  pre{font-family:var(--mono);font-size:12px;line-height:1.75;background:var(--paper);
+    border:1px solid var(--line-2);border-radius:var(--radius);padding:14px 16px;
+    overflow:auto;max-height:520px;white-space:pre-wrap;word-break:break-word;color:var(--ink-2)}
+  pre.md{background:#fff}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line-2)}
+  th{color:var(--ink-3);font-weight:500;font-size:11.5px;letter-spacing:.08em;
+    border-bottom:1px solid var(--line);white-space:nowrap}
+  td.num{font-variant-numeric:tabular-nums;font-family:var(--mono)}
+  tr.hl td{background:var(--accent-soft)}
+  .bar{height:5px;background:var(--line-2);border-radius:3px;overflow:hidden;min-width:52px}
+  .bar i{display:block;height:100%;background:var(--ink-3)}
+  .bar.hi i{background:var(--accent)}
+  .bar.mid i{background:var(--jade)}
+
+  .note{font-size:12px;color:var(--ink-3);line-height:1.75;margin-top:12px;
+    padding-left:11px;border-left:2px solid var(--line)}
+  .err{color:var(--accent);font-size:12.5px}
+  .spin{display:inline-block;width:9px;height:9px;border:1.5px solid var(--line);
+    border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-1px;margin-right:7px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);
+    font-size:11.5px;color:var(--ink-3);line-height:1.9}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="brand">
+      <h1>SkillNet-S1</h1>
+      <span class="sub">立理 S1 科研技能生态原型 · Skill Retrieval / Evolution / RL</span>
+    </div>
+    <p class="lede">
+      在 <strong>s1.liliai.cn</strong> 的 Agent 与 300+ 科研工作流之上，补一层<strong>技能运维层</strong>：
+      技能以统一本体组织（技能卡 · 类型化关系 · 五维质量评估），
+      通过<strong>混合 RAG 检索</strong>被路由，通过<strong>上下文老虎机</strong>被选择性评估，
+      并通过<strong>蒸馏 / 变异 / 交叉</strong>持续进化。目标不是再造一个技能库，
+      而是回答一个问题：<strong>当技能规模变大，Agent 还能不能找对、用对、并且越用越好。</strong>
+    </p>
+    <div class="metabar" id="metabar"></div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-v="overview" class="on">概览</button>
+    <button data-v="demo">全链路演示</button>
+    <button data-v="skills">技能库</button>
+    <button data-v="search">检索与路由</button>
+    <button data-v="run">任务执行</button>
+    <button data-v="results">实验结果</button>
+    <button data-v="adapters">跨框架接入</button>
+  </nav>
+
+  <!-- ============ 概览 ============ -->
+  <section class="view on" id="v-overview">
+    <div class="grid g-2-1">
+      <div class="panel">
+        <h2>技能关系图 <span class="en">Skill Relation Graph</span></h2>
+        <p class="hint">节点为技能，连线为类型化关系（依赖 / 组合 / 相似）。节点半径表示实测平均奖励，朱红色为演化产生的技能。</p>
+        <div id="graph"></div>
+      </div>
+      <div class="panel">
+        <h2>领域分布 <span class="en">Taxonomy</span></h2>
+        <p class="hint">按领域统计技能数量。</p>
+        <div id="domains"></div>
+      </div>
+    </div>
+    <div class="grid g3" style="margin-top:20px">
+      <div class="panel tight">
+        <h2>质量评估 <span class="en">5-D Eval</span></h2>
+        <p class="hint">沿 SkillNet 的五维标准评估：安全性、完整性、可执行性、可维护性、成本感知。</p>
+        <div id="quality"></div>
+      </div>
+      <div class="panel tight">
+        <h2>检索方法学 <span class="en">Pipeline</span></h2>
+        <p class="hint">三档检索策略与技能进化闭环。</p>
+        <div id="pipeline"></div>
+      </div>
+      <div class="panel tight">
+        <h2>文献依据 <span class="en">References</span></h2>
+        <p class="hint">本原型直接对照的三项工作。</p>
+        <div id="refs"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 全链路演示 ============ -->
+  <section class="view" id="v-demo">
+    <div class="panel">
+      <h2>全链路演示 <span class="en">End-to-End</span></h2>
+      <p class="hint">
+        选一条任务，一次跑完整条链路：三档检索对比 → 任务级技能 Wiki 路由与依赖编排 →
+        技能驱动的研究方案生成与独立盲评 → 从执行轨迹蒸馏出新技能并入库。
+        演示结束会给出本次调用的 token 分账与总成本。
+      </p>
+      <div class="field" style="margin-bottom:14px">
+        <select id="demoTask" style="flex:1;min-width:340px"></select>
+        <button class="btn" id="demoBtn">开始演示</button>
+      </div>
+      <div id="demoOut"><p class="note">尚未运行。</p></div>
+    </div>
+  </section>
+
+  <!-- ============ 技能库 ============ -->
+  <section class="view" id="v-skills">
+    <div class="grid g-1-2">
+      <div class="panel" style="display:flex;flex-direction:column;gap:12px">
+        <h2>技能目录 <span class="en" id="skillCount"></span></h2>
+        <div class="field">
+          <input type="text" id="skillQ" placeholder="搜索技能名 / 标签 / 描述" style="flex:1">
+          <select id="skillDomain"><option value="">全部领域</option></select>
+        </div>
+        <div class="list" id="skillList"></div>
+      </div>
+      <div class="panel">
+        <h2>技能定义 <span class="en">SKILL.md</span></h2>
+        <p class="hint">这是可跨框架加载的唯一真源（agentskills.io 规范）。</p>
+        <div id="skillDetail"><p class="note">从左侧选择一个技能。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 检索与路由 ============ -->
+  <section class="view" id="v-search">
+    <div class="panel">
+      <h2>技能检索对照 <span class="en">Retrieval Benchmark</span></h2>
+      <p class="hint">同一条研究任务在三档检索策略下的结果对照。三列并排，命中金标准技能的条目以朱红标记。</p>
+      <div class="field" style="margin-bottom:14px">
+        <input type="text" id="searchQ" style="flex:1;min-width:320px"
+          value="我拿到一批 PBMC 的 10x 单细胞 RNA 测序数据，想做质控并识别免疫细胞亚群，再比较两组患者的基因表达差异，最后出图">
+        <select id="searchTask" style="min-width:150px"></select>
+        <select id="searchK"><option>3</option><option selected>5</option><option>8</option></select>
+        <button class="btn" id="searchBtn">检索</button>
+      </div>
+      <div id="searchOut"><p class="note">点击「检索」开始。三种策略的差异会直接体现在召回与排序上。</p></div>
+    </div>
+
+    <div class="panel" style="margin-top:20px">
+      <h2>Fabric 式任务级路由 <span class="en">Task Wiki Routing</span></h2>
+      <p class="hint">先用检索 + 关系扩展构造任务级「技能 Wiki」，再由 Explorer 在其中选出最终技能集并给出依赖顺序。</p>
+      <div class="field" style="margin-bottom:14px">
+        <input type="text" id="routeQ" style="flex:1;min-width:320px"
+          value="我想用纯成分特征预测无机化合物形成能，必须评估模型在没见过的元素上的外推能力，并给出可实验验证的候选材料">
+        <button class="btn" id="routeBtn">路由</button>
+      </div>
+      <div id="routeOut"><p class="note">点击「路由」开始。</p></div>
+    </div>
+  </section>
+
+  <!-- ============ 任务执行 ============ -->
+  <section class="view" id="v-run">
+    <div class="panel">
+      <h2>技能驱动的研究 Agent <span class="en">Agent Execution</span></h2>
+      <p class="hint">同一任务在四档技能供给条件下的执行方案与独立评审得分。评审看不到方案来自哪一档。</p>
+      <div class="field" style="margin-bottom:12px">
+        <select id="runTask" style="flex:1;min-width:320px"></select>
+      </div>
+      <textarea id="runTaskText" rows="3" style="width:100%;margin-bottom:12px"></textarea>
+      <div class="field">
+        <div class="seg" id="runMode">
+          <button data-m="bare">无技能</button>
+          <button data-m="cards">仅技能卡</button>
+          <button data-m="hybrid">混合检索</button>
+          <button data-m="fabric" class="on">完整方案</button>
+        </div>
+        <button class="btn" id="runBtn">执行</button>
+        <span id="runStatus" class="note" style="margin:0;border:none;padding:0"></span>
+      </div>
+      <div id="runOut" style="margin-top:20px"><p class="note">点击「执行」开始。</p></div>
+    </div>
+  </section>
+
+  <!-- ============ 实验结果 ============ -->
+  <section class="view" id="v-results">
+    <div id="resultsOut"><p class="note">加载中…</p></div>
+  </section>
+
+  <!-- ============ 跨框架 ============ -->
+  <section class="view" id="v-adapters">
+    <div class="panel">
+      <h2>跨框架接入 <span class="en">Framework Adapters</span></h2>
+      <p class="hint">
+        一套技能库，导出成各 Agent 框架可直接加载的形式。Google ADK 自 v1.25 起通过
+        SkillToolset 支持 Skills 并遵循 agentskills.io 规范，与 Claude Code / Cursor / Gemini CLI
+        共用同一份 SKILL.md 目录 —— 因此转换成本接近于零。
+      </p>
+      <button class="btn" id="adapterBtn">导出全部适配产物</button>
+      <div id="adapterOut" style="margin-top:20px"></div>
+    </div>
+  </section>
+
+  <footer>
+    SkillNet-S1 原型 · 技能库由本项目构建，非官方 SkillNet 仓库<br>
+    对照文献：SkillNet (arXiv:2603.04448) · EvoScientist (arXiv:2603.08127) · DisCo / Repo-To-Skill (arXiv:2609.02749) · COBRA-Skills (arXiv:2609.11682)
+  </footer>
+</div>
+
+<script>
+/* ---------- 工具 ---------- */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pct = x => (x == null ? '—' : (x*100).toFixed(1) + '%');
+const num = (x, d=3) => (x == null ? '—' : Number(x).toFixed(d));
+async function api(path, opt){
+  const r = await fetch(path, opt);
+  if(!r.ok) throw new Error(path + ' → ' + r.status);
+  return r.json();
+}
+const post = (p, body) => api(p, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+
+/* ---------- Tab ---------- */
+$$('#tabs button').forEach(b => b.onclick = () => {
+  $$('#tabs button').forEach(x => x.classList.toggle('on', x === b));
+  $$('.view').forEach(v => v.classList.toggle('on', v.id === 'v-' + b.dataset.v));
+  if(b.dataset.v === 'results') loadResults();
+});
+
+/* ---------- 概览 ---------- */
+let STATS = null, GRAPH = null;
+
+function renderMeta(){
+  const s = STATS;
+  $('#metabar').innerHTML = [
+    ['技能总数', s.total], ['覆盖领域', s.domains], ['关系边', s.edges],
+    ['平均质量', num(s.avg_quality,2)], ['演化产生', s.evolved],
+  ].map(([k,v]) => `<div><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
+}
+
+function renderDomains(){
+  const d = Object.entries(STATS.domain_distribution).sort((a,b)=>b[1]-a[1]);
+  const mx = Math.max(...d.map(x=>x[1]));
+  $('#domains').innerHTML = d.map(([k,v]) => `
+    <div style="display:grid;grid-template-columns:1fr 34px;gap:10px;align-items:center;padding:5px 0">
+      <div style="min-width:0">
+        <div style="font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(k)}</div>
+        <div class="bar" style="margin-top:4px"><i style="width:${v/mx*100}%"></i></div>
+      </div>
+      <div class="num" style="text-align:right;color:var(--ink-3);font-size:12px">${v}</div>
+    </div>`).join('');
+}
+
+function renderQuality(){
+  const et = STATS.edge_types || {};
+  $('#quality').innerHTML = `
+    <dl class="kv">
+      <dt>安全性</dt><dd>Good 占比最高</dd>
+      <dt>完整性</dt><dd>步骤 + 输入 + 输出齐备</dd>
+      <dt>可执行性</dt><dd>主要用于过滤抽象技能</dd>
+      <dt>可维护性</dt><dd>关系图支撑局部更新</dd>
+      <dt>成本感知</dt><dd>检索成本实测在案</dd>
+    </dl>
+    <p class="note" style="margin-top:14px">
+      关系边构成：${Object.entries(et).map(([k,v])=>`<span class="chip">${k} ${v}</span>`).join('')}
+    </p>`;
+}
+
+function renderPipeline(){
+  const steps = [
+    ['L1 元数据', '技能卡：能力 / 输入 / 输出 / 适用时机'],
+    ['混合召回', 'BM25 + 语义向量 + 领域标签结构信号'],
+    ['加权融合', 'BM25 0.55 / 语义 0.30 / 结构 0.15 + 一致性加成'],
+    ['关系扩展', '沿 depend_on / compose_with 补入工作流上下游'],
+    ['LLM 重排', '以技能卡为输入的语义重排'],
+    ['老虎机选择', 'LinUCB：预测收益 + 探索奖励'],
+    ['技能进化', '蒸馏 / 变异 / 交叉 / 再生成 + 准入过滤'],
+  ];
+  $('#pipeline').innerHTML = steps.map(([a,b],i) => `
+    <div style="display:grid;grid-template-columns:22px 1fr;gap:10px;padding:7px 0;${i?'border-top:1px solid var(--line-2)':''}">
+      <div class="tag" style="padding-top:2px">${String(i+1).padStart(2,'0')}</div>
+      <div><div style="font-size:12.5px;font-weight:600">${a}</div>
+      <div style="font-size:11.5px;color:var(--ink-3);line-height:1.6">${b}</div></div>
+    </div>`).join('');
+}
+
+const REFS = [
+  ['SkillNet','arXiv:2603.04448','三层本体 + 五维评估 + 60万技能库；实测前沿 Agent 在真实技能池上的检索与编排能力很弱'],
+  ['EvoScientist','arXiv:2603.08127','研究 / 工程 / 进化管理三 Agent + 持久记忆，用历史交互驱动策略自演化'],
+  ['DisCo / Repo-To-Skill','arXiv:2609.02749','把仓库与论文蒸馏成"操作性知识"技能，MLE-bench 提升 134.3%'],
+  ['COBRA-Skills','arXiv:2609.11682','上下文老虎机分配评估预算 + 从执行反馈进化技能，优化成本下降 55%–58%'],
+];
+function renderRefs(){
+  $('#refs').innerHTML = REFS.map(([t,a,d]) => `
+    <div style="padding:9px 0;border-bottom:1px solid var(--line-2)">
+      <div style="font-size:12.5px;font-weight:600">${t} <span class="tag">${a}</span></div>
+      <div style="font-size:11.5px;color:var(--ink-3);line-height:1.6;margin-top:3px">${d}</div>
+    </div>`).join('');
+}
+
+/* ---------- 关系图（手写径向力导向布局） ---------- */
+function renderGraph(){
+  const W = 760, H = 560, cx = W/2, cy = H/2;
+  const nodes = GRAPH.nodes, edges = GRAPH.edges;
+  const domains = [...new Set(nodes.map(n=>n.domain))];
+  const pos = {};
+  domains.forEach((d,i) => {
+    const a = i / domains.length * Math.PI * 2 - Math.PI/2;
+    const r = 200;
+    pos['@'+d] = [cx + Math.cos(a)*r, cy + Math.sin(a)*r];
+  });
+  // 技能散布在其领域锚点周围
+  const byDom = {};
+  nodes.forEach(n => (byDom[n.domain] = byDom[n.domain] || []).push(n));
+  Object.entries(byDom).forEach(([d, arr]) => {
+    const [ax, ay] = pos['@'+d];
+    arr.forEach((n, i) => {
+      const a = i / arr.length * Math.PI * 2;
+      const r = 16 + arr.length * 2.4;
+      pos[n.id] = [ax + Math.cos(a)*r, ay + Math.sin(a)*r];
+    });
+  });
+  // 简易力松弛，减少重叠
+  for(let it=0; it<220; it++){
+    const f = {};
+    nodes.forEach(a => f[a.id] = [0,0]);
+    for(let i=0;i<nodes.length;i++) for(let j=i+1;j<nodes.length;j++){
+      const a = nodes[i], b = nodes[j];
+      const dx = pos[a.id][0]-pos[b.id][0], dy = pos[a.id][1]-pos[b.id][1];
+      const d2 = dx*dx+dy*dy || 1;
+      if(d2 < 3600){
+        const d = Math.sqrt(d2), ux = dx/d, uy = dy/d, push = (60-d)/d;
+        f[a.id][0] += ux*push; f[a.id][1] += uy*push;
+        f[b.id][0] -= ux*push; f[b.id][1] -= uy*push;
+      }
+    }
+    edges.forEach(e => {
+      if(!pos[e.source] || !pos[e.target]) return;
+      const dx = pos[e.target][0]-pos[e.source][0], dy = pos[e.target][1]-pos[e.source][1];
+      const d = Math.sqrt(dx*dx+dy*dy)||1, ux=dx/d, uy=dy/d, pull=(d-46)*0.006;
+      f[e.source][0] += ux*pull; f[e.source][1] += uy*pull;
+      f[e.target][0] -= ux*pull; f[e.target][1] -= uy*pull;
+    });
+    nodes.forEach(n => { pos[n.id][0] += Math.max(-3,Math.min(3,f[n.id][0]));
+                         pos[n.id][1] += Math.max(-3,Math.min(3,f[n.id][1])); });
+    // 向所属领域锚点回拉，保持可读的聚类结构
+    nodes.forEach(n => {
+      const [ax,ay] = pos['@'+n.domain];
+      pos[n.id][0] += (ax - pos[n.id][0]) * 0.008;
+      pos[n.id][1] += (ay - pos[n.id][1]) * 0.008;
+    });
+    // 居中
+    const mx = nodes.reduce((s,n)=>s+pos[n.id][0],0)/nodes.length;
+    const my = nodes.reduce((s,n)=>s+pos[n.id][1],0)/nodes.length;
+    nodes.forEach(n => { pos[n.id][0] += (cx-mx)*0.03; pos[n.id][1] += (cy-my)*0.03; });
+  }
+  const maxR = Math.max(...nodes.map(n=>n.mean_reward||0), 0.01);
+  const color = {depend_on:'#9c3d2e', compose_with:'#3d5a52', similar_to:'#c9c2b6', belong_to:'#c9c2b6'};
+  const svg = [];
+  svg.push(`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">`);
+  edges.forEach(e => {
+    if(!pos[e.source] || !pos[e.target]) return;
+    const [x1,y1] = pos[e.source], [x2,y2] = pos[e.target];
+    svg.push(`<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"
+      stroke="${color[e.type]||'#ddd'}" stroke-width="0.8" opacity="0.5"/>`);
+  });
+  nodes.forEach(n => {
+    const [x,y] = pos[n.id];
+    const r = 4 + (n.mean_reward||0)/maxR*5;
+    const isEvo = n.source !== 'seed';
+    svg.push(`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}"
+      fill="${isEvo ? '#9c3d2e' : '#3d5a52'}" opacity="${isEvo?0.95:0.72}">
+      <title>${esc(n.id)}\n领域：${esc(n.domain)}\n来源：${n.source} · G${n.generation}\n实测奖励：${num(n.mean_reward,3)}（${n.pulls} 次）</title></circle>`);
+    if(r > 7) svg.push(`<text x="${(x+r+3).toFixed(1)}" y="${(y+3).toFixed(1)}" font-size="7.5"
+      fill="#8b857a" font-family="monospace">${esc(n.id).slice(0,22)}</text>`);
+  });
+  svg.push('</svg>');
+  $('#graph').innerHTML = svg.join('') + `
+    <p class="note">
+      共 ${nodes.length} 个技能、${edges.length} 条关系边。朱红节点为演化产生的技能；
+      节点大小对应实测平均奖励。悬停可查看技能详情。
+    </p>`;
+}
+
+/* ---------- 全链路演示 ---------- */
+async function doDemo(){
+  const sel = $('#demoTask');
+  const t = TASKS.find(x => x.id === sel.value);
+  if(!t) return;
+  const out = $('#demoOut'), btn = $('#demoBtn');
+  btn.disabled = true;
+  out.innerHTML = '<p class="note"><span class="spin"></span>链路执行中：检索对比 → Wiki 路由 → 执行与盲评 → 轨迹蒸馏。约需 1–2 分钟…</p>';
+  try{
+    const d = await post('/api/demo', {task:t.query, gold:t.gold, k:5});
+    const [st1, st2, st3, st4] = d.stages.map(s => s.detail);
+    const MODES = ['bm25','hybrid','fabric'];
+    const stageHead = (n, title, sub) => `
+      <div style="display:flex;align-items:baseline;gap:12px;margin:26px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line)">
+        <span class="tag" style="color:var(--accent)">STEP ${n}</span>
+        <span style="font-size:14px;font-weight:600;letter-spacing:.06em">${title}</span>
+        <span style="font-size:11.5px;color:var(--ink-3)">${sub}</span>
+      </div>`;
+
+    out.innerHTML = `
+      <p class="note">任务：${esc(d.task)}<br>金标准技能集：${t.gold.map(g=>`<span class="chip">${esc(g)}</span>`).join('')}</p>
+
+      ${stageHead('01','三档检索对比','同一条任务，三种检索策略')}
+      <table>
+        <thead><tr><th>策略</th><th>选中技能</th><th>召回</th></tr></thead>
+        <tbody>${MODES.map(m => `<tr class="${m==='fabric'?'hl':''}">
+          <td>${MODE_LABEL[m]} <span class="tag">${m}</span></td>
+          <td>${st1[m].selected.map(s=>`<span class="chip ${t.gold.includes(s)?'accent':''}">${esc(s)}</span>`).join('')}</td>
+          <td class="num">${st1[m].recall==null?'—':pct(st1[m].recall)}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+
+      ${stageHead('02','任务级技能 Wiki 路由与编排',`候选 ${st2.wiki_size} 张技能卡 → 选出 ${st2.skills.length} 个技能`)}
+      <div class="grid g2">
+        <div class="panel tight">
+          <h2>最终技能集 <span class="en">Y_q</span></h2>
+          ${st2.skills.map((s,i)=>`<div style="padding:6px 0;border-bottom:1px solid var(--line-2)">
+            <span class="tag" style="color:var(--accent)">${String(i+1).padStart(2,'0')}</span>
+            <span style="font-family:var(--mono);font-size:12px;margin-left:8px">${esc(s)}</span></div>`).join('')}
+          <p class="note">${esc(st2.reason||'')}</p>
+        </div>
+        <div class="panel tight">
+          <h2>依赖编排 <span class="en">Workflow</span></h2>
+          ${st2.workflow.length ? st2.workflow.map(([a,b])=>`
+            <div style="padding:6px 0;border-bottom:1px solid var(--line-2);font-size:12px">
+              <span class="tag">${esc(a)}</span><span style="color:var(--accent);margin:0 8px">→</span><span class="tag">${esc(b)}</span>
+            </div>`).join('') : '<p class="note">技能间无依赖，可并行。</p>'}
+          <p class="note">执行顺序：${st2.order.map(esc).join(' → ')}</p>
+        </div>
+      </div>
+
+      ${stageHead('03','技能驱动执行与盲评','执行者与评审者相互独立')}
+      <div class="grid g2">
+        <div class="panel tight">
+          <h2>方案规模 <span class="en">Plan</span></h2>
+          <dl class="kv">
+            <dt>执行步骤</dt><dd>${st3.steps} 步</dd>
+            <dt>技能采纳率</dt><dd>${pct(st3.adoption)}</dd>
+            <dt>调用的技能</dt><dd>${st3.skills.map(s=>`<span class="chip">${esc(s)}</span>`).join('')}</dd>
+          </dl>
+          <p class="note">技能采纳率是客观指标：给定技能集中有多少真的出现在方案的 skill 字段里。社区评测发现默认配置下技能常不被激活，因此这个数字必须单独看。</p>
+        </div>
+        <div class="panel tight">
+          <h2>盲评得分 <span class="en">Rubric</span></h2>
+          <div style="font-size:30px;font-weight:600;font-variant-numeric:tabular-nums;margin:6px 0 10px">
+            ${num(st3.judge.weighted,2)}<span style="font-size:13px;color:var(--ink-3)">/10</span></div>
+          ${Object.entries(st3.judge.scores).map(([k,v])=>`
+            <div style="display:grid;grid-template-columns:110px 1fr 34px;gap:10px;align-items:center;padding:3px 0">
+              <div style="font-size:12px;color:var(--ink-3)">${k}</div>
+              <div class="bar"><i class="${v>=8?'hi':v>=6?'mid':''}" style="width:${v*10}%"></i></div>
+              <div class="num" style="text-align:right;font-size:12px">${num(v,1)}</div>
+            </div>`).join('')}
+          ${st3.judge.coverage!=null?`<p class="note">领域要点覆盖：<strong>${pct(st3.judge.coverage)}</strong>（${(st3.judge.covered||[]).length}/${st3.judge.n_points} 条）</p>`:''}
+          <p class="note">${esc(st3.judge.comment||'')}</p>
+        </div>
+      </div>
+
+      ${stageHead('04','从执行轨迹蒸馏新技能','技能库不是静态的')}
+      <div class="panel tight">
+        ${st4.accepted ? `
+          <p style="font-size:13px;margin-bottom:10px">
+            新技能 <span class="tag" style="color:var(--accent)">${esc(st4.name)}</span>
+            <span class="chip accent">G${st4.generation}</span>
+            <span class="chip">库规模 ${st4.library_size}</span>
+          </p>
+          <p class="hint">${esc(st4.capability||'')}</p>`
+          : `<p class="err">本次蒸馏未通过准入过滤（${esc((st4.records[0]||{}).reason||'')}）——这本身是准入机制在工作。</p>`}
+        <p class="note">
+          准入过滤记录：${st4.records.map(r=>`<span class="chip ${r.accepted?'jade':''}">${esc(r.op)} ${r.accepted?'入库':'拒绝'}：${esc(r.reason)}</span>`).join('')}
+        </p>
+      </div>
+
+      ${stageHead('05','本次链路成本','按角色分账')}
+      <table>
+        <thead><tr><th>角色</th><th>调用次数</th><th>输入 token</th><th>输出 token</th><th>成本</th></tr></thead>
+        <tbody>${Object.entries(d.usage_by_role).map(([k,v])=>`<tr>
+          <td>${k}</td><td class="num">${v.calls}</td><td class="num">${v.prompt}</td>
+          <td class="num">${v.completion}</td><td class="num">¥${num(v.cost_yuan,5)}</td></tr>`).join('')}
+        </tbody>
+      </table>
+      <p class="note">本次链路合计 <strong>${d.tokens}</strong> tokens，成本 <strong>¥${num(d.cost_yuan,4)}</strong>。</p>`;
+  }catch(e){
+    out.innerHTML = `<p class="err">演示失败：${esc(e.message)}</p>`;
+  }finally{ btn.disabled = false; }
+}
+
+/* ---------- 技能库 ---------- */
+let SKILLS = [], TASKS = [];
+function renderSkillList(){
+  const q = ($('#skillQ').value || '').toLowerCase().trim();
+  const dm = $('#skillDomain').value;
+  let items = SKILLS;
+  if(dm) items = items.filter(s => s.domain === dm);
+  if(q) items = items.filter(s =>
+    s.name.toLowerCase().includes(q) || s.description.toLowerCase().includes(q) ||
+    s.tags.some(t => t.toLowerCase().includes(q)));
+  $('#skillCount').textContent = `${items.length} / ${SKILLS.length}`;
+  $('#skillList').innerHTML = items.map(s => `
+    <div class="row" data-n="${esc(s.name)}">
+      <div class="n">${esc(s.name)}${s.generation>0?` <span class="chip accent">G${s.generation}</span>`:''}</div>
+      <div class="d">${esc(s.domain)} · ${esc(s.description)}</div>
+    </div>`).join('') || '<div class="row"><div class="d">无匹配技能</div></div>';
+  $$('#skillList .row[data-n]').forEach(r => r.onclick = () => showSkill(r.dataset.n, r));
+}
+async function showSkill(name, row){
+  $$('#skillList .row').forEach(r => r.classList.toggle('on', r === row));
+  const d = await api('/api/skill/' + encodeURIComponent(name));
+  const s = d.skill;
+  const q = s.quality || {};
+  $('#skillDetail').innerHTML = `
+    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px">
+      <span class="tag">${esc(s.name)}</span>
+      <span class="chip jade">${esc(s.domain)}</span>
+      <span class="chip ${s.source!=='seed'?'accent':''}">${esc(s.source)} · G${s.generation}</span>
+      ${s.stats && s.stats.pulls ? `<span class="chip gold">实测 ${num(s.mean_reward,3)} / ${s.stats.pulls} 次</span>` : ''}
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+      ${Object.entries(q).map(([k,v]) => `<span class="chip">${k}: ${v}</span>`).join('')}
+    </div>
+    <pre class="md">${esc(d.markdown)}</pre>`;
+}
+function initSkills(){
+  SKILLS.sort((a,b) => a.domain.localeCompare(b.domain) || a.name.localeCompare(b.name));
+  const doms = [...new Set(SKILLS.map(s=>s.domain))].sort();
+  $('#skillDomain').innerHTML = '<option value="">全部领域</option>' +
+    doms.map(d => `<option>${esc(d)}</option>`).join('');
+  renderSkillList();
+  $('#skillQ').oninput = renderSkillList;
+  $('#skillDomain').onchange = renderSkillList;
+}
+
+/* ---------- 检索对照 ---------- */
+const GOLD = {};   // 任务文本 -> gold 技能集
+const MODE_LABEL = {bm25:'BM25 关键词', hybrid:'混合检索', fabric:'Fabric 完整'};
+
+function taskOptions(){
+  const sel = $('#searchTask');
+  sel.innerHTML = '<option value="">— 载入示例任务 —</option>' +
+    TASKS.map(t => `<option value="${t.id}">${t.id} · ${esc(t.domain)}</option>`).join('');
+  sel.onchange = () => {
+    const t = TASKS.find(x => x.id === sel.value);
+    if(t){ $('#searchQ').value = t.query; $('#runTaskText').value = t.query; }
+  };
+  const rt = $('#runTask');
+  rt.innerHTML = TASKS.map(t => `<option value="${t.id}">${t.id} · ${esc(t.domain)} · ${esc(t.query.slice(0,26))}…</option>`).join('');
+  rt.onchange = () => {
+    const t = TASKS.find(x => x.id === rt.value);
+    if(t) $('#runTaskText').value = t.query;
+  };
+  if(TASKS.length) $('#runTaskText').value = TASKS[0].query;
+  const dt = $('#demoTask');
+  dt.innerHTML = TASKS.map(t =>
+    `<option value="${t.id}">${t.id} · ${esc(t.domain)} · ${esc(t.query.slice(0,30))}…</option>`).join('');
+}
+
+function recallOf(sel, gold){
+  if(!gold || !gold.length) return null;
+  return sel.filter(x => gold.includes(x)).length / gold.length;
+}
+
+async function doSearch(){
+  const q = $('#searchQ').value.trim(); if(!q) return;
+  const k = +$('#searchK').value;
+  const out = $('#searchOut');
+  out.innerHTML = '<p class="note"><span class="spin"></span>检索中…（Fabric 档会调用 LLM 重排）</p>';
+  try{
+    const d = await post('/api/search', {query:q, k, modes:['bm25','hybrid','fabric']});
+    const gold = TASKS.find(t => t.query === q)?.gold || [];
+    const modes = ['bm25','hybrid','fabric'];
+    const recall = {}; modes.forEach(m => recall[m] = recallOf(d.by_mode[m].selected, gold));
+    const head = gold.length ? `
+      <p class="note" style="margin:0 0 16px">
+        金标准技能集：${gold.map(g=>`<span class="chip">${esc(g)}</span>`).join('')}
+        &nbsp;→ 召回：${modes.map(m=>`<span class="chip ${recall[m]===1?'accent':''}">${MODE_LABEL[m]} ${pct(recall[m])}</span>`).join('')}
+      </p>` : '';
+    const cols = modes.map(m => {
+      const blk = d.by_mode[m];
+      const rows = blk.detail.map(c => {
+        const hit = gold.includes(c.name);
+        return `<div style="padding:8px 0;border-bottom:1px solid var(--line-2)">
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <span class="tag" style="color:${hit?'var(--accent)':'var(--ink-3)'}">${String(c.rank).padStart(2,'0')}</span>
+            <span style="font-family:var(--mono);font-size:12px;font-weight:${hit?'600':'400'};
+              color:${hit?'var(--accent)':'var(--ink)'}">${esc(c.name)}</span>
+          </div>
+          <div style="font-size:11px;color:var(--ink-3);margin-top:3px;line-height:1.5">
+            ${c.channels.map(ch=>`<span class="chip">${ch}</span>`).join('')} ${esc(c.capability||'').slice(0,42)}
+          </div></div>`;
+      }).join('');
+      return `<div class="panel tight" style="border-color:${m==='fabric'?'var(--accent)':'var(--line)'}">
+        <h2>${MODE_LABEL[m]} <span class="en">${m}</span></h2>
+        <p class="hint">召回 ${pct(recall[m])}　成本 ¥${num(blk.cost_yuan,5)}</p>
+        ${blk.trace.map(t=>`<div style="font-size:11px;color:var(--ink-3);padding:1px 0">· ${esc(t)}</div>`).join('')}
+        <div style="margin-top:10px">${rows}</div>
+      </div>`;
+    }).join('');
+    out.innerHTML = head + `<div class="grid g3">${cols}</div>`;
+  }catch(e){ out.innerHTML = `<p class="err">检索失败：${esc(e.message)}</p>`; }
+}
+
+async function doRoute(){
+  const q = $('#routeQ').value.trim(); if(!q) return;
+  const out = $('#routeOut');
+  out.innerHTML = '<p class="note"><span class="spin"></span>构造任务级技能 Wiki 并路由…</p>';
+  try{
+    const d = await post('/api/route', {query:q, k:5});
+    out.innerHTML = `
+      <div class="grid g2">
+        <div class="panel tight">
+          <h2>最终技能集 <span class="en">Y_q</span></h2>
+          <p class="hint">Wiki 规模 ${d.wiki_size} 张技能卡 → 选出 ${d.skills.length} 个技能。</p>
+          ${d.skills.map((s,i)=>`<div style="padding:7px 0;border-bottom:1px solid var(--line-2)">
+            <span class="tag" style="color:var(--accent)">${String(i+1).padStart(2,'0')}</span>
+            <span style="font-family:var(--mono);font-size:12px;margin-left:8px">${esc(s)}</span></div>`).join('')}
+          <p class="note">路由理由：${esc(d.reason || '—')}</p>
+        </div>
+        <div class="panel tight">
+          <h2>依赖编排 <span class="en">Workflow</span></h2>
+          <p class="hint">A → B 表示 A 的输出被 B 使用，或 A 必须先执行。</p>
+          ${d.workflow.length ? d.workflow.map(([a,b])=>`
+            <div style="padding:7px 0;border-bottom:1px solid var(--line-2);font-size:12px">
+              <span class="tag">${esc(a)}</span>
+              <span style="color:var(--accent);margin:0 9px">→</span>
+              <span class="tag">${esc(b)}</span></div>`).join('')
+            : '<p class="note">未推导出依赖边（技能相互独立，可并行执行）。</p>'}
+          <p class="note">推荐执行顺序：${d.order.map(esc).join(' → ')}</p>
+        </div>
+      </div>
+      <p class="note">检索轨迹：${d.retrieval_trace.map(esc).join(' ｜ ')}　本次成本 ¥${num(d.cost_yuan,5)}</p>`;
+  }catch(e){ out.innerHTML = `<p class="err">路由失败：${esc(e.message)}</p>`; }
+}
+
+/* ---------- 任务执行 ---------- */
+let RUN_MODE = 'fabric';
+$$('#runMode button').forEach(b => b.onclick = () => {
+  RUN_MODE = b.dataset.m;
+  $$('#runMode button').forEach(x => x.classList.toggle('on', x === b));
+});
+
+async function doRun(){
+  const task = $('#runTaskText').value.trim(); if(!task) return;
+  const out = $('#runOut'), st = $('#runStatus'), btn = $('#runBtn');
+  btn.disabled = true; st.innerHTML = '<span class="spin"></span>执行中（检索 → 方案生成 → 独立评审）…';
+  try{
+    const t = TASKS.find(x => x.query === task);
+    const d = await post('/api/run', {task, mode:RUN_MODE, k:5, gold:t?.gold || []});
+    const j = d.judge, p = d.plan || {};
+    const steps = (p.steps || []).map((s,i) => `
+      <div style="display:grid;grid-template-columns:26px 1fr;gap:12px;padding:11px 0;border-top:1px solid var(--line-2)">
+        <div class="tag" style="padding-top:2px">S${String(i+1).padStart(2,'0')}</div>
+        <div>
+          <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap">
+            <span style="font-size:12.5px">${esc(s.action || '')}</span>
+            ${s.skill && s.skill!=='manual' ? `<span class="chip accent">${esc(s.skill)}</span>` : '<span class="chip">manual</span>'}
+          </div>
+          ${(s.key_params||[]).length ? `<div style="font-size:11.5px;color:var(--ink-3);margin-top:4px">参数：${s.key_params.map(esc).join('；')}</div>`:''}
+          ${s.expected_output ? `<div style="font-size:11.5px;color:var(--ink-3);margin-top:2px">产出：${esc(s.expected_output)}</div>`:''}
+          ${s.check ? `<div style="font-size:11.5px;color:var(--jade);margin-top:2px">校验：${esc(s.check)}</div>`:''}
+        </div></div>`).join('');
+    const dims = Object.entries(j.scores || {}).map(([k,v]) => `
+      <div style="display:grid;grid-template-columns:110px 1fr 34px;gap:10px;align-items:center;padding:4px 0">
+        <div style="font-size:12px;color:var(--ink-3)">${k}</div>
+        <div class="bar"><i class="${v>=8?'hi':v>=6?'mid':''}" style="width:${v*10}%"></i></div>
+        <div class="num" style="text-align:right;font-size:12px">${num(v,1)}</div>
+      </div>`).join('');
+    out.innerHTML = `
+      <div class="grid g-2-1">
+        <div class="panel tight">
+          <h2>研究执行方案 <span class="en">mode: ${esc(d.mode)}</span></h2>
+          <p class="hint">${esc(p.approach || '（模型未返回结构化方案）')}</p>
+          ${steps || '<p class="note">未解析出步骤。</p>'}
+          ${(p.risks||[]).length ? `<p class="note">风险：${p.risks.map(esc).join('；')}</p>`:''}
+        </div>
+        <div>
+          <div class="panel tight">
+            <h2>独立评审 <span class="en">Blind Rubric</span></h2>
+            <div style="font-size:30px;font-weight:600;font-variant-numeric:tabular-nums;margin:6px 0 2px">
+              ${num(j.weighted,2)}<span style="font-size:13px;color:var(--ink-3)">/10</span></div>
+            <p class="hint" style="margin-bottom:12px">加权得分</p>
+            ${dims}
+            ${j.coverage!=null ? `<p class="note">领域要点覆盖：<strong>${pct(j.coverage)}</strong>
+              （${(j.covered||[]).length}/${j.n_points} 条）</p>`:''}
+            <p class="note">${esc(j.comment || '')}</p>
+          </div>
+          <div class="panel tight" style="margin-top:20px">
+            <h2>本次调用的技能 <span class="en">${d.skills.length}</span></h2>
+            ${d.skills.length ? d.skills.map(s=>`<span class="chip accent">${esc(s)}</span>`).join('')
+              : '<p class="note">无（基线组）</p>'}
+            <p class="note">成本 ¥${num(d.cost_yuan,5)} · ${d.tokens} tokens</p>
+          </div>
+        </div>
+      </div>
+      ${d.first_step && d.first_step.code ? `
+      <div class="panel tight" style="margin-top:20px">
+        <h2>第一步展开为可运行代码 <span class="en">${esc(d.first_step.skill)}</span></h2>
+        <p class="hint">这一步验证技能不只是被"引用"，而是真的改变了执行产物。</p>
+        <pre>${esc(d.first_step.code)}</pre>
+      </div>`:''}`;
+  }catch(e){ out.innerHTML = `<p class="err">执行失败：${esc(e.message)}</p>`; }
+  finally{ btn.disabled = false; st.textContent = ''; }
+}
+
+/* ---------- 实验结果 ---------- */
+function bar(v, mx){ return `<div class="bar"><i style="width:${mx?Math.max(2,v/mx*100):0}%"></i></div>`; }
+
+async function loadResults(){
+  const out = $('#resultsOut');
+  out.innerHTML = '<p class="note"><span class="spin"></span>加载实验结果…</p>';
+  try{
+    const d = await api('/api/results');
+    if(!Object.keys(d).length){ out.innerHTML = '<p class="note">还没有实验结果。运行 bench/run_bench.py 后刷新。</p>'; return; }
+    let html = '';
+
+    /* 实验一 */
+    if(d.exp1_retrieval){
+      const s = d.exp1_retrieval.summary, M = ['bm25','hybrid','fabric'];
+      html += `
+      <div class="sec-title">实验一 · 技能检索与编排　<span class="tag">${d.exp1_retrieval.n_tasks} 个任务 · K=${d.exp1_retrieval.k}</span></div>
+      <div class="panel">
+        <p class="hint">金标准为人工标注的"完成任务所必需的技能集"。编排完整度衡量预测的依赖边恢复了多少金标准工作流边。</p>
+        <table>
+          <thead><tr><th>检索策略</th><th>技能召回</th><th></th><th>完全覆盖</th><th>编排完整度</th></tr></thead>
+          <tbody>${M.map((m,i) => { const v = s[m]; return `
+            <tr class="${m==='fabric'?'hl':''}">
+              <td>${MODE_LABEL[m]} <span class="tag">${m}</span></td>
+              <td class="num">${pct(v.skill_recall)}</td>
+              <td style="width:180px">${bar(v.skill_recall,1)}</td>
+              <td class="num">${pct(v.full_coverage_rate)}</td>
+              <td class="num">${pct(v.orchestration_completeness)}</td>
+            </tr>`; }).join('')}</tbody>
+        </table>
+        <p class="note">基线到完整方案的召回提升：${pct(s.bm25.skill_recall)} → ${pct(s.fabric.skill_recall)}；
+        编排完整度：${pct(s.bm25.orchestration_completeness)} → ${pct(s.fabric.orchestration_completeness)}。</p>
+      </div>`;
+    }
+
+    /* 实验二 */
+    if(d.exp2_execution){
+      const s = d.exp2_execution.summary, arms = ['bare','cards','hybrid','fabric'];
+      const LAB = {bare:'无技能', cards:'仅技能卡', hybrid:'混合检索 + 全文', fabric:'完整方案'};
+      const mx = Math.max(...arms.map(a=>s[a].avg_score)) * 1.05;
+      const mc = Math.max(...arms.map(a=>s[a].avg_coverage||0), 0.01);
+      html += `
+      <div class="sec-title">实验二 · 技能对执行质量的影响　<span class="tag">${d.exp2_execution.n_tasks} 个任务 × ${d.exp2_execution.repeats} 次重复 · 独立盲评</span></div>
+      <div class="panel">
+        <p class="hint">评审为 LLM 盲评（不知道方案来自哪一档）。要点覆盖率为客观指标：方案是否实质覆盖了该领域技能库中的常见陷阱与验证清单。</p>
+        <table>
+          <thead><tr><th>技能供给方式</th><th>盲评均分</th><th></th><th>要点覆盖率</th><th></th><th>相对基线</th><th>平均成本/任务</th></tr></thead>
+          <tbody>${arms.map(a => { const v = s[a]; return `
+            <tr class="${a==='fabric'?'hl':''}">
+              <td>${LAB[a]} <span class="tag">${a}</span></td>
+              <td class="num">${num(v.avg_score,2)}</td>
+              <td style="width:120px">${bar(v.avg_score,mx)}</td>
+              <td class="num">${v.avg_coverage==null?'—':pct(v.avg_coverage)}</td>
+              <td style="width:120px">${v.avg_coverage==null?'':bar(v.avg_coverage,mc)}</td>
+              <td class="num">${a==='bare'?'基线':(v.gain_pct>=0?'+':'')+v.gain_pct+'%'}</td>
+              <td class="num">¥${num(v.avg_cost_yuan,4)}</td>
+            </tr>`; }).join('')}</tbody>
+        </table>
+        <p class="note">四档的评审维度均分：
+        ${arms.map(a=>`<span class="chip">${LAB[a]} ${Object.entries(s[a].dim_avg).map(([k,v])=>k.slice(0,6)+':'+num(v,1)).join(' ')}</span>`).join('')}</p>
+      </div>`;
+    }
+
+    /* 实验三 */
+    if(d.exp3_evolution){
+      const R = d.exp3_evolution.results;
+      const LN = {linucb:'LinUCB 老虎机选择', random:'随机选择（消融）'};
+      html += `
+      <div class="sec-title">实验三 · 老虎机选择与技能进化闭环　<span class="tag">${d.exp3_evolution.rounds} 轮 · α=${d.exp3_evolution.alpha}</span></div>
+      <div class="panel">
+        <p class="hint">每轮由选择器挑一个技能、真实执行并盲评打分，得分回流更新选择器；偶数轮触发一次技能蒸馏。两组使用同一份种子技能库。</p>
+        <table>
+          <thead><tr><th>选择策略</th><th>平均实测奖励</th><th></th><th>最佳技能</th><th>库规模</th><th>新技能</th><th>成本</th></tr></thead>
+          <tbody>${Object.entries(R).map(([k,v]) => `
+            <tr class="${k==='linucb'?'hl':''}">
+              <td>${LN[k]}</td>
+              <td class="num">${num(v.mean_reward,3)}</td>
+              <td style="width:150px">${bar(v.mean_reward, Math.max(...Object.values(R).map(x=>x.mean_reward))||1)}</td>
+              <td><span class="tag">${esc(v.best_skill || '—')}</span></td>
+              <td class="num">${v.library_size}</td>
+              <td class="num">${(v.evolved_skills||[]).length}</td>
+              <td class="num">¥${num(v.cost_yuan,3)}</td>
+            </tr>`).join('')}</tbody>
+        </table>
+        <div class="grid g2" style="margin-top:18px">
+          ${Object.entries(R).map(([k,v]) => `
+          <div class="panel tight">
+            <h2>${LN[k]} · 逐轮奖励 <span class="en">reward curve</span></h2>
+            <div style="display:flex;align-items:flex-end;gap:6px;height:96px;margin:10px 0 6px">
+              ${v.curve.map(c=>`
+                <div title="第${c.round}轮 ${c.chosen} 奖励${c.reward}"
+                  style="flex:1;background:${c.evolved?'var(--accent)':'var(--jade)'};
+                  opacity:${0.35+c.reward*0.65};height:${Math.max(4,c.reward*100)}%;border-radius:2px 2px 0 0"></div>`).join('')}
+            </div>
+            <p class="note">朱红柱表示该轮之后有新技能入库。逐轮选择：
+            ${v.curve.map(c=>`<span class="chip">R${c.round}:${esc(c.chosen)}</span>`).join('')}</p>
+          </div>`).join('')}
+        </div>
+        <p class="note">消融结论：移除老虎机后（随机选择），平均实测奖励的变化直接反映"选择性评估"这一组件的贡献。</p>
+      </div>`;
+    }
+    out.innerHTML = html || '<p class="note">尚无可用实验结果。</p>';
+  }catch(e){ out.innerHTML = `<p class="err">加载失败：${esc(e.message)}</p>`; }
+}
+
+/* ---------- 跨框架 ---------- */
+async function doAdapters(){
+  const out = $('#adapterOut'), btn = $('#adapterBtn');
+  btn.disabled = true; out.innerHTML = '<p class="note"><span class="spin"></span>导出中…</p>';
+  try{
+    const d = await post('/api/adapters', {});
+    out.innerHTML = `
+      <table>
+        <thead><tr><th>目标框架</th><th>产物路径</th><th>技能数</th><th>入口</th></tr></thead>
+        <tbody>${d.exports.map(e => `<tr>
+          <td>${esc(e.framework)}</td>
+          <td class="tag" style="font-size:11px;word-break:break-all">${esc(e.path)}</td>
+          <td class="num">${e.skills}</td>
+          <td style="font-size:11.5px;color:var(--ink-3)">${esc(e.entry)}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+      <p class="note">导出根目录：<span class="tag">${esc(d.root)}</span><br>
+      Google ADK 侧可直接 <span class="tag">python agent.py</span> 或用 <span class="tag">adk web</span> 打开可视化调试；
+      Claude Code 侧把 <span class="tag">.claude/skills</span> 放到项目根即可被自动发现。</p>`;
+  }catch(e){ out.innerHTML = `<p class="err">导出失败：${esc(e.message)}</p>`; }
+  finally{ btn.disabled = false; }
+}
+
+/* ---------- 初始化 ---------- */
+async function boot(){
+  try{
+    const [stats, graph, skills, cfg] = await Promise.all([
+      api('/api/stats'), api('/api/graph'), api('/api/skills'), api('/api/config')
+    ]);
+    STATS = stats; GRAPH = graph; SKILLS = skills.items;
+    TASKS = await api('/api/tasks').catch(() => []);
+    renderMeta(); renderDomains(); renderQuality(); renderPipeline(); renderRefs(); renderGraph();
+    initSkills(); taskOptions();
+  }catch(e){
+    document.body.insertAdjacentHTML('afterbegin',
+      `<div style="padding:16px 32px;background:#f3e8e5;color:#9c3d2e;font-size:13px">
+       无法连接后端：${esc(e.message)}　请先运行 <code>python run.py</code></div>`);
+  }
+}
+$('#searchBtn').onclick = doSearch;
+$('#routeBtn').onclick = doRoute;
+$('#runBtn').onclick = doRun;
+$('#adapterBtn').onclick = doAdapters;
+boot();
+</script>
+</body>
+</html>

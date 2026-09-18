@@ -1,0 +1,2607 @@
+{
+ "experiment": "execution",
+ "k": 5,
+ "repeats": 3,
+ "n_tasks": 12,
+ "summary": {
+  "bare": {
+   "avg_score": 8.321,
+   "avg_coverage": 0.821,
+   "avg_adoption": null,
+   "avg_cost_yuan": 0.068,
+   "avg_tokens": 4725,
+   "dim_avg": {
+    "skill_grounding": 8.528,
+    "executability": 8.417,
+    "rigor": 8.167,
+    "scientific_validity": 8.083
+   },
+   "gain_vs_bare": 0.0,
+   "gain_pct": 0.0,
+   "coverage_gain_pp": 0.0
+  },
+  "cards": {
+   "avg_score": 8.779,
+   "avg_coverage": 0.9306,
+   "avg_adoption": 0.8389,
+   "avg_cost_yuan": 0.074,
+   "avg_tokens": 6082,
+   "dim_avg": {
+    "skill_grounding": 8.917,
+    "executability": 8.611,
+    "rigor": 8.806,
+    "scientific_validity": 8.75
+   },
+   "gain_vs_bare": 0.458,
+   "gain_pct": 5.5,
+   "coverage_gain_pp": 11.0
+  },
+  "hybrid": {
+   "avg_score": 8.774,
+   "avg_coverage": 0.983,
+   "avg_adoption": 0.6667,
+   "avg_cost_yuan": 0.0781,
+   "avg_tokens": 6697,
+   "dim_avg": {
+    "skill_grounding": 8.889,
+    "executability": 8.639,
+    "rigor": 8.833,
+    "scientific_validity": 8.694
+   },
+   "gain_vs_bare": 0.453,
+   "gain_pct": 5.4,
+   "coverage_gain_pp": 16.2
+  },
+  "fabric": {
+   "avg_score": 8.806,
+   "avg_coverage": 0.9738,
+   "avg_adoption": 0.7722,
+   "avg_cost_yuan": 0.0837,
+   "avg_tokens": 7718,
+   "dim_avg": {
+    "skill_grounding": 8.944,
+    "executability": 8.5,
+    "rigor": 8.944,
+    "scientific_validity": 8.806
+   },
+   "gain_vs_bare": 0.485,
+   "gain_pct": 5.8,
+   "coverage_gain_pp": 15.3
+  }
+ },
+ "per_task": [
+  {
+   "id": "T01",
+   "domain": "细胞生物学与单细胞",
+   "n_reference_points": 9,
+   "bare": {
+    "skills": [],
+    "weighted": 8.75,
+    "score_std": 0.0,
+    "coverage": 0.8519,
+    "adoption": null,
+    "runs": [
+     {
+      "weighted": 8.75,
+      "coverage": 0.7778,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 8.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案覆盖了从 Cell Ranger 到 pseudobulk DESeq2 的完整可复现流程，参数、阈值和判据具体，且明确要求批次校正、质控前后细胞数统计、pseudobulk 计数建模与设计矩阵匹配；主要不足是风险与交付物部分为空，且未明确讨论双轴图/截断坐标轴等可视化陷阱。"
+     },
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了从Cell Ranger输出到伪批量差异表达与出图的全流程，参数、阈值、工具与校验判据具体，并明确规避了伪重复、批次效应、双细胞等关键陷阱；仅个别参数（如RunUMAP的n.neighbors）和风险/交付物部分被截断，但不影响整体可执行性。"
+     },
+     {
+      "weighted": 8.75,
+      "coverage": 0.7778,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 8.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案覆盖了从Cell Ranger到pseudobulk DESeq2的完整可复现流程，参数与判据具体，并明确要求批次校正、质控前后细胞数记录、对原始counts建模及纳入分组协变量；仅P7/P8（双轴图、截断坐标轴）未在绘图规范中显式禁止。"
+     }
+    ],
+    "cost_yuan": 0.07183,
+    "tokens": 4947
+   },
+   "cards": {
+    "skills": [
+     "scrna-qc-clustering",
+     "differential-expression",
+     "scientific-visualization",
+     "statistical-testing",
+     "data-cleaning"
+    ],
+    "weighted": 8.667,
+    "score_std": 0.144,
+    "coverage": 1.0,
+    "adoption": 0.6667,
+    "runs": [
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": 0.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 8.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案覆盖了从10x读取、QC、聚类注释、pseudobulk差异表达与出版级可视化的完整可复现流程，参数与判据具体；统计设计明确区分细胞水平与患者水平推断并控制伪重复，但风险与交付物部分为空，且未显式讨论批次校正与协变量纳入（P2/P5仅被间接覆盖）。"
+     },
+     {
+      "weighted": 8.5,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 8.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案覆盖了PBMC scRNA-seq全流程的关键方法（QC、聚类注释、pseudobulk DE、比例检验、可视化），参数与工具具体，并包含批次校正、伪批量建模、阴性对照等可靠性验证；但第6步可视化参数与产出/校验栏不完整，且P1的线粒体阈值虽给出10%但未讨论组织差异，P7/P8仅通过色盲友好与出版级要求间接覆盖。"
+     },
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了从10x矩阵读取、QC、聚类注释、伪批量差异分析到出版级可视化的全流程，参数、阈值、工具名与校验判据具体可执行，并显式处理了批次校正、伪批量避免假阳性、多重校正、随机种子与版本锁定等关键可靠性问题；仅第2步参数在'降'处被截断，属轻微不完整，但不影响整体可执行性。"
+     }
+    ],
+    "cost_yuan": 0.08124,
+    "tokens": 6475
+   },
+   "hybrid": {
+    "skills": [
+     "scrna-qc-clustering",
+     "differential-expression",
+     "statistical-testing",
+     "variant-calling",
+     "survival-analysis"
+    ],
+    "weighted": 8.833,
+    "score_std": 0.144,
+    "coverage": 0.8519,
+    "adoption": 0.6,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了从QC、批次校正、聚类注释到伪批量差异分析和比例统计的全流程，参数阈值具体、校验判据明确，并系统列出了常见陷阱与应对；唯一小瑕疵是未明确要求图表坐标轴与单位标注，但整体已达专业级可复现标准。"
+     },
+     {
+      "weighted": 8.75,
+      "coverage": 0.7778,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了从QC、批次校正、聚类注释到负二项差异表达与组成比例统计的全流程，参数、阈值、工具与校验判据具体，并明确指出了伪重复、批次混杂、原始计数建模等关键陷阱；仅P7/P8未涉及（本任务无相关图型），P9在可视化校验中已要求坐标轴与单位标注。"
+     },
+     {
+      "weighted": 8.75,
+      "coverage": 0.7778,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了PBMC scRNA-seq质控、聚类、差异表达与比例检验的关键方法学要点，明确要求原始计数建模、批次协变量、FDR校正与效应量报告，并针对线粒体阈值、批次效应、伪重复等陷阱给出应对；仅P7/P8未显式提及但属可视化细节，不影响整体可执行性与严谨性。"
+     }
+    ],
+    "cost_yuan": 0.08362,
+    "tokens": 7127
+   },
+   "fabric": {
+    "skills": [
+     "scrna-qc-clustering",
+     "differential-expression",
+     "scientific-visualization",
+     "statistical-testing",
+     "data-cleaning"
+    ],
+    "weighted": 8.833,
+    "score_std": 0.144,
+    "coverage": 0.9259,
+    "adoption": 1.0,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了从QC、聚类、伪批量差异表达、统计检验到出版级可视化的全流程，参数、阈值、工具与判据具体可执行，并系统性地指出了批次校正、伪批量聚合、倍数收缩、多重校正等关键陷阱及应对，科学设计与结论边界合理。"
+     },
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了PBMC scRNA-seq质控、聚类、差异表达、统计检验与可视化的关键环节，参数与工具具体，并明确指出了批次校正、原始计数建模、FDR校正、坐标轴规范等常见陷阱；仅PCA的n_comps等个别参数未写全，但整体已达专业级可执行水平。"
+     },
+     {
+      "weighted": 8.75,
+      "coverage": 0.7778,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了从清洗、聚类、伪批量差异表达、统计检验到出版级可视化的全流程，参数、阈值、工具与判据具体，并针对批次、伪批量样本量、多重比较等陷阱给出应对；仅PCA的n_comp参数被截断，且未明确提及双轴图与截断坐标轴这两项可视化陷阱，但整体已达专业级。"
+     }
+    ],
+    "cost_yuan": 0.08776,
+    "tokens": 8041
+   }
+  },
+  {
+   "id": "T02",
+   "domain": "材料科学",
+   "n_reference_points": 9,
+   "bare": {
+    "skills": [],
+    "weighted": 6.033,
+    "score_std": 1.864,
+    "coverage": 0.8148,
+    "adoption": null,
+    "runs": [
+     {
+      "weighted": 6.3,
+      "coverage": 1.0,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 7.0,
+       "executability": 6.0,
+       "rigor": 6.0,
+       "scientific_validity": 6.0
+      },
+      "comment": "方案覆盖了成分特征建模、按元素族留出的外推评估、不确定性筛选与DFT复核等关键环节，但第4步MLP参数被截断、第8步产出与校验为空，且分组交叉验证中'每折留出不同元素族'与'5折'的对应关系及调参/评估折的隔离未交代清楚，执行细节和严谨性仍有缺口。"
+     },
+     {
+      "weighted": 4.05,
+      "coverage": 0.4444,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 5.0,
+       "executability": 4.0,
+       "rigor": 3.0,
+       "scientific_validity": 4.0
+      },
+      "comment": "方案提出了leave-one-element-group-out外推评估并覆盖了同源结构、能量参考态和分组折法要点，但方案在特征工程步骤后即被截断，缺失模型训练、不确定性量化、候选筛选与实验验证建议等关键环节，且未涉及调参嵌套、不确定性排序等要点，整体可执行性不足。"
+     },
+     {
+      "weighted": 7.75,
+      "coverage": 1.0,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 8.0,
+       "executability": 8.0,
+       "rigor": 7.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案完整覆盖了成分特征建模、按元素分组的外推评估、不确定性量化与候选筛选验证等关键环节，参数与判据具体可执行；主要不足是未明确说明调参是否独立于评估折，且候选筛选阈值可能偏严导致候选过少。"
+     }
+    ],
+    "cost_yuan": 0.06977,
+    "tokens": 4619
+   },
+   "cards": {
+    "skills": [
+     "dft-formation-energy",
+     "tabular-ml-baseline",
+     "cross-validation-protocol",
+     "leakage-guard",
+     "materials-screening"
+    ],
+    "weighted": 8.833,
+    "score_std": 0.144,
+    "coverage": 1.0,
+    "adoption": 0.6667,
+    "runs": [
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了纯成分形成能预测的关键方法学环节：留元外推协议、泄漏审计、嵌套交叉验证、不确定性感知筛选与实验可行性评估，参数与判据具体可执行；仅候选库枚举与不确定性阈值等细节可更明确。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了纯成分形成能预测的关键环节：LOEO外推协议、嵌套CV、泄漏审计、不确定度量化与多目标筛选，参数与判据具体可执行；仅风险与交付物部分留空，但不影响核心方法学完整性。"
+     },
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案以留元外推为核心，系统覆盖了同源泄漏、分组折法、嵌套调参、不确定性排序与候选筛选等关键要点，参数与判据具体可执行；仅候选库生成与不确定性估计细节略简，但不影响整体专业级质量。"
+     }
+    ],
+    "cost_yuan": 0.07589,
+    "tokens": 6208
+   },
+   "hybrid": {
+    "skills": [
+     "dft-formation-energy",
+     "crystal-structure-predict",
+     "materials-screening",
+     "admet-prediction",
+     "tabular-ml-baseline"
+    ],
+    "weighted": 8.6,
+    "score_std": 0.693,
+    "coverage": 1.0,
+    "adoption": 0.4667,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖纯成分特征建模、随机划分与LOO元素外推评估、误差分布分析及带不确定性的候选筛选，参数与校验具体可执行，并明确应对同源泄漏、参考态统一、调参折分离等关键陷阱。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖纯成分形成能预测、LOO元素外推、不确定性筛选与结构复核全链条，参数阈值与校验判据具体可执行，并显式应对同源泄漏、参考态统一、调参评估分离、分布外与动力学稳定性等关键陷阱。"
+     },
+     {
+      "weighted": 7.8,
+      "coverage": 1.0,
+      "adoption": 0.0,
+      "scores": {
+       "skill_grounding": 8.0,
+       "executability": 8.0,
+       "rigor": 8.0,
+       "scientific_validity": 7.0
+      },
+      "comment": "方案完整覆盖了纯成分预测、LOO元素外推、不确定性筛选与结构验证等关键环节，参数与判据具体；但LOO外推下模型选择与超参调优的嵌套协议未明确，且结构预测步骤与'无需晶体结构'的任务边界略有张力。"
+     }
+    ],
+    "cost_yuan": 0.08126,
+    "tokens": 6883
+   },
+   "fabric": {
+    "skills": [
+     "dft-formation-energy",
+     "tabular-ml-baseline",
+     "cross-validation-protocol",
+     "leakage-guard",
+     "materials-screening"
+    ],
+    "weighted": 9.0,
+    "score_std": 0.0,
+    "coverage": 1.0,
+    "adoption": 0.3333,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了纯成分预测形成能的关键方法学环节：双库统一参考态、泄漏审计与去重、随机划分与留元外推双协议、嵌套CV、不确定性驱动的筛选，并给出具体参数、阈值与失败判据；风险与交付物栏为空是唯一明显缺口，但不影响执行者按步骤完成任务。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了纯成分形成能预测的关键方法学要点：双库标签统一参考态、泄漏审计与近重复检测、随机与留一元素双协议评估、嵌套交叉验证、逐元素外推敏感性分析，以及带不确定性的多目标筛选；参数、阈值、工具与判据具体可执行，风险与失败模式均有应对。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了纯成分预测形成能的关键方法学环节：双库数据统一参考态、泄漏审计、嵌套CV、留一元素外推、不确定性感知筛选，并给出具体参数与判据；仅风险与交付物两栏为空，但不影响主体可执行性。"
+     }
+    ],
+    "cost_yuan": 0.09074,
+    "tokens": 8094
+   }
+  },
+  {
+   "id": "T03",
+   "domain": "文献与研究",
+   "n_reference_points": 9,
+   "bare": {
+    "skills": [],
+    "weighted": 8.867,
+    "score_std": 0.115,
+    "coverage": 1.0,
+    "adoption": null,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案以任务×范式证据矩阵为核心，检索、PRISMA筛选、引文分析、空白识别、复现验证与引用校验各环节均给出具体参数、阈值和判据，并系统覆盖了多库检索、可复现检索式、DOI可查、负面结果与空白支撑等专业要点，具备专业级可执行性与严谨性。"
+     },
+     {
+      "weighted": 8.8,
+      "coverage": 1.0,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案以五段式系统检索、文献计量、矩阵盘点、缺口打分与最小实验推进，参数、阈值、工具与校验判据具体，并显式覆盖多库检索、可复现检索式、DOI验证、反向查新、负面结果与多文献支撑等要点；仅最小实验仅验证一个候选切入点，对全部候选的可行性论证略弱。"
+     },
+     {
+      "weighted": 8.8,
+      "coverage": 1.0,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案以任务×范式证据矩阵为核心，检索、筛选、抽取、空白识别、查新与最小实验各环节均给出数据库、阈值、工具与判据，并系统覆盖了多库检索、引用可验证、空白需文献支撑与可行性验证等要点；仅P7（没人做过≠值得做）的论证略偏可行性实验，对科学价值/影响力的判断标准可再强化。"
+     }
+    ],
+    "cost_yuan": 0.07105,
+    "tokens": 4962
+   },
+   "cards": {
+    "skills": [
+     "literature-review",
+     "citation-verify",
+     "arxiv-monitor",
+     "molecular-descriptors",
+     "deep-learning-training"
+    ],
+    "weighted": 8.45,
+    "score_std": 0.606,
+    "coverage": 1.0,
+    "adoption": 0.9333,
+    "runs": [
+     {
+      "weighted": 8.55,
+      "coverage": 1.0,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案以PRISMA系统综述为主线，多库检索、三级筛选、证据表、引用核验、预印本监控、meta分析与四维空白矩阵均给出具体参数与校验判据，实质性覆盖全部领域要点；仅步骤6的参数/产出/校验栏为空，且meta分析对异质数据集合并的合理性需更谨慎界定。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖PRISMA检索、引用核验、预印本追踪与基线复现，参数、阈值、校验判据具体可执行，并明确处理发表偏差、空白支撑与可行性验证等关键陷阱。"
+     },
+     {
+      "weighted": 7.8,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 8.0,
+       "executability": 8.0,
+       "rigor": 8.0,
+       "scientific_validity": 7.0
+      },
+      "comment": "方案以 PRISMA 检索、100% 引用核验、预印本增量追踪和最小验证实验覆盖了主要方法学环节，参数与校验判据具体；但 P7/P8 仅以风险应对和交叉比对间接处理，未明确要求对候选空白做价值论证或系统评估发表/负面结果偏差。"
+     }
+    ],
+    "cost_yuan": 0.08077,
+    "tokens": 6533
+   },
+   "hybrid": {
+    "skills": [
+     "literature-review",
+     "admet-prediction",
+     "citation-verify",
+     "deep-learning-training",
+     "connectome-topology"
+    ],
+    "weighted": 8.533,
+    "score_std": 0.462,
+    "coverage": 1.0,
+    "adoption": 0.4667,
+    "runs": [
+     {
+      "weighted": 8.0,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 8.0,
+       "executability": 8.0,
+       "rigor": 8.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案以PRISMA式系统综述为主线，检索式、去重规则、双人筛选kappa、结构化抽取、引用逐条核验等均有具体参数与校验，实质性覆盖P1-P9；但第9步connectome-topology的产出与校验字段为空，且对'空白点值得做'的可行性论证（P7）仅部分涉及，略欠完整。"
+     },
+     {
+      "weighted": 8.8,
+      "coverage": 1.0,
+      "adoption": 0.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案以可复现检索式、双人筛选、结构化抽取、四维空白矩阵与逐条引用核验完整覆盖了综述与选题定位的关键环节，并显式处理了发表偏差、空白判定阈值与预印本回检等陷阱；仅风险与交付物两栏为空，且ADMET辅助步骤与主线的衔接略弱。"
+     },
+     {
+      "weighted": 8.8,
+      "coverage": 1.0,
+      "adoption": 0.4,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案以PRISMA式系统综述为主线，明确调用literature-review与citation-verify技能，给出五库检索式、双人筛选kappa阈值、9字段证据抽取、证据强度分级、冲突清单、空白定位与逐条引用核验，并针对单一库偏差、文献罗列、伪造引用、数据泄漏、切入点重复等风险给出可执行应对，实质性覆盖全部9个领域要点；仅统计合并与发表偏差的量化处理略简。"
+     }
+    ],
+    "cost_yuan": 0.08544,
+    "tokens": 7179
+   },
+   "fabric": {
+    "skills": [
+     "literature-review",
+     "citation-verify",
+     "arxiv-monitor",
+     "meta-analysis",
+     "admet-prediction"
+    ],
+    "weighted": 8.367,
+    "score_std": 0.548,
+    "coverage": 1.0,
+    "adoption": 0.8667,
+    "runs": [
+     {
+      "weighted": 7.75,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 8.0,
+       "executability": 7.0,
+       "rigor": 8.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案以 PRISMA 系统综述为主线，检索式、去重、双人筛选、Kappa、证据抽取、引用核验、预印本追踪与评估协议缺陷分析均给出具体参数与判据，覆盖了 P1-P9 全部要点；主要不足是第 9 步（deep-learning-training）参数、产出与校验栏为空，且未显式处理发表偏差与负面结果，导致可执行性与严谨性略打折。"
+     },
+     {
+      "weighted": 8.55,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案以PRISMA式系统综述为主线，检索式、筛选流程、引用核验、覆盖矩阵与可行性实验均有明确参数与校验判据，实质性覆盖了全部9个领域要点；仅步骤8的参数与产出留空，略影响可执行性。"
+     },
+     {
+      "weighted": 8.8,
+      "coverage": 1.0,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案以PRISMA式系统检索、双人筛选+Kappa、结构化证据抽取、四维空白矩阵、100%引用核验与arXiv增量追踪构成完整可执行链条，参数、阈值、判据与交付物明确，并显式应对单一库偏差、文献罗列、伪造引用、发表偏差与空白点误判等风险；仅P7（没人做过≠值得做）虽通过MVE与可行性论证部分回应，但未作为独立判据强制要求，科学有效性略受影响。"
+     }
+    ],
+    "cost_yuan": 0.09204,
+    "tokens": 8287
+   }
+  },
+  {
+   "id": "T04",
+   "domain": "临床与健康科学",
+   "n_reference_points": 9,
+   "bare": {
+    "skills": [],
+    "weighted": 8.917,
+    "score_std": 0.144,
+    "coverage": 1.0,
+    "adoption": null,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了时间零点统一、按时间/患者划分、预测点前特征提取、竞争风险、比例风险检验、缺失与敏感性分析等关键环节，参数与判据具体，可执行性强；仅外部验证为条件性，但不影响整体合格。"
+     },
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了索引时间/结局定义、时间过滤防泄漏、按患者与时间划分、竞争风险与比例风险检验等关键方法学要点，参数与判据具体；仅特征可获得性说明和部分执行细节可再细化。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了生存分析、数据泄漏防控、竞争风险、比例风险检验、嵌套验证等关键方法学要点，并给出具体参数、阈值与校验步骤，可执行性强；仅在按患者分组划分和时序数据随机划分的明确禁止上略有隐含，但整体已达到专业级。"
+     }
+    ],
+    "cost_yuan": 0.06948,
+    "tokens": 4783
+   },
+   "cards": {
+    "skills": [
+     "survival-analysis",
+     "leakage-guard",
+     "clinical-feature-engineering",
+     "data-cleaning",
+     "eda-profiling"
+    ],
+    "weighted": 8.6,
+    "score_std": 0.529,
+    "coverage": 0.8889,
+    "adoption": 1.0,
+    "runs": [
+     {
+      "weighted": 8.0,
+      "coverage": 0.7778,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 8.0,
+       "executability": 8.0,
+       "rigor": 8.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案以生存分析框架覆盖了比例风险检验、删失说明、按患者去重、预测时点约束、训练集内预处理和特征可获得性说明，步骤参数具体可执行；但未实质性处理竞争风险（P1），且对时序数据随机划分的风险（P8）仅在交叉验证中隐含，未明确按时间或患者分组划分。"
+     },
+     {
+      "weighted": 8.8,
+      "coverage": 0.8889,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案系统覆盖了生存分析、特征工程、泄漏审计与验证等关键环节，参数与判据具体可执行；主要不足是未处理竞争风险（P1），且删失机制仅给出规则而未讨论其假设是否成立。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了生存分析、竞争风险、比例风险检验、按患者分组、时间窗限制、预处理折内拟合与特征可获得性说明等关键方法学要点，参数与校验具体可执行；仅竞争风险处理在删失定义中略显可选，但整体达到专业级。"
+     }
+    ],
+    "cost_yuan": 0.06992,
+    "tokens": 5808
+   },
+   "hybrid": {
+    "skills": [
+     "clinical-feature-engineering",
+     "survival-analysis",
+     "eda-profiling",
+     "leakage-guard",
+     "statistical-testing"
+    ],
+    "weighted": 8.0,
+    "score_std": 1.732,
+    "coverage": 1.0,
+    "adoption": 0.6667,
+    "runs": [
+     {
+      "weighted": 6.0,
+      "coverage": 1.0,
+      "adoption": 0.0,
+      "scores": {
+       "skill_grounding": 7.0,
+       "executability": 4.0,
+       "rigor": 6.0,
+       "scientific_validity": 7.0
+      },
+      "comment": "方案主线正确且覆盖了全部关键泄漏与生存分析要点，但第三步 clinical-feature-engineering 内容被截断，缺少具体特征构造、可获得性审计与划分协议的可执行细节，导致整体可执行性不足。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案以按患者划分、预测时点前特征构造、泄漏审计、Cox/PH检验与竞争风险处理为主线，参数阈值、工具名与校验判据具体，实质覆盖全部领域要点；仅预处理拟合范围等细节可再显式绑定到管线实现。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案以预测时点定义、按患者划分、时点前特征构造和生存分析为主线，明确覆盖了竞争风险、PH假设、删失机制、患者级划分、未来信息泄漏、可获得性说明等全部关键要点，并给出阈值、工具名与校验判据，具备专业级可执行性与严谨性。"
+     }
+    ],
+    "cost_yuan": 0.07881,
+    "tokens": 6500
+   },
+   "fabric": {
+    "skills": [
+     "survival-analysis",
+     "leakage-guard",
+     "clinical-feature-engineering",
+     "data-cleaning",
+     "eda-profiling"
+    ],
+    "weighted": 9.0,
+    "score_std": 0.0,
+    "coverage": 1.0,
+    "adoption": 0.6667,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案以审计泄漏为主线，明确按患者分组、t0前特征窗口、可获得性审计、Schoenfeld检验与竞争风险处理，参数阈值与校验步骤具体可执行，全面覆盖领域要点。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了生存分析、泄漏防护与按患者划分等关键环节，参数与判据具体可执行；仅风险与交付物部分为空，但不影响核心方法学完整性。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案以预测时点为核心，系统覆盖了数据泄漏审计、按患者分组划分、PH假设检验、竞争风险与删失机制等关键方法学要点，并给出具体阈值、工具与校验步骤，具备专业级可执行性。"
+     }
+    ],
+    "cost_yuan": 0.08709,
+    "tokens": 7860
+   }
+  },
+  {
+   "id": "T05",
+   "domain": "金融与经济学",
+   "n_reference_points": 6,
+   "bare": {
+    "skills": [],
+    "weighted": 7.717,
+    "score_std": 0.144,
+    "coverage": 0.5,
+    "adoption": null,
+    "runs": [
+     {
+      "weighted": 7.8,
+      "coverage": 0.5,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 8.0,
+       "executability": 8.0,
+       "rigor": 8.0,
+       "scientific_validity": 7.0
+      },
+      "comment": "方案完整覆盖多期DID、事件研究、IV/PSM-DID与稳健性检验，参数与判据具体可执行；但IV外生性论证较弱，且未显式声明因果图假设或报告Hausman检验。"
+     },
+     {
+      "weighted": 7.55,
+      "coverage": 0.5,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 8.0,
+       "executability": 8.0,
+       "rigor": 7.0,
+       "scientific_validity": 7.0
+      },
+      "comment": "方案完整覆盖多期DID、事件研究、IV/PSM-DID与稳健性检验等关键环节，参数与判据具体可执行；但未显式声明因果图假设，也未讨论控制处理后变量导致的过度控制偏差，且聚类层级仅固定为省级而未论证其合理性。"
+     },
+     {
+      "weighted": 7.8,
+      "coverage": 0.5,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 8.0,
+       "executability": 8.0,
+       "rigor": 8.0,
+       "scientific_validity": 7.0
+      },
+      "comment": "方案系统覆盖多期DID、事件研究、IV、PSM-DID、Bacon分解等主流方法，参数与判据具体，可执行性强；但未显式声明因果图假设，且IV构造（相邻省份政策滞后项）的外生性论证不足，存在弱工具与排他性风险。"
+     }
+    ],
+    "cost_yuan": 0.06298,
+    "tokens": 4451
+   },
+   "cards": {
+    "skills": [
+     "econometric-panel",
+     "causal-inference",
+     "statistical-testing",
+     "data-cleaning",
+     "eda-profiling"
+    ],
+    "weighted": 8.417,
+    "score_std": 0.577,
+    "coverage": 0.8889,
+    "adoption": 1.0,
+    "runs": [
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了交错DID、事件研究、PSM、IV、异质性稳健估计量与多重稳健性检验，并明确要求报告Hausman检验、弱工具变量检验与聚类层级选择，实质覆盖全部领域要点；参数与判据具体，可执行性强。"
+     },
+     {
+      "weighted": 7.75,
+      "coverage": 0.6667,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 8.0,
+       "executability": 7.0,
+       "rigor": 8.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案覆盖了交错DID、事件研究、IV/PSM、稳健性检验等关键方法，并明确处理负权重、弱工具变量、聚类层级等陷阱；但IV工具变量的具体来源与排他性论证较薄弱，P1（过度控制）和P3（因果图）未实质覆盖。"
+     },
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了交错DID、异质性处理效应估计量、IV/PSM-DID、平行趋势与多种稳健性检验，并明确要求报告Hausman检验、聚类层级、弱工具诊断等关键要点；主要不足是未显式讨论处理后控制变量导致的过度控制偏差，且部分参数（如IV具体构造）仍偏笼统。"
+     }
+    ],
+    "cost_yuan": 0.07225,
+    "tokens": 5947
+   },
+   "hybrid": {
+    "skills": [
+     "econometric-panel",
+     "statistical-testing",
+     "causal-inference",
+     "data-cleaning",
+     "survival-analysis"
+    ],
+    "weighted": 8.85,
+    "score_std": 0.26,
+    "coverage": 0.9444,
+    "adoption": 0.8,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了交错DID、内生性处理、平行趋势、聚类层级、弱工具变量与过度控制等关键要点，并给出具体参数、检验阈值与失败应对策略，具备专业级可执行性。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了交错DID、IV/动态面板、平行趋势、弱工具变量、聚类层级与过度控制等关键方法学要点，并给出具体参数、阈值与失败应对；仅工具变量外生性论证与交错DID异质性处理效应的具体估计量选择可再细化。"
+     },
+     {
+      "weighted": 8.55,
+      "coverage": 0.8333,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案完整覆盖交错DID、IV/GMM、聚类与多重比较等关键方法，并给出具体参数与判据；但未显式警示处理后变量过度控制偏差（P1），且IV外生性论证仍偏泛。"
+     }
+    ],
+    "cost_yuan": 0.07464,
+    "tokens": 6491
+   },
+   "fabric": {
+    "skills": [
+     "econometric-panel",
+     "causal-inference",
+     "statistical-testing",
+     "data-cleaning",
+     "eda-profiling"
+    ],
+    "weighted": 8.683,
+    "score_std": 0.115,
+    "coverage": 1.0,
+    "adoption": 1.0,
+    "runs": [
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖交错DID、IV/GMM、平行趋势、聚类与过度控制等关键方法学要点，并给出阈值与判据；仅交错DID负权重问题仅在风险中提及而未纳入主估计流程，略影响可执行性。"
+     },
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖多期DID、事件研究、IV/系统GMM、聚类与稳健性等关键环节，并显式声明DAG假设、避免政策后控制变量、报告Hausman与弱工具变量检验，参数与判据具体可执行；仅IV候选变量的外生性论证与合成控制/PSM-DID的触发条件可再细化。"
+     },
+     {
+      "weighted": 8.55,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案系统覆盖了交错DID、IV、聚类层级、平行趋势、弱工具变量与Hausman检验等关键方法学要点，并给出阈值与判据；主要不足是未明确讨论控制处理后变量导致的过度控制偏差（P1），且IV候选变量的外生性论证仍偏薄弱。"
+     }
+    ],
+    "cost_yuan": 0.08014,
+    "tokens": 7458
+   }
+  },
+  {
+   "id": "T06",
+   "domain": "化学、药物发现与药理学",
+   "n_reference_points": 9,
+   "bare": {
+    "skills": [],
+    "weighted": 7.883,
+    "score_std": 0.577,
+    "coverage": 0.4444,
+    "adoption": null,
+    "runs": [
+     {
+      "weighted": 8.55,
+      "coverage": 0.4444,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 8.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案完整覆盖序列→结构→口袋→对接→成药性→MD验证主线，参数阈值与工具具体可执行，重对接与诱饵富集验证到位；但未明确处理寡聚状态/界面（P2）、未区分对接打分与结合自由能（P5）、未讨论适用域限制（P7），且ADMET预测值被当作排序依据而非实验值（P8）的边界表述不足。"
+     },
+     {
+      "weighted": 7.55,
+      "coverage": 0.4444,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 8.0,
+       "executability": 8.0,
+       "rigor": 7.0,
+       "scientific_validity": 7.0
+      },
+      "comment": "方案覆盖了结构预测、口袋检测、对接验证、ADMET与MD等关键环节，参数与判据具体可执行；但未处理寡聚状态/界面错误（P2），且把对接打分与MM/PBSA预测值直接当作结合强度证据，缺少对预测值非实验值的明确边界声明（P5/P8）。"
+     },
+     {
+      "weighted": 7.55,
+      "coverage": 0.4444,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 8.0,
+       "executability": 8.0,
+       "rigor": 7.0,
+       "scientific_validity": 7.0
+      },
+      "comment": "方案覆盖了结构建模、redocking验证、对接筛选与ADMET评估等关键环节，参数与工具具体可执行；但未实质性处理低置信度柔性区、寡聚状态、打分非自由能及适用域等科学边界问题。"
+     }
+    ],
+    "cost_yuan": 0.06959,
+    "tokens": 4855
+   },
+   "cards": {
+    "skills": [
+     "protein-structure-predict",
+     "molecular-docking",
+     "admet-prediction",
+     "md-simulation",
+     "cross-validation-protocol"
+    ],
+    "weighted": 8.933,
+    "score_std": 0.115,
+    "coverage": 1.0,
+    "adoption": 1.0,
+    "runs": [
+     {
+      "weighted": 8.8,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案完整覆盖结构预测可信度分区、重对接/交叉对接验证、ADMET适用域标注、MD稳定性检验与数据泄漏审计，参数与判据具体可执行；仅寡聚状态（P2）未显式处理，且对接打分与结合自由能的区分主要靠MD补充，略有不足。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖序列到候选验证全链条，参数阈值具体、验证支线独立且失败模式有应对；仅P9分子标准化未显式命名但类药性预过滤与配体准备实质涵盖。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖结构预测可信度分区、寡聚状态确认、redocking验证、对接打分非自由能、ADMET适用域与分子标准化等关键要点，参数阈值与失败应对具体可执行，证据链设计科学严谨。"
+     }
+    ],
+    "cost_yuan": 0.07949,
+    "tokens": 6454
+   },
+   "hybrid": {
+    "skills": [
+     "molecular-docking",
+     "md-simulation",
+     "admet-prediction",
+     "protein-structure-predict",
+     "cross-validation-protocol"
+    ],
+    "weighted": 9.0,
+    "score_std": 0.0,
+    "coverage": 1.0,
+    "adoption": 1.0,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖结构预测置信度评估、重对接验证、MD稳定性检验、ADMET适用域标注与分组交叉验证等关键环节，参数阈值与失败应对具体可执行；唯一小瑕疵是未明确要求记录ADMET预测值的不确定性量化方法，但整体已达专业级。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖结构预测置信度分区、重对接验证、MD验证、ADMET适用域与交叉验证等关键环节，参数阈值具体可执行，并明确列出常见陷阱与应对；仅外部验证集来源与配体库同源分组的具体构建方式略欠细节。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖结构预测置信度分区、重对接验证、适用域标注、分子标准化与分组交叉验证等关键环节，参数阈值与失败应对具体可执行；仅MD重复次数与采样时长偏短，但整体达到专业级。"
+     }
+    ],
+    "cost_yuan": 0.07708,
+    "tokens": 6668
+   },
+   "fabric": {
+    "skills": [
+     "protein-structure-predict",
+     "molecular-docking",
+     "admet-prediction",
+     "md-simulation",
+     "cross-validation-protocol"
+    ],
+    "weighted": 8.433,
+    "score_std": 0.388,
+    "coverage": 1.0,
+    "adoption": 1.0,
+    "runs": [
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了从结构预测、重对接验证、虚拟筛选、ADMET适用域评估到MD验证与泄漏审计的全流程，参数与判据具体，并明确指出了低置信区、寡聚态、打分误用、适用域外推等关键陷阱及应对措施。"
+     },
+     {
+      "weighted": 8.55,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案完整覆盖结构预测置信度分区、重对接验证、适用域标注、分子标准化与无泄漏交叉验证等关键环节，参数与判据具体；仅MD重复次数与外部验证集规模等细节可再明确。"
+     },
+     {
+      "weighted": 8.0,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 8.0,
+       "executability": 8.0,
+       "rigor": 8.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案完整覆盖结构预测置信度分区、重对接验证、ADMET适用域、MD重复与嵌套交叉验证等关键环节，参数与判据具体可执行；主要不足是未明确指定具体工具/软件版本及外部验证集来源，但整体达到专业级。"
+     }
+    ],
+    "cost_yuan": 0.0759,
+    "tokens": 7264
+   }
+  },
+  {
+   "id": "T07",
+   "domain": "机器学习与人工智能",
+   "n_reference_points": 9,
+   "bare": {
+    "skills": [],
+    "weighted": 9.083,
+    "score_std": 0.144,
+    "coverage": 1.0,
+    "adoption": null,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了数据泄漏检测、可信切分、嵌套交叉验证与统计稳健性检验，参数、阈值和校验判据具体可执行，科学设计合理；仅缺少对特征可获得性的逐列业务说明模板，但整体已达专业级。"
+     },
+     {
+      "weighted": 9.25,
+      "coverage": 1.0,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 10.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案将嵌套交叉验证、折内预处理、置换检验、一次性测试集等关键防泄漏机制全部落实为可执行步骤，并显式覆盖了时序划分、分组结构、可获得性说明等全部领域要点，参数与判据具体，科学设计严谨。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了数据审计、划分协议、无泄漏流水线、嵌套CV、置换检验与最终锁定测试集评估，参数与判据具体可执行；仅风险与交付物部分为空，但不影响核心流程的完整性与可复现性。"
+     }
+    ],
+    "cost_yuan": 0.07164,
+    "tokens": 5008
+   },
+   "cards": {
+    "skills": [
+     "leakage-guard",
+     "cross-validation-protocol",
+     "tabular-ml-baseline",
+     "eda-profiling",
+     "data-cleaning"
+    ],
+    "weighted": 9.0,
+    "score_std": 0.0,
+    "coverage": 1.0,
+    "adoption": 1.0,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了泄漏审计、分组/时间折、嵌套CV、折内预处理与外部验证等关键环节，参数与校验判据具体，能有效防止数据泄漏并保证评估可信。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案以泄漏审计—协议设计—建模评估为主线，明确覆盖了时序/分组划分、折内拟合、嵌套CV、外部留出与置换检验等关键要点，参数与判据具体可执行；仅外部留出集隔离与访问日志等细节可再强化，但整体达到专业级。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了泄漏审计、分组/时间/嵌套验证、Pipeline封装、外部验证与敏感性分析，参数与判据具体可执行；仅交付物末尾被截断，但主体完整，足以支撑可信评估流程。"
+     }
+    ],
+    "cost_yuan": 0.07799,
+    "tokens": 6363
+   },
+   "hybrid": {
+    "skills": [
+     "tabular-ml-baseline",
+     "leakage-guard",
+     "causal-inference",
+     "flux-tower-ml",
+     "cross-validation-protocol"
+    ],
+    "weighted": 9.0,
+    "score_std": 0.0,
+    "coverage": 1.0,
+    "adoption": 0.6667,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了泄漏审计、验证协议、无泄漏基线重建与外部留出验证，参数、阈值、折法与校验判据具体可执行，并明确处理了预处理泄漏、时间/分组结构、重复样本与测试集反复调参等关键陷阱。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了泄漏审计、验证协议、基线与对比全流程，参数阈值与校验判据具体，且明确处理了预处理fit范围、分组/时序折、嵌套调参等关键陷阱。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了泄漏审计、验证协议、基线重建与时空分离评估，参数、阈值、判据和失败模式应对具体，能支撑可信评估流程的落地。"
+     }
+    ],
+    "cost_yuan": 0.06975,
+    "tokens": 6200
+   },
+   "fabric": {
+    "skills": [
+     "leakage-guard",
+     "cross-validation-protocol",
+     "tabular-ml-baseline",
+     "eda-profiling",
+     "data-cleaning"
+    ],
+    "weighted": 9.0,
+    "score_std": 0.0,
+    "coverage": 1.0,
+    "adoption": 1.0,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了数据泄漏审计、嵌套交叉验证、分组/时序折法、折内预处理与固定种子等关键要点，并给出具体阈值、参数与校验判据，可直接执行且科学设计合理。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了泄漏审计、分组/时序折法、嵌套交叉验证、去重与子群报告等关键环节，并给出阈值、工具与校验判据，可执行性强；仅外部验证集与部分阈值需按数据实际调整。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了数据泄漏审计、划分协议、嵌套交叉验证与负对照等关键环节，参数与判据具体可执行；唯一可补充的是外部验证集与重复划分的统计检验细节，但整体已达专业级。"
+     }
+    ],
+    "cost_yuan": 0.08295,
+    "tokens": 7675
+   }
+  },
+  {
+   "id": "T08",
+   "domain": "基因组学与转录组学",
+   "n_reference_points": 6,
+   "bare": {
+    "skills": [],
+    "weighted": 9.0,
+    "score_std": 0.0,
+    "coverage": 0.5,
+    "adoption": null,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 0.5,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了富集分析的关键环节（ID统一、背景基因集、GO/KEGG/Reactome、GSEA、敏感性分析、机制推断），参数与判据具体可执行，并明确要求以表达矩阵实际检测基因作为背景（P1/P3）及合并冗余通路（P2）；P4-P6涉及上游差异表达建模，超出本任务范围。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 0.5,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖ORA与GSEA双路径、背景基因集构建、多重校正、方向判定与交叉验证，参数阈值具体可执行；仅未涉及差异分析上游的负二项建模与协变量设计（P4-P6），但本任务起点已是差异基因列表，故不影响评分。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 0.5,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了从ID标准化、背景基因集选择、GO/KEGG/Reactome超几何富集到GSEA/GSVA方向性验证与置换检验的全流程，参数、阈值、工具和校验步骤具体可执行，并明确指出了背景选择、多重校正、数据库版本等关键陷阱；仅P4-P6（负二项建模、批次协变量、设计矩阵）属于上游差异分析范畴，本任务聚焦下游富集，未覆盖合理。"
+     }
+    ],
+    "cost_yuan": 0.0714,
+    "tokens": 4926
+   },
+   "cards": {
+    "skills": [
+     "pathway-enrichment",
+     "statistical-testing",
+     "scientific-visualization",
+     "differential-expression",
+     "scrna-qc-clustering"
+    ],
+    "weighted": 9.0,
+    "score_std": 0.0,
+    "coverage": 0.5,
+    "adoption": 0.6,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 0.5,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖ORA/GSEA双路径、背景基因集选择、多重校正与稳健性验证，参数与判据具体可执行；仅P1/P3（背景基因集）被实质性覆盖，P2（冗余通路）未明确要求去冗余处理。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 0.5,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖ORA与GSEA两条互补路线，参数、阈值、工具与校验判据具体可执行，并系统处理了背景基因集选择、多重校正、通路冗余与稳健性验证等关键方法学问题；仅P4-P6涉及上游差异分析设计，方案以风险提示方式提及但未实质展开。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 0.5,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖ORA/GSEA双路径、背景基因集明确、多重校正、冗余削减与稳健性验证，参数与判据具体可执行；仅P4-P6涉及上游差异表达建模，超出本任务范围故未覆盖。"
+     }
+    ],
+    "cost_yuan": 0.07441,
+    "tokens": 6117
+   },
+   "hybrid": {
+    "skills": [
+     "pathway-enrichment",
+     "differential-expression",
+     "scrna-qc-clustering",
+     "gwas-prs",
+     "statistical-testing"
+    ],
+    "weighted": 9.0,
+    "score_std": 0.0,
+    "coverage": 1.0,
+    "adoption": 0.6,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了从差异基因回溯、背景基因集选择、ORA/GSEA 方法选择、FDR 校正、去冗余到方向性分析的关键环节，并给出了具体参数、阈值和校验方式；对 P1-P6 均有实质性覆盖，科学性和可执行性均达到专业级。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了从差异表回溯、背景基因集限定、GSEA/ORA策略选择、FDR校正、去冗余聚类、方向判定到随机阴性对照与交叉验证的全流程，参数与阈值具体可执行，并明确指出了背景选择、冗余、方向性、批次协变量等关键陷阱。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了从输入质量回溯、ORA/GSEA 方法选择、多重校正、冗余合并到方向性判定的全流程，参数与校验具体可执行；对背景基因集、排序信息缺失、数据库版本等关键陷阱均有明确应对，科学上成立。"
+     }
+    ],
+    "cost_yuan": 0.07752,
+    "tokens": 6710
+   },
+   "fabric": {
+    "skills": [
+     "pathway-enrichment",
+     "statistical-testing",
+     "scientific-visualization",
+     "differential-expression",
+     "scrna-qc-clustering"
+    ],
+    "weighted": 8.917,
+    "score_std": 0.144,
+    "coverage": 0.8333,
+    "adoption": 0.8,
+    "runs": [
+     {
+      "weighted": 8.75,
+      "coverage": 0.5,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了从差异基因表到富集结论的关键环节，明确要求使用表达检出基因作为背景、BH-FDR校正、方向性判据与冗余合并，并给出具体参数与工具；但未涉及上游差异表达建模的协变量/设计矩阵问题（P4-P6），因任务起点已是差异基因列表，属合理边界。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖从差异表回溯、GSEA/ORA 方法选择、背景基因集限定为表达检出基因、BH-FDR 校正、冗余通路合并到方向性判定的全流程，并给出具体参数、阈值与校验方式；对 P1-P6 均有实质性要求（如 P4 明确要求核对原始计数与负二项模型、P5 要求纳入批次协变量、P6 要求设计矩阵与实验设计一致）。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖从差异表回溯、背景基因集定义、ORA/GSEA选择、FDR校正、去冗余到方向性判断与稳健性验证的全流程，参数与工具具体可执行；P1-P6均被实质性覆盖，仅P4/P5属于上游差异分析阶段，方案以回溯确认方式间接覆盖。"
+     }
+    ],
+    "cost_yuan": 0.08962,
+    "tokens": 8158
+   }
+  },
+  {
+   "id": "T09",
+   "domain": "学术写作与可视化",
+   "n_reference_points": 9,
+   "bare": {
+    "skills": [],
+    "weighted": 8.133,
+    "score_std": 0.577,
+    "coverage": 0.8519,
+    "adoption": null,
+    "runs": [
+     {
+      "weighted": 8.8,
+      "coverage": 1.0,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案以三张核对表为主线，覆盖模板获取、排版、正文写作、参考文献三源核验、工具化格式化与投稿预检，参数与判据具体；对P1-P9均有实质对应（如结果-结论映射、因果措辞克制、DOI/Crossref核验、编译警告检查、禁止仅凭题名判定），但科学有效性维度对统计设计与结论边界的讨论略少。"
+     },
+     {
+      "weighted": 7.8,
+      "coverage": 0.7778,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 8.0,
+       "executability": 8.0,
+       "rigor": 8.0,
+       "scientific_validity": 7.0
+      },
+      "comment": "方案覆盖了模板解析、正文撰写、参考文献全量核验、格式合规与打包全流程，并给出具体工具、阈值与校验方式；但P1/P2（Results与Discussion混写、因果性动词误用）属于写作内容层面的科学性问题，方案未实质性要求检查，故未覆盖。"
+     },
+     {
+      "weighted": 7.8,
+      "coverage": 0.7778,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 8.0,
+       "executability": 8.0,
+       "rigor": 8.0,
+       "scientific_validity": 7.0
+      },
+      "comment": "方案系统覆盖了模板解析、正文撰写、参考文献三重核验、格式合规与投稿包组装，并给出具体工具、参数与校验方式；但未明确处理Results与Discussion混写、因果性动词误用等科学写作边界问题，P1/P2仅间接涉及。"
+     }
+    ],
+    "cost_yuan": 0.06016,
+    "tokens": 4266
+   },
+   "cards": {
+    "skills": [
+     "venue-template",
+     "scientific-writing",
+     "citation-verify",
+     "paper-deep-read",
+     "literature-review"
+    ],
+    "weighted": 8.933,
+    "score_std": 0.115,
+    "coverage": 1.0,
+    "adoption": 0.6,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案按内容→格式→引用串行推进，每步给出参数、阈值与可复核判据，并覆盖全部领域要点：IMRaD分写避免混写、结论绑定图表、官网模板与版本留档、矢量图≥300dpi、零编译警告、DOI精确匹配与表述一致性核验、100%逐条核验并剔除不可验证引用。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案以期刊模板为唯一约束，四步流程覆盖排版、IMRaD写作与逐条引用核验，参数、工具、判据与风险应对具体可执行；明确要求Results/Discussion分离、避免因果性表述、每条论断可追溯、使用官方模板、矢量图/300dpi、编译无未定义引用、DOI核验与表述一致性比对，实质覆盖全部领域要点。"
+     },
+     {
+      "weighted": 8.8,
+      "coverage": 1.0,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案完整覆盖模板解析、IMRaD撰写、逐条DOI核验与终检，参数阈值具体可执行；仅P5（位图导致印刷模糊）未在方案中明确要求检查图表分辨率/矢量格式，其余要点均有实质性对应。"
+     }
+    ],
+    "cost_yuan": 0.06626,
+    "tokens": 5649
+   },
+   "hybrid": {
+    "skills": [
+     "venue-template",
+     "citation-verify",
+     "scientific-writing",
+     "paper-deep-read",
+     "literature-review"
+    ],
+    "weighted": 8.867,
+    "score_std": 0.115,
+    "coverage": 1.0,
+    "adoption": 0.6,
+    "runs": [
+     {
+      "weighted": 8.8,
+      "coverage": 1.0,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案以模板确认与引用核验为强制前置，步骤含具体参数、编译链与判据，并逐条覆盖了Results/Discussion混写、因果动词、论断支撑、模板版本、位图清晰度、编译警告、引用核验与可访问标识等要点；仅统计/实验设计边界未展开，但本任务为投稿排版与核验，影响有限。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案以写作→核验→套版三阶段流水线覆盖全部关键环节，给出DOI核验、模板版本记录、分辨率阈值、编译零警告等具体判据，并针对引用伪造、模板过期、Results/Discussion混写等失败模式给出应对，可执行性与严谨性均达专业级。"
+     },
+     {
+      "weighted": 8.8,
+      "coverage": 1.0,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案以模板约束→IMRaD写作→逐条引用核验→终稿编译的顺序覆盖了全部关键环节，参数、阈值、工具名与判据具体可执行，并针对模板过期、引用伪造、Results/Discussion混写、位图模糊、编译警告等失败模式给出应对；引用核验要求DOI/arXiv ID与四项元数据全匹配，实质覆盖了P7/P8/P9。"
+     }
+    ],
+    "cost_yuan": 0.06654,
+    "tokens": 6026
+   },
+   "fabric": {
+    "skills": [
+     "venue-template",
+     "scientific-writing",
+     "citation-verify",
+     "paper-deep-read",
+     "literature-review"
+    ],
+    "weighted": 8.767,
+    "score_std": 0.029,
+    "coverage": 1.0,
+    "adoption": 0.6,
+    "runs": [
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖投稿排版与引用核验全流程，给出模板版本锁定、DOI逐条核验、编译日志检查等具体判据，并针对过期模板、位图模糊、模型生成引用等陷阱给出应对，可执行性强。"
+     },
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖投稿排版与引用核验全流程，明确要求DOI核验、模板版本记录、编译警告清零与图表分辨率等关键判据，可执行性强；仅正文撰写部分对因果性动词与相关性表述的约束略欠显式。"
+     },
+     {
+      "weighted": 8.8,
+      "coverage": 1.0,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案以期刊模板约束、IMRaD 写作、逐条 DOI 引用核验、模板装配编译与最终交叉核对为主线，明确覆盖了 Results/Discussion 分离、因果性动词检查、论断-图表/引用映射、过期模板、位图风险、编译警告、题名相似误判、模型生成引用不可信及 DOI/arXiv 可访问标识等全部要点，并给出参数、判据与风险应对，具备较强可执行性与严谨性。"
+     }
+    ],
+    "cost_yuan": 0.077,
+    "tokens": 7390
+   }
+  },
+  {
+   "id": "T10",
+   "domain": "数据与分析",
+   "n_reference_points": 9,
+   "bare": {
+    "skills": [],
+    "weighted": 9.0,
+    "score_std": 0.0,
+    "coverage": 0.8889,
+    "adoption": null,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 0.8889,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了缺失机制判断、异常值稳健处理、假设检验选择、效应量报告、多重比较校正、敏感性分析及出版级图形规范，参数与判据具体可执行；仅未明确提及双轴图问题（P7），但该风险在单因素三组比较场景中本就不适用。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 0.8889,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了缺失值机制判断与多重插补、异常值复核与敏感性分析、正态性/方差齐性检验及相应检验选择、效应量报告、出版级图规范等关键环节，参数阈值和判据具体可执行；仅P7双轴图未明确提及，但该任务为组间比较图，双轴图风险本身不适用。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 0.8889,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖数据清洗、缺失/异常值处理、假设检验、效应量、多重比较校正、敏感性分析与出版级绘图，参数与判据具体可执行；仅未明确涉及双轴图问题（P7），但该任务本身不涉及双轴图，故不影响整体质量。"
+     }
+    ],
+    "cost_yuan": 0.06771,
+    "tokens": 4709
+   },
+   "cards": {
+    "skills": [
+     "data-cleaning",
+     "statistical-testing",
+     "scientific-visualization",
+     "eda-profiling",
+     "econometric-panel"
+    ],
+    "weighted": 9.0,
+    "score_std": 0.0,
+    "coverage": 0.8889,
+    "adoption": 0.8,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 0.8889,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了缺失处理、异常值处理、正态性诊断、效应量报告、前提假设验证、多重比较校正、图表与统计一致性等关键环节，参数与判据具体可执行；仅未明确涉及双轴图问题（P7），但该风险在单因素三组比较场景中本就不适用。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 0.8889,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了缺失机制判断、稳健异常值标记、检验前提验证、效应量与置信区间报告、多重比较校正及矢量图导出，参数与判据具体可执行；仅未涉及双轴图问题（P7），但该要点与本研究任务无关。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 0.8889,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了缺失值处理、异常值判定、检验前提诊断、效应量与多重比较校正、出版级绘图及端到端可复现校验，参数与判据具体可执行；仅未明确涉及双轴图问题（P7），但该风险在单变量组间比较场景中本不突出。"
+     }
+    ],
+    "cost_yuan": 0.06753,
+    "tokens": 5684
+   },
+   "hybrid": {
+    "skills": [
+     "statistical-testing",
+     "scientific-visualization",
+     "data-cleaning",
+     "eda-profiling",
+     "causal-inference"
+    ],
+    "weighted": 9.0,
+    "score_std": 0.0,
+    "coverage": 1.0,
+    "adoption": 0.8,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖数据清洗、EDA、统计检验与出版级绘图全流程，明确给出缺失/异常处理阈值、检验前提验证、效应量与置信区间、多重比较校正及矢量图规范，并针对选择偏差、异常值误判、小样本功效不足、图形误导等风险给出可执行应对，科学性与可复现性强。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖缺失机制判定、异常值业务规则、主键唯一性、正态性/方差齐性前提检验、效应量与置信区间、多重比较校正、坐标轴与单位标注、误差条与样本量、矢量导出等关键环节，并给出具体阈值、工具与判据，风险应对与校验步骤齐备，具备专业级可执行性。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖数据清洗、EDA、统计检验与出版级绘图全流程，给出具体阈值、检验选择逻辑、多重比较校正与效应量报告，并明确列出常见陷阱及应对；绘图脚本直接读取统计结果表可避免标注不一致，整体达到专业级可执行标准。"
+     }
+    ],
+    "cost_yuan": 0.07592,
+    "tokens": 6597
+   },
+   "fabric": {
+    "skills": [
+     "data-cleaning",
+     "statistical-testing",
+     "scientific-visualization",
+     "eda-profiling",
+     "econometric-panel"
+    ],
+    "weighted": 9.0,
+    "score_std": 0.0,
+    "coverage": 0.9259,
+    "adoption": 0.8,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖数据清洗、EDA、统计检验与出版级绘图全流程，给出具体阈值、检验方法与判据，并针对缺失机制、异常值、假设违背、多重比较、效应量、双轴/截断坐标轴及色觉友好等陷阱提供应对与校验，科学设计与结论边界合理。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖数据清洗、EDA、统计检验与出版级绘图全流程，参数阈值、工具名、判据与校验方式具体可执行，并系统识别了缺失值、异常值、假设检验与可视化中的常见陷阱及应对措施。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 0.7778,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖缺失机制判定、异常值标记而非删除、主键唯一、效应量与置信区间、前提假设验证及坐标轴标注等关键要点，参数与判据具体可执行；仅未涉及双轴图与截断坐标轴问题，但这两点在本任务中并非必需。"
+     }
+    ],
+    "cost_yuan": 0.07926,
+    "tokens": 7475
+   }
+  },
+  {
+   "id": "T11",
+   "domain": "神经科学",
+   "n_reference_points": 6,
+   "bare": {
+    "skills": [],
+    "weighted": 8.917,
+    "score_std": 0.144,
+    "coverage": 1.0,
+    "adoption": null,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖小世界性、模块化、核心节点与零模型统计对比，参数、工具、判据和阳性对照具体可执行；明确使用多类零模型、置换检验、FDR校正并检查前提假设，方法学严谨。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了网络构建、小世界/模块化分析、核心节点识别与随机网络统计对比，参数、工具、判据和敏感性分析具体可执行，并明确处理了多重比较、零模型选择、效应量报告和前提验证等关键方法学问题。"
+     },
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 8.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了网络构建、小世界性、模块化、零模型对比、核心节点识别与鲁棒性验证，参数与判据具体；主要不足是未明确讨论非正态分布下置换检验的适用性及效应量报告。"
+     }
+    ],
+    "cost_yuan": 0.0719,
+    "tokens": 5041
+   },
+   "cards": {
+    "skills": [
+     "connectome-topology",
+     "statistical-testing",
+     "data-cleaning",
+     "eda-profiling",
+     "admet-prediction"
+    ],
+    "weighted": 8.917,
+    "score_std": 0.144,
+    "coverage": 1.0,
+    "adoption": 0.8,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖小世界性、模块化、核心节点与随机基准统计对比，明确使用配置模型与ER双基准、置换检验、FDR校正、效应量与置信区间，并给出参数、阈值和校验步骤；对自环、有向/无向语义、路径长度连通性、模块检测随机性等陷阱均有应对，具备专业级可执行性。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了网络拓扑分析的关键方法链，明确指定了零模型、置换检验、效应量与FDR校正，并针对自环、方向性、分辨率敏感性和连通分量等常见陷阱给出了具体应对；参数、阈值与校验判据具体可执行，科学设计合理。"
+     },
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 8.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了小世界性、模块化与核心节点分析，明确指定了度保持/权重保持零模型、置换检验、效应量与FDR校正，并给出参数、阈值与校验判据；仅第7步整合部分留空，且未显式讨论负边处理（线虫连接组通常无负边，影响有限）。"
+     }
+    ],
+    "cost_yuan": 0.07543,
+    "tokens": 6172
+   },
+   "hybrid": {
+    "skills": [
+     "connectome-topology",
+     "admet-prediction",
+     "eda-profiling",
+     "statistical-testing",
+     "molecular-docking"
+    ],
+    "weighted": 9.0,
+    "score_std": 0.0,
+    "coverage": 1.0,
+    "adoption": 0.4,
+    "runs": [
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了双零模型、负边/自环处理、零模型选择说明、非正态检验、效应量报告与前提假设验证等全部领域要点，且给出了具体参数、阈值与判据，具备专业级可执行性。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了配置模型零模型、负边/自环处理、非参数置换检验、效应量与置信区间、前提假设验证等关键方法学要点，参数与判据具体可执行；仅小世界性σ的置换检验细节（如对σ本身还是对C、L分别检验）可再明确，但不影响整体专业级质量。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.6,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了配置模型零模型、有向/无向图区分、小世界σ判据、Leiden模块度置换检验、多中心性核心节点识别及FDR校正统计，并明确列出风险与应对；参数、阈值、工具与校验标准具体可执行，科学设计合理。"
+     }
+    ],
+    "cost_yuan": 0.0836,
+    "tokens": 7038
+   },
+   "fabric": {
+    "skills": [
+     "connectome-topology",
+     "statistical-testing",
+     "data-cleaning",
+     "eda-profiling",
+     "admet-prediction"
+    ],
+    "weighted": 8.833,
+    "score_std": 0.144,
+    "coverage": 1.0,
+    "adoption": 0.5333,
+    "runs": [
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了配置模型零模型、Fagiolo有向聚类系数、最大连通分量路径长度、富人俱乐部置换检验、效应量与FDR校正等关键方法，并明确列出零模型误判、自环处理、非正态检验等陷阱及应对；仅在模块度多分辨率扫描的具体参数和随机种子数量上略欠细化。"
+     },
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了配置模型零模型、自环/重复边处理、非正态检验替代、效应量与置信区间、前提假设验证等关键方法学要点，参数与判据具体可执行；仅第3步富人俱乐部参数描述被截断，且未明确说明有向化学突触网络下聚类系数与路径长度的具体处理方式，属轻微可执行性缺口。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了数据清洗、拓扑分析、零模型对比、统计检验与稳健性验证全流程，明确要求多种零模型（配置模型/Maslov–Sneppen/ER）避免单一基准误判，处理自环与重复边，验证正态性前提并报告效应量与置信区间，参数与判据具体可执行。"
+     }
+    ],
+    "cost_yuan": 0.08122,
+    "tokens": 7507
+   }
+  },
+  {
+   "id": "T12",
+   "domain": "生态与环境科学",
+   "n_reference_points": 6,
+   "bare": {
+    "skills": [],
+    "weighted": 7.55,
+    "score_std": 0.0,
+    "coverage": 1.0,
+    "adoption": null,
+    "runs": [
+     {
+      "weighted": 7.55,
+      "coverage": 1.0,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 8.0,
+       "executability": 8.0,
+       "rigor": 7.0,
+       "scientific_validity": 7.0
+      },
+      "comment": "方案覆盖了多传感器交叉定标、平滑参数风险、无效像元报告、权重矩阵敏感性、空间因果陷阱及权重定义等全部要点，方法链完整且参数具体；但格兰杰因果在像元尺度上的生态因果解释仍偏弱，空间权重敏感性分析仅停留在风险提示层面。"
+     },
+     {
+      "weighted": 7.55,
+      "coverage": 1.0,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 8.0,
+       "executability": 8.0,
+       "rigor": 7.0,
+       "scientific_validity": 7.0
+      },
+      "comment": "方案覆盖了多传感器归一化、滤波参数、物候提取、空间权重与残差检验等关键环节，并明确报告无效像元比例、做权重矩阵敏感性分析且强调空间相关非因果；但空间面板模型与物候/FVC的因果识别设计仍偏弱，部分验证判据（如Kappa用于连续FVC）不够严谨。"
+     },
+     {
+      "weighted": 7.55,
+      "coverage": 1.0,
+      "adoption": null,
+      "scores": {
+       "skill_grounding": 8.0,
+       "executability": 8.0,
+       "rigor": 7.0,
+       "scientific_validity": 7.0
+      },
+      "comment": "方案覆盖了多传感器归一化、云掩膜、时序滤波、趋势与物候提取、空间自相关/回归及验证等关键环节，参数与判据较具体；但空间权重矩阵仅提比较不同矩阵而未明确敏感性分析流程，且空间回归结果仍可能被误读为因果，需在结论边界上更谨慎。"
+     }
+    ],
+    "cost_yuan": 0.05848,
+    "tokens": 4136
+   },
+   "cards": {
+    "skills": [
+     "remote-sensing-index",
+     "spatial-autocorrelation",
+     "data-cleaning",
+     "eda-profiling",
+     "statistical-testing"
+    ],
+    "weighted": 8.6,
+    "score_std": 0.26,
+    "coverage": 1.0,
+    "adoption": 1.0,
+    "runs": [
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了传感器偏差校正、平滑参数风险、无效像元报告、权重矩阵敏感性、空间相关与因果区分以及权重矩阵定义等全部关键要点，方法选择与统计设计专业且可执行，仅在部分参数（如具体传感器交叉校准系数、GWR带宽范围）上可进一步细化。"
+     },
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了从数据清洗、物候提取到趋势检验与空间依赖建模的全链条，并明确处理了传感器偏差、平滑参数、无效像元报告、权重矩阵敏感性、空间相关非因果及权重定义等关键陷阱；参数与校验判据具体，可执行性强。"
+     },
+     {
+      "weighted": 8.3,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 8.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案系统覆盖了多源传感器偏差校正、平滑参数敏感性、无效像元报告、空间权重矩阵定义与敏感性、空间依赖控制及因果边界等关键要点，参数与校验步骤具体可执行；仅平滑窗口与阈值敏感性分析可更细化。"
+     }
+    ],
+    "cost_yuan": 0.06654,
+    "tokens": 5580
+   },
+   "hybrid": {
+    "skills": [
+     "remote-sensing-index",
+     "data-cleaning",
+     "signal-processing",
+     "causal-inference",
+     "eda-profiling"
+    ],
+    "weighted": 8.6,
+    "score_std": 0.26,
+    "coverage": 1.0,
+    "adoption": 0.9333,
+    "runs": [
+     {
+      "weighted": 8.3,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 8.0,
+       "scientific_validity": 8.0
+      },
+      "comment": "方案系统覆盖了传感器交叉校准、平滑参数约束、无效像元统计、空间权重与因果区分等关键要点，并给出具体参数与校验判据；但空间权重矩阵仅提及Queen邻接或距离阈值，未明确要求对多种权重矩阵做敏感性分析，且部分因果识别策略（如IV）缺乏具体变量与检验细节。"
+     },
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了传感器交叉定标、平滑参数风险、无效像元报告、空间权重敏感性、空间相关与因果区分及权重矩阵定义等关键要点，参数与判据具体可执行，并显式声明因果假设与结论边界。"
+     },
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": 0.8,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了多传感器校正、云掩膜、零相位平滑、动态阈值物候提取、Theil-Sen/MK+FDR趋势检验及空间自相关与因果推断，参数与校验判据具体，并显式处理了传感器偏差、平滑掩盖突变、空间依赖与伪因果等关键陷阱；仅权重矩阵敏感性分析（P4）未明确要求，但整体已达专业级。"
+     }
+    ],
+    "cost_yuan": 0.08253,
+    "tokens": 6945
+   },
+   "fabric": {
+    "skills": [
+     "remote-sensing-index",
+     "data-cleaning",
+     "spatial-autocorrelation",
+     "eda-profiling",
+     "statistical-testing"
+    ],
+    "weighted": 8.833,
+    "score_std": 0.144,
+    "coverage": 1.0,
+    "adoption": 0.6667,
+    "runs": [
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了传感器交叉定标、平滑敏感性、无效像元报告、权重矩阵敏感性、空间相关与因果区分、权重矩阵定义等全部领域要点，方法选择与统计设计专业且可执行；仅在部分参数（如交叉定标回归的具体实现、GWR 变量设定）上可更细化。"
+     },
+     {
+      "weighted": 8.75,
+      "coverage": 1.0,
+      "adoption": 1.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 8.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案完整覆盖了传感器交叉校准、平滑突变核查、无效像元报告、权重矩阵敏感性分析、空间自相关与空间回归控制等关键要点，参数与判据具体可执行；仅物候提取参数在文本中被截断，略有执行细节缺口。"
+     },
+     {
+      "weighted": 9.0,
+      "coverage": 1.0,
+      "adoption": 0.0,
+      "scores": {
+       "skill_grounding": 9.0,
+       "executability": 9.0,
+       "rigor": 9.0,
+       "scientific_validity": 9.0
+      },
+      "comment": "方案系统覆盖了多传感器交叉定标、云掩膜与无效像元统计、平滑参数风险、空间权重敏感性分析及空间自相关与因果边界等关键环节，参数与判据具体可执行；仅风险与交付物部分为空，略显不完整。"
+     }
+    ],
+    "cost_yuan": 0.08016,
+    "tokens": 7407
+   }
+  }
+ ],
+ "timestamp": "2026-09-19 00:34:25"
+}

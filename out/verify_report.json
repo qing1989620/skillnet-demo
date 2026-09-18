@@ -1,0 +1,111 @@
+{
+ "passed": 21,
+ "total": 21,
+ "checks": [
+  {
+   "name": "技能库规模",
+   "pass": true,
+   "detail": "51 个技能 / 17 个领域"
+  },
+  {
+   "name": "技能名合规（agentskills.io）",
+   "pass": true,
+   "detail": "全部符合 kebab-case 且 ≤64 字符"
+  },
+  {
+   "name": "技能描述合规",
+   "pass": true,
+   "detail": "描述非空且 ≤1024 字符"
+  },
+  {
+   "name": "去重",
+   "pass": true,
+   "detail": "无重复技能"
+  },
+  {
+   "name": "关系图完整性",
+   "pass": true,
+   "detail": "62 条关系边，无悬空引用"
+  },
+  {
+   "name": "技能完整性（可执行步骤）",
+   "pass": true,
+   "detail": "每个技能至少 3 个可执行步骤"
+  },
+  {
+   "name": "SKILL.md 渲染",
+   "pass": true,
+   "detail": "SKILL.md 含合法 frontmatter"
+  },
+  {
+   "name": "BM25 索引",
+   "pass": true,
+   "detail": "BM25 命中正确文档"
+  },
+  {
+   "name": "语义向量索引",
+   "pass": true,
+   "detail": "稀疏向量命中正确文档"
+  },
+  {
+   "name": "加权融合",
+   "pass": true,
+   "detail": "融合顺序 ['x', 'y', 'z']"
+  },
+  {
+   "name": "三档检索可运行",
+   "pass": true,
+   "detail": "BM25 4 条 / hybrid 5 条 / fabric 5 条，均命中单细胞技能"
+  },
+  {
+   "name": "LinUCB 选择与更新",
+   "pass": true,
+   "detail": "首轮选 scrna-qc-clustering（探索 0.1448）"
+  },
+  {
+   "name": "探索奖励随观测衰减",
+   "pass": true,
+   "detail": "探索奖励 0.4076 → 0.1274（观测后收敛）"
+  },
+  {
+   "name": "消融对照选择器",
+   "pass": true,
+   "detail": "随机消融选择器工作正常"
+  },
+  {
+   "name": "准入过滤（防技能库污染）",
+   "pass": true,
+   "detail": "2 条非法/冗余被拒，1 条合法准入（已回滚）"
+  },
+  {
+   "name": "工作流编排与拓扑排序",
+   "pass": true,
+   "detail": "拓扑序 ['scrna-qc-clustering', 'differential-expression', 'scientific-visualization']"
+  },
+  {
+   "name": "环检测与打断",
+   "pass": true,
+   "detail": "3 节点环被正确打断"
+  },
+  {
+   "name": "四框架导出",
+   "pass": true,
+   "detail": "4 个框架产物齐备（各 51 个技能）"
+  },
+  {
+   "name": "种子技能目录落盘",
+   "pass": true,
+   "detail": "51 个 SKILL.md 目录（导出至 out/verify_seed）"
+  },
+  {
+   "name": "评测任务集",
+   "pass": true,
+   "detail": "20 个任务，gold 技能全部存在于库中"
+  },
+  {
+   "name": "客观要点抽取",
+   "pass": true,
+   "detail": "抽取 6 条专业要点"
+  }
+ ]
+}

@@ -1,0 +1,2120 @@
+{
+ "experiment": "retrieval",
+ "k": 5,
+ "n_tasks": 20,
+ "summary": {
+  "bm25": {
+   "skill_recall": 0.775,
+   "full_coverage_rate": 0.5,
+   "orchestration_completeness": 0.6,
+   "n_tasks": 20
+  },
+  "hybrid": {
+   "skill_recall": 0.7833,
+   "full_coverage_rate": 0.55,
+   "orchestration_completeness": 0.625,
+   "n_tasks": 20
+  },
+  "fabric": {
+   "skill_recall": 0.9667,
+   "full_coverage_rate": 0.9,
+   "orchestration_completeness": 0.95,
+   "n_tasks": 20
+  }
+ },
+ "per_task": [
+  {
+   "id": "T01",
+   "domain": "细胞生物学与单细胞",
+   "gold": [
+    "scrna-qc-clustering",
+    "differential-expression",
+    "scientific-visualization"
+   ],
+   "bm25": {
+    "selected": [
+     "scrna-qc-clustering",
+     "differential-expression",
+     "variant-calling",
+     "survival-analysis",
+     "statistical-testing"
+    ],
+    "recall": 0.6667,
+    "full": false,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条"
+    ],
+    "workflow": [
+     [
+      "scrna-qc-clustering",
+      "differential-expression"
+     ],
+     [
+      "statistical-testing",
+      "survival-analysis"
+     ]
+    ],
+    "orchestration": 0.5
+   },
+   "hybrid": {
+    "selected": [
+     "scrna-qc-clustering",
+     "differential-expression",
+     "variant-calling",
+     "paper-deep-read",
+     "survival-analysis"
+    ],
+    "recall": 0.6667,
+    "full": false,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 7 条",
+     "加权融合后候选池 31 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+    ],
+    "workflow": [
+     [
+      "scrna-qc-clustering",
+      "differential-expression"
+     ]
+    ],
+    "orchestration": 0.5
+   },
+   "fabric": {
+    "selected": [
+     "scrna-qc-clustering",
+     "differential-expression",
+     "scientific-visualization",
+     "statistical-testing",
+     "data-cleaning"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.00255,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 7 条",
+     "加权融合后候选池 31 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
+     "关系图扩展补入 2 条：citation-verify, leakage-guard",
+     "LLM 重排 6 条候选"
+    ],
+    "workflow": [
+     [
+      "data-cleaning",
+      "statistical-testing"
+     ],
+     [
+      "differential-expression",
+      "scientific-visualization"
+     ],
+     [
+      "scrna-qc-clustering",
+      "differential-expression"
+     ],
+     [
+      "scrna-qc-clustering",
+      "scientific-visualization"
+     ],
+     [
+      "statistical-testing",
+      "scientific-visualization"
+     ]
+    ],
+    "orchestration": 1.0
+   }
+  },
+  {
+   "id": "T02",
+   "domain": "材料科学",
+   "gold": [
+    "dft-formation-energy",
+    "cross-validation-protocol",
+    "materials-screening"
+   ],
+   "bm25": {
+    "selected": [
+     "dft-formation-energy",
+     "crystal-structure-predict",
+     "admet-prediction",
+     "materials-screening",
+     "protein-structure-predict"
+    ],
+    "recall": 0.6667,
+    "full": false,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条"
+    ],
+    "workflow": [
+     [
+      "crystal-structure-predict",
+      "dft-formation-energy"
+     ],
+     [
+      "dft-formation-energy",
+      "materials-screening"
+     ]
+    ],
+    "orchestration": 0.5
+   },
+   "hybrid": {
+    "selected": [
+     "dft-formation-energy",
+     "crystal-structure-predict",
+     "admet-prediction",
+     "materials-screening",
+     "flux-tower-ml"
+    ],
+    "recall": 0.6667,
+    "full": false,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 3 条",
+     "加权融合后候选池 27 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+    ],
+    "workflow": [
+     [
+      "crystal-structure-predict",
+      "dft-formation-energy"
+     ],
+     [
+      "dft-formation-energy",
+      "materials-screening"
+     ]
+    ],
+    "orchestration": 0.5
+   },
+   "fabric": {
+    "selected": [
+     "dft-formation-energy",
+     "tabular-ml-baseline",
+     "materials-screening",
+     "model-interpretability",
+     "molecular-descriptors"
+    ],
+    "recall": 0.6667,
+    "full": false,
+    "cost_yuan": 0.00251,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 3 条",
+     "加权融合后候选池 27 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
+     "LLM 重排 5 条候选"
+    ],
+    "workflow": [
+     [
+      "dft-formation-energy",
+      "materials-screening"
+     ],
+     [
+      "molecular-descriptors",
+      "tabular-ml-baseline"
+     ],
+     [
+      "tabular-ml-baseline",
+      "model-interpretability"
+     ]
+    ],
+    "orchestration": 0.5
+   }
+  },
+  {
+   "id": "T03",
+   "domain": "文献与研究",
+   "gold": [
+    "literature-review",
+    "citation-verify",
+    "research-gap-mining"
+   ],
+   "bm25": {
+    "selected": [
+     "literature-review",
+     "deep-learning-training",
+     "citation-verify",
+     "admet-prediction",
+     "connectome-topology"
+    ],
+    "recall": 0.6667,
+    "full": false,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条"
+    ],
+    "workflow": [
+     [
+      "literature-review",
+      "citation-verify"
+     ]
+    ],
+    "orchestration": 0.5
+   },
+   "hybrid": {
+    "selected": [
+     "literature-review",
+     "deep-learning-training",
+     "admet-prediction",
+     "citation-verify",
+     "connectome-topology"
+    ],
+    "recall": 0.6667,
+    "full": false,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 9 条",
+     "加权融合后候选池 28 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+    ],
+    "workflow": [
+     [
+      "literature-review",
+      "citation-verify"
+     ]
+    ],
+    "orchestration": 0.5
+   },
+   "fabric": {
+    "selected": [
+     "literature-review",
+     "citation-verify",
+     "research-proposal",
+     "molecular-descriptors",
+     "cross-validation-protocol"
+    ],
+    "recall": 0.6667,
+    "full": false,
+    "cost_yuan": 0.00252,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 9 条",
+     "加权融合后候选池 28 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
+     "关系图扩展补入 5 条：meta-analysis, cross-validation-protocol, hyperparameter-search, scientific-writing, venue-template",
+     "LLM 重排 6 条候选"
+    ],
+    "workflow": [
+     [
+      "literature-review",
+      "citation-verify"
+     ]
+    ],
+    "orchestration": 0.5
+   }
+  },
+  {
+   "id": "T04",
+   "domain": "临床与健康科学",
+   "gold": [
+    "survival-analysis",
+    "clinical-feature-engineering",
+    "leakage-guard"
+   ],
+   "bm25": {
+    "selected": [
+     "clinical-feature-engineering",
+     "leakage-guard",
+     "survival-analysis",
+     "statistical-testing",
+     "eda-profiling"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条"
+    ],
+    "workflow": [
+     [
+      "clinical-feature-engineering",
+      "leakage-guard"
+     ],
+     [
+      "clinical-feature-engineering",
+      "survival-analysis"
+     ],
+     [
+      "leakage-guard",
+      "survival-analysis"
+     ],
+     [
+      "statistical-testing",
+      "survival-analysis"
+     ]
+    ],
+    "orchestration": 1.0
+   },
+   "hybrid": {
+    "selected": [
+     "clinical-feature-engineering",
+     "leakage-guard",
+     "statistical-testing",
+     "survival-analysis",
+     "eda-profiling"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 6 条",
+     "加权融合后候选池 30 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+    ],
+    "workflow": [
+     [
+      "clinical-feature-engineering",
+      "leakage-guard"
+     ],
+     [
+      "clinical-feature-engineering",
+      "survival-analysis"
+     ],
+     [
+      "leakage-guard",
+      "survival-analysis"
+     ],
+     [
+      "statistical-testing",
+      "survival-analysis"
+     ]
+    ],
+    "orchestration": 1.0
+   },
+   "fabric": {
+    "selected": [
+     "survival-analysis",
+     "leakage-guard",
+     "clinical-feature-engineering",
+     "cross-validation-protocol",
+     "data-cleaning"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.00258,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 6 条",
+     "加权融合后候选池 30 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
+     "关系图扩展补入 3 条：gwas-prs, factor-backtest, meta-analysis",
+     "LLM 重排 8 条候选"
+    ],
+    "workflow": [
+     [
+      "clinical-feature-engineering",
+      "leakage-guard"
+     ],
+     [
+      "clinical-feature-engineering",
+      "survival-analysis"
+     ],
+     [
+      "data-cleaning",
+      "leakage-guard"
+     ],
+     [
+      "leakage-guard",
+      "cross-validation-protocol"
+     ],
+     [
+      "leakage-guard",
+      "survival-analysis"
+     ]
+    ],
+    "orchestration": 1.0
+   }
+  },
+  {
+   "id": "T05",
+   "domain": "金融与经济学",
+   "gold": [
+    "causal-inference",
+    "econometric-panel"
+   ],
+   "bm25": {
+    "selected": [
+     "econometric-panel",
+     "causal-inference",
+     "statistical-testing",
+     "meta-analysis",
+     "protein-structure-predict"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条"
+    ],
+    "workflow": [
+     [
+      "causal-inference",
+      "econometric-panel"
+     ],
+     [
+      "econometric-panel",
+      "statistical-testing"
+     ],
+     [
+      "meta-analysis",
+      "statistical-testing"
+     ],
+     [
+      "statistical-testing",
+      "causal-inference"
+     ]
+    ],
+    "orchestration": 1.0
+   },
+   "hybrid": {
+    "selected": [
+     "econometric-panel",
+     "causal-inference",
+     "statistical-testing",
+     "data-cleaning",
+     "protein-structure-predict"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 5 条",
+     "加权融合后候选池 28 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+    ],
+    "workflow": [
+     [
+      "causal-inference",
+      "econometric-panel"
+     ],
+     [
+      "data-cleaning",
+      "statistical-testing"
+     ],
+     [
+      "econometric-panel",
+      "statistical-testing"
+     ],
+     [
+      "statistical-testing",
+      "causal-inference"
+     ]
+    ],
+    "orchestration": 1.0
+   },
+   "fabric": {
+    "selected": [
+     "econometric-panel",
+     "causal-inference",
+     "statistical-testing",
+     "data-cleaning",
+     "eda-profiling"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.00247,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 5 条",
+     "加权融合后候选池 28 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
+     "关系图扩展补入 5 条：factor-backtest, scientific-visualization, spatial-autocorrelation, md-simulation, molecular-docking",
+     "LLM 重排 6 条候选"
+    ],
+    "workflow": [
+     [
+      "causal-inference",
+      "econometric-panel"
+     ],
+     [
+      "data-cleaning",
+      "eda-profiling"
+     ],
+     [
+      "data-cleaning",
+      "statistical-testing"
+     ],
+     [
+      "econometric-panel",
+      "statistical-testing"
+     ],
+     [
+      "statistical-testing",
+      "causal-inference"
+     ]
+    ],
+    "orchestration": 1.0
+   }
+  },
+  {
+   "id": "T06",
+   "domain": "化学、药物发现与药理学",
+   "gold": [
+    "protein-structure-predict",
+    "molecular-docking",
+    "admet-prediction"
+   ],
+   "bm25": {
+    "selected": [
+     "molecular-docking",
+     "md-simulation",
+     "admet-prediction",
+     "protein-structure-predict",
+     "cross-validation-protocol"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条"
+    ],
+    "workflow": [
+     [
+      "molecular-docking",
+      "admet-prediction"
+     ],
+     [
+      "molecular-docking",
+      "md-simulation"
+     ],
+     [
+      "protein-structure-predict",
+      "md-simulation"
+     ],
+     [
+      "protein-structure-predict",
+      "molecular-docking"
+     ]
+    ],
+    "orchestration": 1.0
+   },
+   "hybrid": {
+    "selected": [
+     "molecular-docking",
+     "md-simulation",
+     "admet-prediction",
+     "protein-structure-predict",
+     "molecular-descriptors"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 1 条",
+     "加权融合后候选池 27 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+    ],
+    "workflow": [
+     [
+      "molecular-descriptors",
+      "admet-prediction"
+     ],
+     [
+      "molecular-docking",
+      "admet-prediction"
+     ],
+     [
+      "molecular-docking",
+      "md-simulation"
+     ],
+     [
+      "protein-structure-predict",
+      "md-simulation"
+     ],
+     [
+      "protein-structure-predict",
+      "molecular-docking"
+     ]
+    ],
+    "orchestration": 1.0
+   },
+   "fabric": {
+    "selected": [
+     "protein-structure-predict",
+     "molecular-docking",
+     "admet-prediction",
+     "md-simulation",
+     "molecular-descriptors"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.00241,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 1 条",
+     "加权融合后候选池 27 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
+     "关系图扩展补入 1 条：tabular-ml-baseline",
+     "LLM 重排 4 条候选"
+    ],
+    "workflow": [
+     [
+      "molecular-descriptors",
+      "admet-prediction"
+     ],
+     [
+      "molecular-docking",
+      "admet-prediction"
+     ],
+     [
+      "molecular-docking",
+      "md-simulation"
+     ],
+     [
+      "protein-structure-predict",
+      "md-simulation"
+     ],
+     [
+      "protein-structure-predict",
+      "molecular-docking"
+     ]
+    ],
+    "orchestration": 1.0
+   }
+  },
+  {
+   "id": "T07",
+   "domain": "机器学习与人工智能",
+   "gold": [
+    "leakage-guard",
+    "cross-validation-protocol",
+    "tabular-ml-baseline"
+   ],
+   "bm25": {
+    "selected": [
+     "tabular-ml-baseline",
+     "leakage-guard",
+     "causal-inference",
+     "flux-tower-ml",
+     "cross-validation-protocol"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条"
+    ],
+    "workflow": [
+     [
+      "cross-validation-protocol",
+      "flux-tower-ml"
+     ],
+     [
+      "cross-validation-protocol",
+      "tabular-ml-baseline"
+     ],
+     [
+      "leakage-guard",
+      "cross-validation-protocol"
+     ],
+     [
+      "leakage-guard",
+      "tabular-ml-baseline"
+     ]
+    ],
+    "orchestration": 1.0
+   },
+   "hybrid": {
+    "selected": [
+     "tabular-ml-baseline",
+     "leakage-guard",
+     "causal-inference",
+     "cross-validation-protocol",
+     "statistical-testing"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 5 条",
+     "加权融合后候选池 27 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+    ],
+    "workflow": [
+     [
+      "cross-validation-protocol",
+      "tabular-ml-baseline"
+     ],
+     [
+      "leakage-guard",
+      "cross-validation-protocol"
+     ],
+     [
+      "leakage-guard",
+      "tabular-ml-baseline"
+     ],
+     [
+      "statistical-testing",
+      "causal-inference"
+     ]
+    ],
+    "orchestration": 1.0
+   },
+   "fabric": {
+    "selected": [
+     "leakage-guard",
+     "cross-validation-protocol",
+     "tabular-ml-baseline",
+     "eda-profiling",
+     "statistical-testing"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.00253,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 5 条",
+     "加权融合后候选池 27 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
+     "关系图扩展补入 8 条：survival-analysis, factor-backtest, econometric-panel, deep-learning-training, scientific-visualization, connectome-topology",
+     "LLM 重排 6 条候选"
+    ],
+    "workflow": [
+     [
+      "cross-validation-protocol",
+      "tabular-ml-baseline"
+     ],
+     [
+      "leakage-guard",
+      "cross-validation-protocol"
+     ],
+     [
+      "leakage-guard",
+      "tabular-ml-baseline"
+     ]
+    ],
+    "orchestration": 1.0
+   }
+  },
+  {
+   "id": "T08",
+   "domain": "基因组学与转录组学",
+   "gold": [
+    "pathway-enrichment",
+    "differential-expression"
+   ],
+   "bm25": {
+    "selected": [
+     "pathway-enrichment",
+     "differential-expression",
+     "scrna-qc-clustering",
+     "gwas-prs",
+     "variant-calling"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 15 条"
+    ],
+    "workflow": [
+     [
+      "differential-expression",
+      "pathway-enrichment"
+     ],
+     [
+      "scrna-qc-clustering",
+      "differential-expression"
+     ],
+     [
+      "scrna-qc-clustering",
+      "pathway-enrichment"
+     ],
+     [
+      "variant-calling",
+      "gwas-prs"
+     ]
+    ],
+    "orchestration": 1.0
+   },
+   "hybrid": {
+    "selected": [
+     "pathway-enrichment",
+     "differential-expression",
+     "scrna-qc-clustering",
+     "md-simulation",
+     "symbolic-derivation"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 15 条",
+     "语义向量召回 20 条",
+     "结构信号召回 1 条",
+     "加权融合后候选池 26 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+    ],
+    "workflow": [
+     [
+      "differential-expression",
+      "pathway-enrichment"
+     ],
+     [
+      "scrna-qc-clustering",
+      "differential-expression"
+     ],
+     [
+      "scrna-qc-clustering",
+      "pathway-enrichment"
+     ]
+    ],
+    "orchestration": 1.0
+   },
+   "fabric": {
+    "selected": [
+     "pathway-enrichment",
+     "statistical-testing",
+     "differential-expression",
+     "scrna-qc-clustering",
+     "md-simulation"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.0023,
+    "trace": [
+     "BM25 召回 15 条",
+     "语义向量召回 20 条",
+     "结构信号召回 1 条",
+     "加权融合后候选池 26 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
+     "关系图扩展补入 1 条：molecular-docking",
+     "LLM 重排 2 条候选"
+    ],
+    "workflow": [
+     [
+      "differential-expression",
+      "pathway-enrichment"
+     ],
+     [
+      "scrna-qc-clustering",
+      "differential-expression"
+     ],
+     [
+      "scrna-qc-clustering",
+      "pathway-enrichment"
+     ]
+    ],
+    "orchestration": 1.0
+   }
+  },
+  {
+   "id": "T09",
+   "domain": "学术写作与可视化",
+   "gold": [
+    "scientific-writing",
+    "venue-template",
+    "citation-verify"
+   ],
+   "bm25": {
+    "selected": [
+     "venue-template",
+     "citation-verify",
+     "scientific-writing",
+     "paper-deep-read",
+     "literature-review"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条"
+    ],
+    "workflow": [
+     [
+      "citation-verify",
+      "scientific-writing"
+     ],
+     [
+      "citation-verify",
+      "venue-template"
+     ],
+     [
+      "literature-review",
+      "citation-verify"
+     ],
+     [
+      "literature-review",
+      "paper-deep-read"
+     ],
+     [
+      "paper-deep-read",
+      "citation-verify"
+     ],
+     [
+      "scientific-writing",
+      "venue-template"
+     ]
+    ],
+    "orchestration": 1.0
+   },
+   "hybrid": {
+    "selected": [
+     "venue-template",
+     "citation-verify",
+     "paper-deep-read",
+     "scientific-writing",
+     "arxiv-monitor"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 7 条",
+     "加权融合后候选池 30 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+    ],
+    "workflow": [
+     [
+      "arxiv-monitor",
+      "paper-deep-read"
+     ],
+     [
+      "citation-verify",
+      "scientific-writing"
+     ],
+     [
+      "citation-verify",
+      "venue-template"
+     ],
+     [
+      "paper-deep-read",
+      "citation-verify"
+     ],
+     [
+      "scientific-writing",
+      "venue-template"
+     ]
+    ],
+    "orchestration": 1.0
+   },
+   "fabric": {
+    "selected": [
+     "venue-template",
+     "scientific-writing",
+     "citation-verify",
+     "paper-deep-read",
+     "arxiv-monitor"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.0024,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 7 条",
+     "加权融合后候选池 30 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
+     "关系图扩展补入 2 条：scientific-visualization, peer-review-response",
+     "LLM 重排 3 条候选"
+    ],
+    "workflow": [
+     [
+      "arxiv-monitor",
+      "paper-deep-read"
+     ],
+     [
+      "citation-verify",
+      "scientific-writing"
+     ],
+     [
+      "citation-verify",
+      "venue-template"
+     ],
+     [
+      "paper-deep-read",
+      "citation-verify"
+     ],
+     [
+      "scientific-writing",
+      "venue-template"
+     ]
+    ],
+    "orchestration": 1.0
+   }
+  },
+  {
+   "id": "T10",
+   "domain": "数据与分析",
+   "gold": [
+    "data-cleaning",
+    "statistical-testing",
+    "scientific-visualization"
+   ],
+   "bm25": {
+    "selected": [
+     "scientific-visualization",
+     "statistical-testing",
+     "data-cleaning",
+     "hyperparameter-search",
+     "eda-profiling"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条"
+    ],
+    "workflow": [
+     [
+      "data-cleaning",
+      "eda-profiling"
+     ],
+     [
+      "data-cleaning",
+      "statistical-testing"
+     ],
+     [
+      "eda-profiling",
+      "scientific-visualization"
+     ],
+     [
+      "statistical-testing",
+      "scientific-visualization"
+     ]
+    ],
+    "orchestration": 1.0
+   },
+   "hybrid": {
+    "selected": [
+     "scientific-visualization",
+     "statistical-testing",
+     "data-cleaning",
+     "causal-inference",
+     "eda-profiling"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 5 条",
+     "加权融合后候选池 29 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+    ],
+    "workflow": [
+     [
+      "data-cleaning",
+      "eda-profiling"
+     ],
+     [
+      "data-cleaning",
+      "statistical-testing"
+     ],
+     [
+      "eda-profiling",
+      "scientific-visualization"
+     ],
+     [
+      "statistical-testing",
+      "causal-inference"
+     ],
+     [
+      "statistical-testing",
+      "scientific-visualization"
+     ]
+    ],
+    "orchestration": 1.0
+   },
+   "fabric": {
+    "selected": [
+     "data-cleaning",
+     "statistical-testing",
+     "scientific-visualization",
+     "eda-profiling",
+     "scientific-writing"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.00238,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 5 条",
+     "加权融合后候选池 29 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
+     "关系图扩展补入 7 条：scientific-writing, poster-slides, thermodynamics-calc, fem-analysis, connectome-topology, spatial-autocorrelation",
+     "LLM 重排 4 条候选"
+    ],
+    "workflow": [
+     [
+      "data-cleaning",
+      "eda-profiling"
+     ],
+     [
+      "data-cleaning",
+      "statistical-testing"
+     ],
+     [
+      "eda-profiling",
+      "scientific-visualization"
+     ],
+     [
+      "scientific-writing",
+      "scientific-visualization"
+     ],
+     [
+      "statistical-testing",
+      "scientific-visualization"
+     ]
+    ],
+    "orchestration": 1.0
+   }
+  },
+  {
+   "id": "T11",
+   "domain": "神经科学",
+   "gold": [
+    "connectome-topology",
+    "statistical-testing"
+   ],
+   "bm25": {
+    "selected": [
+     "connectome-topology",
+     "deep-learning-training",
+     "spatial-autocorrelation",
+     "econometric-panel",
+     "differential-expression"
+    ],
+    "recall": 0.5,
+    "full": false,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条"
+    ],
+    "workflow": [],
+    "orchestration": 0.0
+   },
+   "hybrid": {
+    "selected": [
+     "connectome-topology",
+     "statistical-testing",
+     "thermodynamics-calc",
+     "eda-profiling",
+     "data-cleaning"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 10 条",
+     "加权融合后候选池 30 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+    ],
+    "workflow": [
+     [
+      "connectome-topology",
+      "statistical-testing"
+     ],
+     [
+      "data-cleaning",
+      "eda-profiling"
+     ],
+     [
+      "data-cleaning",
+      "statistical-testing"
+     ]
+    ],
+    "orchestration": 1.0
+   },
+   "fabric": {
+    "selected": [
+     "connectome-topology",
+     "statistical-testing",
+     "scientific-visualization",
+     "eda-profiling",
+     "data-cleaning"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.00246,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 10 条",
+     "加权融合后候选池 30 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
+     "关系图扩展补入 3 条：survival-analysis, meta-analysis, leakage-guard",
+     "LLM 重排 5 条候选"
+    ],
+    "workflow": [
+     [
+      "connectome-topology",
+      "statistical-testing"
+     ],
+     [
+      "data-cleaning",
+      "eda-profiling"
+     ],
+     [
+      "data-cleaning",
+      "statistical-testing"
+     ],
+     [
+      "eda-profiling",
+      "scientific-visualization"
+     ],
+     [
+      "statistical-testing",
+      "scientific-visualization"
+     ]
+    ],
+    "orchestration": 1.0
+   }
+  },
+  {
+   "id": "T12",
+   "domain": "生态与环境科学",
+   "gold": [
+    "remote-sensing-index",
+    "spatial-autocorrelation"
+   ],
+   "bm25": {
+    "selected": [
+     "remote-sensing-index",
+     "signal-processing",
+     "variant-calling",
+     "lightcurve-analysis",
+     "flux-tower-ml"
+    ],
+    "recall": 0.5,
+    "full": false,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条"
+    ],
+    "workflow": [
+     [
+      "signal-processing",
+      "lightcurve-analysis"
+     ]
+    ],
+    "orchestration": 0.0
+   },
+   "hybrid": {
+    "selected": [
+     "remote-sensing-index",
+     "data-cleaning",
+     "statistical-testing",
+     "signal-processing",
+     "variant-calling"
+    ],
+    "recall": 0.5,
+    "full": false,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 5 条",
+     "加权融合后候选池 30 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+    ],
+    "workflow": [
+     [
+      "data-cleaning",
+      "statistical-testing"
+     ]
+    ],
+    "orchestration": 0.0
+   },
+   "fabric": {
+    "selected": [
+     "remote-sensing-index",
+     "data-cleaning",
+     "spatial-autocorrelation",
+     "eda-profiling",
+     "statistical-testing"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.00251,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 5 条",
+     "加权融合后候选池 30 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
+     "关系图扩展补入 6 条：spatial-autocorrelation, leakage-guard, scientific-visualization, econometric-panel, eeg-preprocessing, gwas-prs",
+     "LLM 重排 6 条候选"
+    ],
+    "workflow": [
+     [
+      "data-cleaning",
+      "eda-profiling"
+     ],
+     [
+      "data-cleaning",
+      "statistical-testing"
+     ],
+     [
+      "remote-sensing-index",
+      "spatial-autocorrelation"
+     ],
+     [
+      "statistical-testing",
+      "spatial-autocorrelation"
+     ]
+    ],
+    "orchestration": 1.0
+   }
+  },
+  {
+   "id": "T13",
+   "domain": "生态与环境科学",
+   "gold": [
+    "flux-tower-ml",
+    "model-interpretability",
+    "cross-validation-protocol"
+   ],
+   "bm25": {
+    "selected": [
+     "flux-tower-ml",
+     "dft-formation-energy",
+     "admet-prediction",
+     "molecular-docking",
+     "factor-backtest"
+    ],
+    "recall": 0.3333,
+    "full": false,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条"
+    ],
+    "workflow": [
+     [
+      "molecular-docking",
+      "admet-prediction"
+     ]
+    ],
+    "orchestration": 0.0
+   },
+   "hybrid": {
+    "selected": [
+     "flux-tower-ml",
+     "causal-inference",
+     "data-cleaning",
+     "spatial-autocorrelation",
+     "eda-profiling"
+    ],
+    "recall": 0.3333,
+    "full": false,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 8 条",
+     "加权融合后候选池 31 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+    ],
+    "workflow": [
+     [
+      "data-cleaning",
+      "eda-profiling"
+     ]
+    ],
+    "orchestration": 0.0
+   },
+   "fabric": {
+    "selected": [
+     "flux-tower-ml",
+     "cross-validation-protocol",
+     "leakage-guard",
+     "model-interpretability",
+     "data-cleaning"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.00261,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 8 条",
+     "加权融合后候选池 31 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
+     "关系图扩展补入 3 条：cross-validation-protocol, econometric-panel, leakage-guard",
+     "LLM 重排 8 条候选"
+    ],
+    "workflow": [
+     [
+      "cross-validation-protocol",
+      "flux-tower-ml"
+     ],
+     [
+      "data-cleaning",
+      "leakage-guard"
+     ],
+     [
+      "flux-tower-ml",
+      "model-interpretability"
+     ],
+     [
+      "leakage-guard",
+      "cross-validation-protocol"
+     ]
+    ],
+    "orchestration": 1.0
+   }
+  },
+  {
+   "id": "T14",
+   "domain": "蛋白质组学与结构生物学",
+   "gold": [
+    "md-simulation",
+    "molecular-docking"
+   ],
+   "bm25": {
+    "selected": [
+     "md-simulation",
+     "molecular-docking",
+     "crystal-structure-predict",
+     "statistical-testing",
+     "fem-analysis"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条"
+    ],
+    "workflow": [
+     [
+      "molecular-docking",
+      "md-simulation"
+     ]
+    ],
+    "orchestration": 1.0
+   },
+   "hybrid": {
+    "selected": [
+     "md-simulation",
+     "molecular-docking",
+     "crystal-structure-predict",
+     "deep-learning-training",
+     "fem-analysis"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 4 条",
+     "加权融合后候选池 29 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+    ],
+    "workflow": [
+     [
+      "molecular-docking",
+      "md-simulation"
+     ]
+    ],
+    "orchestration": 1.0
+   },
+   "fabric": {
+    "selected": [
+     "md-simulation",
+     "scientific-visualization",
+     "statistical-testing",
+     "protein-structure-predict",
+     "molecular-docking"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.00232,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 4 条",
+     "加权融合后候选池 29 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
+     "关系图扩展补入 4 条：protein-structure-predict, admet-prediction, cross-validation-protocol, scientific-visualization",
+     "LLM 重排 3 条候选"
+    ],
+    "workflow": [
+     [
+      "molecular-docking",
+      "md-simulation"
+     ],
+     [
+      "protein-structure-predict",
+      "md-simulation"
+     ],
+     [
+      "protein-structure-predict",
+      "molecular-docking"
+     ],
+     [
+      "statistical-testing",
+      "scientific-visualization"
+     ]
+    ],
+    "orchestration": 1.0
+   }
+  },
+  {
+   "id": "T15",
+   "domain": "化学、药物发现与药理学",
+   "gold": [
+    "molecular-descriptors",
+    "admet-prediction"
+   ],
+   "bm25": {
+    "selected": [
+     "admet-prediction",
+     "molecular-descriptors",
+     "dft-formation-energy",
+     "molecular-docking",
+     "clinical-feature-engineering"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条"
+    ],
+    "workflow": [
+     [
+      "molecular-descriptors",
+      "admet-prediction"
+     ],
+     [
+      "molecular-docking",
+      "admet-prediction"
+     ]
+    ],
+    "orchestration": 1.0
+   },
+   "hybrid": {
+    "selected": [
+     "admet-prediction",
+     "molecular-descriptors",
+     "dft-formation-energy",
+     "molecular-docking",
+     "tabular-ml-baseline"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 2 条",
+     "加权融合后候选池 28 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+    ],
+    "workflow": [
+     [
+      "molecular-descriptors",
+      "admet-prediction"
+     ],
+     [
+      "molecular-descriptors",
+      "tabular-ml-baseline"
+     ],
+     [
+      "molecular-docking",
+      "admet-prediction"
+     ]
+    ],
+    "orchestration": 1.0
+   },
+   "fabric": {
+    "selected": [
+     "admet-prediction",
+     "molecular-descriptors",
+     "cross-validation-protocol",
+     "tabular-ml-baseline",
+     "leakage-guard"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.00264,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 2 条",
+     "加权融合后候选池 28 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
+     "关系图扩展补入 2 条：cross-validation-protocol, data-cleaning",
+     "LLM 重排 8 条候选"
+    ],
+    "workflow": [
+     [
+      "cross-validation-protocol",
+      "tabular-ml-baseline"
+     ],
+     [
+      "leakage-guard",
+      "cross-validation-protocol"
+     ],
+     [
+      "leakage-guard",
+      "tabular-ml-baseline"
+     ],
+     [
+      "molecular-descriptors",
+      "admet-prediction"
+     ],
+     [
+      "molecular-descriptors",
+      "tabular-ml-baseline"
+     ]
+    ],
+    "orchestration": 1.0
+   }
+  },
+  {
+   "id": "T16",
+   "domain": "金融与经济学",
+   "gold": [
+    "factor-backtest",
+    "leakage-guard"
+   ],
+   "bm25": {
+    "selected": [
+     "factor-backtest",
+     "flux-tower-ml",
+     "tabular-ml-baseline",
+     "model-interpretability",
+     "md-simulation"
+    ],
+    "recall": 0.5,
+    "full": false,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条"
+    ],
+    "workflow": [
+     [
+      "flux-tower-ml",
+      "model-interpretability"
+     ],
+     [
+      "tabular-ml-baseline",
+      "model-interpretability"
+     ]
+    ],
+    "orchestration": 0.0
+   },
+   "hybrid": {
+    "selected": [
+     "factor-backtest",
+     "flux-tower-ml",
+     "md-simulation",
+     "tabular-ml-baseline",
+     "data-cleaning"
+    ],
+    "recall": 0.5,
+    "full": false,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 1 条",
+     "加权融合后候选池 30 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+    ],
+    "workflow": [
+     [
+      "data-cleaning",
+      "tabular-ml-baseline"
+     ]
+    ],
+    "orchestration": 0.0
+   },
+   "fabric": {
+    "selected": [
+     "factor-backtest",
+     "leakage-guard",
+     "data-cleaning",
+     "eda-profiling",
+     "scientific-visualization"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.00246,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 1 条",
+     "加权融合后候选池 30 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
+     "关系图扩展补入 3 条：econometric-panel, molecular-descriptors, eda-profiling",
+     "LLM 重排 5 条候选"
+    ],
+    "workflow": [
+     [
+      "data-cleaning",
+      "eda-profiling"
+     ],
+     [
+      "data-cleaning",
+      "leakage-guard"
+     ],
+     [
+      "eda-profiling",
+      "scientific-visualization"
+     ],
+     [
+      "leakage-guard",
+      "factor-backtest"
+     ]
+    ],
+    "orchestration": 1.0
+   }
+  },
+  {
+   "id": "T17",
+   "domain": "化学、药物发现与药理学",
+   "gold": [
+    "thermodynamics-calc",
+    "scientific-visualization"
+   ],
+   "bm25": {
+    "selected": [
+     "thermodynamics-calc",
+     "symbolic-derivation",
+     "protein-structure-predict",
+     "differential-expression",
+     "tabular-ml-baseline"
+    ],
+    "recall": 0.5,
+    "full": false,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 17 条"
+    ],
+    "workflow": [],
+    "orchestration": 0.0
+   },
+   "hybrid": {
+    "selected": [
+     "thermodynamics-calc",
+     "symbolic-derivation",
+     "protein-structure-predict",
+     "molecular-docking",
+     "peer-review-response"
+    ],
+    "recall": 0.5,
+    "full": false,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 17 条",
+     "语义向量召回 20 条",
+     "结构信号召回 1 条",
+     "加权融合后候选池 27 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+    ],
+    "workflow": [
+     [
+      "protein-structure-predict",
+      "molecular-docking"
+     ]
+    ],
+    "orchestration": 0.0
+   },
+   "fabric": {
+    "selected": [
+     "thermodynamics-calc",
+     "symbolic-derivation",
+     "scientific-visualization",
+     "optimization-solver",
+     "protein-structure-predict"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.00237,
+    "trace": [
+     "BM25 召回 17 条",
+     "语义向量召回 20 条",
+     "结构信号召回 1 条",
+     "加权融合后候选池 27 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
+     "关系图扩展补入 4 条：scientific-visualization, optimization-solver, admet-prediction, scientific-writing",
+     "LLM 重排 3 条候选"
+    ],
+    "workflow": [
+     [
+      "optimization-solver",
+      "symbolic-derivation"
+     ],
+     [
+      "thermodynamics-calc",
+      "scientific-visualization"
+     ]
+    ],
+    "orchestration": 1.0
+   }
+  },
+  {
+   "id": "T18",
+   "domain": "天文学与空间科学",
+   "gold": [
+    "lightcurve-analysis",
+    "signal-processing"
+   ],
+   "bm25": {
+    "selected": [
+     "lightcurve-analysis",
+     "remote-sensing-index",
+     "cross-validation-protocol",
+     "survival-analysis",
+     "variant-calling"
+    ],
+    "recall": 0.5,
+    "full": false,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条"
+    ],
+    "workflow": [],
+    "orchestration": 0.0
+   },
+   "hybrid": {
+    "selected": [
+     "lightcurve-analysis",
+     "remote-sensing-index",
+     "survival-analysis",
+     "eda-profiling",
+     "cross-validation-protocol"
+    ],
+    "recall": 0.5,
+    "full": false,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 4 条",
+     "加权融合后候选池 29 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+    ],
+    "workflow": [],
+    "orchestration": 0.0
+   },
+   "fabric": {
+    "selected": [
+     "lightcurve-analysis",
+     "signal-processing",
+     "eda-profiling",
+     "data-cleaning",
+     "statistical-testing"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.00248,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 4 条",
+     "加权融合后候选池 29 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
+     "关系图扩展补入 6 条：signal-processing, spatial-autocorrelation, clinical-feature-engineering, scientific-visualization, deep-learning-training, dft-formation-energy",
+     "LLM 重排 6 条候选"
+    ],
+    "workflow": [
+     [
+      "data-cleaning",
+      "eda-profiling"
+     ],
+     [
+      "data-cleaning",
+      "statistical-testing"
+     ],
+     [
+      "signal-processing",
+      "lightcurve-analysis"
+     ]
+    ],
+    "orchestration": 1.0
+   }
+  },
+  {
+   "id": "T19",
+   "domain": "生态与环境科学",
+   "gold": [
+    "causal-inference",
+    "econometric-panel",
+    "statistical-testing"
+   ],
+   "bm25": {
+    "selected": [
+     "econometric-panel",
+     "protein-structure-predict",
+     "data-cleaning",
+     "causal-inference",
+     "eda-profiling"
+    ],
+    "recall": 0.6667,
+    "full": false,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条"
+    ],
+    "workflow": [
+     [
+      "causal-inference",
+      "econometric-panel"
+     ],
+     [
+      "data-cleaning",
+      "eda-profiling"
+     ]
+    ],
+    "orchestration": 0.5
+   },
+   "hybrid": {
+    "selected": [
+     "data-cleaning",
+     "econometric-panel",
+     "protein-structure-predict",
+     "flux-tower-ml",
+     "citation-verify"
+    ],
+    "recall": 0.3333,
+    "full": false,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 4 条",
+     "加权融合后候选池 29 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+    ],
+    "workflow": [],
+    "orchestration": 0.0
+   },
+   "fabric": {
+    "selected": [
+     "causal-inference",
+     "econometric-panel",
+     "eda-profiling",
+     "data-cleaning",
+     "statistical-testing"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.00252,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 4 条",
+     "加权融合后候选池 29 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
+     "关系图扩展补入 6 条：md-simulation, molecular-docking, model-interpretability, literature-review, paper-deep-read, venue-template",
+     "LLM 重排 6 条候选"
+    ],
+    "workflow": [
+     [
+      "causal-inference",
+      "econometric-panel"
+     ],
+     [
+      "data-cleaning",
+      "eda-profiling"
+     ],
+     [
+      "data-cleaning",
+      "statistical-testing"
+     ],
+     [
+      "econometric-panel",
+      "statistical-testing"
+     ],
+     [
+      "statistical-testing",
+      "causal-inference"
+     ]
+    ],
+    "orchestration": 1.0
+   }
+  },
+  {
+   "id": "T20",
+   "domain": "学术写作与可视化",
+   "gold": [
+    "peer-review-response",
+    "scientific-writing"
+   ],
+   "bm25": {
+    "selected": [
+     "peer-review-response",
+     "scientific-writing",
+     "factor-backtest",
+     "paper-deep-read",
+     "statistical-testing"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条"
+    ],
+    "workflow": [
+     [
+      "scientific-writing",
+      "peer-review-response"
+     ]
+    ],
+    "orchestration": 1.0
+   },
+   "hybrid": {
+    "selected": [
+     "peer-review-response",
+     "scientific-writing",
+     "factor-backtest",
+     "paper-deep-read",
+     "leakage-guard"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.0,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 1 条",
+     "加权融合后候选池 27 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+    ],
+    "workflow": [
+     [
+      "leakage-guard",
+      "factor-backtest"
+     ],
+     [
+      "scientific-writing",
+      "peer-review-response"
+     ]
+    ],
+    "orchestration": 1.0
+   },
+   "fabric": {
+    "selected": [
+     "peer-review-response",
+     "statistical-testing",
+     "scientific-writing",
+     "scientific-visualization",
+     "venue-template"
+    ],
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.00242,
+    "trace": [
+     "BM25 召回 20 条",
+     "语义向量召回 20 条",
+     "结构信号召回 1 条",
+     "加权融合后候选池 27 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
+     "关系图扩展补入 9 条：scientific-visualization, venue-template, econometric-panel, arxiv-monitor, tabular-ml-baseline, data-cleaning",
+     "LLM 重排 5 条候选"
+    ],
+    "workflow": [
+     [
+      "scientific-writing",
+      "peer-review-response"
+     ],
+     [
+      "scientific-writing",
+      "scientific-visualization"
+     ],
+     [
+      "scientific-writing",
+      "venue-template"
+     ],
+     [
+      "statistical-testing",
+      "scientific-visualization"
+     ]
+    ],
+    "orchestration": 1.0
+   }
+  }
+ ],
+ "timestamp": "2026-09-18 23:54:42"
+}

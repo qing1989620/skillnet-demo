@@ -1,0 +1,146 @@
+{
+  "version": "1.0",
+  "note": "科研任务评测集。gold 为人工标注的『完成任务所必需的技能集』；workflow 为技能间的依赖/组合边，用于评估编排完整度（对标 SkillNet-Gym 的 Skill Retrieval / Orchestration Completeness）。",
+  "tasks": [
+    {
+      "id": "T01",
+      "domain": "细胞生物学与单细胞",
+      "query": "我拿到一批 PBMC 的 10x 单细胞 RNA 测序数据，想先做质控并识别出免疫细胞亚群，然后比较两组患者在这些亚群上的基因表达差异，最后出图。需要一套完整可复现的流程。",
+      "gold": ["scrna-qc-clustering", "differential-expression", "scientific-visualization"],
+      "workflow": [["scrna-qc-clustering", "differential-expression"], ["differential-expression", "scientific-visualization"]]
+    },
+    {
+      "id": "T02",
+      "domain": "材料科学",
+      "query": "我想用纯成分特征预测无机化合物的形成能，不需要晶体结构，同时必须评估模型在没见过的元素上的外推能力，最后给出可进一步实验验证的候选材料。",
+      "gold": ["dft-formation-energy", "cross-validation-protocol", "materials-screening"],
+      "workflow": [["dft-formation-energy", "materials-screening"], ["cross-validation-protocol", "dft-formation-energy"]]
+    },
+    {
+      "id": "T03",
+      "domain": "文献与研究",
+      "query": "导师让我梳理「图神经网络在药物发现中的应用」这个方向的研究现状，并且要找出还没被做过的切入点来定我的课题，引用必须真实可查。",
+      "gold": ["literature-review", "citation-verify", "research-gap-mining"],
+      "workflow": [["literature-review", "citation-verify"], ["literature-review", "research-gap-mining"]]
+    },
+    {
+      "id": "T04",
+      "domain": "临床与健康科学",
+      "query": "我有一份 5 年随访的肿瘤患者数据，结局是复发时间和是否复发，想找出影响预后的因素，并且用电子病历里的检验指标做特征，注意不能有数据泄漏。",
+      "gold": ["survival-analysis", "clinical-feature-engineering", "leakage-guard"],
+      "workflow": [["clinical-feature-engineering", "survival-analysis"], ["leakage-guard", "survival-analysis"]]
+    },
+    {
+      "id": "T05",
+      "domain": "金融与经济学",
+      "query": "某省在不同年份陆续推行了一项产业政策，我想用省级面板数据评估它对当地企业创新的影响，需要处理政策内生性并做稳健性检验。",
+      "gold": ["causal-inference", "econometric-panel"],
+      "workflow": [["causal-inference", "econometric-panel"]]
+    },
+    {
+      "id": "T06",
+      "domain": "化学、药物发现与药理学",
+      "query": "我有一个靶点蛋白的序列但没有实验结构，想找到能和它结合的小分子候选，还要评估这些分子的成药性，并且验证对接流程本身是可靠的。",
+      "gold": ["protein-structure-predict", "molecular-docking", "admet-prediction"],
+      "workflow": [["protein-structure-predict", "molecular-docking"], ["molecular-docking", "admet-prediction"]]
+    },
+    {
+      "id": "T07",
+      "domain": "机器学习与人工智能",
+      "query": "我要在表格数据上做一个预测模型，但上一版模型的指标好得可疑，怀疑有数据泄漏；这次希望建立可信的评估流程，保证结果经得起审稿。",
+      "gold": ["leakage-guard", "cross-validation-protocol", "tabular-ml-baseline"],
+      "workflow": [["leakage-guard", "cross-validation-protocol"], ["cross-validation-protocol", "tabular-ml-baseline"]]
+    },
+    {
+      "id": "T08",
+      "domain": "基因组学与转录组学",
+      "query": "我已经拿到差异表达基因列表，想知道这些基因主要富集在哪些生物学通路和功能上，判断是哪些机制被激活了。",
+      "gold": ["pathway-enrichment", "differential-expression"],
+      "workflow": [["differential-expression", "pathway-enrichment"]]
+    },
+    {
+      "id": "T09",
+      "domain": "学术写作与可视化",
+      "query": "论文的实验都做完了，现在要投一个期刊，需要按它的模板排版、写好正文、并且把参考文献全部核验一遍再投稿。",
+      "gold": ["scientific-writing", "venue-template", "citation-verify"],
+      "workflow": [["scientific-writing", "venue-template"], ["citation-verify", "venue-template"]]
+    },
+    {
+      "id": "T10",
+      "domain": "数据与分析",
+      "query": "我有三组实验数据，想比较组间差异是否显著，数据里有一些缺失和异常值，并且最终要出一张带误差条和显著性标注的出版级图。",
+      "gold": ["data-cleaning", "statistical-testing", "scientific-visualization"],
+      "workflow": [["data-cleaning", "statistical-testing"], ["statistical-testing", "scientific-visualization"]]
+    },
+    {
+      "id": "T11",
+      "domain": "神经科学",
+      "query": "我有秀丽线虫的化学突触和电突触网络数据，想量化它的小世界性和模块化程度，并找出网络的核心节点，还要和随机网络做统计对比。",
+      "gold": ["connectome-topology", "statistical-testing"],
+      "workflow": [["connectome-topology", "statistical-testing"]]
+    },
+    {
+      "id": "T12",
+      "domain": "生态与环境科学",
+      "query": "我想分析一个区域近 20 年植被覆盖的变化趋势并提取物候参数，影像里有云污染，而且区域内不同地点可能互相影响。",
+      "gold": ["remote-sensing-index", "spatial-autocorrelation"],
+      "workflow": [["remote-sensing-index", "spatial-autocorrelation"]]
+    },
+    {
+      "id": "T13",
+      "domain": "生态与环境科学",
+      "query": "用全球几百个通量站的气象数据预测生态系统的碳吸收量，重点是要知道模型换到没见过的站点还能不能用，以及气象因子是怎么起作用的。",
+      "gold": ["flux-tower-ml", "model-interpretability", "cross-validation-protocol"],
+      "workflow": [["cross-validation-protocol", "flux-tower-ml"], ["flux-tower-ml", "model-interpretability"]]
+    },
+    {
+      "id": "T14",
+      "domain": "蛋白质组学与结构生物学",
+      "query": "对接得到的复合物构象看起来合理，但我想确认它在动力学上是否稳定，需要做一段模拟并分析轨迹的收敛情况和关键相互作用。",
+      "gold": ["md-simulation", "molecular-docking"],
+      "workflow": [["molecular-docking", "md-simulation"]]
+    },
+    {
+      "id": "T15",
+      "domain": "化学、药物发现与药理学",
+      "query": "我有一批候选化合物，想在早期就筛掉药代性质差和有毒性的，同时要说明预测结果的可信范围，把分子编码成特征再建模。",
+      "gold": ["molecular-descriptors", "admet-prediction"],
+      "workflow": [["molecular-descriptors", "admet-prediction"]]
+    },
+    {
+      "id": "T16",
+      "domain": "金融与经济学",
+      "query": "我设计了一个量价选股因子，想知道它到底有没有预测能力，要求回测时不能用到未来信息，并且要考虑换手带来的交易成本。",
+      "gold": ["factor-backtest", "leakage-guard"],
+      "workflow": [["leakage-guard", "factor-backtest"]]
+    },
+    {
+      "id": "T17",
+      "domain": "化学、药物发现与药理学",
+      "query": "老师问我某个反应在常温下能不能自发进行，平衡常数大概多少，还想看温度变化对它的影响，要能画出图并给出解析表达式。",
+      "gold": ["thermodynamics-calc", "scientific-visualization"],
+      "workflow": [["thermodynamics-calc", "scientific-visualization"]]
+    },
+    {
+      "id": "T18",
+      "domain": "天文学与空间科学",
+      "query": "我从巡天项目拿到一颗恒星的时间序列测光数据，想找出它的变化周期并判断是不是食双星系统，还要排除采样造成的假周期。",
+      "gold": ["lightcurve-analysis", "signal-processing"],
+      "workflow": [["signal-processing", "lightcurve-analysis"]]
+    },
+    {
+      "id": "T19",
+      "domain": "生态与环境科学",
+      "query": "我有一份农田田间试验数据，想评估某种耕作方式对产量的影响，但试验不是随机分配的，而且数据覆盖了多个地点和年份。",
+      "gold": ["causal-inference", "econometric-panel", "statistical-testing"],
+      "workflow": [["causal-inference", "econometric-panel"], ["econometric-panel", "statistical-testing"]]
+    },
+    {
+      "id": "T20",
+      "domain": "学术写作与可视化",
+      "query": "我的论文收到大修意见，审稿人对方法的有效性和样本量都提出了质疑，我需要逐条回应并补充实验，还要说明每处修改在文中的位置。",
+      "gold": ["peer-review-response", "scientific-writing"],
+      "workflow": [["scientific-writing", "peer-review-response"]]
+    }
+  ]
+}

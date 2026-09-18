@@ -1,0 +1,40 @@
+# ---- 密钥（绝不入库）----
+.env
+.env.local
+*.key
+*.pem
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ---- 运行期产物（可重新生成）----
+# 注：out/exp*.json 是实验原始数据，作为结果证据保留入库；
+# 以下导出目录是随时可重新生成的，不入库。
+out/adapters/
+out/verify_seed/
+out/verify_adapters/
+out/shots/
+out/tmp/
+out/_last_llm_raw.txt
+out/_js_check.js
+
+# ---- 文献正文提取 ----
+# 这里是 arXiv 论文的全文文本提取，不随仓库重新分发；
+# 论文编号已在 README 与 docs/ 中引用，可自行获取原文。
+_refs/
+
+# ---- 编辑器与系统 ----
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- 数据快照（由种子目录重新生成）----
+data/

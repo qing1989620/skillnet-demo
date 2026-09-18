@@ -1,0 +1,449 @@
+{
+ "experiment": "evolution",
+ "rounds": 6,
+ "n_tasks": 6,
+ "alpha": 0.1,
+ "results": {
+  "linucb": {
+   "curve": [
+    {
+     "round": 1,
+     "task": "T01",
+     "chosen": "scrna-qc-clustering",
+     "reward": 0.85,
+     "predicted": 0.0,
+     "explore": 0.16871,
+     "score": 8.5,
+     "evolved": null
+    },
+    {
+     "round": 2,
+     "task": "T02",
+     "chosen": "dft-formation-energy",
+     "reward": 0.78,
+     "predicted": 0.0,
+     "explore": 0.16871,
+     "score": 7.8,
+     "evolved": "composition-only-formation-energy-extrapolation"
+    },
+    {
+     "round": 3,
+     "task": "T03",
+     "chosen": "literature-review",
+     "reward": 0.9,
+     "predicted": 0.0,
+     "explore": 0.16871,
+     "score": 9.0,
+     "evolved": null
+    },
+    {
+     "round": 4,
+     "task": "T04",
+     "chosen": "clinical-feature-engineering",
+     "reward": 0.875,
+     "predicted": 0.0,
+     "explore": 0.16871,
+     "score": 8.75,
+     "evolved": "leakage-safe-survival-feature-pipeline"
+    },
+    {
+     "round": 5,
+     "task": "T05",
+     "chosen": "econometric-panel",
+     "reward": 0.78,
+     "predicted": 0.0,
+     "explore": 0.16871,
+     "score": 7.8,
+     "evolved": null
+    },
+    {
+     "round": 6,
+     "task": "T06",
+     "chosen": "molecular-docking",
+     "reward": 0.8,
+     "predicted": 0.0,
+     "explore": 0.16871,
+     "score": 8.0,
+     "evolved": "sequence-to-lead-virtual-screening"
+    }
+   ],
+   "mean_reward": 0.8308,
+   "best_skill": "literature-review",
+   "best_mean_reward": 0.9,
+   "library_size": 54,
+   "evolved_skills": [
+    {
+     "name": "composition-only-formation-energy-extrapolation",
+     "source": "distill",
+     "generation": 1
+    },
+    {
+     "name": "leakage-safe-survival-feature-pipeline",
+     "source": "distill",
+     "generation": 1
+    },
+    {
+     "name": "sequence-to-lead-virtual-screening",
+     "source": "distill",
+     "generation": 1
+    }
+   ],
+   "selector": {
+    "alpha": 0.1,
+    "arms_informed": 6,
+    "pulls": 6,
+    "curve": [
+     {
+      "round": 1,
+      "skill": "scrna-qc-clustering",
+      "reward": 0.85,
+      "predicted": 0.0,
+      "reason": "explore=0.169"
+     },
+     {
+      "round": 2,
+      "skill": "dft-formation-energy",
+      "reward": 0.78,
+      "predicted": 0.0,
+      "reason": "explore=0.169"
+     },
+     {
+      "round": 3,
+      "skill": "literature-review",
+      "reward": 0.9,
+      "predicted": 0.0,
+      "reason": "explore=0.169"
+     },
+     {
+      "round": 4,
+      "skill": "clinical-feature-engineering",
+      "reward": 0.875,
+      "predicted": 0.0,
+      "reason": "explore=0.169"
+     },
+     {
+      "round": 5,
+      "skill": "econometric-panel",
+      "reward": 0.78,
+      "predicted": 0.0,
+      "reason": "explore=0.169"
+     },
+     {
+      "round": 6,
+      "skill": "molecular-docking",
+      "reward": 0.8,
+      "predicted": 0.0,
+      "reason": "explore=0.169"
+     }
+    ],
+    "arm_stats": {
+     "literature-review": {
+      "pulls": 1,
+      "mean_reward": 0.9,
+      "best": 0.9
+     },
+     "scrna-qc-clustering": {
+      "pulls": 1,
+      "mean_reward": 0.85,
+      "best": 0.85
+     },
+     "molecular-docking": {
+      "pulls": 1,
+      "mean_reward": 0.8,
+      "best": 0.8
+     },
+     "dft-formation-energy": {
+      "pulls": 1,
+      "mean_reward": 0.78,
+      "best": 0.78
+     },
+     "econometric-panel": {
+      "pulls": 1,
+      "mean_reward": 0.78,
+      "best": 0.78
+     },
+     "clinical-feature-engineering": {
+      "pulls": 1,
+      "mean_reward": 0.875,
+      "best": 0.875
+     }
+    }
+   },
+   "evolver": {
+    "attempts": 3,
+    "accepted": 3,
+    "rejected": 0,
+    "by_operator": {
+     "distill": {
+      "attempts": 3,
+      "accepted": 3
+     },
+     "mutate": {
+      "attempts": 0,
+      "accepted": 0
+     },
+     "crossover": {
+      "attempts": 0,
+      "accepted": 0
+     },
+     "regenerate": {
+      "attempts": 0,
+      "accepted": 0
+     }
+    },
+    "records": [
+     {
+      "op": "distill",
+      "name": "composition-only-formation-energy-extrapolation",
+      "accepted": true,
+      "reason": "G1 新技能入库",
+      "parent": [
+       "dft-formation-energy"
+      ]
+     },
+     {
+      "op": "distill",
+      "name": "leakage-safe-survival-feature-pipeline",
+      "accepted": true,
+      "reason": "G1 新技能入库",
+      "parent": [
+       "clinical-feature-engineering"
+      ]
+     },
+     {
+      "op": "distill",
+      "name": "sequence-to-lead-virtual-screening",
+      "accepted": true,
+      "reason": "G1 新技能入库",
+      "parent": [
+       "molecular-docking"
+      ]
+     }
+    ]
+   },
+   "cost_yuan": 0.1378,
+   "tokens": 31431
+  },
+  "random": {
+   "curve": [
+    {
+     "round": 1,
+     "task": "T01",
+     "chosen": "data-cleaning",
+     "reward": 0.875,
+     "predicted": 0.0,
+     "explore": 0.0,
+     "score": 8.75,
+     "evolved": null
+    },
+    {
+     "round": 2,
+     "task": "T02",
+     "chosen": "admet-prediction",
+     "reward": 0.78,
+     "predicted": 0.0,
+     "explore": 0.0,
+     "score": 7.8,
+     "evolved": "composition-only-formation-energy-extrapolation"
+    },
+    {
+     "round": 3,
+     "task": "T03",
+     "chosen": "citation-verify",
+     "reward": 0.755,
+     "predicted": 0.0,
+     "explore": 0.0,
+     "score": 7.55,
+     "evolved": null
+    },
+    {
+     "round": 4,
+     "task": "T04",
+     "chosen": "statistical-testing",
+     "reward": 0.9,
+     "predicted": 0.0,
+     "explore": 0.0,
+     "score": 9.0,
+     "evolved": "survival-analysis-with-leakage-control"
+    },
+    {
+     "round": 5,
+     "task": "T05",
+     "chosen": "causal-inference",
+     "reward": 0.855,
+     "predicted": 0.0,
+     "explore": 0.0,
+     "score": 8.55,
+     "evolved": null
+    },
+    {
+     "round": 6,
+     "task": "T06",
+     "chosen": "md-simulation",
+     "reward": 0.755,
+     "predicted": 0.0,
+     "explore": 0.0,
+     "score": 7.55,
+     "evolved": "sequence-to-lead-structure-based-screening"
+    }
+   ],
+   "mean_reward": 0.82,
+   "best_skill": "statistical-testing",
+   "best_mean_reward": 0.9,
+   "library_size": 54,
+   "evolved_skills": [
+    {
+     "name": "composition-only-formation-energy-extrapolation",
+     "source": "distill",
+     "generation": 1
+    },
+    {
+     "name": "survival-analysis-with-leakage-control",
+     "source": "distill",
+     "generation": 1
+    },
+    {
+     "name": "sequence-to-lead-structure-based-screening",
+     "source": "distill",
+     "generation": 1
+    }
+   ],
+   "selector": {
+    "alpha": null,
+    "arms_informed": 0,
+    "pulls": 6,
+    "curve": [
+     {
+      "round": 1,
+      "skill": "data-cleaning",
+      "reward": 0.875,
+      "predicted": 0.0,
+      "reason": 0.0
+     },
+     {
+      "round": 2,
+      "skill": "admet-prediction",
+      "reward": 0.78,
+      "predicted": 0.0,
+      "reason": 0.0
+     },
+     {
+      "round": 3,
+      "skill": "citation-verify",
+      "reward": 0.755,
+      "predicted": 0.0,
+      "reason": 0.0
+     },
+     {
+      "round": 4,
+      "skill": "statistical-testing",
+      "reward": 0.9,
+      "predicted": 0.0,
+      "reason": 0.0
+     },
+     {
+      "round": 5,
+      "skill": "causal-inference",
+      "reward": 0.855,
+      "predicted": 0.0,
+      "reason": 0.0
+     },
+     {
+      "round": 6,
+      "skill": "md-simulation",
+      "reward": 0.755,
+      "predicted": 0.0,
+      "reason": 0.0
+     }
+    ],
+    "arm_stats": {
+     "citation-verify": {
+      "pulls": 1,
+      "mean_reward": 0.755,
+      "best": 0.755
+     },
+     "data-cleaning": {
+      "pulls": 1,
+      "mean_reward": 0.875,
+      "best": 0.875
+     },
+     "statistical-testing": {
+      "pulls": 1,
+      "mean_reward": 0.9,
+      "best": 0.9
+     },
+     "causal-inference": {
+      "pulls": 1,
+      "mean_reward": 0.855,
+      "best": 0.855
+     },
+     "md-simulation": {
+      "pulls": 1,
+      "mean_reward": 0.755,
+      "best": 0.755
+     },
+     "admet-prediction": {
+      "pulls": 1,
+      "mean_reward": 0.78,
+      "best": 0.78
+     }
+    }
+   },
+   "evolver": {
+    "attempts": 3,
+    "accepted": 3,
+    "rejected": 0,
+    "by_operator": {
+     "distill": {
+      "attempts": 3,
+      "accepted": 3
+     },
+     "mutate": {
+      "attempts": 0,
+      "accepted": 0
+     },
+     "crossover": {
+      "attempts": 0,
+      "accepted": 0
+     },
+     "regenerate": {
+      "attempts": 0,
+      "accepted": 0
+     }
+    },
+    "records": [
+     {
+      "op": "distill",
+      "name": "composition-only-formation-energy-extrapolation",
+      "accepted": true,
+      "reason": "G1 新技能入库",
+      "parent": [
+       "admet-prediction"
+      ]
+     },
+     {
+      "op": "distill",
+      "name": "survival-analysis-with-leakage-control",
+      "accepted": true,
+      "reason": "G1 新技能入库",
+      "parent": [
+       "statistical-testing"
+      ]
+     },
+     {
+      "op": "distill",
+      "name": "sequence-to-lead-structure-based-screening",
+      "accepted": true,
+      "reason": "G1 新技能入库",
+      "parent": [
+       "admet-prediction"
+      ]
+     }
+    ]
+   },
+   "cost_yuan": 0.1448,
+   "tokens": 32575
+  }
+ },
+ "timestamp": "2026-09-19 00:36:44"
+}
