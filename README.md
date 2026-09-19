@@ -66,7 +66,7 @@ node tools/front_check.js   # Dashboard 渲染自检（需 Node）
 | 内容 | 位置 |
 |---|---|
 | 本说明 | `README.md` |
-| **项目报告（PDF）** | `报告/SkillNet-S1-项目报告.pdf` |
+| **项目报告（PDF）** | `report/SkillNet-S1-项目报告.pdf` |
 | 文献对照笔记 | `docs/参考工作对照.md` |
 | 实验原始数据 | `out/exp1_retrieval.json`、`exp2_execution.json`、`exp3_evolution.json` |
 | 组件自检报告 | `out/verify_report.json` |
