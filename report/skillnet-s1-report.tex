@@ -1,0 +1,963 @@
+% !TEX program = xelatex
+% 编译：xelatex -> xelatex（两次以生成正确的目录与引用）
+\documentclass[UTF8, fontset=windows, 11pt, a4paper]{ctexart}
+
+\usepackage{geometry}
+\geometry{left=2.4cm, right=2.4cm, top=2.6cm, bottom=2.4cm}
+
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric, fit, backgrounds, calc}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage[colorlinks=true, linkcolor=inkaccent, urlcolor=inkaccent, citecolor=inkaccent]{hyperref}
+
+% ---------- 配色（与 Dashboard 一致的水墨色系）----------
+\definecolor{ink}{HTML}{1F1D1A}
+\definecolor{ink2}{HTML}{585349}
+\definecolor{ink3}{HTML}{8B857A}
+\definecolor{inkline}{HTML}{E5E1DA}
+\definecolor{inkaccent}{HTML}{9C3D2E}
+\definecolor{inkjade}{HTML}{3D5A52}
+\definecolor{inkgold}{HTML}{8A6A2F}
+\definecolor{inkbg}{HTML}{F7F6F3}
+
+\color{ink}
+
+% ---------- 章节样式 ----------
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{ink}}{\thesection}{0.6em}{}
+  [\vspace{-0.6em}\color{inkline}\rule{\textwidth}{0.6pt}]
+\titleformat{\subsection}
+  {\normalfont\large\bfseries\color{ink2}}{\thesubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{1.6em}{0.9em}
+\titlespacing*{\subsection}{0pt}{1.1em}{0.5em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{inkline}\leaders\hrule height \headrulewidth\hfill}}
+\fancyhead[L]{\small\color{ink3}SkillNet-S1 · 面向科研 Agent 的技能运维层}
+\fancyhead[R]{\small\color{ink3}\thepage}
+
+% ---------- 表格与列表 ----------
+\renewcommand{\arraystretch}{1.25}
+\setlist[itemize]{leftmargin=1.4em, itemsep=0.25em, topsep=0.35em}
+\setlist[enumerate]{leftmargin=1.7em, itemsep=0.25em, topsep=0.35em}
+
+% 提示框
+\newcommand{\callout}[2]{%
+  \vspace{0.5em}
+  \noindent\begin{tikzpicture}
+    \node[inner sep=0pt, text width=\textwidth-1.4em, align=left,
+          fill=inkbg, draw=inkline, line width=0.5pt, rounded corners=1.5pt,
+          inner xsep=0.8em, inner ysep=0.7em]
+      {\textbf{#1}\\[0.25em]#2};
+  \end{tikzpicture}
+  \vspace{0.5em}
+}
+
+% 关键数字小卡
+\newcommand{\kpi}[2]{%
+  \begin{tikzpicture}[baseline=-0.6ex]
+    \node[draw=inkline, fill=white, rounded corners=1.5pt,
+          inner xsep=0.6em, inner ysep=0.35em, align=center]
+      {\textbf{\color{inkaccent}#1}\\[-0.1em]\footnotesize\color{ink3}#2};
+  \end{tikzpicture}%
+}
+
+\begin{document}
+
+% ======================================================================
+% 封面
+% ======================================================================
+\thispagestyle{empty}
+\vspace*{2.2cm}
+
+{\color{inkline}\rule{\textwidth}{1pt}}
+
+\vspace{1.2cm}
+{\Huge\bfseries 面向科研 Agent 的\\[0.25em]技能运维层\par}
+\vspace{0.9cm}
+{\LARGE\color{ink2} SkillNet-S1 原型 · 可行性验证报告\par}
+\vspace{1.0cm}
+{\color{inkline}\rule{\textwidth}{1pt}}
+
+\vspace{2.2cm}
+
+\begin{tabularx}{\textwidth}{@{}>{\color{ink3}}l@{\hspace{1.2em}}X@{}}
+\toprule
+产品背景 & 立理 S1（s1.liliai.cn）· 面向复杂科研任务的 AI 科学家系统 \\
+报告类型 & 技术可行性验证与工程实现报告 \\
+交付内容 & 可运行原型（Python + FastAPI + 单页 Dashboard）+ 本报告 \\
+代码规模 & 3{,}865 行（含 51 个技能定义、3 组对照实验、2 套自检） \\
+验证方式 & 组件级自检 21 项 + 前端渲染自检 5 项 + 三组 API 真实执行实验 \\
+源代码 & \url{https://github.com/qing1989620/skillnet-demo} \\
+日期 & 2026 年 9 月 19 日 \\
+\bottomrule
+\end{tabularx}
+
+\vfill
+{\color{ink3}\small
+本报告的实验数据全部由真实 API 调用产生，非模拟或估计值。\\
+原始数据见 \texttt{out/exp1\_retrieval.json}、\texttt{exp2\_execution.json}、\texttt{exp3\_evolution.json}。
+}
+
+\newpage
+
+% ======================================================================
+% 目录
+% ======================================================================
+\thispagestyle{empty}
+\renewcommand{\contentsname}{\normalsize\bfseries 目\quad 录}
+\vspace*{0.6cm}
+{\tableofcontents}
+
+\newpage
+
+% ======================================================================
+\section{结论摘要}
+% ======================================================================
+
+\subsection*{我们想回答的问题}
+
+立理 S1 已经把规划、编码、实验、评审组织成一张可循环、可回退的智能体协作图，
+并沉淀了 300+ 专业科研工作流与大量 Skills。随之而来的新问题是：
+
+\begin{center}
+\fbox{\parbox{0.86\textwidth}{\centering\vspace{0.3em}
+当技能与工作流的数量继续增长，\textbf{Agent 是否还找得对、用得准，并且越用越好？}\vspace{0.3em}}}
+\end{center}
+
+本报告交付的原型，就是为这个问题造的一层\textbf{技能运维层}：它不生产技能内容，
+而是在技能与 Agent 之间补上「组织、检索、选择、评估、演进」这五个动作。
+
+\subsection*{三个关键数字}
+
+\begin{center}
+\kpi{96.7\%}{技能检索召回\\（基线 77.5\%）}
+\hspace{1.2em}
+\kpi{+15pp}{领域要点覆盖率\\（82.1\% → 97.4\%）}
+\hspace{1.2em}
+\kpi{< ¥0.15}{完整优化循环成本\\（6 轮 × 2 组对照）}
+\end{center}
+
+\subsection*{三个核心发现}
+
+\textbf{发现一：技能的价值体现在「专业操作要点的覆盖」，而不是「方案看起来更好」。}
+加入技能后，方案对领域专业要点（参数阈值、验证清单、常见陷阱）的覆盖从 82.1\% 升到 97.4\%，
+而 LLM 盲评均分只从 8.32 升到 8.81（+5.8\%）。这说明\textbf{用 LLM 打分来评估技能价值是不可靠的}——
+它对文风与篇幅的敏感度远高于对专业细节的敏感度。
+
+\textbf{发现二：存在明显的天花板效应。}
+无技能基线的盲评均分已达 8.32/10；在「老虎机选择 vs 随机选择」的对照中，两者的实测奖励差距只有 0.011。
+任务本身是「给出研究执行方案」，强模型不做任何准备也能拿到高分，
+技能补的特定工具用法与陷阱被压缩了。
+
+\textbf{发现三：技能采纳率是一个被普遍忽视的独立指标。}
+即使把技能全文摆在 Agent 面前，也只有 \textbf{67\%–84\%} 的技能被真正写进方案。
+这与社区评测的结论方向一致（Vercel agent evals：默认配置下技能在 56\% 的测试用例中从未被激活）。
+「技能没被激活」与「技能质量差」是两件事，必须分开度量。
+
+\subsection*{建议}
+
+\begin{enumerate}
+\item \textbf{先做产物级评估，再谈任何收益。}
+   发现一与发现二共同指向同一个结论：只要评估停留在「方案级」，
+   技能与强化学习的真实增益就无法被测量。S1 的沙箱与独立评审机制已经就位，
+   把它接上即可把评估提升到「真跑代码 + 产物校验」，这是解锁后续一切优化的前提。
+\item \textbf{按「检索层 → 进化闭环 → 调度强化学习」分三阶段落地}，每阶段独立可验证、可回退。
+   检索层的收益在本报告中已被直接证实（召回 77.5\% → 96.7\%），风险最低，适合先做。
+\item \textbf{技能层与模型层解耦，可独立演进。}
+   文献证据表明，在模型与执行框架完全固定的前提下，仅增加技能层即可带来显著提升
+   （MLE-bench +134.3\%），这对 S1「多个国产旗舰模型并存」的架构尤其有价值。
+\end{enumerate}
+
+\callout{一句话结论}{本原型证明了「技能运维层」在工程上完全可行、成本可控、且与现有 Agent 框架的对接成本接近于零；
+但它的价值要真正被量化，前提是把评估从「方案级」推进到「产物级」。}
+
+\newpage
+
+% ======================================================================
+\section{背景与问题}
+% ======================================================================
+
+\subsection{立理 S1 的现状}
+
+立理 S1 是面向复杂科研任务的 AI 科学家系统，其核心特征包括：
+
+\begin{itemize}
+\item \textbf{Graph Engineering 图工程}：把规划、编码、实验、评审等科研环节组织成一张可循环、可回退的协作图，
+      每个节点由不同角色的智能体承担，执行体与评审体相互独立。
+\item \textbf{300+ 专业科研工作流}：把不同领域的研究方法、分析流程与质量标准封装为可复用的执行路径。
+\item \textbf{Skills 体系}：每个 Skill 将专业方法、代码工具、数据源与验证规则封装为可直接执行的能力。
+\item \textbf{国产旗舰模型矩阵}：原生接入 Kimi、DeepSeek、Qwen、GLM、MiniMax 等多个模型。
+\item \textbf{独立沙箱与评审}：代码在隔离环境真实执行，结论需经文献、数据或实验验证。
+\end{itemize}
+
+这套架构解决的是\textbf{「怎么把研究做对」}，而本报告关注的是它的上一层问题：
+\textbf{「怎么让技能资产本身越用越好用」}。
+
+\subsection{来自文献的四个事实}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.1cm} >{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{结论} & \textbf{对我们的含义} \\
+\midrule
+前沿 Agent 在真实大技能池上的\textbf{技能检索与编排能力极弱}：SkillNet-Gym 中检索完整度仅
+8\%–39\%，一旦要求组成依赖保持的工作流，硬任务分数进一步崩塌
+\textsuperscript{[1]} &
+S1 已有 300+ 工作流与大量 Skills，\textbf{「技能变多之后找对技能」本身就是瓶颈}，这正是切入机会 \\[0.25em]
+技能优化\textbf{不必逐轮重写}：用上下文老虎机分配评估预算、周期性做种群更新，
+六个基准取得最高平均分，优化成本比 SkillOpt 降低 55\%–58\%
+\textsuperscript{[4]} &
+技能库的维护成本可控，\textbf{可以做成常驻的后台优化任务} \\[0.25em]
+在模型、执行框架、下游预算\textbf{全部固定}的前提下，仅增加蒸馏出的操作性知识，
+MLE-bench 提升 \textbf{134.3\%}
+\textsuperscript{[3]} &
+\textbf{技能是独立于模型能力的变量}，S1 换模型无需重做技能层，而技能层对所有模型都有效 \\[0.25em]
+社区评测发现默认配置下技能在 \textbf{56\%} 的测试用例里\textbf{根本没被激活}
+\textsuperscript{[5]} &
+光有技能库不够，\textbf{必须有一层负责「什么时候该用哪个技能」} \\
+\bottomrule
+\end{tabularx}
+\caption{文献结论与本项目的对应关系}
+\end{table}
+
+\subsection{问题定义}
+
+综合以上，我们要补的是一层位于「技能资产」与「Agent 执行」之间的运维能力：
+
+\begin{center}
+\begin{tikzpicture}[node distance=0.9cm, font=\small]
+  \node[draw=inkline, fill=white, rounded corners=2pt, inner sep=8pt, text width=3.1cm, align=center]
+    (assets) {\textbf{技能资产}\\300+ 工作流\\大量 Skills};
+  \node[draw=inkaccent, fill=inkbg, rounded corners=2pt, inner sep=8pt, text width=4.4cm, align=center, right=1.3cm of assets]
+    (layer) {\textbf{技能运维层}\\\footnotesize（本项目补的一层）\\[0.3em]
+      \footnotesize 组织 · 检索 · 选择 · 评估 · 演进};
+  \node[draw=inkline, fill=white, rounded corners=2pt, inner sep=8pt, text width=3.1cm, align=center, right=1.3cm of layer]
+    (agent) {\textbf{Agent 执行}\\Graph Engineering\\独立评审};
+  \draw[-{Latex[length=2.2mm]}, ink2, line width=0.7pt] (assets) -- (layer);
+  \draw[-{Latex[length=2.2mm]}, ink2, line width=0.7pt] (layer) -- (agent);
+  \draw[-{Latex[length=2.2mm]}, inkaccent, dashed, line width=0.7pt]
+    ([yshift=-11pt]agent.south) -- node[below, font=\scriptsize, text=inkaccent]{执行反馈回流（实测奖励）} ([yshift=-11pt]layer.south);
+\end{tikzpicture}
+\end{center}
+
+需要说明的是，这一层\textbf{不替代} S1 已有的规划与调度能力，
+它只回答两个更具体的问题：（1）当前任务该激活哪些技能？（2）哪些技能值得继续投入、哪些该被替换？
+
+\newpage
+
+% ======================================================================
+\section{系统设计}
+% ======================================================================
+
+\subsection{总体架构}
+
+原型由四个层次组成，自下而上分别负责「组织」「找到」「选对」「变好」：
+
+\begin{center}
+\begin{tikzpicture}[font=\small, node distance=0.5cm,
+  layer/.style={draw=inkline, fill=white, rounded corners=2pt, inner sep=7pt,
+                text width=10.6cm, align=left},
+  hot/.style={layer, draw=inkaccent, fill=inkbg}]
+
+\node[layer] (l1) {\textbf{① 技能本体层}\\[0.15em]
+  \footnotesize\color{ink3}技能卡（能力 / 输入 / 输出 / 适用时机）· 类型化关系图 · 五维质量评估};
+\node[layer, below=of l1] (l2) {\textbf{② 检索路由层}\\[0.15em]
+  \footnotesize\color{ink3}BM25 ＋ 语义向量 ＋ 结构信号 → 加权融合 → 关系图扩展 → LLM 重排};
+\node[hot, below=of l2] (l3) {\textbf{③ 选择评估层}\\[0.15em]
+  \footnotesize\color{ink3}LinUCB 上下文老虎机：优先级 ＝ 预测收益 ＋ 探索奖励};
+\node[layer, below=of l3] (l4) {\textbf{④ 进化回灌层}\\[0.15em]
+  \footnotesize\color{ink3}蒸馏 / 变异 / 交叉 / 再生成 ＋ 准入过滤（防技能库污染）};
+
+\draw[-{Latex[length=2mm]}, ink2] (l1) -- (l2);
+\draw[-{Latex[length=2mm]}, ink2] (l2) -- (l3);
+\draw[-{Latex[length=2mm]}, ink2] (l3) -- (l4);
+
+\draw[-{Latex[length=2mm]}, inkaccent, dashed, line width=0.8pt]
+  ([xshift=12pt]l4.north east) -- ([xshift=12pt]l3.south east)
+  -- ([xshift=12pt]l2.south east) -- ([xshift=12pt]l1.south east);
+\node[right=14pt of l4.east, font=\scriptsize, text=inkaccent, align=left, text width=2.6cm]
+  {新技能回灌\\（重新进入索引）\\[0.5em]实测奖励回流\\（更新选择器）};
+
+\end{tikzpicture}
+\end{center}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}>{\bfseries}p{2.5cm} >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}p{4.1cm}@{}}
+\toprule
+层次 & 职责 & 关键实现 \\
+\midrule
+技能本体层 & 把技能从「一段提示词」变成结构化资产 & \texttt{skillnet/schema.py}、\texttt{catalog.py} \\
+检索路由层 & 在大技能池中定位任务真正需要的技能集 & \texttt{index.py}、\texttt{retriever.py} \\
+选择评估层 & 在有限预算下决定评估哪些技能 & \texttt{bandit.py} \\
+进化回灌层 & 从真实执行反馈中生成更好的技能 & \texttt{evolver.py} \\
+\bottomrule
+\end{tabularx}
+\caption{四层职责划分}
+\end{table}
+
+\subsection{技能本体：从提示词到结构化资产}
+
+每个技能包含三样东西，对应文献中 SkillNet 提出的三层本体
+\textsuperscript{[1]}。
+
+\textbf{第一，技能卡（Skill Contract）。} 四个字段——能力、输入、输出、适用时机。
+检索阶段只读这一层，命中后才加载 \texttt{SKILL.md} 全文。
+这是让技能池能够规模化的前提：栈上放着上千个技能，实际读进上下文的只有几个。
+
+\textbf{第二，类型化关系图。} 技能之间有四类边：
+
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{关系} & \textbf{语义} & \textbf{在编排中的作用} \\
+\midrule
+\texttt{depend\_on} & A 必须在 B 之前执行 & \textbf{决定执行顺序}（有向） \\
+\texttt{compose\_with} & A、B 常被一起调用 & 补全工作流上下游 \\
+\texttt{similar\_to} & 功能等价，可选替代 & 冗余检测与降级 \\
+\texttt{belong\_to} & A 是 B 的组成步骤 & 层级抽象 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{第三，五维质量评估。} 安全、完整、可执行、可维护、成本感知。
+在检索排序中作为先验权重使用——同等相关度下优先返回高质量技能。
+
+\subsection{检索路由：三档策略逐级增强}
+
+\subsubsection*{第一档：BM25 关键词检索（基线）}
+
+用标准 BM25 Okapi。中文按「词 + 2-gram」分词，英文按词。
+在中文科研任务上，这一档的表现并不差（本实验召回 77.5\%），但\textbf{只有一半任务能凑齐完整的技能集}。
+
+\subsubsection*{第二档：混合检索}
+
+在 BM25 之外增加两路召回：
+
+\begin{itemize}
+\item \textbf{语义向量通路}：词级 TF-IDF 加权的稀疏向量 + 余弦相似度。
+      需要说明的是，本机环境无法下载稠密编码器，因此这一通路是降级实现；
+      生产环境应替换为 BGE-M3 / Qwen3-Embedding 等模型，接口已经预留。
+\item \textbf{结构信号通路}：只认原样出现的领域名与标签，避免分词带来的假命中。
+\end{itemize}
+
+三路结果用\textbf{加权分数融合}而非 RRF：
+\texttt{score = 0.55 × BM25 + 0.30 × 语义 + 0.15 × 结构}，
+并给「被多路同时召回」的候选加一致性奖励。
+
+\callout{一个被验证过的陷阱}{最初使用 RRF（Reciprocal Rank Fusion）做融合时，
+混合检索的指标\textbf{反而低于纯 BM25}。原因是 RRF 只看排名不看分数——
+只在弱通路里排第一的噪声项，其得分会高于在强通路里排第二的真实目标。
+改为加权分数融合后，曲线才恢复单调。这条经验已写入项目文档与技能库。}
+
+\subsubsection*{第三档：Fabric 式任务级路由}
+
+在前两档的基础上再加两步：
+
+\begin{enumerate}
+\item \textbf{关系图扩展}：沿 \texttt{depend\_on} / \texttt{compose\_with} 边，
+      把头部候选的工作流上下游补进候选池。这是提升最大的一环。
+\item \textbf{LLM 重排}：把候选的技能卡（而非全文）交给模型，按「对完成该任务的实际必要性」重新排序。
+\end{enumerate}
+
+这一档直接对应 SkillNet-Fabric 的设计思路：先用检索与关系扩展构造「任务级 Wiki」，
+再让 Explore 在其中做最终选择。原型另外实现了一条 \texttt{/api/route} 完整路线，
+由 LLM 在 Wiki 中选出最终技能集并给出依赖顺序。
+
+\subsection{选择评估：LinUCB 上下文老虎机}
+
+当候选技能数量超过评估预算时，需要一个策略来决定「下一个评估谁」。
+原型采用 COBRA-Skills 的做法\textsuperscript{[4]}：
+
+\begin{center}
+\vspace{0.3em}
+\fbox{\parbox{0.72\textwidth}{\centering\vspace{0.35em}
+$\displaystyle \text{优先级} \;=\; \underbrace{\theta^{\top} x}_{\text{预测收益}} \;+\; \underbrace{\alpha\sqrt{x^{\top} A^{-1} x}}_{\text{探索奖励}}$
+\vspace{0.35em}}}
+\vspace{0.3em}
+\end{center}
+
+其中 $x$ 是技能的上下文向量（由语义表示哈希分量 + 质量分 + 代际 + 检索排名构成），
+$A$ 与 $b$ 按每次实测奖励增量更新。
+
+设计上刻意保持与文献一致的三点：
+
+\begin{enumerate}
+\item \textbf{上下文来自技能的语义表示}——因此一次评估的反馈能影响语义相近的\emph{未评估}技能，
+      不必逐个试错。这是这套方法相对「逐个评估」的核心优势。
+\item \textbf{最终输出按实测平均奖励选，不按预测分数选}。预测只用于安排评估顺序。
+\item \textbf{新生成的技能不继承父技能的奖励}，必须重新进入评估流程。
+\end{enumerate}
+
+同时实现了随机选择器作为消融对照，用于分离「老虎机」这一组件的独立贡献。
+
+\subsection{进化回灌：四种算子与一道闸门}
+
+技能从哪来？原型实现了四种生成算子，分别对应不同的探索意图：
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}>{\ttfamily}l >{\raggedright\arraybackslash}p{4.2cm} >{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{算子} & \textbf{输入} & \textbf{作用} \\
+\midrule
+distill & 一次真实执行轨迹 & 提炼可迁移的操作性知识（不写题目与答案） \\
+mutate & 某技能的成功 / 失败轨迹 & 把有效做法固化进步骤，把失败模式补进陷阱 \\
+crossover & 两个高分技能 + 低分技能作反例 & 以主干为框架、仅借鉴一处，禁止文本拼接 \\
+regenerate & 无技能执行轨迹 + 任务类型 & 跳出局部，打开新的搜索方向 \\
+\bottomrule
+\end{tabularx}
+\caption{四种技能进化算子}
+\end{table}
+
+\textbf{准入过滤（防污染闸门）。} 文献明确指出大规模技能库会被低质量内容污染
+\textsuperscript{[1]}，因此新技能必须过三关才能入库：
+命名合规（kebab-case、长度限制）→ 步骤数下限（$\geq 3$）→
+与现有技能相似度低于阈值。相似度取 $\max(\text{Jaccard},\ 0.9 \times \text{重叠系数})$——
+单用 Jaccard 对长度差异过于敏感，会漏掉明显的冗余技能。
+
+\subsection{跨框架接入：一套技能，四份产物}
+
+这部分直接回应了「与 Google ADK、Claude Code 等框架打通」的要求。
+经过核实：Google ADK 自 v1.25 起通过 \texttt{SkillToolset} 支持 Skills，
+遵循 agentskills.io 目录规范，官方文档明确说明「为 Claude Code / Cursor / Gemini CLI
+编写的技能目录可用 \texttt{load\_skill\_from\_dir} 原样加载」
+\textsuperscript{[6]}。
+
+因此本项目\textbf{不为每个框架写转换器}——\texttt{SKILL.md} 目录是唯一真源，各框架自己读：
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}>{\bfseries}p{4.3cm} >{\raggedright\arraybackslash}X@{}}
+\toprule
+目标框架 & 产物 \\
+\midrule
+Claude Code / Cursor / Gemini CLI & \texttt{.claude/skills/<name>/SKILL.md} + \texttt{CLAUDE.md} 激活提示 \\
+Google ADK & \texttt{skills/<name>/SKILL.md} + 可直接运行的 \texttt{agent.py}（\texttt{SkillToolset}） \\
+OpenAI function calling & \texttt{tools.json}（\texttt{search\_skills} / \texttt{load\_skill} 两级渐进披露） \\
+对照方案 & \texttt{SKILLS\_INDEX.md}（扁平文档索引，用于测试「技能是否被激活」） \\
+\bottomrule
+\end{tabularx}
+\caption{跨框架导出产物}
+\end{table}
+
+\newpage
+
+% ======================================================================
+\section{实验与结果}
+% ======================================================================
+
+\subsection{实验设置}
+
+\begin{itemize}
+\item \textbf{技能库}：51 个真实科研技能，覆盖 17 个领域，62 条类型化关系边。
+\item \textbf{评测任务}：20 个科研任务，每个任务带人工标注的金标准技能集（gold）与依赖工作流。
+\item \textbf{执行模型}：DeepSeek（\texttt{deepseek-chat}），通过官方 API 真实调用。
+\item \textbf{评审模型}：同模型，但\textbf{盲评}——评审不知道方案来自哪一档，且提示词中明确要求
+      「不要因为文风好、篇幅长而加分或减分」。
+\item \textbf{重复次数}：实验二每个配置重复 3 次取均值，以抑制单次采样噪声。
+\end{itemize}
+
+\subsection{实验一：技能检索与编排}
+
+\textbf{问题}：三种检索策略，谁能找回完成任务真正需要的技能集？
+
+\begin{table}[h]
+\centering
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{检索策略} & \textbf{技能召回} & \textbf{完全覆盖} & \textbf{编排完整度} \\
+\midrule
+BM25 关键词检索 & 77.5\% & 50.0\% & 60.0\% \\
+混合检索（＋语义＋结构） & 78.3\% & 55.0\% & 62.5\% \\
+\textbf{Fabric 完整方案}（＋关系扩展＋LLM 重排） & \textbf{96.7\%} & \textbf{90.0\%} & \textbf{95.0\%} \\
+\bottomrule
+\end{tabular}
+\caption{实验一结果（20 个任务，K=5）}
+\end{table}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.86\textwidth, height=5.4cm,
+  ybar, bar width=13pt,
+  ymin=0, ymax=110,
+  ylabel={\small 百分比（\%）},
+  symbolic x coords={BM25,混合检索,Fabric},
+  xtick=data,
+  xticklabel style={font=\small},
+  yticklabel style={font=\small},
+  legend style={font=\small, at={(0.5,1.02)}, anchor=south, legend columns=3, draw=inkline},
+  enlarge x limits=0.24,
+  grid=major, grid style={inkline, line width=0.3pt},
+  axis line style={ink3},
+  tick style={ink3},
+]
+\addplot[fill=inkjade, draw=inkjade] coordinates {(BM25,77.5) (混合检索,78.3) (Fabric,96.7)};
+\addplot[fill=inkgold, draw=inkgold] coordinates {(BM25,50.0) (混合检索,55.0) (Fabric,90.0)};
+\addplot[fill=inkaccent, draw=inkaccent] coordinates {(BM25,60.0) (混合检索,62.5) (Fabric,95.0)};
+\legend{技能召回, 完全覆盖, 编排完整度}
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\textbf{结论。} 关键词检索能命中大部分技能，但\textbf{只有一半任务能凑齐完整技能集}——
+漏掉的那个技能往往正是让流程跑通的关键。加入关系图扩展后，完全覆盖率从 55\% 跃升到 90\%，
+这说明：在大技能池里，\textbf{仅靠「和查询像不像」是不够的，还要沿技能间的依赖与组合关系把工作流上下游补齐}。
+编排完整度从 60\% 到 95\% 则说明，技能集选对之后，执行顺序基本可以自动推导出来。
+
+\subsection{实验二：技能对执行质量的影响}
+
+\textbf{问题}：把技能交给 Agent，方案质量真的会变好吗？改善在哪里？
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\textbf{技能供给方式} & \textbf{盲评均分} & \textbf{要点覆盖率} & \textbf{技能采纳率} & \textbf{相对基线} & \textbf{成本/任务} \\
+\midrule
+无技能 & 8.32 & 82.1\% & — & 基线 & ¥0.068 \\
+仅技能卡（L1 元数据） & 8.78 & 93.1\% & 83.9\% & +5.5\% & ¥0.074 \\
+混合检索 ＋ 技能全文 & 8.77 & \textbf{98.3\%} & 66.7\% & +5.4\% & ¥0.078 \\
+\textbf{完整方案}（扩展＋重排＋全文） & \textbf{8.81} & 97.4\% & 77.2\% & \textbf{+5.8\%} & ¥0.084 \\
+\bottomrule
+\end{tabular}
+\caption{实验二结果（12 个任务 × 4 档 × 3 次重复）}
+\end{table}
+
+\textbf{配对比较}（同一任务内对比无技能基线，消除任务难度差异）：
+完整方案 12 个任务中 \textbf{7 胜 1 平}，要点覆盖率 7 胜。
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[
+  width=0.86\textwidth, height=5.4cm,
+  xbar, bar width=11pt,
+  xmin=70, xmax=105,
+  xlabel={\small 要点覆盖率（\%）},
+  symbolic y coords={无技能,仅技能卡,混合检索,完整方案},
+  ytick=data,
+  yticklabel style={font=\small},
+  xticklabel style={font=\small},
+  nodes near coords, nodes near coords style={font=\scriptsize, color=ink2},
+  enlarge y limits=0.22,
+  grid=major, grid style={inkline, line width=0.3pt},
+  axis line style={ink3}, tick style={ink3},
+]
+\addplot[fill=inkjade, draw=inkjade] coordinates {
+  (82.1,无技能) (93.1,仅技能卡) (98.3,混合检索) (97.4,完整方案)};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\textbf{结论。} 技能带来的最大改变不是「方案更好看」，而是「专业操作要点被覆盖」。
+覆盖率提升约 15 个百分点，而盲评均分只提升 5.8\%。
+另外，即使把技能全文交给 Agent，也只有 67\%–84\% 的技能被真正用上。
+
+\subsection{实验三：老虎机选择与技能进化闭环}
+
+\textbf{问题}：选择策略与进化机制能否让技能库「越用越好」？
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\textbf{选择策略} & \textbf{平均实测奖励} & \textbf{最佳技能} & \textbf{库规模} & \textbf{新技能} & \textbf{成本} \\
+\midrule
+\textbf{LinUCB 老虎机} & \textbf{0.831} & literature-review & 51 → 54 & 3 & ¥0.138 \\
+随机选择（消融） & 0.820 & statistical-testing & 51 → 54 & 3 & ¥0.145 \\
+\bottomrule
+\end{tabular}
+\caption{实验三结果（6 轮优化循环 × 2 组对照）}
+\end{table}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}clll@{}}
+\toprule
+\textbf{轮次} & \textbf{任务领域} & \textbf{LinUCB 的选择} & \textbf{随机选择} \\
+\midrule
+1 & 单细胞 & \texttt{scrna-qc-clustering} & \texttt{data-cleaning} \\
+2 & 材料 & \texttt{dft-formation-energy} & \texttt{admet-prediction} \\
+3 & 文献 & \texttt{literature-review} & \texttt{citation-verify} \\
+4 & 临床 & \texttt{clinical-feature-engineering} & \texttt{statistical-testing} \\
+5 & 因果推断 & \texttt{econometric-panel} & \texttt{causal-inference} \\
+6 & 分子对接 & \texttt{molecular-docking} & \texttt{md-simulation} \\
+\bottomrule
+\end{tabular}
+\caption{逐轮选择记录：两组的行为差异是清晰的}
+\end{table}
+
+\textbf{结论。} 选择行为上的差异很明显——LinUCB 每一轮都选中了与任务领域直接对应的技能，
+随机选择则经常落到通用或邻域技能上。但\textbf{实测奖励的差距只有 0.011}，
+在 6 轮样本量下不构成显著结论。原因与实验二同源：任务本身存在天花板。
+
+进化侧则是确定生效的：两个对照组各蒸馏出 3 个通过准入过滤的新技能
+（如 \texttt{composition-only-formation-energy-extrapolation}、
+\texttt{leakage-safe-survival-feature-pipeline}），技能库从 51 增长到 54，
+检索索引随之刷新。\textbf{整个优化循环的成本不到 ¥0.15}。
+
+\newpage
+
+% ======================================================================
+\section{关键发现}
+% ======================================================================
+
+本章是全报告最重要的部分。三个发现都指向同一个方向：
+\textbf{不是方法无效，而是评估方法不足以测出效果。}
+
+\subsection{发现一：技能的价值在「要点覆盖」，不在「方案评分」}
+
+实验二给出的两个数字放在一起看：
+
+\begin{center}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{指标} & \textbf{无技能} & \textbf{完整方案} \\
+\midrule
+领域要点覆盖率 & 82.1\% & 97.4\% \quad（\textbf{+15.3 个百分点}） \\
+LLM 盲评均分 & 8.32 & 8.81 \quad（\textbf{+5.8\%}） \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+同一个干预，两个指标给出的「提升幅度」差了近三倍。为什么？
+
+\textbf{LLM 考官对「该有的专业细节有没有」并不敏感。}
+它对文本的结构、术语密度、论证完整度的反应，远大于对「线粒体比例阈值该按组织分别设定」
+这类具体操作知识的反应。而这些恰恰是技能的全部价值所在。
+
+这份差异直接解释了 SkillNet 论文为什么坚持用\textbf{「能否跑通 unit test」}而不是
+「LLM 打分」来评估技能效果\textsuperscript{[1]}，
+也解释了为什么 MLE-bench 这类\textbf{有唯一正确答案的基准}能测出 +134.3\% 的巨大增益
+\textsuperscript{[3]}，而本项目的方案级任务只有 +5.8\%。
+
+\callout{工程含义}{评估层级决定了能测出多大的效果。
+「方案级」评估（LLM 打分）适合快速迭代，但不能用来论证技能的价值。
+要把技能的真实收益摆到台面上，必须做\textbf{「产物级」评估}：真跑代码、校验输出、自动判分。}
+
+\subsection{发现二：天花板效应真实存在，且会掩盖强化学习的作用}
+
+实验二与实验三都出现了同一种现象：各档之间拉不开差距。
+
+\begin{itemize}
+\item 实验二：无技能基线已拿到 8.32/10，四档之间的最大差距只有 0.49 分。
+\item 实验三：LinUCB 与随机选择的平均实测奖励差距只有 \textbf{0.011}，
+      尽管两者的\textbf{选择行为差异非常明显}（一方每轮都选中领域对口技能，另一方经常选错）。
+\end{itemize}
+
+原因有两层：
+
+\begin{enumerate}
+\item \textbf{任务太「软」。} 任务本身只要求「给出研究执行方案」，
+      而 DeepSeek 在通用科研方法论上本就很强，不做任何准备也能写出像样的方案。
+      技能补的是特定工具的具体用法，这部分增益在软任务上被严重压缩。
+\item \textbf{奖励信号的分辨率不足。} 当所有配置的得分都挤在 8.0–9.0 区间时，
+      0.1 分的差异中很大一部分是采样噪声而非真实效应。
+      即使重复 3 次取均值，剩余噪声仍足以吞掉老虎机带来的增益。
+\end{enumerate}
+
+文献中也有同样的观察：SkillNet-Gym 的实验显示技能对\textbf{困难任务的改善明显大于简单任务}
+\textsuperscript{[1]}。
+
+\callout{工程含义}{当前 6 轮的优化循环只是\textbf{管线连通性验证}，不是效果验证。
+它证明了「选择 → 执行 → 回填 → 进化 → 再检索」这条链路能跑通、成本可控；
+要证明强化学习选择能带来多少收益，必须换到\textbf{难度更高、且有客观判据}的任务集上，
+并把轮次提到数十轮量级（COBRA-Skills 用的是 30 轮 × 50 个样本\textsuperscript{[4]}）。}
+
+\subsection{发现三：技能采纳率是一个被忽视的独立指标}
+
+实验二测得的技能采纳率：
+
+\begin{center}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{技能供给方式} & \textbf{仅技能卡} & \textbf{混合检索} & \textbf{完整方案} \\
+\midrule
+采纳率（给定技能中被真正使用的比例） & 83.9\% & 66.7\% & 77.2\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+也就是说，\textbf{即使把技能全文完整地摆在 Agent 面前，也仍有约两到三成的技能没有被用上}。
+这与社区评测的结论方向一致：Vercel 的 agent evals 发现默认配置下
+技能在 56\% 的测试用例中\textbf{从未被激活}，而把压缩文档索引直接放进 \texttt{AGENTS.md}
+反而取得了更高的通过率\textsuperscript{[5]}。
+
+这带来一个重要的工程区分：
+
+\begin{itemize}
+\item \textbf{技能质量}问题：技能写得不好、不完整、不可执行 → 用五维评估与准入过滤解决。
+\item \textbf{技能激活}问题：技能很好但没被调用 → 这是\textbf{检索与路由层}要解决的问题，
+      与技能本体的质量无关。
+\end{itemize}
+
+两者必须分开度量。把「激活失败」误判为「质量差」，会导致团队不断重写本来没问题的技能。
+
+\subsection{三个发现共同指向的结论}
+
+\begin{center}
+\begin{tikzpicture}[font=\small]
+\node[draw=inkaccent, fill=inkbg, rounded corners=2pt, inner sep=10pt, text width=0.78\textwidth, align=center]
+  {\textbf{评估必须从「方案级」升级到「产物级」}\\[0.4em]
+   \footnotesize 只有「真跑代码 + 自动判分」，才能同时解决三个问题：\\
+   \footnotesize 让专业要点的价值被计入（发现一）、让天花板被打破（发现二）、\\
+   \footnotesize 让「技能没被用上」与「技能不行」可区分（发现三）};
+\end{tikzpicture}
+\end{center}
+
+S1 已经具备沙箱执行与独立评审机制，因此这一步的\textbf{边际成本很低}——
+把本原型的评估接口接到现有沙箱上即可。
+
+\newpage
+
+% ======================================================================
+\section{接入立理 S1 的路径}
+% ======================================================================
+
+按侵入性从低到高，给出三条路径。三条可以分阶段推进，\textbf{每一阶段都有独立可测的收益，
+任何一步不成立都可以停在那里}。
+
+\subsection{路径 A：只替换技能路由层（低风险，建议先行）}
+
+保持 S1 的 Graph Engineering 图与执行器不动，只在「技能选择」这一步插入本原型的检索链路：
+
+\begin{center}
+\begin{tikzpicture}[font=\small, node distance=0.42cm]
+\node[draw=inkline, fill=white, rounded corners=2pt, inner sep=6pt] (q) {用户任务};
+\node[draw=inkaccent, fill=inkbg, rounded corners=2pt, inner sep=6pt, below=of q, text width=8.4cm, align=center]
+  (r) {\textbf{SkillNet 检索层}\\[0.15em]\footnotesize BM25 ＋ 语义 ＋ 结构 → 加权融合 → 关系扩展 → LLM 重排};
+\node[draw=inkline, fill=white, rounded corners=2pt, inner sep=6pt, below=of r, text width=8.4cm, align=center]
+  (s) {\textbf{S1 现有调度器}\\[0.15em]\footnotesize 选 workflow → 图节点执行};
+\draw[-{Latex[length=2mm]}, ink2] (q) -- (r);
+\draw[-{Latex[length=2mm]}, ink2] (r) -- node[right, font=\scriptsize, text=ink3, xshift=2pt]{输出技能卡（非全文，控制上下文）} (s);
+\end{tikzpicture}
+\end{center}
+
+\begin{tabularx}{\textwidth}{@{}>{\bfseries}p{1.9cm} >{\raggedright\arraybackslash}X@{}}
+\toprule
+收益 & 同时缓解「技能没被激活」与「选错技能」两类问题；注入上下文的体积显著下降 \\
+风险 & 低。检索层无状态，可灰度、可回退 \\
+验证 & 在 S1 已有真实 case 上做 A/B，看技能命中率与任务返工次数 \\
+\bottomrule
+\end{tabularx}
+
+\textbf{本报告实验一的数字（召回 77.5\% → 96.7\%）就是这条路径的直接依据。}
+
+\subsection{路径 B：技能库接入进化闭环}
+
+把 S1 每次任务的执行轨迹沉淀下来，离线运行进化算子：
+
+\begin{center}
+\begin{tikzpicture}[font=\small, node distance=0.4cm]
+\node[draw=inkline, fill=white, rounded corners=2pt, inner sep=6pt] (t) {S1 执行轨迹};
+\node[draw=inkline, fill=white, rounded corners=2pt, inner sep=6pt, right=0.7cm of t] (d) {蒸馏 / 变异};
+\node[draw=inkline, fill=white, rounded corners=2pt, inner sep=6pt, right=0.7cm of d] (f) {准入过滤};
+\node[draw=inkaccent, fill=inkbg, rounded corners=2pt, inner sep=6pt, right=0.7cm of f] (p) {候选技能池};
+\node[draw=inkline, fill=white, rounded corners=2pt, inner sep=6pt, below=0.7cm of p] (h) {人工评审 / 影子评估};
+\node[draw=inkline, fill=white, rounded corners=2pt, inner sep=6pt, left=0.7cm of h] (lib) {S1 正式技能库};
+\draw[-{Latex[length=1.8mm]}, ink2] (t) -- (d);
+\draw[-{Latex[length=1.8mm]}, ink2] (d) -- (f);
+\draw[-{Latex[length=1.8mm]}, ink2] (f) -- (p);
+\draw[-{Latex[length=1.8mm]}, ink2] (p) -- (h);
+\draw[-{Latex[length=1.8mm]}, ink2] (h) -- (lib);
+\draw[-{Latex[length=1.8mm]}, inkaccent, dashed] (lib.north) -- ++(0,0.42) -| (t.south);
+\end{tikzpicture}
+\end{center}
+
+\begin{tabularx}{\textwidth}{@{}>{\bfseries}p{1.9cm} >{\raggedright\arraybackslash}X@{}}
+\toprule
+收益 & 技能库从「人工维护」变成「越用越厚」，且新知识来自真实执行而非想象 \\
+关键 & 准入过滤不能省——文献明确指出技能库会被污染，必须有人工或强评审兜底 \\
+验证 & 统计新增技能被后续任务真实调用的比例，以及它带来的分数变化 \\
+\bottomrule
+\end{tabularx}
+
+\subsection{路径 C：把调度策略本身交给强化学习（探索性）}
+
+把 Graph Engineering 图中的节点（或工作流）视为\textbf{臂}，用 LinUCB 决定「下一步执行哪个节点」：
+
+\begin{itemize}
+\item 状态 $x$：当前研究上下文与候选技能 / 工作流的语义表示
+\item 奖励 $r$：该节点的实际贡献（评审分数、产物是否被后续步骤采纳、是否触发返工）
+\item 价值：\textbf{用户的使用过程本身就是训练数据}，调度策略随使用自动变好
+\end{itemize}
+
+\begin{tabularx}{\textwidth}{@{}>{\bfseries}p{1.9cm} >{\raggedright\arraybackslash}X@{}}
+\toprule
+收益 & 调度策略随使用自动优化，无需人工调参 \\
+风险 & \textbf{奖励设计是难点}。建议先做离线回放（用历史 case 的日志做 off-policy 评估）再上线 \\
+前提 & 需要路径 A、B 先跑通，且评估已升到产物级——否则奖励信号没有分辨率 \\
+\bottomrule
+\end{tabularx}
+
+\subsection{建议的推进顺序}
+
+\begin{center}
+\begin{tikzpicture}[font=\small, node distance=0.45cm]
+\node[draw=inkaccent, fill=inkbg, rounded corners=2pt, inner sep=7pt, text width=3.3cm, align=center]
+  (s0) {\textbf{第零步}\\评估升到产物级\\\footnotesize（接 S1 沙箱）};
+\node[draw=inkline, fill=white, rounded corners=2pt, inner sep=7pt, text width=2.6cm, align=center, right=0.55cm of s0]
+  (s1) {\textbf{路径 A}\\检索层\\\footnotesize 低风险};
+\node[draw=inkline, fill=white, rounded corners=2pt, inner sep=7pt, text width=2.6cm, align=center, right=0.55cm of s1]
+  (s2) {\textbf{路径 B}\\进化闭环\\\footnotesize 中等};
+\node[draw=inkline, fill=white, rounded corners=2pt, inner sep=7pt, text width=2.6cm, align=center, right=0.55cm of s2]
+  (s3) {\textbf{路径 C}\\调度强化学习\\\footnotesize 探索};
+\draw[-{Latex[length=1.8mm]}, ink2] (s0) -- (s1);
+\draw[-{Latex[length=1.8mm]}, ink2] (s1) -- (s2);
+\draw[-{Latex[length=1.8mm]}, ink2] (s2) -- (s3);
+\end{tikzpicture}
+\end{center}
+
+\textbf{为什么把「产物级评估」放在第零步而不是最后？}
+因为发现一与发现二表明：只要评估停留在方案级，\textbf{后面每一步的收益都无法被可靠测量}。
+先把尺子校准，再谈优化，否则很容易在噪声里做决策。
+
+\newpage
+
+% ======================================================================
+\section{局限与下一步}
+% ======================================================================
+
+\subsection{本原型的局限（诚实声明）}
+
+\begin{enumerate}
+\item \textbf{语义检索用的是稀疏向量而非稠密编码器。}
+      本项目运行环境无法下载 HuggingFace 模型，故语义通路用「词级 IDF 加权 + 余弦相似度」近似，
+      并配合 LLM 重排补足。文献中 BM25 与稠密检索之间有约 24 个百分点的差距\textsuperscript{[1]}，
+      因此\textbf{接入稠密编码器后检索指标还有明确的上升空间}，接口已在代码中预留。
+
+\item \textbf{技能库规模远小于生产环境。}
+      51 个手写技能 vs 生产级的数百至数千技能。规模小意味着检索难度偏低，
+      本报告中的绝对指标偏乐观；但\textbf{相对收益在真实规模下应该更明显}——
+      技能池越大，「找对技能」越难，检索层的价值越高。
+
+\item \textbf{执行是「方案级」而非「真跑代码」—— 这是最关键的局限。}
+      实验二与实验三的天花板效应主要来源于此。本原型验证的是技能对 Agent
+      \emph{决策}的影响，没有真的执行实验代码。S1 已有沙箱与独立评审，
+      接入后即可做真实的产物级评估。
+
+\item \textbf{评审是 LLM 单评判}，会引入噪声。本报告因此额外使用了
+      「要点覆盖率」与「技能采纳率」两个不受评审影响的客观指标做交叉验证。
+      生产环境应做多评判投票或人工抽检校准。
+
+\item \textbf{未做跨模型迁移实验。}
+      COBRA-Skills 报告 36 组非对角迁移中 34 组取得正收益\textsuperscript{[4]}，
+      提示技能在模型之间可复用。这对 S1「多国产模型并存」的架构非常有价值，
+      但本项目未做验证。
+\end{enumerate}
+
+\subsection{下一步优先级}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}>{\bfseries}c >{\raggedright\arraybackslash}X >{\raggedright\arraybackslash}p{2.6cm}@{}}
+\toprule
+优先级 & 事项 & 依据 \\
+\midrule
+P0 & 打通真实沙箱执行，把评估从「方案级」升到「产物级」 & 发现一、发现二 \\
+P1 & 接入稠密编码器（BGE-M3 / Qwen3-Embedding），重跑实验一 & 局限 1；成本最低、收益最确定 \\
+P2 & 把 S1 真实 case 转成评测任务集，用执行日志做 gold 标注 & 任务难度上升后天花板自然减弱 \\
+P3 & 做跨模型迁移验证（技能在 Kimi / Qwen / GLM / DeepSeek 间是否可复用） & 局限 5；对多模型架构价值高 \\
+P4 & 把离线蒸馏（task-agnostic）做起来，批量转化 S1 的 300+ 工作流与内部文档 & 文献\textsuperscript{[3]}；把技能库从人工维护转为自动积累 \\
+\bottomrule
+\end{tabularx}
+\caption{下一步优先级排序（按「能多快拿到可信结论」排）}
+\end{table}
+
+\newpage
+
+% ======================================================================
+% 附录
+% ======================================================================
+\appendix
+\renewcommand{\thesection}{附录 \Alph{section}}
+
+\section{技能库清单}
+
+本原型包含 51 个科研技能，覆盖 17 个领域。每个技能均遵循 agentskills.io 规范，
+含技能卡、执行步骤、常见陷阱与验证清单。
+
+\vspace{0.6em}
+{\small
+\input{skills_table.tex}
+}
+
+\section{复现方式}
+
+\begin{enumerate}
+\item \textbf{启动演示}：Windows 双击 \texttt{start.bat}；macOS / Linux 执行 \texttt{bash start.sh}。
+      脚本会自动挑选 Python 解释器、安装依赖、检查密钥并打开浏览器。
+      服务地址 \texttt{http://127.0.0.1:8848}。
+\item \textbf{无密钥体验}：技能库浏览、检索对照、关系图、实验结果、跨框架导出\textbf{全部可用}；
+      路由 / 执行 / 进化 / 一键演示需要配置 \texttt{DEEPSEEK\_API\_KEY}。
+\item \textbf{组件自检}：\texttt{python verify.py}（21 项，不需要密钥）；
+      \texttt{python verify.py --llm}（额外跑真实链路）；
+      \texttt{node tools/front\_check.js}（前端渲染自检）。
+\item \textbf{复跑实验}：\texttt{python bench/run\_bench.py all}。
+      注意会真实调用 API 并产生费用（本项目全部实验合计约 ¥5）。
+\item \textbf{原始数据}：\texttt{out/exp1\_retrieval.json}、\texttt{out/exp2\_execution.json}、
+      \texttt{out/exp3\_evolution.json}、\texttt{out/verify\_report.json}。
+\end{enumerate}
+
+\section{参考文献}
+
+\begin{enumerate}[label={[\arabic*]}, leftmargin=2.2em]
+\item Y. Liang, R. Zhong, H. Xu, et al. \textit{SkillNet: Create, Evaluate, and Connect AI Skills.}
+      arXiv:2603.04448, 2026. \\
+      \url{https://arxiv.org/abs/2603.04448}
+
+\item Y. Lyu, X. Zhang, X. Yi, et al. \textit{EvoScientist: Towards Multi-Agent Evolving AI Scientists
+      for End-to-End Scientific Discovery.} arXiv:2603.08127, 2026. \\
+      \url{https://arxiv.org/abs/2603.08127}
+
+\item J. Chen, Y. Hu, H. Qian, et al. \textit{Repo-To-Skill: Distilling GitHub Repositories Into
+      AI4AI Skills.} arXiv:2609.02749, 2026. \\
+      \url{https://arxiv.org/abs/2609.02749}
+
+\item P. Lu, X. Wang, X. Li, et al. \textit{COBRA-Skills: Contextual Bandit-Guided Evolution for
+      Agent Skill Optimization.} arXiv:2609.11682, 2026. \\
+      \url{https://arxiv.org/abs/2609.11682}
+
+\item Google. \textit{Agent Development Kit (ADK) — Skills.} adk.dev/skills, 2026.
+      （ADK 自 v1.25 起通过 \texttt{SkillToolset} 支持 agentskills.io 规范，
+      与 Claude Code / Cursor / Gemini CLI 的技能目录互通）
+
+\item Agent Patterns. \textit{Google ADK Skills} / \textit{Agent Skills Standard.}
+      agentpatterns.ai, 2026.（含 Vercel agent evals 关于技能激活率的评测结果）
+\end{enumerate}
+
+\vspace{1.5em}
+{\color{inkline}\rule{\textwidth}{0.5pt}}
+\vspace{0.5em}
+{\color{ink3}\small
+本报告由 SkillNet-S1 原型项目产出。所有实验数据均由真实 API 调用产生，
+可用仓库中的 \texttt{bench/run\_bench.py} 一键复现。
+}
+
+\end{document}
+
+

@@ -6,6 +6,73 @@
 
 ---
 
+## 零、快速开始
+
+### 环境要求
+
+- **Python 3.10 或更高**（唯一的硬性依赖）
+- 首次运行需要联网（自动安装 5 个 Python 包）
+- 可选：Node.js（仅用于跑前端渲染自检 `tools/front_check.js`）
+
+### 启动（二选一）
+
+**Windows** — 双击 `start.bat`
+
+**macOS / Linux**
+
+```bash
+bash start.sh
+```
+
+脚本会自动完成四件事：挑选合适的 Python 解释器 → 检查并安装缺失依赖 →
+检查模型密钥（可选）→ 启动服务并打开浏览器。全程有中文提示，出错会告诉你怎么办。
+
+服务地址 `http://127.0.0.1:8848`，**关闭命令行窗口即停止**。
+
+### 没有模型密钥也能用
+
+绝大部分能力不依赖大模型，开箱即可体验：
+
+| 不需要密钥 | 需要 `DEEPSEEK_API_KEY` |
+|---|---|
+| 技能库浏览与检索对照（三档策略并排对比） | Fabric 任务级路由与依赖编排 |
+| 技能关系图（51 节点 / 62 条边的交互式可视化） | 技能驱动的研究 Agent 执行与盲评 |
+| 三组实验的结果面板（真实数据） | 技能蒸馏 / 变异 / 交叉 / 再生成 |
+| 跨框架导出（Claude Code / ADK / OpenAI / 索引） | 一键全链路演示 |
+
+需要密钥时：把 `.env.example` 复制一份改名为 `.env`，填入 `DEEPSEEK_API_KEY` 后重启
+（`start.bat` / `start.sh` 首次运行会自动帮你复制这份模板）。用的是 DeepSeek 开放平台，
+按量计费，跑完本项目的全部实验约 ¥5。
+
+### 手动启动（不使用脚本时）
+
+```bash
+pip install -r requirements.txt
+python run.py                    # 默认 127.0.0.1:8848
+python run.py --port 9000        # 换端口
+python run.py --no-browser       # 不自动开浏览器
+```
+
+### 三条命令确认它真的能跑
+
+```bash
+python verify.py            # 21 项组件级自检，不需要 API key
+python verify.py --llm      # 额外跑真实检索 / 蒸馏 / 评审链路
+node tools/front_check.js   # Dashboard 渲染自检（需 Node）
+```
+
+### 交付物清单
+
+| 内容 | 位置 |
+|---|---|
+| 本说明 | `README.md` |
+| **项目报告（PDF）** | `报告/SkillNet-S1-项目报告.pdf` |
+| 文献对照笔记 | `docs/参考工作对照.md` |
+| 实验原始数据 | `out/exp1_retrieval.json`、`exp2_execution.json`、`exp3_evolution.json` |
+| 组件自检报告 | `out/verify_report.json` |
+
+---
+
 ## 一、为什么做这件事：三个来自文献的事实
 
 | 事实 | 出处 | 对我们的含义 |
@@ -88,25 +155,23 @@ seed/catalog_data.py   51 个真实科研技能（17 个领域，按 agentskills
 
 ---
 
-## 三、怎么跑
+## 三、复现实验
+
+启动方式见「零、快速开始」。三组实验可以独立复跑：
 
 ```bash
-cd skillnet-demo
-pip install -r requirements.txt
-cp .env.example .env        # 填入 DEEPSEEK_API_KEY
+python bench/run_bench.py retrieval  --limit 20 --k 5                    # 约 15 秒
+python bench/run_bench.py execution  --limit 12 --k 5 --repeats 3        # 约 30 分钟
+python bench/run_bench.py evolution  --limit 6  --k 5 --rounds 6         # 约 3 分钟
 
-python run.py               # 打开 http://127.0.0.1:8848
-```
-
-跑实验：
-
-```bash
-python bench/run_bench.py retrieval --limit 20 --k 5
-python bench/run_bench.py execution --limit 12 --k 5 --repeats 2
-python bench/run_bench.py evolution --limit 6 --rounds 6
+# 或一次跑完三组
+python bench/run_bench.py all
 ```
 
 产物写到 `out/`，Dashboard 的「实验结果」页会直接读取渲染。
+
+**注意**：这些实验会真实调用大模型 API 并产生费用（本项目全部实验合计约 ¥5）。
+只想看结果的话直接读 `out/exp*.json` 或在 Dashboard 里看，不必重跑。
 
 ---
 

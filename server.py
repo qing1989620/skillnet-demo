@@ -41,11 +41,33 @@ def _startup() -> None:
     STATE["retriever"] = Retriever(lib).build()
     STATE["orchestrator"] = Orchestrator(lib)
     STATE["agent"] = ResearchAgent(lib)
-    print(f"[server] 技能库就绪：{len(lib)} 个技能 / {len(lib.by_domain())} 个领域")
+    print(f"[server] 技能库就绪：{len(lib)} 个技能 / {len(lib.by_domain())} 个领域，"
+          f"{len(lib.relation_edges())} 条关系边")
+    if config.API_KEY:
+        print(f"[server] 已接入模型：{config.MODEL} @ {config.BASE_URL}")
+    else:
+        print("[server] 未检测到 DEEPSEEK_API_KEY —— 技能浏览 / 检索对照 / 关系图 / "
+              "实验结果 / 跨框架导出 可直接使用；路由 / 执行 / 进化 / 一键演示需要密钥。")
 
 
 def lib() -> SkillLibrary:
     return STATE["lib"]
+
+
+def require_llm() -> None:
+    """需要大模型的接口在未配置密钥时给出明确错误，而不是静默返回空结果。
+
+    静默降级只在「仍有意义」时才允许（例如 fabric 检索缺密钥时退化为无重排，
+    结果依然可用）；而路由 / 执行 / 进化 / 一键演示这类没有模型就毫无意义的接口，
+    必须明确报错，否则使用者会以为功能坏了。
+    """
+    if not config.API_KEY:
+        raise HTTPException(
+            503,
+            "本功能需要调用大语言模型。请在 skillnet-demo/.env 中填入 DEEPSEEK_API_KEY"
+            "（可从 .env.example 复制一份改名）。技能库浏览、检索对照、关系图、"
+            "实验结果与跨框架导出不需要密钥，可直接使用。",
+        )
 
 
 # ======================================================================
@@ -150,6 +172,7 @@ class RouteReq(BaseModel):
 
 @app.post("/api/route")
 def route(req: RouteReq) -> dict[str, Any]:
+    require_llm()
     r: Retriever = STATE["retriever"]
     llm.LEDGER.reset()
     wiki = r.route_with_wiki(req.query, k=req.k)
@@ -174,6 +197,7 @@ class RunReq(BaseModel):
 
 @app.post("/api/run")
 def run_agent(req: RunReq) -> dict[str, Any]:
+    require_llm()
     r: Retriever = STATE["retriever"]
     agent: ResearchAgent = STATE["agent"]
     llm.LEDGER.reset()
@@ -209,6 +233,7 @@ class EvolveReq(BaseModel):
 
 @app.post("/api/evolve")
 def evolve(req: EvolveReq) -> dict[str, Any]:
+    require_llm()
     agent: ResearchAgent = STATE["agent"]
     evolver = SkillEvolver(lib())
     llm.LEDGER.reset()
@@ -258,6 +283,7 @@ def demo(req: DemoReq) -> dict[str, Any]:
 
     一次调用跑完整条链路，用于演示与端到端冒烟。
     """
+    require_llm()
     r: Retriever = STATE["retriever"]
     agent: ResearchAgent = STATE["agent"]
     llm.LEDGER.reset()
