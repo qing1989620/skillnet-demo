@@ -35,11 +35,19 @@ class Orchestrator:
                 # depend_on: n 依赖 tgt -> tgt 先执行
                 edges.add((tgt, n) if rel == "depend_on" else (n, tgt))
 
-        order = self._toposort(pool, edges)
+        # 三人以上的环是可能出现的（A 依赖 B、B 组合 C、C 又依赖 A），
+        # 而 `_toposort` 遇到环不会报错，只会把环上节点**静默追加到序列末尾** ——
+        # 于是给出一个违反依赖关系的执行顺序却毫无提示。
+        # 这里显式打断环，并把被丢弃的边回报出去，让调用方看得见。
+        kept = self._break_cycles(pool, edges)
+        dropped = sorted(edges - kept)
+
+        order = self._toposort(pool, kept)
         return {
             "skills": order,
-            "workflow": [list(e) for e in sorted(edges)],
+            "workflow": [list(e) for e in sorted(kept)],
             "source": "relations",
+            "cycles_broken": [list(e) for e in dropped],
         }
 
     def build_with_llm(self, query: str, names: list[str]) -> dict[str, Any]:

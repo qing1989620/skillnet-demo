@@ -109,11 +109,17 @@ class Retriever:
             # ---- 通路 3：领域/标签结构信号 ----
             struct_hits = self._structural_hits(query, top_k=pool)
             res.trace.append(f"结构信号召回 {len(struct_hits)} 条")
+            # 权重按「强通路主导、弱通路补充」定，并经过一轮扫描验证
+            # （见 README 第四节：0.55/0.30/0.15 时混合档会低于纯 BM25 基线，
+            #  因为本环境的语义通路是稀疏向量的降级实现，噪声偏大）。
+            # 这里取 0.70/0.20/0.10：既让混合档稳定优于基线，
+            # 又不至于把语义通路的权重压到形同虚设。
+            # **接入稠密编码器后这个权重需要重新标定。**
             fused = weighted_fuse(
-                [bm25_hits, vec_hits, struct_hits], weights=[0.55, 0.30, 0.15]
+                [bm25_hits, vec_hits, struct_hits], weights=[0.70, 0.20, 0.10]
             )
             res.trace.append(
-                f"加权融合后候选池 {len(fused)} 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+                f"加权融合后候选池 {len(fused)} 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
             )
 
         # ---- 质量先验：同等相关度下偏好高质量技能 ----

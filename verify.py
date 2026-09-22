@@ -9,8 +9,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
+import shutil
+import subprocess
 import sys
+import threading
+import time
 import traceback
 from pathlib import Path
 
@@ -39,7 +44,7 @@ def main() -> int:
     args = ap.parse_args()
 
     from skillnet import config, llm
-    from skillnet.adapters import export_all
+    from skillnet.adapters import SKILLS_DIRS, export_all
     from skillnet.agent import ResearchAgent
     from skillnet.bandit import LinUCB, RandomSelector
     from skillnet.catalog import SkillLibrary, build_seed_skills, export_skill_dirs
@@ -48,6 +53,7 @@ def main() -> int:
     from skillnet.judge import reference_points_from_skills, score_plan
     from skillnet.orchestrator import Orchestrator
     from skillnet.retriever import Retriever
+    from skillnet.schema import Skill
 
     print("\n[1] 技能库与本体")
     lib = SkillLibrary(build_seed_skills())
@@ -239,15 +245,54 @@ def main() -> int:
         return "3 节点环被正确打断"
     check("环检测与打断", t_cycle_break)
 
+    def t_cycle_observable():
+        o = Orchestrator(lib)
+        r = o.build_from_relations(
+            ["scrna-qc-clustering", "differential-expression", "pathway-enrichment"]
+        )
+        assert "cycles_broken" in r, "编排结果未回报被打断的环边"
+        # 打断之后必须仍是合法拓扑序
+        idx = {n: i for i, n in enumerate(r["skills"])}
+        for a, b in r["workflow"]:
+            assert idx[a] < idx[b], f"编排顺序违反依赖：{a} 应在 {b} 之前"
+        return f"环边可观测（本次打断 {len(r['cycles_broken'])} 条），且拓扑序合法"
+    check("编排环可观测", t_cycle_observable)
+
+    def t_quality_assess():
+        from skillnet.schema import assess_quality
+
+        q = assess_quality(lib.get("scrna-qc-clustering"))
+        assert set(q) == set(
+            ("safety", "completeness", "executability", "maintainability", "cost_awareness")
+        ), f"维度不齐：{sorted(q)}"
+        for dim, v in q.items():
+            assert isinstance(v, dict), f"{dim} 应为 dict（含 level 与 reason），实际 {type(v)}"
+            assert v.get("level") in ("Good", "Average", "Poor"), f"{dim} 等级非法：{v}"
+            assert v.get("reason"), f"{dim} 缺少理由"
+
+        dangerous = Skill(
+            name="verify-dangerous-skill", description="含危险操作的技能", domain="自检",
+            steps=["先执行 rm -rf / 清理旧数据", "再重建索引", "最后校验"], source="distill",
+        )
+        assert assess_quality(dangerous)["safety"]["level"] == "Poor", "危险操作未被识别为 Poor"
+        return f"五维均带等级+理由；危险操作被识别为 Poor（样例完整性={q['completeness']['level']}）"
+    check("质量评估带理由", t_quality_assess)
+
     print("\n[4] 跨框架导出")
 
     def t_export():
         out = config.OUT_DIR / "verify_adapters"
+        shutil.rmtree(out, ignore_errors=True)
         info = export_all(lib, out)
-        assert len(info) == 4, f"导出项数异常: {len(info)}"
-        cc = out / "claude_code" / ".claude" / "skills"
+
+        # 各家客户端的技能发现路径不同，必须每个落点都写全
+        target = out / "agent_skills"
+        for client, rel in SKILLS_DIRS.items():
+            n = len(list((target / rel).glob("*/SKILL.md")))
+            assert n == len(lib), f"{client} 落点 {rel} 仅 {n} 个技能，应为 {len(lib)}"
+        assert (target / "AGENTS.md").exists(), "AGENTS.md 缺失"
+
         adk = out / "google_adk" / "skills"
-        assert (cc / "literature-review" / "SKILL.md").exists(), "Claude Code 产物缺失"
         assert (adk / "literature-review" / "SKILL.md").exists(), "ADK 产物缺失"
         agent_py = (out / "google_adk" / "agent.py").read_text(encoding="utf-8")
         assert "load_skill_from_dir" in agent_py and "SkillToolset" in agent_py, "ADK agent.py 不完整"
@@ -255,8 +300,21 @@ def main() -> int:
         assert len(tools) == 2 and tools[0]["function"]["name"] == "search_skills"
         idx = (out / "index" / "SKILLS_INDEX.md").read_text(encoding="utf-8")
         assert idx.count("- **") == len(lib), "扁平索引条目数与技能数不符"
-        return f"4 个框架产物齐备（各 {len(lib)} 个技能）"
-    check("四框架导出", t_export)
+        return f"{len(info)} 项产物；4 个客户端落点各 {len(lib)} 个技能 + AGENTS.md"
+    check("跨框架导出（四客户端落点）", t_export)
+
+    def t_path_safety():
+        from skillnet.adapters import _safe_dir_name
+
+        for bad in ["../evil", "a/b", "..", ".hidden", "A-B", "x" * 65, "", "a b"]:
+            try:
+                _safe_dir_name(bad)
+            except ValueError:
+                continue
+            raise AssertionError(f"危险技能名未被拦截: {bad!r}")
+        assert _safe_dir_name("literature-review") == "literature-review"
+        return "路径穿越 / 大写 / 超长 / 含空格名均被拦截"
+    check("导出路径安全", t_path_safety)
 
     def t_export_dirs():
         # 导出到自检专用目录，避免把测试过程中产生的技能写进正式种子目录
@@ -289,8 +347,111 @@ def main() -> int:
         return f"抽取 {len(pts)} 条专业要点"
     check("客观要点抽取", t_refpoints)
 
+    print("\n[6] 生产化检查（集成前必须过）")
+
+    def t_spec_compliance():
+        bad = [(s.name, s.validate()) for s in lib if s.validate()]
+        assert not bad, f"{len(bad)} 个技能不符合 agentskills.io 规范，例如 {bad[:2]}"
+        over = [(s.name, s.body_stats["lines"]) for s in lib if s.body_stats["lines"] > 500]
+        assert not over, f"正文超出规范建议的 500 行：{over[:3]}"
+        mx_lines = max(s.body_stats["lines"] for s in lib)
+        mx_tok = max(s.body_stats["tokens_est"] for s in lib)
+        return f"{len(lib)} 个技能合规；正文最长 {mx_lines} 行 / 约 {mx_tok} tokens（预算 500 行 / 5000）"
+    check("规范符合性（name/description/正文预算）", t_spec_compliance)
+
+    def t_persistence():
+        tmp = config.OUT_DIR / "_verify_library.json"
+        tmp.unlink(missing_ok=True)
+        probe = lib.get("literature-review")
+        old_stats = dict(probe.stats)
+        try:
+            probe.stats.update({"pulls": 7, "reward_sum": 5.6, "best": 0.9})
+            lib.save(tmp)
+            assert tmp.exists(), "落盘失败"
+            back = SkillLibrary.load(tmp)
+            assert set(back.names()) == set(lib.names()), "往返后技能集合不一致"
+            assert back.get("literature-review").stats.get("pulls") == 7, "运行统计未持久化"
+            assert "scrna-qc-clustering" in back, "种子技能丢失"
+        finally:
+            probe.stats.clear()
+            probe.stats.update(old_stats)
+            tmp.unlink(missing_ok=True)
+        return f"{len(lib)} 个技能 + 运行统计往返一致"
+    check("技能库持久化往返", t_persistence)
+
+    def t_stable_hash():
+        code = (
+            "import sys;sys.path.insert(0,'.');"
+            "from skillnet.index import VectorIndex;"
+            "v=VectorIndex();v.fit(['a'],['单细胞测序质控']);"
+            "print(round(sum(k*x for k,x in v.encode('单细胞').items()),6))"
+        )
+        seen = set()
+        for seed in ("0", "987654"):
+            env = {**os.environ, "PYTHONHASHSEED": seed}
+            r = subprocess.run(
+                [sys.executable, "-c", code], capture_output=True, text=True,
+                env=env, cwd=str(ROOT), timeout=90,
+            )
+            assert r.returncode == 0, f"子进程执行失败：{r.stderr[:200]}"
+            seen.add(r.stdout.strip())
+        assert len(seen) == 1, f"不同 PYTHONHASHSEED 下向量不一致：{seen}"
+        return f"两种 PYTHONHASHSEED 得到同一向量指纹（{seen.pop()}）"
+    check("检索索引跨进程可复现", t_stable_hash)
+
+    def t_concurrency():
+        c_lib = SkillLibrary(build_seed_skills())
+        holder = {"r": Retriever(c_lib).build()}
+        errs: list[str] = []
+        stop = threading.Event()
+
+        def writer(tid: int) -> None:
+            i = 0
+            while not stop.is_set():
+                i += 1
+                c_lib.add(Skill(name=f"verify-conc-{tid}-{i}", description="并发自检技能",
+                                domain="自检", steps=["a", "b", "c"], source="distill"))
+                holder["r"] = Retriever(c_lib).build()      # 模拟 refresh_runtime 的原子替换
+                if i % 30 == 0:
+                    c_lib.remove(f"verify-conc-{tid}-{i}")
+                time.sleep(0.0005)
+
+        def reader() -> None:
+            while not stop.is_set():
+                try:
+                    sel = holder["r"].search("单细胞测序质控", k=5, mode="bm25").selected
+                    for nm in sel:
+                        if c_lib.get(nm) is None:
+                            errs.append(f"幽灵技能 {nm}")
+                except Exception as exc:  # noqa: BLE001
+                    errs.append(f"{type(exc).__name__}: {exc}")
+
+        ts = [threading.Thread(target=writer, args=(i,)) for i in range(2)]
+        ts += [threading.Thread(target=reader, daemon=True) for _ in range(4)]
+        for t in ts:
+            t.start()
+        time.sleep(2.0)
+        stop.set()
+        for t in ts:
+            t.join(timeout=5)
+        assert not errs, f"并发出错 {len(errs)} 次，例如 {errs[:2]}"
+        return f"2 写 4 读并发 2 秒：零异常、零幽灵技能（库规模做到 {len(c_lib)}）"
+    check("并发读写安全", t_concurrency)
+
+    def t_ledger_isolation():
+        a, b = llm.UsageLedger(), llm.UsageLedger()
+        with llm.ledger_scope(a):
+            llm.current_ledger().record("executor", 1000, 200)
+        with llm.ledger_scope(b):
+            llm.current_ledger().record("judge", 500, 100)
+        assert a.prompt_tokens == 1000 and b.prompt_tokens == 500, "账本未隔离"
+        assert a.cost_yuan != b.cost_yuan, "两本账开销应不同"
+        assert llm.current_ledger() is llm.LEDGER, "作用域外应回落到全局账本"
+        return f"请求级账本互不串账（A={a.prompt_tokens} / B={b.prompt_tokens} tokens）"
+    check("成本账本请求级隔离", t_ledger_isolation)
+
     if args.llm:
-        print("\n[6] 真实 LLM 链路（会产生 API 费用）")
+        print("\n[7] 真实 LLM 链路（会产生 API 费用）")
         assert config.API_KEY, "未配置 DEEPSEEK_API_KEY"
 
         def t_exec():

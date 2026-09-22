@@ -16,9 +16,9 @@
    "n_tasks": 20
   },
   "fabric": {
-   "skill_recall": 0.9667,
+   "skill_recall": 0.9583,
    "full_coverage_rate": 0.9,
-   "orchestration_completeness": 0.95,
+   "orchestration_completeness": 0.925,
    "n_tasks": 20
   }
  },
@@ -62,8 +62,8 @@
      "scrna-qc-clustering",
      "differential-expression",
      "variant-calling",
-     "paper-deep-read",
-     "survival-analysis"
+     "survival-analysis",
+     "data-cleaning"
     ],
     "recall": 0.6667,
     "full": false,
@@ -72,7 +72,7 @@
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 7 条",
-     "加权融合后候选池 31 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+     "加权融合后候选池 30 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
     ],
     "workflow": [
      [
@@ -92,14 +92,14 @@
     ],
     "recall": 1.0,
     "full": true,
-    "cost_yuan": 0.00255,
+    "cost_yuan": 0.00254,
     "trace": [
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 7 条",
-     "加权融合后候选池 31 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
-     "关系图扩展补入 2 条：citation-verify, leakage-guard",
-     "LLM 重排 6 条候选"
+     "加权融合后候选池 30 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+     "关系图扩展补入 2 条：scientific-visualization, leakage-guard",
+     "LLM 重排 5 条候选"
     ],
     "workflow": [
      [
@@ -164,9 +164,9 @@
     "selected": [
      "dft-formation-energy",
      "crystal-structure-predict",
-     "admet-prediction",
      "materials-screening",
-     "flux-tower-ml"
+     "admet-prediction",
+     "protein-structure-predict"
     ],
     "recall": 0.6667,
     "full": false,
@@ -175,7 +175,7 @@
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 3 条",
-     "加权融合后候选池 27 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+     "加权融合后候选池 28 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
     ],
     "workflow": [
      [
@@ -193,21 +193,30 @@
     "selected": [
      "dft-formation-energy",
      "tabular-ml-baseline",
-     "materials-screening",
-     "model-interpretability",
-     "molecular-descriptors"
+     "molecular-descriptors",
+     "cross-validation-protocol",
+     "materials-screening"
     ],
-    "recall": 0.6667,
-    "full": false,
-    "cost_yuan": 0.00251,
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.00254,
     "trace": [
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 3 条",
-     "加权融合后候选池 27 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
-     "LLM 重排 5 条候选"
+     "加权融合后候选池 28 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+     "关系图扩展补入 1 条：md-simulation",
+     "LLM 重排 6 条候选"
     ],
     "workflow": [
+     [
+      "cross-validation-protocol",
+      "dft-formation-energy"
+     ],
+     [
+      "cross-validation-protocol",
+      "tabular-ml-baseline"
+     ],
      [
       "dft-formation-energy",
       "materials-screening"
@@ -215,13 +224,9 @@
      [
       "molecular-descriptors",
       "tabular-ml-baseline"
-     ],
-     [
-      "tabular-ml-baseline",
-      "model-interpretability"
      ]
     ],
-    "orchestration": 0.5
+    "orchestration": 1.0
    }
   },
   {
@@ -258,8 +263,8 @@
     "selected": [
      "literature-review",
      "deep-learning-training",
-     "admet-prediction",
      "citation-verify",
+     "admet-prediction",
      "connectome-topology"
     ],
     "recall": 0.6667,
@@ -269,7 +274,7 @@
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 9 条",
-     "加权融合后候选池 28 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+     "加权融合后候选池 29 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
     ],
     "workflow": [
      [
@@ -282,29 +287,37 @@
    "fabric": {
     "selected": [
      "literature-review",
+     "research-gap-mining",
      "citation-verify",
-     "research-proposal",
-     "molecular-descriptors",
-     "cross-validation-protocol"
+     "arxiv-monitor",
+     "research-proposal"
     ],
-    "recall": 0.6667,
-    "full": false,
-    "cost_yuan": 0.00252,
+    "recall": 1.0,
+    "full": true,
+    "cost_yuan": 0.00244,
     "trace": [
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 9 条",
-     "加权融合后候选池 28 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
-     "关系图扩展补入 5 条：meta-analysis, cross-validation-protocol, hyperparameter-search, scientific-writing, venue-template",
-     "LLM 重排 6 条候选"
+     "加权融合后候选池 29 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+     "关系图扩展补入 5 条：meta-analysis, cross-validation-protocol, hyperparameter-search, venue-template, statistical-testing",
+     "LLM 重排 5 条候选"
     ],
     "workflow": [
      [
       "literature-review",
       "citation-verify"
+     ],
+     [
+      "literature-review",
+      "research-gap-mining"
+     ],
+     [
+      "research-gap-mining",
+      "research-proposal"
      ]
     ],
-    "orchestration": 0.5
+    "orchestration": 1.0
    }
   },
   {
@@ -364,7 +377,7 @@
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 6 条",
-     "加权融合后候选池 30 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+     "加权融合后候选池 27 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
     ],
     "workflow": [
      [
@@ -396,14 +409,14 @@
     ],
     "recall": 1.0,
     "full": true,
-    "cost_yuan": 0.00258,
+    "cost_yuan": 0.00265,
     "trace": [
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 6 条",
-     "加权融合后候选池 30 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
-     "关系图扩展补入 3 条：gwas-prs, factor-backtest, meta-analysis",
-     "LLM 重排 8 条候选"
+     "加权融合后候选池 27 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+     "关系图扩展补入 4 条：gwas-prs, scientific-visualization, connectome-topology, meta-analysis",
+     "LLM 重排 9 条候选"
     ],
     "workflow": [
      [
@@ -463,10 +476,6 @@
      [
       "meta-analysis",
       "statistical-testing"
-     ],
-     [
-      "statistical-testing",
-      "causal-inference"
      ]
     ],
     "orchestration": 1.0
@@ -476,7 +485,7 @@
      "econometric-panel",
      "causal-inference",
      "statistical-testing",
-     "data-cleaning",
+     "meta-analysis",
      "protein-structure-predict"
     ],
     "recall": 1.0,
@@ -486,7 +495,7 @@
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 5 条",
-     "加权融合后候选池 28 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+     "加权融合后候选池 29 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
     ],
     "workflow": [
      [
@@ -494,16 +503,12 @@
       "econometric-panel"
      ],
      [
-      "data-cleaning",
-      "statistical-testing"
-     ],
-     [
       "econometric-panel",
       "statistical-testing"
      ],
      [
-      "statistical-testing",
-      "causal-inference"
+      "meta-analysis",
+      "statistical-testing"
      ]
     ],
     "orchestration": 1.0
@@ -518,14 +523,14 @@
     ],
     "recall": 1.0,
     "full": true,
-    "cost_yuan": 0.00247,
+    "cost_yuan": 0.00249,
     "trace": [
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 5 条",
-     "加权融合后候选池 28 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
-     "关系图扩展补入 5 条：factor-backtest, scientific-visualization, spatial-autocorrelation, md-simulation, molecular-docking",
-     "LLM 重排 6 条候选"
+     "加权融合后候选池 29 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+     "关系图扩展补入 4 条：connectome-topology, literature-review, md-simulation, molecular-docking",
+     "LLM 重排 5 条候选"
     ],
     "workflow": [
      [
@@ -543,10 +548,6 @@
      [
       "econometric-panel",
       "statistical-testing"
-     ],
-     [
-      "statistical-testing",
-      "causal-inference"
      ]
     ],
     "orchestration": 1.0
@@ -609,7 +610,7 @@
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 1 条",
-     "加权融合后候选池 27 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+     "加权融合后候选池 30 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
     ],
     "workflow": [
      [
@@ -641,24 +642,19 @@
      "molecular-docking",
      "admet-prediction",
      "md-simulation",
-     "molecular-descriptors"
+     "literature-review"
     ],
     "recall": 1.0,
     "full": true,
-    "cost_yuan": 0.00241,
+    "cost_yuan": 0.00249,
     "trace": [
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 1 条",
-     "加权融合后候选池 27 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
-     "关系图扩展补入 1 条：tabular-ml-baseline",
-     "LLM 重排 4 条候选"
+     "加权融合后候选池 30 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+     "LLM 重排 5 条候选"
     ],
     "workflow": [
-     [
-      "molecular-descriptors",
-      "admet-prediction"
-     ],
      [
       "molecular-docking",
       "admet-prediction"
@@ -736,7 +732,7 @@
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 5 条",
-     "加权融合后候选池 27 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+     "加权融合后候选池 28 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
     ],
     "workflow": [
      [
@@ -763,19 +759,19 @@
      "leakage-guard",
      "cross-validation-protocol",
      "tabular-ml-baseline",
-     "eda-profiling",
-     "statistical-testing"
+     "statistical-testing",
+     "model-interpretability"
     ],
     "recall": 1.0,
     "full": true,
-    "cost_yuan": 0.00253,
+    "cost_yuan": 0.00249,
     "trace": [
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 5 条",
-     "加权融合后候选池 27 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
-     "关系图扩展补入 8 条：survival-analysis, factor-backtest, econometric-panel, deep-learning-training, scientific-visualization, connectome-topology",
-     "LLM 重排 6 条候选"
+     "加权融合后候选池 28 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+     "关系图扩展补入 9 条：model-interpretability, survival-analysis, factor-backtest, econometric-panel, deep-learning-training, scientific-visualization",
+     "LLM 重排 5 条候选"
     ],
     "workflow": [
      [
@@ -789,6 +785,10 @@
      [
       "leakage-guard",
       "tabular-ml-baseline"
+     ],
+     [
+      "tabular-ml-baseline",
+      "model-interpretability"
      ]
     ],
     "orchestration": 1.0
@@ -840,8 +840,8 @@
      "pathway-enrichment",
      "differential-expression",
      "scrna-qc-clustering",
-     "md-simulation",
-     "symbolic-derivation"
+     "gwas-prs",
+     "connectome-topology"
     ],
     "recall": 1.0,
     "full": true,
@@ -850,7 +850,7 @@
      "BM25 召回 15 条",
      "语义向量召回 20 条",
      "结构信号召回 1 条",
-     "加权融合后候选池 26 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+     "加权融合后候选池 25 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
     ],
     "workflow": [
      [
@@ -872,25 +872,29 @@
     "selected": [
      "pathway-enrichment",
      "statistical-testing",
+     "scientific-visualization",
      "differential-expression",
-     "scrna-qc-clustering",
-     "md-simulation"
+     "scrna-qc-clustering"
     ],
     "recall": 1.0,
     "full": true,
-    "cost_yuan": 0.0023,
+    "cost_yuan": 0.00236,
     "trace": [
      "BM25 召回 15 条",
      "语义向量召回 20 条",
      "结构信号召回 1 条",
-     "加权融合后候选池 26 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
-     "关系图扩展补入 1 条：molecular-docking",
-     "LLM 重排 2 条候选"
+     "加权融合后候选池 25 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+     "关系图扩展补入 1 条：scientific-visualization",
+     "LLM 重排 3 条候选"
     ],
     "workflow": [
      [
       "differential-expression",
       "pathway-enrichment"
+     ],
+     [
+      "differential-expression",
+      "scientific-visualization"
      ],
      [
       "scrna-qc-clustering",
@@ -899,6 +903,14 @@
      [
       "scrna-qc-clustering",
       "pathway-enrichment"
+     ],
+     [
+      "scrna-qc-clustering",
+      "scientific-visualization"
+     ],
+     [
+      "statistical-testing",
+      "scientific-visualization"
      ]
     ],
     "orchestration": 1.0
@@ -958,9 +970,9 @@
     "selected": [
      "venue-template",
      "citation-verify",
-     "paper-deep-read",
      "scientific-writing",
-     "arxiv-monitor"
+     "paper-deep-read",
+     "literature-review"
     ],
     "recall": 1.0,
     "full": true,
@@ -969,13 +981,9 @@
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 7 条",
-     "加权融合后候选池 30 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+     "加权融合后候选池 29 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
     ],
     "workflow": [
-     [
-      "arxiv-monitor",
-      "paper-deep-read"
-     ],
      [
       "citation-verify",
       "scientific-writing"
@@ -983,6 +991,14 @@
      [
       "citation-verify",
       "venue-template"
+     ],
+     [
+      "literature-review",
+      "citation-verify"
+     ],
+     [
+      "literature-review",
+      "paper-deep-read"
      ],
      [
       "paper-deep-read",
@@ -1001,24 +1017,20 @@
      "scientific-writing",
      "citation-verify",
      "paper-deep-read",
-     "arxiv-monitor"
+     "literature-review"
     ],
     "recall": 1.0,
     "full": true,
-    "cost_yuan": 0.0024,
+    "cost_yuan": 0.00235,
     "trace": [
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 7 条",
-     "加权融合后候选池 30 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
-     "关系图扩展补入 2 条：scientific-visualization, peer-review-response",
+     "加权融合后候选池 29 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+     "关系图扩展补入 1 条：meta-analysis",
      "LLM 重排 3 条候选"
     ],
     "workflow": [
-     [
-      "arxiv-monitor",
-      "paper-deep-read"
-     ],
      [
       "citation-verify",
       "scientific-writing"
@@ -1026,6 +1038,14 @@
      [
       "citation-verify",
       "venue-template"
+     ],
+     [
+      "literature-review",
+      "citation-verify"
+     ],
+     [
+      "literature-review",
+      "paper-deep-read"
      ],
      [
       "paper-deep-read",
@@ -1086,8 +1106,8 @@
      "scientific-visualization",
      "statistical-testing",
      "data-cleaning",
-     "causal-inference",
-     "eda-profiling"
+     "eda-profiling",
+     "hyperparameter-search"
     ],
     "recall": 1.0,
     "full": true,
@@ -1096,7 +1116,7 @@
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 5 条",
-     "加权融合后候选池 29 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+     "加权融合后候选池 29 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
     ],
     "workflow": [
      [
@@ -1113,10 +1133,6 @@
      ],
      [
       "statistical-testing",
-      "causal-inference"
-     ],
-     [
-      "statistical-testing",
       "scientific-visualization"
      ]
     ],
@@ -1124,21 +1140,21 @@
    },
    "fabric": {
     "selected": [
-     "data-cleaning",
      "statistical-testing",
+     "data-cleaning",
      "scientific-visualization",
      "eda-profiling",
      "scientific-writing"
     ],
     "recall": 1.0,
     "full": true,
-    "cost_yuan": 0.00238,
+    "cost_yuan": 0.0024,
     "trace": [
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 5 条",
-     "加权融合后候选池 29 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
-     "关系图扩展补入 7 条：scientific-writing, poster-slides, thermodynamics-calc, fem-analysis, connectome-topology, spatial-autocorrelation",
+     "加权融合后候选池 29 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+     "关系图扩展补入 9 条：scientific-writing, poster-slides, scrna-qc-clustering, thermodynamics-calc, fem-analysis, connectome-topology",
      "LLM 重排 4 条候选"
     ],
     "workflow": [
@@ -1194,9 +1210,9 @@
     "selected": [
      "connectome-topology",
      "statistical-testing",
-     "thermodynamics-calc",
      "eda-profiling",
-     "data-cleaning"
+     "deep-learning-training",
+     "causal-inference"
     ],
     "recall": 1.0,
     "full": true,
@@ -1205,7 +1221,7 @@
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 10 条",
-     "加权融合后候选池 30 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+     "加权融合后候选池 30 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
     ],
     "workflow": [
      [
@@ -1213,12 +1229,8 @@
       "statistical-testing"
      ],
      [
-      "data-cleaning",
-      "eda-profiling"
-     ],
-     [
-      "data-cleaning",
-      "statistical-testing"
+      "statistical-testing",
+      "causal-inference"
      ]
     ],
     "orchestration": 1.0
@@ -1227,20 +1239,20 @@
     "selected": [
      "connectome-topology",
      "statistical-testing",
-     "scientific-visualization",
      "eda-profiling",
-     "data-cleaning"
+     "data-cleaning",
+     "causal-inference"
     ],
     "recall": 1.0,
     "full": true,
-    "cost_yuan": 0.00246,
+    "cost_yuan": 0.00238,
     "trace": [
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 10 条",
-     "加权融合后候选池 30 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
-     "关系图扩展补入 3 条：survival-analysis, meta-analysis, leakage-guard",
-     "LLM 重排 5 条候选"
+     "加权融合后候选池 30 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+     "关系图扩展补入 4 条：survival-analysis, meta-analysis, cross-validation-protocol, hyperparameter-search",
+     "LLM 重排 4 条候选"
     ],
     "workflow": [
      [
@@ -1256,12 +1268,8 @@
       "statistical-testing"
      ],
      [
-      "eda-profiling",
-      "scientific-visualization"
-     ],
-     [
       "statistical-testing",
-      "scientific-visualization"
+      "causal-inference"
      ]
     ],
     "orchestration": 1.0
@@ -1300,9 +1308,9 @@
     "selected": [
      "remote-sensing-index",
      "data-cleaning",
-     "statistical-testing",
      "signal-processing",
-     "variant-calling"
+     "variant-calling",
+     "causal-inference"
     ],
     "recall": 0.5,
     "full": false,
@@ -1311,34 +1319,29 @@
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 5 条",
-     "加权融合后候选池 30 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+     "加权融合后候选池 30 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
     ],
-    "workflow": [
-     [
-      "data-cleaning",
-      "statistical-testing"
-     ]
-    ],
+    "workflow": [],
     "orchestration": 0.0
    },
    "fabric": {
     "selected": [
      "remote-sensing-index",
-     "data-cleaning",
      "spatial-autocorrelation",
+     "data-cleaning",
      "eda-profiling",
-     "statistical-testing"
+     "signal-processing"
     ],
     "recall": 1.0,
     "full": true,
-    "cost_yuan": 0.00251,
+    "cost_yuan": 0.00238,
     "trace": [
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 5 条",
-     "加权融合后候选池 30 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
-     "关系图扩展补入 6 条：spatial-autocorrelation, leakage-guard, scientific-visualization, econometric-panel, eeg-preprocessing, gwas-prs",
-     "LLM 重排 6 条候选"
+     "加权融合后候选池 30 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+     "关系图扩展补入 6 条：spatial-autocorrelation, leakage-guard, tabular-ml-baseline, eeg-preprocessing, gwas-prs, econometric-panel",
+     "LLM 重排 4 条候选"
     ],
     "workflow": [
      [
@@ -1346,15 +1349,7 @@
       "eda-profiling"
      ],
      [
-      "data-cleaning",
-      "statistical-testing"
-     ],
-     [
       "remote-sensing-index",
-      "spatial-autocorrelation"
-     ],
-     [
-      "statistical-testing",
       "spatial-autocorrelation"
      ]
     ],
@@ -1394,10 +1389,10 @@
    "hybrid": {
     "selected": [
      "flux-tower-ml",
-     "causal-inference",
-     "data-cleaning",
      "spatial-autocorrelation",
-     "eda-profiling"
+     "eda-profiling",
+     "remote-sensing-index",
+     "factor-backtest"
     ],
     "recall": 0.3333,
     "full": false,
@@ -1406,12 +1401,12 @@
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 8 条",
-     "加权融合后候选池 31 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+     "加权融合后候选池 30 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
     ],
     "workflow": [
      [
-      "data-cleaning",
-      "eda-profiling"
+      "remote-sensing-index",
+      "spatial-autocorrelation"
      ]
     ],
     "orchestration": 0.0
@@ -1420,19 +1415,19 @@
     "selected": [
      "flux-tower-ml",
      "cross-validation-protocol",
-     "leakage-guard",
      "model-interpretability",
+     "eda-profiling",
      "data-cleaning"
     ],
     "recall": 1.0,
     "full": true,
-    "cost_yuan": 0.00261,
+    "cost_yuan": 0.00264,
     "trace": [
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 8 条",
-     "加权融合后候选池 31 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
-     "关系图扩展补入 3 条：cross-validation-protocol, econometric-panel, leakage-guard",
+     "加权融合后候选池 30 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+     "关系图扩展补入 3 条：cross-validation-protocol, scientific-visualization, econometric-panel",
      "LLM 重排 8 条候选"
     ],
     "workflow": [
@@ -1442,15 +1437,11 @@
      ],
      [
       "data-cleaning",
-      "leakage-guard"
+      "eda-profiling"
      ],
      [
       "flux-tower-ml",
       "model-interpretability"
-     ],
-     [
-      "leakage-guard",
-      "cross-validation-protocol"
      ]
     ],
     "orchestration": 1.0
@@ -1490,8 +1481,8 @@
      "md-simulation",
      "molecular-docking",
      "crystal-structure-predict",
-     "deep-learning-training",
-     "fem-analysis"
+     "statistical-testing",
+     "data-cleaning"
     ],
     "recall": 1.0,
     "full": true,
@@ -1500,9 +1491,13 @@
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 4 条",
-     "加权融合后候选池 29 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+     "加权融合后候选池 28 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
     ],
     "workflow": [
+     [
+      "data-cleaning",
+      "statistical-testing"
+     ],
      [
       "molecular-docking",
       "md-simulation"
@@ -1514,20 +1509,20 @@
     "selected": [
      "md-simulation",
      "scientific-visualization",
-     "statistical-testing",
      "protein-structure-predict",
-     "molecular-docking"
+     "molecular-docking",
+     "statistical-testing"
     ],
     "recall": 1.0,
     "full": true,
-    "cost_yuan": 0.00232,
+    "cost_yuan": 0.00228,
     "trace": [
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 4 条",
-     "加权融合后候选池 29 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
-     "关系图扩展补入 4 条：protein-structure-predict, admet-prediction, cross-validation-protocol, scientific-visualization",
-     "LLM 重排 3 条候选"
+     "加权融合后候选池 28 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+     "关系图扩展补入 5 条：protein-structure-predict, scientific-visualization, survival-analysis, spatial-autocorrelation, meta-analysis",
+     "LLM 重排 2 条候选"
     ],
     "workflow": [
      [
@@ -1588,8 +1583,8 @@
      "admet-prediction",
      "molecular-descriptors",
      "dft-formation-energy",
-     "molecular-docking",
-     "tabular-ml-baseline"
+     "clinical-feature-engineering",
+     "molecular-docking"
     ],
     "recall": 1.0,
     "full": true,
@@ -1598,16 +1593,12 @@
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 2 条",
-     "加权融合后候选池 28 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+     "加权融合后候选池 29 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
     ],
     "workflow": [
      [
       "molecular-descriptors",
       "admet-prediction"
-     ],
-     [
-      "molecular-descriptors",
-      "tabular-ml-baseline"
      ],
      [
       "molecular-docking",
@@ -1620,30 +1611,22 @@
     "selected": [
      "admet-prediction",
      "molecular-descriptors",
-     "cross-validation-protocol",
+     "leakage-guard",
      "tabular-ml-baseline",
-     "leakage-guard"
+     "eda-profiling"
     ],
     "recall": 1.0,
     "full": true,
-    "cost_yuan": 0.00264,
+    "cost_yuan": 0.00255,
     "trace": [
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 2 条",
-     "加权融合后候选池 28 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
-     "关系图扩展补入 2 条：cross-validation-protocol, data-cleaning",
-     "LLM 重排 8 条候选"
+     "加权融合后候选池 29 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+     "关系图扩展补入 3 条：leakage-guard, survival-analysis, gwas-prs",
+     "LLM 重排 6 条候选"
     ],
     "workflow": [
-     [
-      "cross-validation-protocol",
-      "tabular-ml-baseline"
-     ],
-     [
-      "leakage-guard",
-      "cross-validation-protocol"
-     ],
      [
       "leakage-guard",
       "tabular-ml-baseline"
@@ -1697,9 +1680,9 @@
     "selected": [
      "factor-backtest",
      "flux-tower-ml",
-     "md-simulation",
-     "tabular-ml-baseline",
-     "data-cleaning"
+     "scientific-writing",
+     "model-interpretability",
+     "tabular-ml-baseline"
     ],
     "recall": 0.5,
     "full": false,
@@ -1708,12 +1691,16 @@
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 1 条",
-     "加权融合后候选池 30 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+     "加权融合后候选池 29 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
     ],
     "workflow": [
      [
-      "data-cleaning",
-      "tabular-ml-baseline"
+      "flux-tower-ml",
+      "model-interpretability"
+     ],
+     [
+      "tabular-ml-baseline",
+      "model-interpretability"
      ]
     ],
     "orchestration": 0.0
@@ -1722,33 +1709,33 @@
     "selected": [
      "factor-backtest",
      "leakage-guard",
-     "data-cleaning",
-     "eda-profiling",
-     "scientific-visualization"
+     "cross-validation-protocol",
+     "econometric-panel",
+     "flux-tower-ml"
     ],
     "recall": 1.0,
     "full": true,
-    "cost_yuan": 0.00246,
+    "cost_yuan": 0.00245,
     "trace": [
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 1 条",
-     "加权融合后候选池 30 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
-     "关系图扩展补入 3 条：econometric-panel, molecular-descriptors, eda-profiling",
-     "LLM 重排 5 条候选"
+     "加权融合后候选池 29 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+     "关系图扩展补入 7 条：leakage-guard, econometric-panel, scientific-visualization, venue-template, citation-verify, peer-review-response",
+     "LLM 重排 4 条候选"
     ],
     "workflow": [
      [
-      "data-cleaning",
-      "eda-profiling"
+      "cross-validation-protocol",
+      "flux-tower-ml"
      ],
      [
-      "data-cleaning",
-      "leakage-guard"
+      "factor-backtest",
+      "econometric-panel"
      ],
      [
-      "eda-profiling",
-      "scientific-visualization"
+      "leakage-guard",
+      "cross-validation-protocol"
      ],
      [
       "leakage-guard",
@@ -1787,8 +1774,8 @@
      "thermodynamics-calc",
      "symbolic-derivation",
      "protein-structure-predict",
-     "molecular-docking",
-     "peer-review-response"
+     "differential-expression",
+     "tabular-ml-baseline"
     ],
     "recall": 0.5,
     "full": false,
@@ -1797,14 +1784,9 @@
      "BM25 召回 17 条",
      "语义向量召回 20 条",
      "结构信号召回 1 条",
-     "加权融合后候选池 27 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+     "加权融合后候选池 27 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
     ],
-    "workflow": [
-     [
-      "protein-structure-predict",
-      "molecular-docking"
-     ]
-    ],
+    "workflow": [],
     "orchestration": 0.0
    },
    "fabric": {
@@ -1812,8 +1794,8 @@
      "thermodynamics-calc",
      "symbolic-derivation",
      "scientific-visualization",
-     "optimization-solver",
-     "protein-structure-predict"
+     "protein-structure-predict",
+     "differential-expression"
     ],
     "recall": 1.0,
     "full": true,
@@ -1822,14 +1804,14 @@
      "BM25 召回 17 条",
      "语义向量召回 20 条",
      "结构信号召回 1 条",
-     "加权融合后候选池 27 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
-     "关系图扩展补入 4 条：scientific-visualization, optimization-solver, admet-prediction, scientific-writing",
+     "加权融合后候选池 27 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+     "关系图扩展补入 7 条：scientific-visualization, scrna-qc-clustering, pathway-enrichment, data-cleaning, leakage-guard, model-interpretability",
      "LLM 重排 3 条候选"
     ],
     "workflow": [
      [
-      "optimization-solver",
-      "symbolic-derivation"
+      "differential-expression",
+      "scientific-visualization"
      ],
      [
       "thermodynamics-calc",
@@ -1867,9 +1849,9 @@
     "selected": [
      "lightcurve-analysis",
      "remote-sensing-index",
+     "cross-validation-protocol",
      "survival-analysis",
-     "eda-profiling",
-     "cross-validation-protocol"
+     "eda-profiling"
     ],
     "recall": 0.5,
     "full": false,
@@ -1878,7 +1860,7 @@
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 4 条",
-     "加权融合后候选池 29 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+     "加权融合后候选池 29 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
     ],
     "workflow": [],
     "orchestration": 0.0
@@ -1886,21 +1868,21 @@
    "fabric": {
     "selected": [
      "lightcurve-analysis",
-     "signal-processing",
-     "eda-profiling",
      "data-cleaning",
-     "statistical-testing"
+     "eda-profiling",
+     "statistical-testing",
+     "scientific-visualization"
     ],
-    "recall": 1.0,
-    "full": true,
-    "cost_yuan": 0.00248,
+    "recall": 0.5,
+    "full": false,
+    "cost_yuan": 0.00242,
     "trace": [
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 4 条",
-     "加权融合后候选池 29 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
-     "关系图扩展补入 6 条：signal-processing, spatial-autocorrelation, clinical-feature-engineering, scientific-visualization, deep-learning-training, dft-formation-energy",
-     "LLM 重排 6 条候选"
+     "加权融合后候选池 29 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+     "关系图扩展补入 6 条：spatial-autocorrelation, tabular-ml-baseline, deep-learning-training, dft-formation-energy, clinical-feature-engineering, scientific-visualization",
+     "LLM 重排 5 条候选"
     ],
     "workflow": [
      [
@@ -1912,11 +1894,15 @@
       "statistical-testing"
      ],
      [
-      "signal-processing",
-      "lightcurve-analysis"
+      "eda-profiling",
+      "scientific-visualization"
+     ],
+     [
+      "statistical-testing",
+      "scientific-visualization"
      ]
     ],
-    "orchestration": 1.0
+    "orchestration": 0.0
    }
   },
   {
@@ -1955,11 +1941,11 @@
    },
    "hybrid": {
     "selected": [
-     "data-cleaning",
      "econometric-panel",
      "protein-structure-predict",
-     "flux-tower-ml",
-     "citation-verify"
+     "data-cleaning",
+     "leakage-guard",
+     "eda-profiling"
     ],
     "recall": 0.3333,
     "full": false,
@@ -1968,28 +1954,37 @@
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 4 条",
-     "加权融合后候选池 29 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+     "加权融合后候选池 33 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
     ],
-    "workflow": [],
+    "workflow": [
+     [
+      "data-cleaning",
+      "eda-profiling"
+     ],
+     [
+      "data-cleaning",
+      "leakage-guard"
+     ]
+    ],
     "orchestration": 0.0
    },
    "fabric": {
     "selected": [
      "causal-inference",
      "econometric-panel",
-     "eda-profiling",
      "data-cleaning",
-     "statistical-testing"
+     "eda-profiling",
+     "cross-validation-protocol"
     ],
-    "recall": 1.0,
-    "full": true,
-    "cost_yuan": 0.00252,
+    "recall": 0.6667,
+    "full": false,
+    "cost_yuan": 0.00246,
     "trace": [
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 4 条",
-     "加权融合后候选池 29 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
-     "关系图扩展补入 6 条：md-simulation, molecular-docking, model-interpretability, literature-review, paper-deep-read, venue-template",
+     "加权融合后候选池 33 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+     "关系图扩展补入 4 条：md-simulation, molecular-docking, clinical-feature-engineering, scientific-visualization",
      "LLM 重排 6 条候选"
     ],
     "workflow": [
@@ -2000,21 +1995,9 @@
      [
       "data-cleaning",
       "eda-profiling"
-     ],
-     [
-      "data-cleaning",
-      "statistical-testing"
-     ],
-     [
-      "econometric-panel",
-      "statistical-testing"
-     ],
-     [
-      "statistical-testing",
-      "causal-inference"
      ]
     ],
-    "orchestration": 1.0
+    "orchestration": 0.5
    }
   },
   {
@@ -2049,10 +2032,10 @@
    "hybrid": {
     "selected": [
      "peer-review-response",
-     "scientific-writing",
      "factor-backtest",
      "paper-deep-read",
-     "leakage-guard"
+     "scientific-writing",
+     "statistical-testing"
     ],
     "recall": 1.0,
     "full": true,
@@ -2061,13 +2044,9 @@
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 1 条",
-     "加权融合后候选池 27 条（BM25 0.55 / 语义 0.30 / 结构 0.15）"
+     "加权融合后候选池 29 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
     ],
     "workflow": [
-     [
-      "leakage-guard",
-      "factor-backtest"
-     ],
      [
       "scientific-writing",
       "peer-review-response"
@@ -2080,41 +2059,37 @@
      "peer-review-response",
      "statistical-testing",
      "scientific-writing",
-     "scientific-visualization",
-     "venue-template"
+     "data-cleaning",
+     "leakage-guard"
     ],
     "recall": 1.0,
     "full": true,
-    "cost_yuan": 0.00242,
+    "cost_yuan": 0.00247,
     "trace": [
      "BM25 召回 20 条",
      "语义向量召回 20 条",
      "结构信号召回 1 条",
-     "加权融合后候选池 27 条（BM25 0.55 / 语义 0.30 / 结构 0.15）",
-     "关系图扩展补入 9 条：scientific-visualization, venue-template, econometric-panel, arxiv-monitor, tabular-ml-baseline, data-cleaning",
-     "LLM 重排 5 条候选"
+     "加权融合后候选池 29 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+     "关系图扩展补入 7 条：econometric-panel, literature-review, venue-template, data-cleaning, survival-analysis, spatial-autocorrelation",
+     "LLM 重排 6 条候选"
     ],
     "workflow": [
      [
+      "data-cleaning",
+      "leakage-guard"
+     ],
+     [
+      "data-cleaning",
+      "statistical-testing"
+     ],
+     [
       "scientific-writing",
       "peer-review-response"
-     ],
-     [
-      "scientific-writing",
-      "scientific-visualization"
-     ],
-     [
-      "scientific-writing",
-      "venue-template"
-     ],
-     [
-      "statistical-testing",
-      "scientific-visualization"
      ]
     ],
     "orchestration": 1.0
    }
   }
  ],
- "timestamp": "2026-09-18 23:54:42"
+ "timestamp": "2026-09-22 18:33:59"
 }

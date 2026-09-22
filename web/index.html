@@ -939,15 +939,19 @@ async function doAdapters(){
 /* ---------- 运行状态条 ---------- */
 function statusBar(health){
   const on = health.api_key_configured;
+  // 技能库状态：演化出来的技能会持久化，重启后仍在这里 —— 这一点值得直接显示出来
+  const lib = `技能库 ${health.skills} 个`
+    + (health.evolved ? `（其中 ${health.evolved} 个为进化产生）` : '')
+    + (health.token_required ? '　·　已启用访问令牌' : '');
   document.body.insertAdjacentHTML('afterbegin', `
     <div style="background:${on?'#e8eeec':'#f4efe3'};
                 border-bottom:1px solid ${on?'#cfded9':'#e3d9c0'};
                 color:${on?'#3d5a52':'#8a6a2f'};
                 font-size:12.5px;padding:9px 32px;letter-spacing:.02em">
       <strong>${on?'已接入模型':'未配置模型密钥'}</strong>
-      ｜技能库浏览、检索对照、关系图、实验结果、跨框架导出${
-        on?`　·　路由 / 执行 / 进化 / 一键演示 可用（${esc(health.model)}）`
-          :'全部可用；<strong>路由 / 执行 / 进化 / 一键演示</strong> 需要先在 <code>skillnet-demo/.env</code> 中填入 DEEPSEEK_API_KEY（可从 .env.example 复制）'}
+      ｜${lib}　·　${on
+        ? `路由 / 执行 / 进化 / 一键演示 可用（${esc(health.model)}）`
+        : '技能库 / 检索 / 关系图 / 实验结果 / 跨框架导出 全部可用；<strong>路由 / 执行 / 进化 / 一键演示</strong> 需在 <code>.env</code> 中填入 DEEPSEEK_API_KEY'}
     </div>`);
 }
 

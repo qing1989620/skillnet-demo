@@ -18,7 +18,7 @@ from typing import Any
 from .catalog import SkillLibrary
 from .index import jaccard, tokenize
 from .llm import chat_json
-from .schema import Skill
+from .schema import Skill, assess_quality
 
 NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
@@ -129,18 +129,27 @@ class SkillEvolver:
             steps=[str(x) for x in steps][:12],
             pitfalls=[str(x) for x in (raw.get("pitfalls") or [])][:8],
             verification=[str(x) for x in (raw.get("verification") or [])][:8],
-            quality={
-                "safety": "Average",
-                "completeness": "Average",
-                "executability": "Average",
-                "maintainability": "Average",
-                "cost_awareness": "Average",
-            },
             relations=rels,
             source=op,
             parent=parents,
-            generation=max([self.lib.skills[p].generation for p in parents if p in self.lib.skills] or [0]) + 1,
+            generation=max(
+                [self.lib.skills[p].generation for p in parents if p in self.lib.skills] or [0]
+            ) + 1,
         )
+
+        # 五维质量用启发式规则评估，每个维度带理由。
+        # 早先版本在这里统一写 "Average"，导致 quality_score() 的先验退化成常数，
+        # 检索排序里的质量加权形同虚设。
+        skill.quality = assess_quality(skill)
+
+        # 安全性不通过直接拒收：技能会被导出给别的 Agent 直接遵循，风险外溢代价高
+        if skill.quality["safety"]["level"] == "Poor":
+            self.records.append(EvolveRecord(
+                op, name, False,
+                f"安全性评估未通过：{skill.quality['safety']['reason']}",
+            ))
+            return None
+
         self.lib.add(skill)
         self.records.append(
             EvolveRecord(op, name, True, f"G{skill.generation} 新技能入库", parents)

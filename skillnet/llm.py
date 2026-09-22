@@ -4,7 +4,11 @@
 """
 from __future__ import annotations
 
+import contextlib
+import contextvars
 import json
+import logging
+import os
 import re
 import threading
 import time
@@ -14,6 +18,8 @@ from typing import Any
 import httpx
 
 from . import config
+
+log = logging.getLogger("skillnet.llm")
 
 
 @dataclass
@@ -73,6 +79,34 @@ class UsageLedger:
 
 
 LEDGER = UsageLedger()
+"""进程级默认账本。脚本 / 实验（bench、verify）直接用这一个即可。"""
+
+_CTX: contextvars.ContextVar["UsageLedger | None"] = contextvars.ContextVar(
+    "skillnet_ledger", default=None
+)
+
+
+def current_ledger() -> UsageLedger:
+    """返回当前上下文的账本；不在任何 scope 内时回落到进程级默认账本。
+
+    为什么需要这个：服务端是并发处理请求的。如果所有请求都往同一个全局账本里记账、
+    又各自在开头 reset()，那么并发下每个请求返回的成本数字都是错的
+    （A 请求会把 B 请求的 token 算进自己的账单，反之亦然）。
+    用请求级账本后，每个请求只统计自己触发的调用。
+    """
+    return _CTX.get() or LEDGER
+
+
+@contextlib.contextmanager
+def ledger_scope(ledger: "UsageLedger | None" = None):
+    """在一个作用域内隔离记账。FastAPI 的同步路由跑在线程池里，
+    contextvars 会随请求复制，因此该作用域内的所有调用都记到同一个账本。"""
+    led = ledger if ledger is not None else UsageLedger()
+    token = _CTX.set(led)
+    try:
+        yield led
+    finally:
+        _CTX.reset(token)
 
 
 class LLMError(RuntimeError):
@@ -121,7 +155,7 @@ def chat(
                 raise LLMError(f"HTTP {resp.status_code}: {resp.text[:300]}")
             data = resp.json()
             usage = data.get("usage") or {}
-            LEDGER.record(
+            current_ledger().record(
                 role,
                 int(usage.get("prompt_tokens", 0)),
                 int(usage.get("completion_tokens", 0)),
@@ -237,7 +271,9 @@ def chat_json(
 ) -> Any:
     """调用并解析 JSON；解析失败时返回 default（不中断整条流程）。
 
-    失败时把原文落到 out/_last_llm_raw.txt，便于排查是截断还是格式问题。
+    失败时记录一行日志。只有当环境变量 `SKILLNET_DEBUG=1` 时才把模型原文落盘——
+    默认不落盘，因为并发下多请求会互相覆盖同一个文件，
+    而且原文里可能含有用户的研究内容，不该默认写进磁盘。
     """
     raw = ""
     try:
@@ -252,11 +288,14 @@ def chat_json(
     except Exception as exc:  # noqa: BLE001
         if default is None:
             raise
-        try:
-            (config.OUT_DIR / "_last_llm_raw.txt").write_text(
-                f"[{type(exc).__name__}] {exc}\n\n---- RAW ({len(raw)} chars) ----\n{raw}",
-                encoding="utf-8",
-            )
-        except Exception:  # noqa: BLE001
-            pass
+        log.warning("LLM JSON 解析失败 role=%s err=%s raw_len=%d", role, exc, len(raw))
+        if os.environ.get("SKILLNET_DEBUG") == "1":
+            try:
+                dump = config.OUT_DIR / f"_llm_raw_{os.getpid()}_{int(time.time())}.txt"
+                dump.write_text(
+                    f"[{type(exc).__name__}] {exc}\n\n---- RAW ({len(raw)} chars) ----\n{raw}",
+                    encoding="utf-8",
+                )
+            except OSError:
+                pass
         return default

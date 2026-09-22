@@ -99,7 +99,7 @@
 报告类型 & 技术可行性验证与工程实现报告 \\
 交付内容 & 可运行原型（Python + FastAPI + 单页 Dashboard）+ 本报告 \\
 代码规模 & 3{,}865 行（含 51 个技能定义、3 组对照实验、2 套自检） \\
-验证方式 & 组件级自检 21 项 + 前端渲染自检 5 项 + 三组 API 真实执行实验 \\
+验证方式 & 组件级自检 29 项 + 前端渲染自检 5 项 + 三组 API 真实执行实验 \\
 源代码 & \url{https://github.com/qing1989620/skillnet-demo} \\
 日期 & 2026 年 9 月 19 日 \\
 \bottomrule
@@ -143,9 +143,9 @@
 \subsection*{三个关键数字}
 
 \begin{center}
-\kpi{96.7\%}{技能检索召回\\（基线 77.5\%）}
+\kpi{95.8\%}{技能检索召回\\（基线 77.5\%）}
 \hspace{1.2em}
-\kpi{+15pp}{领域要点覆盖率\\（82.1\% → 97.4\%）}
+\kpi{+11.5pp}{领域要点覆盖率\\（81.3\% → 92.8\%）}
 \hspace{1.2em}
 \kpi{< ¥0.15}{完整优化循环成本\\（6 轮 × 2 组对照）}
 \end{center}
@@ -158,12 +158,13 @@
 它对文风与篇幅的敏感度远高于对专业细节的敏感度。
 
 \textbf{发现二：存在明显的天花板效应。}
-无技能基线的盲评均分已达 8.32/10；在「老虎机选择 vs 随机选择」的对照中，两者的实测奖励差距只有 0.011。
+无技能基线的盲评均分已达 8.22/10；在「老虎机选择 vs 随机选择」的对照中，
+两组甚至无法被区分 —— 同一份代码两次独立运行给出了相反结论（0.831 > 0.820，0.802 < 0.819）。
 任务本身是「给出研究执行方案」，强模型不做任何准备也能拿到高分，
 技能补的特定工具用法与陷阱被压缩了。
 
 \textbf{发现三：技能采纳率是一个被普遍忽视的独立指标。}
-即使把技能全文摆在 Agent 面前，也只有 \textbf{67\%–84\%} 的技能被真正写进方案。
+即使把技能全文摆在 Agent 面前，也只有 \textbf{66\%–89\%} 的技能被真正写进方案。
 这与社区评测的结论方向一致（Vercel agent evals：默认配置下技能在 56\% 的测试用例中从未被激活）。
 「技能没被激活」与「技能质量差」是两件事，必须分开度量。
 
@@ -175,7 +176,7 @@
    技能与强化学习的真实增益就无法被测量。S1 的沙箱与独立评审机制已经就位，
    把它接上即可把评估提升到「真跑代码 + 产物校验」，这是解锁后续一切优化的前提。
 \item \textbf{按「检索层 → 进化闭环 → 调度强化学习」分三阶段落地}，每阶段独立可验证、可回退。
-   检索层的收益在本报告中已被直接证实（召回 77.5\% → 96.7\%），风险最低，适合先做。
+   检索层的收益在本报告中已被直接证实（召回 77.5\% → 95.8\%），风险最低，适合先做。
 \item \textbf{技能层与模型层解耦，可独立演进。}
    文献证据表明，在模型与执行框架完全固定的前提下，仅增加技能层即可带来显著提升
    （MLE-bench +134.3\%），这对 S1「多个国产旗舰模型并存」的架构尤其有价值。
@@ -460,6 +461,59 @@ OpenAI function calling & \texttt{tools.json}（\texttt{search\_skills} / \textt
 \caption{跨框架导出产物}
 \end{table}
 
+\subsection{生产化加固：从原型到可集成组件}
+
+第一版是可运行原型。在确认要接入实际产品后，又按「生产组件」的标准做了一轮加固。
+下面每一项都对应一个\textbf{真实存在的缺陷}，而不是纸面上的最佳实践。
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{4.3cm} >{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{缺陷} & \textbf{后果与修法} \\
+\midrule
+技能库完全没有持久化 &
+\texttt{save/load} 写好了却从未被调用 —— 进化出的技能与老虎机回填的奖励\textbf{重启即全部丢失}。
+已接线并采用「临时文件 + \texttt{os.replace}」原子写入；落盘只存演化技能与运行统计，
+种子技能由代码提供，因此升级代码时种子更新能自动生效 \\[0.25em]
+全局状态无锁 + 索引就地重建 &
+并发下抛 \texttt{RuntimeError}；更隐蔽的是「新技能名配旧向量矩阵」，
+\textbf{静默返回根本不存在的技能}。修法：技能库加锁且遍历返回副本；
+索引改为「局部构建 + 一次性赋值」；运行时对象整体替换而非就地修改 \\[0.25em]
+用内置 \texttt{hash()} 做向量哈希 &
+Python 对字符串的 \texttt{hash()} 受 \texttt{PYTHONHASHSEED} 影响，
+\textbf{每个进程都不一样} → 索引不可复现、不可持久化、历史结果无法回溯。改用 CRC32 \\[0.25em]
+成本账本全局单例且每请求 reset &
+并发下每个请求返回的成本数字都是错的；且两处相加造成\textbf{重复计费}。
+改用 \texttt{contextvars} 实现请求级账本，作用域外自动回落全局账本 \\[0.25em]
+付费接口零鉴权 &
+\texttt{--host 0.0.0.0} 暴露到内网后，任何人都能无限刷 API 额度并污染技能库。
+已支持 \texttt{SKILLNET\_TOKEN} 环境变量与请求头校验 \\[0.25em]
+依赖清单漏 numpy &
+照清单装完依赖后，自检与实验脚本直接 ImportError \\[0.25em]
+非法参数返回 500 &
+模式名传错就炸。已加 Pydantic 校验（枚举白名单、长度上下限），返回 422 与中文说明 \\[0.25em]
+进化技能质量一律写 Average &
+质量先验退化成常数，\textbf{检索排序里的质量加权形同虚设}。
+已改为启发式五维评估，每个维度给出等级 + 理由；安全性为 Poor 的技能直接拒收 \\
+\bottomrule
+\end{tabularx}
+\caption{生产化加固修复的缺陷清单}
+\end{table}
+
+同时对照 agentskills.io 规范补齐了几处遗漏：可选 frontmatter（\texttt{license}、
+\texttt{compatibility}、\texttt{metadata}、\texttt{allowed-tools}）、
+正文 500 行 / 5000 token 的预算检查、\texttt{name} 与目录名的一致性校验。
+
+另有一处认知修正值得记录：技能文件格式虽然统一，但\textbf{各家客户端的发现路径并不相同}
+（Claude Code 用 \texttt{.claude/skills/}、Codex 用 \texttt{.agents/skills/}、
+Cursor 用 \texttt{.cursor/skills/}）。第一版只导出了一个路径，使用者需要自己拷贝；
+现已一次写全全部落点，并额外生成仓库级 \texttt{AGENTS.md}。
+
+自检项从 29 项扩到 29 项，新增的全部是生产化检查，包括
+\textbf{跨进程索引可复现性}、\textbf{并发读写压力测试}与\textbf{请求级账本隔离}。
+
 \newpage
 
 % ======================================================================
@@ -489,7 +543,7 @@ OpenAI function calling & \texttt{tools.json}（\texttt{search\_skills} / \textt
 \midrule
 BM25 关键词检索 & 77.5\% & 50.0\% & 60.0\% \\
 混合检索（＋语义＋结构） & 78.3\% & 55.0\% & 62.5\% \\
-\textbf{Fabric 完整方案}（＋关系扩展＋LLM 重排） & \textbf{96.7\%} & \textbf{90.0\%} & \textbf{95.0\%} \\
+\textbf{Fabric 完整方案}（＋关系扩展＋LLM 重排） & \textbf{95.8\%} & \textbf{90.0\%} & \textbf{92.5\%} \\
 \bottomrule
 \end{tabular}
 \caption{实验一结果（20 个任务，K=5）}
@@ -512,18 +566,18 @@ BM25 关键词检索 & 77.5\% & 50.0\% & 60.0\% \\
   axis line style={ink3},
   tick style={ink3},
 ]
-\addplot[fill=inkjade, draw=inkjade] coordinates {(BM25,77.5) (混合检索,78.3) (Fabric,96.7)};
+\addplot[fill=inkjade, draw=inkjade] coordinates {(BM25,77.5) (混合检索,78.3) (Fabric,95.8)};
 \addplot[fill=inkgold, draw=inkgold] coordinates {(BM25,50.0) (混合检索,55.0) (Fabric,90.0)};
-\addplot[fill=inkaccent, draw=inkaccent] coordinates {(BM25,60.0) (混合检索,62.5) (Fabric,95.0)};
+\addplot[fill=inkaccent, draw=inkaccent] coordinates {(BM25,60.0) (混合检索,62.5) (Fabric,92.5)};
 \legend{技能召回, 完全覆盖, 编排完整度}
 \end{axis}
 \end{tikzpicture}
 \end{center}
 
 \textbf{结论。} 关键词检索能命中大部分技能，但\textbf{只有一半任务能凑齐完整技能集}——
-漏掉的那个技能往往正是让流程跑通的关键。加入关系图扩展后，完全覆盖率从 55\% 跃升到 90\%，
+漏掉的那个技能往往正是让流程跑通的关键。加入关系图扩展后，完全覆盖率从 55\% 上升到 90\%，
 这说明：在大技能池里，\textbf{仅靠「和查询像不像」是不够的，还要沿技能间的依赖与组合关系把工作流上下游补齐}。
-编排完整度从 60\% 到 95\% 则说明，技能集选对之后，执行顺序基本可以自动推导出来。
+编排完整度从 60\% 到 92.5\% 则说明，技能集选对之后，执行顺序基本可以自动推导出来。
 
 \subsection{实验二：技能对执行质量的影响}
 
@@ -536,17 +590,17 @@ BM25 关键词检索 & 77.5\% & 50.0\% & 60.0\% \\
 \toprule
 \textbf{技能供给方式} & \textbf{盲评均分} & \textbf{要点覆盖率} & \textbf{技能采纳率} & \textbf{相对基线} & \textbf{成本/任务} \\
 \midrule
-无技能 & 8.32 & 82.1\% & — & 基线 & ¥0.068 \\
-仅技能卡（L1 元数据） & 8.78 & 93.1\% & 83.9\% & +5.5\% & ¥0.074 \\
-混合检索 ＋ 技能全文 & 8.77 & \textbf{98.3\%} & 66.7\% & +5.4\% & ¥0.078 \\
-\textbf{完整方案}（扩展＋重排＋全文） & \textbf{8.81} & 97.4\% & 77.2\% & \textbf{+5.8\%} & ¥0.084 \\
+无技能 & 8.22 & 81.3\% & — & 基线 & ¥0.051 \\
+仅技能卡（L1 元数据） & 8.52 & 88.0\% & 89.4\% & +3.6\% & ¥0.063 \\
+混合检索 ＋ 技能全文 & 8.79 & 90.6\% & 65.6\% & +7.0\% & ¥0.065 \\
+\textbf{完整方案}（扩展＋重排＋全文） & \textbf{8.86} & \textbf{92.8\%} & 88.9\% & \textbf{+7.8\%} & ¥0.074 \\
 \bottomrule
 \end{tabular}
 \caption{实验二结果（12 个任务 × 4 档 × 3 次重复）}
 \end{table}
 
 \textbf{配对比较}（同一任务内对比无技能基线，消除任务难度差异）：
-完整方案 12 个任务中 \textbf{7 胜 1 平}，要点覆盖率 7 胜。
+完整方案 12 个任务中 \textbf{9 胜 2 平}，要点覆盖率 7 胜。
 
 \begin{center}
 \begin{tikzpicture}
@@ -565,14 +619,14 @@ BM25 关键词检索 & 77.5\% & 50.0\% & 60.0\% \\
   axis line style={ink3}, tick style={ink3},
 ]
 \addplot[fill=inkjade, draw=inkjade] coordinates {
-  (82.1,无技能) (93.1,仅技能卡) (98.3,混合检索) (97.4,完整方案)};
+  (81.3,无技能) (88.0,仅技能卡) (90.6,混合检索) (92.8,完整方案)};
 \end{axis}
 \end{tikzpicture}
 \end{center}
 
 \textbf{结论。} 技能带来的最大改变不是「方案更好看」，而是「专业操作要点被覆盖」。
-覆盖率提升约 15 个百分点，而盲评均分只提升 5.8\%。
-另外，即使把技能全文交给 Agent，也只有 67\%–84\% 的技能被真正用上。
+覆盖率提升 11.5 个百分点，而盲评均分提升 7.8\%。
+另外，即使把技能全文交给 Agent，也只有 66\%–89\% 的技能被真正用上。
 
 \subsection{实验三：老虎机选择与技能进化闭环}
 
@@ -585,8 +639,8 @@ BM25 关键词检索 & 77.5\% & 50.0\% & 60.0\% \\
 \toprule
 \textbf{选择策略} & \textbf{平均实测奖励} & \textbf{最佳技能} & \textbf{库规模} & \textbf{新技能} & \textbf{成本} \\
 \midrule
-\textbf{LinUCB 老虎机} & \textbf{0.831} & literature-review & 51 → 54 & 3 & ¥0.138 \\
-随机选择（消融） & 0.820 & statistical-testing & 51 → 54 & 3 & ¥0.145 \\
+LinUCB 老虎机 & 0.802 & literature-review & 51 → 54 & 3 & ¥0.145 \\
+随机选择（消融） & \textbf{0.819} & deep-learning-training & 51 → 54 & 3 & ¥0.146 \\
 \bottomrule
 \end{tabular}
 \caption{实验三结果（6 轮优化循环 × 2 组对照）}
@@ -601,22 +655,23 @@ BM25 关键词检索 & 77.5\% & 50.0\% & 60.0\% \\
 \midrule
 1 & 单细胞 & \texttt{scrna-qc-clustering} & \texttt{data-cleaning} \\
 2 & 材料 & \texttt{dft-formation-energy} & \texttt{admet-prediction} \\
-3 & 文献 & \texttt{literature-review} & \texttt{citation-verify} \\
-4 & 临床 & \texttt{clinical-feature-engineering} & \texttt{statistical-testing} \\
-5 & 因果推断 & \texttt{econometric-panel} & \texttt{causal-inference} \\
-6 & 分子对接 & \texttt{molecular-docking} & \texttt{md-simulation} \\
+3 & 文献 & \texttt{literature-review} & \texttt{deep-learning-training} \\
+4 & 临床 & \texttt{clinical-feature-engineering} & \texttt{leakage-guard} \\
+5 & 因果推断 & \texttt{econometric-panel} & \texttt{statistical-testing} \\
+6 & 分子对接 & \texttt{molecular-docking} & \texttt{admet-prediction} \\
 \bottomrule
 \end{tabular}
 \caption{逐轮选择记录：两组的行为差异是清晰的}
 \end{table}
 
 \textbf{结论。} 选择行为上的差异很明显——LinUCB 每一轮都选中了与任务领域直接对应的技能，
-随机选择则经常落到通用或邻域技能上。但\textbf{实测奖励的差距只有 0.011}，
-在 6 轮样本量下不构成显著结论。原因与实验二同源：任务本身存在天花板。
+随机选择则经常落到通用或邻域技能上。但\textbf{实测奖励上两组不可区分} ——
+同一份代码两次独立运行给出相反结论（0.831 vs 0.820，0.802 vs 0.819），
+在 6 轮样本量下这只能是噪声。原因与实验二同源：任务本身存在天花板。
 
 进化侧则是确定生效的：两个对照组各蒸馏出 3 个通过准入过滤的新技能
 （如 \texttt{composition-only-formation-energy-extrapolation}、
-\texttt{leakage-safe-survival-feature-pipeline}），技能库从 51 增长到 54，
+\texttt{survival-modeling-with-ehr-features}），技能库从 51 增长到 54，
 检索索引随之刷新。\textbf{整个优化循环的成本不到 ¥0.15}。
 
 \newpage
@@ -637,8 +692,8 @@ BM25 关键词检索 & 77.5\% & 50.0\% & 60.0\% \\
 \toprule
 \textbf{指标} & \textbf{无技能} & \textbf{完整方案} \\
 \midrule
-领域要点覆盖率 & 82.1\% & 97.4\% \quad（\textbf{+15.3 个百分点}） \\
-LLM 盲评均分 & 8.32 & 8.81 \quad（\textbf{+5.8\%}） \\
+领域要点覆盖率 & 81.3\% & 92.8\% \quad（\textbf{+11.5 个百分点}） \\
+LLM 盲评均分 & 8.22 & 8.86 \quad（\textbf{+7.8\%}） \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -663,8 +718,9 @@ LLM 盲评均分 & 8.32 & 8.81 \quad（\textbf{+5.8\%}） \\
 实验二与实验三都出现了同一种现象：各档之间拉不开差距。
 
 \begin{itemize}
-\item 实验二：无技能基线已拿到 8.32/10，四档之间的最大差距只有 0.49 分。
-\item 实验三：LinUCB 与随机选择的平均实测奖励差距只有 \textbf{0.011}，
+\item 实验二：无技能基线已拿到 8.32/10，四档之间的最大差距只有 0.64 分。
+\item 实验三：LinUCB 与随机选择的平均实测奖励\textbf{无法区分} ——
+      同一份代码两次独立运行结论相反（0.831 vs 0.820，0.802 vs 0.819），
       尽管两者的\textbf{选择行为差异非常明显}（一方每轮都选中领域对口技能，另一方经常选错）。
 \end{itemize}
 
@@ -764,7 +820,7 @@ S1 已经具备沙箱执行与独立评审机制，因此这一步的\textbf{边
 \bottomrule
 \end{tabularx}
 
-\textbf{本报告实验一的数字（召回 77.5\% → 96.7\%）就是这条路径的直接依据。}
+\textbf{本报告实验一的数字（召回 77.5\% → 95.8\%）就是这条路径的直接依据。}
 
 \subsection{路径 B：技能库接入进化闭环}
 
@@ -914,7 +970,7 @@ P4 & 把离线蒸馏（task-agnostic）做起来，批量转化 S1 的 300+ 工�
       服务地址 \texttt{http://127.0.0.1:8848}。
 \item \textbf{无密钥体验}：技能库浏览、检索对照、关系图、实验结果、跨框架导出\textbf{全部可用}；
       路由 / 执行 / 进化 / 一键演示需要配置 \texttt{DEEPSEEK\_API\_KEY}。
-\item \textbf{组件自检}：\texttt{python verify.py}（21 项，不需要密钥）；
+\item \textbf{组件自检}：\texttt{python verify.py}（29 项，不需要密钥）；
       \texttt{python verify.py --llm}（额外跑真实链路）；
       \texttt{node tools/front\_check.js}（前端渲染自检）。
 \item \textbf{复跑实验}：\texttt{python bench/run\_bench.py all}。

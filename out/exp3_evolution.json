@@ -10,20 +10,20 @@
      "round": 1,
      "task": "T01",
      "chosen": "scrna-qc-clustering",
-     "reward": 0.85,
+     "reward": 0.775,
      "predicted": 0.0,
      "explore": 0.16871,
-     "score": 8.5,
+     "score": 7.75,
      "evolved": null
     },
     {
      "round": 2,
      "task": "T02",
      "chosen": "dft-formation-energy",
-     "reward": 0.78,
+     "reward": 0.71,
      "predicted": 0.0,
      "explore": 0.16871,
-     "score": 7.8,
+     "score": 7.1,
      "evolved": "composition-only-formation-energy-extrapolation"
     },
     {
@@ -40,20 +40,20 @@
      "round": 4,
      "task": "T04",
      "chosen": "clinical-feature-engineering",
-     "reward": 0.875,
+     "reward": 0.9,
      "predicted": 0.0,
      "explore": 0.16871,
-     "score": 8.75,
-     "evolved": "leakage-safe-survival-feature-pipeline"
+     "score": 9.0,
+     "evolved": "survival-modeling-with-ehr-features"
     },
     {
      "round": 5,
      "task": "T05",
      "chosen": "econometric-panel",
-     "reward": 0.78,
+     "reward": 0.73,
      "predicted": 0.0,
      "explore": 0.16871,
-     "score": 7.8,
+     "score": 7.3,
      "evolved": null
     },
     {
@@ -67,7 +67,7 @@
      "evolved": "sequence-to-lead-virtual-screening"
     }
    ],
-   "mean_reward": 0.8308,
+   "mean_reward": 0.8025,
    "best_skill": "literature-review",
    "best_mean_reward": 0.9,
    "library_size": 54,
@@ -78,7 +78,7 @@
      "generation": 1
     },
     {
-     "name": "leakage-safe-survival-feature-pipeline",
+     "name": "survival-modeling-with-ehr-features",
      "source": "distill",
      "generation": 1
     },
@@ -96,14 +96,14 @@
      {
       "round": 1,
       "skill": "scrna-qc-clustering",
-      "reward": 0.85,
+      "reward": 0.775,
       "predicted": 0.0,
       "reason": "explore=0.169"
      },
      {
       "round": 2,
       "skill": "dft-formation-energy",
-      "reward": 0.78,
+      "reward": 0.71,
       "predicted": 0.0,
       "reason": "explore=0.169"
      },
@@ -117,14 +117,14 @@
      {
       "round": 4,
       "skill": "clinical-feature-engineering",
-      "reward": 0.875,
+      "reward": 0.9,
       "predicted": 0.0,
       "reason": "explore=0.169"
      },
      {
       "round": 5,
       "skill": "econometric-panel",
-      "reward": 0.78,
+      "reward": 0.73,
       "predicted": 0.0,
       "reason": "explore=0.169"
      },
@@ -144,8 +144,8 @@
      },
      "scrna-qc-clustering": {
       "pulls": 1,
-      "mean_reward": 0.85,
-      "best": 0.85
+      "mean_reward": 0.775,
+      "best": 0.775
      },
      "molecular-docking": {
       "pulls": 1,
@@ -154,18 +154,18 @@
      },
      "dft-formation-energy": {
       "pulls": 1,
-      "mean_reward": 0.78,
-      "best": 0.78
+      "mean_reward": 0.71,
+      "best": 0.71
      },
      "econometric-panel": {
       "pulls": 1,
-      "mean_reward": 0.78,
-      "best": 0.78
+      "mean_reward": 0.73,
+      "best": 0.73
      },
      "clinical-feature-engineering": {
       "pulls": 1,
-      "mean_reward": 0.875,
-      "best": 0.875
+      "mean_reward": 0.9,
+      "best": 0.9
      }
     }
    },
@@ -203,7 +203,7 @@
      },
      {
       "op": "distill",
-      "name": "leakage-safe-survival-feature-pipeline",
+      "name": "survival-modeling-with-ehr-features",
       "accepted": true,
       "reason": "G1 新技能入库",
       "parent": [
@@ -221,8 +221,8 @@
      }
     ]
    },
-   "cost_yuan": 0.1378,
-   "tokens": 31431
+   "cost_yuan": 0.1448,
+   "tokens": 32999
   },
   "random": {
    "curve": [
@@ -230,65 +230,65 @@
      "round": 1,
      "task": "T01",
      "chosen": "data-cleaning",
-     "reward": 0.875,
+     "reward": 0.85,
      "predicted": 0.0,
      "explore": 0.0,
-     "score": 8.75,
+     "score": 8.5,
      "evolved": null
     },
     {
      "round": 2,
      "task": "T02",
      "chosen": "admet-prediction",
-     "reward": 0.78,
+     "reward": 0.755,
      "predicted": 0.0,
      "explore": 0.0,
-     "score": 7.8,
+     "score": 7.55,
      "evolved": "composition-only-formation-energy-extrapolation"
     },
     {
      "round": 3,
      "task": "T03",
-     "chosen": "citation-verify",
-     "reward": 0.755,
+     "chosen": "deep-learning-training",
+     "reward": 0.9,
      "predicted": 0.0,
      "explore": 0.0,
-     "score": 7.55,
+     "score": 9.0,
      "evolved": null
     },
     {
      "round": 4,
      "task": "T04",
-     "chosen": "statistical-testing",
-     "reward": 0.9,
+     "chosen": "leakage-guard",
+     "reward": 0.875,
      "predicted": 0.0,
      "explore": 0.0,
-     "score": 9.0,
-     "evolved": "survival-analysis-with-leakage-control"
+     "score": 8.75,
+     "evolved": "survival-emr-leakage-safe-modeling"
     },
     {
      "round": 5,
      "task": "T05",
-     "chosen": "causal-inference",
-     "reward": 0.855,
+     "chosen": "statistical-testing",
+     "reward": 0.755,
      "predicted": 0.0,
      "explore": 0.0,
-     "score": 8.55,
+     "score": 7.55,
      "evolved": null
     },
     {
      "round": 6,
      "task": "T06",
-     "chosen": "md-simulation",
-     "reward": 0.755,
+     "chosen": "admet-prediction",
+     "reward": 0.78,
      "predicted": 0.0,
      "explore": 0.0,
-     "score": 7.55,
-     "evolved": "sequence-to-lead-structure-based-screening"
+     "score": 7.8,
+     "evolved": "sequence-to-lead-virtual-screening"
     }
    ],
-   "mean_reward": 0.82,
-   "best_skill": "statistical-testing",
+   "mean_reward": 0.8192,
+   "best_skill": "deep-learning-training",
    "best_mean_reward": 0.9,
    "library_size": 54,
    "evolved_skills": [
@@ -298,12 +298,12 @@
      "generation": 1
     },
     {
-     "name": "survival-analysis-with-leakage-control",
+     "name": "survival-emr-leakage-safe-modeling",
      "source": "distill",
      "generation": 1
     },
     {
-     "name": "sequence-to-lead-structure-based-screening",
+     "name": "sequence-to-lead-virtual-screening",
      "source": "distill",
      "generation": 1
     }
@@ -316,75 +316,70 @@
      {
       "round": 1,
       "skill": "data-cleaning",
-      "reward": 0.875,
+      "reward": 0.85,
       "predicted": 0.0,
       "reason": 0.0
      },
      {
       "round": 2,
       "skill": "admet-prediction",
-      "reward": 0.78,
+      "reward": 0.755,
       "predicted": 0.0,
       "reason": 0.0
      },
      {
       "round": 3,
-      "skill": "citation-verify",
-      "reward": 0.755,
-      "predicted": 0.0,
-      "reason": 0.0
-     },
-     {
-      "round": 4,
-      "skill": "statistical-testing",
+      "skill": "deep-learning-training",
       "reward": 0.9,
       "predicted": 0.0,
       "reason": 0.0
      },
      {
+      "round": 4,
+      "skill": "leakage-guard",
+      "reward": 0.875,
+      "predicted": 0.0,
+      "reason": 0.0
+     },
+     {
       "round": 5,
-      "skill": "causal-inference",
-      "reward": 0.855,
+      "skill": "statistical-testing",
+      "reward": 0.755,
       "predicted": 0.0,
       "reason": 0.0
      },
      {
       "round": 6,
-      "skill": "md-simulation",
-      "reward": 0.755,
+      "skill": "admet-prediction",
+      "reward": 0.78,
       "predicted": 0.0,
       "reason": 0.0
      }
     ],
     "arm_stats": {
-     "citation-verify": {
+     "data-cleaning": {
+      "pulls": 1,
+      "mean_reward": 0.85,
+      "best": 0.85
+     },
+     "statistical-testing": {
       "pulls": 1,
       "mean_reward": 0.755,
       "best": 0.755
      },
-     "data-cleaning": {
+     "leakage-guard": {
       "pulls": 1,
       "mean_reward": 0.875,
       "best": 0.875
      },
-     "statistical-testing": {
+     "deep-learning-training": {
       "pulls": 1,
       "mean_reward": 0.9,
       "best": 0.9
      },
-     "causal-inference": {
-      "pulls": 1,
-      "mean_reward": 0.855,
-      "best": 0.855
-     },
-     "md-simulation": {
-      "pulls": 1,
-      "mean_reward": 0.755,
-      "best": 0.755
-     },
      "admet-prediction": {
-      "pulls": 1,
-      "mean_reward": 0.78,
+      "pulls": 2,
+      "mean_reward": 0.7675,
       "best": 0.78
      }
     }
@@ -423,16 +418,16 @@
      },
      {
       "op": "distill",
-      "name": "survival-analysis-with-leakage-control",
+      "name": "survival-emr-leakage-safe-modeling",
       "accepted": true,
       "reason": "G1 新技能入库",
       "parent": [
-       "statistical-testing"
+       "leakage-guard"
       ]
      },
      {
       "op": "distill",
-      "name": "sequence-to-lead-structure-based-screening",
+      "name": "sequence-to-lead-virtual-screening",
       "accepted": true,
       "reason": "G1 新技能入库",
       "parent": [
@@ -441,9 +436,9 @@
      }
     ]
    },
-   "cost_yuan": 0.1448,
-   "tokens": 32575
+   "cost_yuan": 0.146,
+   "tokens": 33417
   }
  },
- "timestamp": "2026-09-19 00:36:44"
+ "timestamp": "2026-09-22 18:34:43"
 }

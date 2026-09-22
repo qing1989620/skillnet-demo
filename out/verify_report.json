@@ -1,6 +1,6 @@
 {
- "passed": 21,
- "total": 21,
+ "passed": 29,
+ "total": 29,
  "checks": [
   {
    "name": "技能库规模",
@@ -88,9 +88,24 @@
    "detail": "3 节点环被正确打断"
   },
   {
-   "name": "四框架导出",
+   "name": "编排环可观测",
    "pass": true,
-   "detail": "4 个框架产物齐备（各 51 个技能）"
+   "detail": "环边可观测（本次打断 0 条），且拓扑序合法"
+  },
+  {
+   "name": "质量评估带理由",
+   "pass": true,
+   "detail": "五维均带等级+理由；危险操作被识别为 Poor（样例完整性=Good）"
+  },
+  {
+   "name": "跨框架导出（四客户端落点）",
+   "pass": true,
+   "detail": "8 项产物；4 个客户端落点各 51 个技能 + AGENTS.md"
+  },
+  {
+   "name": "导出路径安全",
+   "pass": true,
+   "detail": "路径穿越 / 大写 / 超长 / 含空格名均被拦截"
   },
   {
    "name": "种子技能目录落盘",
@@ -106,6 +121,31 @@
    "name": "客观要点抽取",
    "pass": true,
    "detail": "抽取 6 条专业要点"
+  },
+  {
+   "name": "规范符合性（name/description/正文预算）",
+   "pass": true,
+   "detail": "51 个技能合规；正文最长 58 行 / 约 444 tokens（预算 500 行 / 5000）"
+  },
+  {
+   "name": "技能库持久化往返",
+   "pass": true,
+   "detail": "51 个技能 + 运行统计往返一致"
+  },
+  {
+   "name": "检索索引跨进程可复现",
+   "pass": true,
+   "detail": "两种 PYTHONHASHSEED 得到同一向量指纹（1456.639969）"
+  },
+  {
+   "name": "并发读写安全",
+   "pass": true,
+   "detail": "2 写 4 读并发 2 秒：零异常、零幽灵技能（库规模做到 157）"
+  },
+  {
+   "name": "成本账本请求级隔离",
+   "pass": true,
+   "detail": "请求级账本互不串账（A=1000 / B=500 tokens）"
   }
  ]
 }

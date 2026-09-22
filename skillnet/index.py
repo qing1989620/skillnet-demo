@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import math
 import re
+import zlib
 from collections import Counter
 from typing import Iterable
 
@@ -55,17 +56,25 @@ class BM25Index:
         self.avg_len: float = 0.0
 
     def fit(self, ids: list[str], texts: list[str]) -> None:
-        self.docs = ids
-        self.tf, self.df, self.doc_len = [], Counter(), []
+        """同 VectorIndex.fit：局部构建 + 一次性赋值，避免并发读到半成品索引。"""
+        new_tf: list[Counter] = []
+        new_df: Counter = Counter()
+        new_len: list[int] = []
         for t in texts:
             toks = tokenize(t)
             c = Counter(toks)
-            self.tf.append(c)
-            self.doc_len.append(len(toks))
+            new_tf.append(c)
+            new_len.append(len(toks))
             for term in c:
-                self.df[term] += 1
-        self.avg_len = (sum(self.doc_len) / len(self.doc_len)) if self.doc_len else 0.0
+                new_df[term] += 1
+
+        # ---- 原子替换 ----
+        self.docs = list(ids)
+        self.tf = new_tf
+        self.df = new_df
+        self.doc_len = new_len
         self.n = len(self.docs)
+        self.avg_len = (sum(new_len) / len(new_len)) if new_len else 0.0
 
     def _idf(self, term: str) -> float:
         df = self.df.get(term, 0)
@@ -114,28 +123,47 @@ class VectorIndex:
         return feats
 
     def _hash(self, feat: str) -> int:
-        return hash(feat) % self.dim
+        """稳定哈希。
+
+        不能用内置 `hash()` —— 它对 str 的结果受 PYTHONHASHSEED 影响，
+        **每个进程都不一样**。那会导致：同一份技能库在不同进程里编码出的向量不可比，
+        索引无法持久化，也无法复现历史检索结果。
+        改用 CRC32：跨进程、跨平台、跨版本都稳定，速度也足够。
+        """
+        return zlib.crc32(feat.encode("utf-8")) % self.dim
 
     def fit(self, ids: list[str], texts: list[str]) -> None:
-        self.ids = ids
-        self.df = Counter()
+        """构建索引。
+
+        注意：全部结果先在**局部变量**里算完，最后一次性赋给实例属性。
+        Python 的属性赋值是原子的，因此并发读要么看到完整的旧索引、
+        要么看到完整的新索引，不会出现「新 ids 配旧 matrix」这种
+        静默返回错误技能名的撕裂状态（这是本模块修掉的一个真实缺陷）。
+        """
+        new_df: Counter = Counter()
         tokenised = []
         for t in texts:
             feats = self._raw_features(t)
             tokenised.append(feats)
             for f in set(feats):
-                self.df[f] += 1
+                new_df[f] += 1
+
         n = max(1, len(texts))
-        self.matrix = []
+        new_matrix: list[dict[int, float]] = []
         for feats in tokenised:
             vec: dict[int, float] = {}
             counts = Counter(feats)
             for f, c in counts.items():
-                idf = math.log(1 + n / (1 + self.df[f]))
+                idf = math.log(1 + n / (1 + new_df[f]))
                 w = (1 + math.log(c)) * idf
                 h = self._hash(f)
                 vec[h] = vec.get(h, 0.0) + w
-            self.matrix.append(self._normalise(vec))
+            new_matrix.append(self._normalise(vec))
+
+        # ---- 原子替换 ----
+        self.ids = list(ids)
+        self.df = new_df
+        self.matrix = new_matrix
 
     @staticmethod
     def _normalise(vec: dict[int, float]) -> dict[int, float]:
