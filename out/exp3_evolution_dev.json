@@ -1,0 +1,495 @@
+{
+ "experiment": "evolution",
+ "dataset": "dev-v1",
+ "split": "dev",
+ "statistics": {
+  "test": "paired_bootstrap",
+  "alpha": 0.05,
+  "n": 6,
+  "n_boot": 4000,
+  "mean_diff": -0.0367,
+  "ci95": [
+   -0.0892,
+   0.0217
+  ],
+  "contains_zero": true,
+  "verdict": "indistinguishable",
+  "conclusion": "两组在 95% 置信区间上不可区分。本实验仅验证「选择→执行→奖励→更新→进化」闭环可运行，不构成「选择策略优于随机」的证据。",
+  "evidence_level": "preliminary"
+ },
+ "rounds": 6,
+ "n_tasks": 6,
+ "alpha": 0.1,
+ "results": {
+  "linucb": {
+   "curve": [
+    {
+     "round": 1,
+     "task": "T01",
+     "chosen": "scrna-qc-clustering",
+     "reward": 0.875,
+     "predicted": 0.0,
+     "explore": 0.25184,
+     "score": 8.75,
+     "evolved": null
+    },
+    {
+     "round": 2,
+     "task": "T02",
+     "chosen": "dft-formation-energy",
+     "reward": 0.8,
+     "predicted": 0.52433,
+     "explore": 0.19652,
+     "score": 8.0,
+     "evolved": "composition-only-formation-energy-extrapolation"
+    },
+    {
+     "round": 3,
+     "task": "T03",
+     "chosen": "literature-review",
+     "reward": 0.88,
+     "predicted": 0.61751,
+     "explore": 0.17418,
+     "score": 8.8,
+     "evolved": null
+    },
+    {
+     "round": 4,
+     "task": "T04",
+     "chosen": "clinical-feature-engineering",
+     "reward": 0.875,
+     "predicted": 0.6893,
+     "explore": 0.16489,
+     "score": 8.75,
+     "evolved": "survival-modeling-with-ehr-no-leakage"
+    },
+    {
+     "round": 5,
+     "task": "T05",
+     "chosen": "econometric-panel",
+     "reward": 0.755,
+     "predicted": 0.70715,
+     "explore": 0.16898,
+     "score": 7.55,
+     "evolved": null
+    },
+    {
+     "round": 6,
+     "task": "T06",
+     "chosen": "molecular-docking",
+     "reward": 0.78,
+     "predicted": 0.73086,
+     "explore": 0.15918,
+     "score": 7.8,
+     "evolved": "structure-based-virtual-screening-pipeline"
+    }
+   ],
+   "mean_reward": 0.8275,
+   "std": 0.0557,
+   "n_rounds": 6,
+   "best_skill": "literature-review",
+   "best_mean_reward": 0.88,
+   "library_size": 54,
+   "evolved_skills": [
+    {
+     "name": "composition-only-formation-energy-extrapolation",
+     "source": "distill",
+     "generation": 1
+    },
+    {
+     "name": "survival-modeling-with-ehr-no-leakage",
+     "source": "distill",
+     "generation": 1
+    },
+    {
+     "name": "structure-based-virtual-screening-pipeline",
+     "source": "distill",
+     "generation": 1
+    }
+   ],
+   "selector": {
+    "policy": "shared_linucb",
+    "alpha": 0.1,
+    "dim": 160,
+    "updates": 6,
+    "theta_norm": 0.3756,
+    "pulls": 6,
+    "curve": [
+     {
+      "round": 1,
+      "task": "我拿到一批 PBMC 的 10x 单细胞 RNA 测序数据，想先做质控并识别出免疫细胞亚群，然后比较两组患者在这些亚群上的基因表达差异，最后出图。需要一套完整可复现的流程。",
+      "skill": "scrna-qc-clustering",
+      "reward": 0.875,
+      "predicted": 0.0,
+      "exploration": 0.2518,
+      "reason": "explore=0.252"
+     },
+     {
+      "round": 2,
+      "task": "我想用纯成分特征预测无机化合物的形成能，不需要晶体结构，同时必须评估模型在没见过的元素上的外推能力，最后给出可进一步实验验证的候选材料。",
+      "skill": "dft-formation-energy",
+      "reward": 0.8,
+      "predicted": 0.5243,
+      "exploration": 0.1965,
+      "reason": "explore=0.197"
+     },
+     {
+      "round": 3,
+      "task": "导师让我梳理「图神经网络在药物发现中的应用」这个方向的研究现状，并且要找出还没被做过的切入点来定我的课题，引用必须真实可查。",
+      "skill": "literature-review",
+      "reward": 0.88,
+      "predicted": 0.6175,
+      "exploration": 0.1742,
+      "reason": "explore=0.174"
+     },
+     {
+      "round": 4,
+      "task": "我有一份 5 年随访的肿瘤患者数据，结局是复发时间和是否复发，想找出影响预后的因素，并且用电子病历里的检验指标做特征，注意不能有数据泄漏。",
+      "skill": "clinical-feature-engineering",
+      "reward": 0.875,
+      "predicted": 0.6893,
+      "exploration": 0.1649,
+      "reason": "explore=0.165"
+     },
+     {
+      "round": 5,
+      "task": "某省在不同年份陆续推行了一项产业政策，我想用省级面板数据评估它对当地企业创新的影响，需要处理政策内生性并做稳健性检验。",
+      "skill": "econometric-panel",
+      "reward": 0.755,
+      "predicted": 0.7071,
+      "exploration": 0.169,
+      "reason": "explore=0.169"
+     },
+     {
+      "round": 6,
+      "task": "我有一个靶点蛋白的序列但没有实验结构，想找到能和它结合的小分子候选，还要评估这些分子的成药性，并且验证对接流程本身是可靠的。",
+      "skill": "molecular-docking",
+      "reward": 0.78,
+      "predicted": 0.7309,
+      "exploration": 0.1592,
+      "reason": "explore=0.159"
+     }
+    ],
+    "arm_stats": {
+     "literature-review": {
+      "pulls": 1,
+      "mean_reward": 0.88,
+      "best": 0.88
+     },
+     "scrna-qc-clustering": {
+      "pulls": 1,
+      "mean_reward": 0.875,
+      "best": 0.875
+     },
+     "molecular-docking": {
+      "pulls": 1,
+      "mean_reward": 0.78,
+      "best": 0.78
+     },
+     "dft-formation-energy": {
+      "pulls": 1,
+      "mean_reward": 0.8,
+      "best": 0.8
+     },
+     "econometric-panel": {
+      "pulls": 1,
+      "mean_reward": 0.755,
+      "best": 0.755
+     },
+     "clinical-feature-engineering": {
+      "pulls": 1,
+      "mean_reward": 0.875,
+      "best": 0.875
+     }
+    }
+   },
+   "evolver": {
+    "attempts": 3,
+    "accepted": 3,
+    "rejected": 0,
+    "by_operator": {
+     "distill": {
+      "attempts": 3,
+      "accepted": 3
+     },
+     "mutate": {
+      "attempts": 0,
+      "accepted": 0
+     },
+     "crossover": {
+      "attempts": 0,
+      "accepted": 0
+     },
+     "regenerate": {
+      "attempts": 0,
+      "accepted": 0
+     }
+    },
+    "records": [
+     {
+      "op": "distill",
+      "name": "composition-only-formation-energy-extrapolation",
+      "accepted": true,
+      "reason": "G1 新技能入库",
+      "parent": [
+       "dft-formation-energy"
+      ]
+     },
+     {
+      "op": "distill",
+      "name": "survival-modeling-with-ehr-no-leakage",
+      "accepted": true,
+      "reason": "G1 新技能入库",
+      "parent": [
+       "clinical-feature-engineering"
+      ]
+     },
+     {
+      "op": "distill",
+      "name": "structure-based-virtual-screening-pipeline",
+      "accepted": true,
+      "reason": "G1 新技能入库",
+      "parent": [
+       "molecular-docking"
+      ]
+     }
+    ]
+   },
+   "cost_yuan": 0.1453,
+   "tokens": 33047
+  },
+  "random": {
+   "curve": [
+    {
+     "round": 1,
+     "task": "T01",
+     "chosen": "data-cleaning",
+     "reward": 0.9,
+     "predicted": 0.0,
+     "explore": 0.0,
+     "score": 9.0,
+     "evolved": null
+    },
+    {
+     "round": 2,
+     "task": "T02",
+     "chosen": "admet-prediction",
+     "reward": 0.875,
+     "predicted": 0.0,
+     "explore": 0.0,
+     "score": 8.75,
+     "evolved": "composition-only-formation-energy-extrapolation"
+    },
+    {
+     "round": 3,
+     "task": "T03",
+     "chosen": "citation-verify",
+     "reward": 0.78,
+     "predicted": 0.0,
+     "explore": 0.0,
+     "score": 7.8,
+     "evolved": null
+    },
+    {
+     "round": 4,
+     "task": "T04",
+     "chosen": "statistical-testing",
+     "reward": 0.9,
+     "predicted": 0.0,
+     "explore": 0.0,
+     "score": 9.0,
+     "evolved": "survival-cox-prognostic-modeling"
+    },
+    {
+     "round": 5,
+     "task": "T05",
+     "chosen": "statistical-testing",
+     "reward": 0.875,
+     "predicted": 0.0,
+     "explore": 0.0,
+     "score": 8.75,
+     "evolved": null
+    },
+    {
+     "round": 6,
+     "task": "T06",
+     "chosen": "md-simulation",
+     "reward": 0.855,
+     "predicted": 0.0,
+     "explore": 0.0,
+     "score": 8.55,
+     "evolved": "sequence-to-lead-structure-based-screening"
+    }
+   ],
+   "mean_reward": 0.8642,
+   "std": 0.0447,
+   "n_rounds": 6,
+   "best_skill": "data-cleaning",
+   "best_mean_reward": 0.9,
+   "library_size": 54,
+   "evolved_skills": [
+    {
+     "name": "composition-only-formation-energy-extrapolation",
+     "source": "distill",
+     "generation": 1
+    },
+    {
+     "name": "survival-cox-prognostic-modeling",
+     "source": "distill",
+     "generation": 1
+    },
+    {
+     "name": "sequence-to-lead-structure-based-screening",
+     "source": "distill",
+     "generation": 1
+    }
+   ],
+   "selector": {
+    "policy": "random",
+    "alpha": null,
+    "dim": null,
+    "updates": 6,
+    "theta_norm": null,
+    "pulls": 6,
+    "curve": [
+     {
+      "round": 1,
+      "task": "我拿到一批 PBMC 的 10x 单细胞 RNA 测序数据，想先做质控并识别出免疫细胞亚群，然后比较两组患者在这些亚群上的基因表达差异，最后出图。需要一套完整可复现的流程。",
+      "skill": "data-cleaning",
+      "reward": 0.9,
+      "predicted": 0.0,
+      "exploration": 0.0,
+      "reason": "explore=0.000"
+     },
+     {
+      "round": 2,
+      "task": "我想用纯成分特征预测无机化合物的形成能，不需要晶体结构，同时必须评估模型在没见过的元素上的外推能力，最后给出可进一步实验验证的候选材料。",
+      "skill": "admet-prediction",
+      "reward": 0.875,
+      "predicted": 0.0,
+      "exploration": 0.0,
+      "reason": "explore=0.000"
+     },
+     {
+      "round": 3,
+      "task": "导师让我梳理「图神经网络在药物发现中的应用」这个方向的研究现状，并且要找出还没被做过的切入点来定我的课题，引用必须真实可查。",
+      "skill": "citation-verify",
+      "reward": 0.78,
+      "predicted": 0.0,
+      "exploration": 0.0,
+      "reason": "explore=0.000"
+     },
+     {
+      "round": 4,
+      "task": "我有一份 5 年随访的肿瘤患者数据，结局是复发时间和是否复发，想找出影响预后的因素，并且用电子病历里的检验指标做特征，注意不能有数据泄漏。",
+      "skill": "statistical-testing",
+      "reward": 0.9,
+      "predicted": 0.0,
+      "exploration": 0.0,
+      "reason": "explore=0.000"
+     },
+     {
+      "round": 5,
+      "task": "某省在不同年份陆续推行了一项产业政策，我想用省级面板数据评估它对当地企业创新的影响，需要处理政策内生性并做稳健性检验。",
+      "skill": "statistical-testing",
+      "reward": 0.875,
+      "predicted": 0.0,
+      "exploration": 0.0,
+      "reason": "explore=0.000"
+     },
+     {
+      "round": 6,
+      "task": "我有一个靶点蛋白的序列但没有实验结构，想找到能和它结合的小分子候选，还要评估这些分子的成药性，并且验证对接流程本身是可靠的。",
+      "skill": "md-simulation",
+      "reward": 0.855,
+      "predicted": 0.0,
+      "exploration": 0.0,
+      "reason": "explore=0.000"
+     }
+    ],
+    "arm_stats": {
+     "citation-verify": {
+      "pulls": 1,
+      "mean_reward": 0.78,
+      "best": 0.78
+     },
+     "data-cleaning": {
+      "pulls": 1,
+      "mean_reward": 0.9,
+      "best": 0.9
+     },
+     "statistical-testing": {
+      "pulls": 2,
+      "mean_reward": 0.8875,
+      "best": 0.9
+     },
+     "md-simulation": {
+      "pulls": 1,
+      "mean_reward": 0.855,
+      "best": 0.855
+     },
+     "admet-prediction": {
+      "pulls": 1,
+      "mean_reward": 0.875,
+      "best": 0.875
+     }
+    }
+   },
+   "evolver": {
+    "attempts": 3,
+    "accepted": 3,
+    "rejected": 0,
+    "by_operator": {
+     "distill": {
+      "attempts": 3,
+      "accepted": 3
+     },
+     "mutate": {
+      "attempts": 0,
+      "accepted": 0
+     },
+     "crossover": {
+      "attempts": 0,
+      "accepted": 0
+     },
+     "regenerate": {
+      "attempts": 0,
+      "accepted": 0
+     }
+    },
+    "records": [
+     {
+      "op": "distill",
+      "name": "composition-only-formation-energy-extrapolation",
+      "accepted": true,
+      "reason": "G1 新技能入库",
+      "parent": [
+       "admet-prediction"
+      ]
+     },
+     {
+      "op": "distill",
+      "name": "survival-cox-prognostic-modeling",
+      "accepted": true,
+      "reason": "G1 新技能入库",
+      "parent": [
+       "statistical-testing"
+      ]
+     },
+     {
+      "op": "distill",
+      "name": "sequence-to-lead-structure-based-screening",
+      "accepted": true,
+      "reason": "G1 新技能入库",
+      "parent": [
+       "admet-prediction"
+      ]
+     }
+    ]
+   },
+   "cost_yuan": 0.1486,
+   "tokens": 33655
+  }
+ },
+ "timestamp": "2026-09-23 15:17:40"
+}

@@ -1,0 +1,272 @@
+{
+ "project": {
+  "name": "SkillNet-S1",
+  "version": "0.3.0",
+  "tagline": "面向科研 Agent 的技能运维层"
+ },
+ "generated_at": "2026-09-23 15:22:29",
+ "git_commit": "409e31f",
+ "provenance": {
+  "config": "config/experiment.yaml",
+  "config_hash": "c5f79339ca8641fc",
+  "model": "deepseek-chat",
+  "temperature": {
+   "executor": 0.3,
+   "judge": 0.0
+  },
+  "retrieval_weights": {
+   "bm25": 0.7,
+   "vector": 0.2,
+   "structural": 0.1
+  },
+  "selection_policy": "shared_linucb",
+  "pricing_version": "deepseek-2026-09",
+  "sources": {
+   "exp1_retrieval_dev.json": {
+    "sha256": "72e1651146f3ce8a",
+    "bytes": 46371
+   },
+   "exp1_retrieval_heldout.json": {
+    "sha256": "422eba7fe94c61fa",
+    "bytes": 27520
+   },
+   "exp2_execution_dev.json": {
+    "sha256": "1f69075228831841",
+    "bytes": 97023
+   },
+   "exp3_evolution_dev.json": {
+    "sha256": "ea19b31886582d9f",
+    "bytes": 13202
+   }
+  },
+  "benchmark_hashes": {
+   "dev": "41cadbe2dd0543ba",
+   "heldout": "eb4c359f2545b15a"
+  }
+ },
+ "datasets": {
+  "dev": {
+   "file": "tasks/benchmark.json",
+   "version": "dev-v1",
+   "n_tasks": 20,
+   "frozen": false,
+   "purpose": "调参（retrieval weights / thresholds / 扩展深度）"
+  },
+  "heldout": {
+   "file": "tasks/heldout.json",
+   "version": "heldout-v1",
+   "n_tasks": 12,
+   "frozen": true,
+   "frozen_at": "2026-09-23",
+   "purpose": "最终结论。冻结后不得再对其调参",
+   "notes": "任务措辞、领域组合与 dev 集刻意不同；gold 由与技能库文本独立的过程标注"
+  }
+ },
+ "retrieval": {
+  "bm25": {
+   "label": "BM25 关键词"
+  },
+  "hybrid": {
+   "label": "混合检索",
+   "weights": {
+    "bm25": 0.7,
+    "vector": 0.2,
+    "structural": 0.1
+   },
+   "agreement_bonus": 0.05,
+   "tuning_note": "权重经 dev 集扫描标定，不是拍脑袋定的。早期 0.55/0.30/0.15 时混合档 召回（76.7%）反而低于纯 BM25（77.5%），因为本环境的语义通路是稀疏向量的 降级实现、噪声偏大。标定出 0.70/0.20/0.10 后混合档稳定优于基线。 接入稠密编码器后此权重需重新标定。\n"
+  },
+  "fabric": {
+   "label": "Fabric 完整方案",
+   "graph_expand_depth": 1,
+   "top_n_for_expand": 3,
+   "llm_rerank": true
+  }
+ },
+ "selection": {
+  "policy": "shared_linucb",
+  "policy_label": "Shared LinUCB",
+  "alpha": 0.25,
+  "ctx_dim": 152,
+  "ablation": "random",
+  "ablation_label": "随机选择（消融）",
+  "evidence_level": "preliminary"
+ },
+ "pricing": {
+  "version": "deepseek-2026-09",
+  "currency": "CNY",
+  "effective_from": "2026-09-01",
+  "unit": "per_1k_tokens",
+  "input_cache_hit": 0.0005,
+  "input_cache_miss": 0.002,
+  "output": 0.008,
+  "note": "按标准时段计价估算。未接入缓存命中与错峰折扣信息， 因此 UI 与报告中一律标注为「估算成本」而非「实际成本」。\n"
+ },
+ "display": {
+  "reference_coverage_label": "skill-derived reference coverage",
+  "reference_coverage_note": "该指标从 gold 技能的 pitfalls / verification 抽取参考要点， 而技能组 Agent 又会读到这些技能，因此对技能组天然有利。 它是「技能衍生覆盖度」，不是独立客观指标。 独立评价见 execution.artifact_checks。\n",
+  "cost_label": "估算成本（estimated cost）"
+ },
+ "reporting_rule": {
+  "final_results_must_cite": "heldout",
+  "dev_role": "tuning only",
+  "note": "dev 集数字只能标注为调参结果；报告结论必须引用 held-out。"
+ },
+ "splits": {
+  "dev": {
+   "exp1": {
+    "n_tasks": 20,
+    "k": 5,
+    "dataset": "dev-v1",
+    "rows": [
+     {
+      "mode": "bm25",
+      "label": "BM25 关键词",
+      "recall": 77.5,
+      "full_coverage": 50.0,
+      "orchestration": 60.0
+     },
+     {
+      "mode": "hybrid",
+      "label": "混合检索",
+      "recall": 78.3,
+      "full_coverage": 55.0,
+      "orchestration": 62.5
+     },
+     {
+      "mode": "fabric",
+      "label": "Fabric 完整方案",
+      "recall": 95.8,
+      "full_coverage": 90.0,
+      "orchestration": 92.5
+     }
+    ],
+    "split": "dev",
+    "split_label": "DEV（调参集，结果仅作过程记录）"
+   },
+   "exp2": {
+    "n_tasks": 12,
+    "repeats": 3,
+    "dataset": "dev-v1",
+    "rows": [
+     {
+      "mode": "bare",
+      "label": "无技能",
+      "score": 8.22,
+      "coverage": 81.3,
+      "adoption": null,
+      "gain_pct": 0.0,
+      "cost": 0.0511
+     },
+     {
+      "mode": "cards",
+      "label": "仅技能卡（L1 元数据）",
+      "score": 8.52,
+      "coverage": 88.0,
+      "adoption": 89.4,
+      "gain_pct": 3.6,
+      "cost": 0.0625
+     },
+     {
+      "mode": "hybrid",
+      "label": "混合检索 + 技能全文",
+      "score": 8.79,
+      "coverage": 90.6,
+      "adoption": 65.6,
+      "gain_pct": 7.0,
+      "cost": 0.0651
+     },
+     {
+      "mode": "fabric",
+      "label": "完整方案（扩展+重排+全文）",
+      "score": 8.86,
+      "coverage": 92.8,
+      "adoption": 88.9,
+      "gain_pct": 7.8,
+      "cost": 0.0737
+     }
+    ],
+    "base_score": 8.22,
+    "top_score": 8.86,
+    "coverage_gain_pp": 11.5,
+    "paired_wins": null,
+    "paired_ties": null,
+    "paired_n": null,
+    "split": "dev",
+    "split_label": "DEV（调参集，结果仅作过程记录）"
+   },
+   "exp3": {
+    "arms": {
+     "linucb": {
+      "mean_reward": 0.8275,
+      "std": 0.0557,
+      "n_rounds": 6,
+      "best_skill": "literature-review",
+      "cost": 0.1453,
+      "evolved": 3
+     },
+     "random": {
+      "mean_reward": 0.8642,
+      "std": 0.0447,
+      "n_rounds": 6,
+      "best_skill": "data-cleaning",
+      "cost": 0.1486,
+      "evolved": 3
+     }
+    },
+    "statistics": {
+     "test": "paired_bootstrap",
+     "alpha": 0.05,
+     "n": 6,
+     "n_boot": 4000,
+     "mean_diff": -0.0367,
+     "ci95": [
+      -0.0892,
+      0.0217
+     ],
+     "contains_zero": true,
+     "verdict": "indistinguishable",
+     "conclusion": "两组在 95% 置信区间上不可区分。本实验仅验证「选择→执行→奖励→更新→进化」闭环可运行，不构成「选择策略优于随机」的证据。",
+     "evidence_level": "preliminary"
+    },
+    "evidence_level": "preliminary",
+    "split": "dev",
+    "split_label": "DEV（调参集，结果仅作过程记录）"
+   }
+  },
+  "heldout": {
+   "exp1": {
+    "n_tasks": 12,
+    "k": 5,
+    "dataset": "dev-v1",
+    "rows": [
+     {
+      "mode": "bm25",
+      "label": "BM25 关键词",
+      "recall": 73.6,
+      "full_coverage": 33.3,
+      "orchestration": 12.5
+     },
+     {
+      "mode": "hybrid",
+      "label": "混合检索",
+      "recall": 76.4,
+      "full_coverage": 41.7,
+      "orchestration": 16.7
+     },
+     {
+      "mode": "fabric",
+      "label": "Fabric 完整方案",
+      "recall": 86.1,
+      "full_coverage": 66.7,
+      "orchestration": 25.0
+     }
+    ],
+    "split": "heldout",
+    "split_label": "HELD-OUT（冻结测试集，最终结论只引这里）"
+   },
+   "exp2": null,
+   "exp3": null
+  }
+ }
+}

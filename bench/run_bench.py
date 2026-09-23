@@ -31,7 +31,26 @@ from skillnet.judge import reference_points_from_skills, score_plan  # noqa: E40
 from skillnet.orchestrator import Orchestrator  # noqa: E402
 from skillnet.retriever import Retriever, gold_overlap  # noqa: E402
 
-TASKS = json.loads((ROOT / "tasks" / "benchmark.json").read_text(encoding="utf-8"))["tasks"]
+DATASETS = {
+    "dev": ("tasks/benchmark.json", "dev-v1", "dev"),
+    "heldout": ("tasks/heldout.json", "heldout-v1", "heldout"),
+}
+
+
+def load_tasks(dataset: str = "dev") -> list[dict]:
+    """按数据集加载任务。
+
+    dev 集用于调参，可以反复看；heldout 集已冻结，
+    只应被用于产出最终结果，**不得**据此调参。
+    """
+    rel, _ver, _split = DATASETS[dataset]
+    path = ROOT / rel
+    if not path.exists():
+        raise SystemExit(f"数据集不存在：{path}")
+    return json.loads(path.read_text(encoding="utf-8"))["tasks"]
+
+
+TASKS = load_tasks("dev")   # 兼容旧引用（默认 dev）
 
 
 def load_lib() -> SkillLibrary:
@@ -51,6 +70,50 @@ def _std(xs: list[float]) -> float:
     return (sum((x - m) ** 2 for x in xs) / (len(xs) - 1)) ** 0.5
 
 
+def paired_bootstrap(
+    a: list[float], b: list[float], *, n_boot: int = 4000, seed: int = 17
+) -> dict[str, Any]:
+    """配对 bootstrap：均值差的 95% 置信区间。
+
+    为什么用配对：两组跑的是同一批任务、同一顺序，逐轮可以配成对。
+    配对后任务难度被消掉，只剩「同一任务下两个策略谁更好」的差异，
+    比直接比两个独立均值灵敏得多。
+
+    为什么必须给区间而不是只给点估计：本项目 exp3 只有 6 轮，
+    0.02 量级的均值差完全在噪声范围内。只看点估计会得出
+    「LinUCB 赢了」或「随机赢了」这种随运行方向翻转的结论 ——
+    上一版就出现过两次运行结论相反的情况。
+
+    判定规则：区间跨 0 → 不能宣称任何一方更好。
+    """
+    import random as _random
+
+    n = min(len(a), len(b))
+    if n == 0:
+        return {"n": 0, "verdict": "insufficient_data"}
+    diffs = [a[i] - b[i] for i in range(n)]
+    rng = _random.Random(seed)
+    means = []
+    for _ in range(n_boot):
+        s = 0.0
+        for _ in range(n):
+            s += diffs[rng.randrange(n)]
+        means.append(s / n)
+    means.sort()
+    lo = means[int(0.025 * n_boot)]
+    hi = means[int(0.975 * n_boot)]
+    obs = sum(diffs) / n
+    contains_zero = lo <= 0.0 <= hi
+    return {
+        "n": n,
+        "n_boot": n_boot,
+        "mean_diff": round(obs, 4),
+        "ci95": [round(lo, 4), round(hi, 4)],
+        "contains_zero": contains_zero,
+        "verdict": "indistinguishable" if contains_zero else "distinguishable",
+    }
+
+
 def _dump(name: str, payload: dict) -> str:
     p = config.OUT_DIR / f"{name}.json"
     p.write_text(json.dumps(payload, ensure_ascii=False, indent=1), encoding="utf-8")
@@ -60,12 +123,12 @@ def _dump(name: str, payload: dict) -> str:
 # ======================================================================
 # 实验一：技能检索与编排
 # ======================================================================
-def exp_retrieval(limit: int, k: int) -> dict:
+def exp_retrieval(limit: int, k: int, dataset: str = "dev") -> dict:
     banner("实验一 · 技能检索与编排（对标 SkillNet-Gym 表 3 / Fabric 表 5）")
     lib = load_lib()
     r = Retriever(lib).build()
     orch = Orchestrator(lib)
-    tasks = TASKS[:limit]
+    tasks = load_tasks(dataset)[:limit]
 
     methods = ["bm25", "hybrid", "fabric"]
     agg = {
@@ -123,25 +186,27 @@ def exp_retrieval(limit: int, k: int) -> dict:
         )
     payload = {
         "experiment": "retrieval",
+        "dataset": "dev-v1",
+        "split": "dev",
         "k": k,
         "n_tasks": len(tasks),
         "summary": summary,
         "per_task": per_task,
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
     }
-    _dump("exp1_retrieval", payload)
+    _dump(f"exp1_retrieval_{dataset}", payload)
     return payload
 
 
 # ======================================================================
 # 实验二：技能对执行质量与成本的影响
 # ======================================================================
-def exp_execution(limit: int, k: int, repeats: int = 2) -> dict:
+def exp_execution(limit: int, k: int, repeats: int = 2, dataset: str = "dev") -> dict:
     banner("实验二 · 技能对执行质量的影响（对标 SkillNet 表 1 / DisCo）")
     lib = load_lib()
     r = Retriever(lib).build()
     agent = ResearchAgent(lib)
-    tasks = TASKS[:limit]
+    tasks = load_tasks(dataset)[:limit]
 
     arms = [
         ("bare", STYLE_BARE, None),          # 不给技能
@@ -266,6 +331,8 @@ def exp_execution(limit: int, k: int, repeats: int = 2) -> dict:
         )
     payload = {
         "experiment": "execution",
+        "dataset": "dev-v1",
+        "split": "dev",
         "k": k,
         "repeats": repeats,
         "n_tasks": len(tasks),
@@ -273,20 +340,20 @@ def exp_execution(limit: int, k: int, repeats: int = 2) -> dict:
         "per_task": rows,
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
     }
-    _dump("exp2_execution", payload)
+    _dump(f"exp2_execution_{dataset}", payload)
     return payload
 
 
 # ======================================================================
 # 实验三：老虎机选择 + 技能进化闭环
 # ======================================================================
-def exp_evolution(limit: int, rounds: int, k: int, alpha: float) -> dict:
+def exp_evolution(limit: int, rounds: int, k: int, alpha: float, dataset: str = "dev") -> dict:
     banner("实验三 · 老虎机选择 + 技能进化闭环（对标 COBRA-Skills 表 4 / 图 4）")
     lib = load_lib()
     r = Retriever(lib).build()
     agent = ResearchAgent(lib)
     orch = Orchestrator(lib)
-    tasks = TASKS[:limit]
+    tasks = load_tasks(dataset)[:limit]
 
     results = {}
     for arm in ("linucb", "random"):
@@ -305,16 +372,17 @@ def exp_evolution(limit: int, rounds: int, k: int, alpha: float) -> dict:
             t = tasks[(rd - 1) % len(tasks)]
             cand = arm_r.search(t["query"], k=max(k, 4), mode="hybrid").selected
             extra = {n: {"retrieval": 1.0 - i / max(1, len(cand))} for i, n in enumerate(cand)}
-            chosen, info = selector.select(cand, extra=extra)
+            # v0.3：选择器是 task-conditioned 的，必须把任务传进去
+            chosen, info = selector.select(t["query"], cand, extra=extra)
             if not chosen:
                 continue
             run = arm_agent.run(t["query"], skills=[chosen], style=STYLE_GUIDED)
             j = score_plan(t["query"], run.response)
             reward = round(j["weighted"] / 10.0, 4)
-            selector.update(chosen, reward, extra.get(chosen))
+            selector.update(t["query"], chosen, reward, extra.get(chosen))
             selector.log(rd, chosen, info.get("predicted_reward", 0.0), reward,
-                         info.get("exploration_bonus") and
-                         f"explore={info['exploration_bonus']:.3f}")
+                         f"explore={info.get('exploration_bonus', 0.0):.3f}",
+                         info.get("exploration_bonus", 0.0), t["query"])
 
             # 周期性技能进化（COBRA-Skills 的「不逐轮重写」）
             evolved = None
@@ -346,9 +414,12 @@ def exp_evolution(limit: int, rounds: int, k: int, alpha: float) -> dict:
             )
 
         best = selector.best_by_actual([s.name for s in arm_lib])
+        rewards = [c["reward"] for c in curve]
         results[arm] = {
             "curve": curve,
-            "mean_reward": round(sum(c["reward"] for c in curve) / max(1, len(curve)), 4),
+            "mean_reward": round(sum(rewards) / max(1, len(rewards)), 4),
+            "std": round(_std(rewards), 4),
+            "n_rounds": len(rewards),
             "best_skill": best.name if best else None,
             "best_mean_reward": round(best.mean_reward, 4) if best else 0.0,
             "library_size": len(arm_lib),
@@ -362,21 +433,47 @@ def exp_evolution(limit: int, rounds: int, k: int, alpha: float) -> dict:
             "tokens": llm.LEDGER.prompt_tokens + llm.LEDGER.completion_tokens,
         }
 
-    print("\n汇总：")
+    # ---- 统计检验：不给点估计就下结论 ----
+    stats: dict[str, Any] = {"test": "paired_bootstrap", "alpha": 0.05}
+    if "linucb" in results and "random" in results:
+        ra = [c["reward"] for c in results["linucb"]["curve"]]
+        rb = [c["reward"] for c in results["random"]["curve"]]
+        stats.update(paired_bootstrap(ra, rb))
+        if stats.get("verdict") == "indistinguishable":
+            stats["conclusion"] = (
+                "两组在 95% 置信区间上不可区分。本实验仅验证「选择→执行→奖励→更新→进化」"
+                "闭环可运行，不构成「选择策略优于随机」的证据。"
+            )
+        else:
+            stats["conclusion"] = (
+                "本次运行两组差异落在 95% 区间之外，但轮次与任务数都很少，"
+                "需重复实验与更多任务复核后才可下结论。"
+            )
+        stats["evidence_level"] = "preliminary"
+
+    print("\n汇总（均值 ± 标准差）：")
     for arm, v in results.items():
         print(
-            f"  {arm:8s} 平均奖励 {v['mean_reward']:.3f} | 最佳技能 {v['best_skill']} "
+            f"  {arm:8s} {v['mean_reward']:.3f} ± {v['std']:.3f} | 最佳技能 {v['best_skill']} "
             f"({v['best_mean_reward']:.3f}) | 库规模 {v['library_size']} | 成本 ¥{v['cost_yuan']:.3f}"
         )
+    print("\n统计检验（配对 bootstrap，4000 次重采样）：")
+    if stats.get("mean_diff") is not None:
+        print(f"  均值差 {stats['mean_diff']:+.4f}  95% CI [{stats['ci95'][0]:+.4f}, {stats['ci95'][1]:+.4f}]"
+              f"  → {stats['verdict']}")
+    print(f"  {stats.get('conclusion', 'n/a')}")
     payload = {
         "experiment": "evolution",
+        "dataset": "dev-v1",
+        "split": "dev",
+        "statistics": stats,
         "rounds": rounds,
         "n_tasks": len(tasks),
         "alpha": alpha,
         "results": results,
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
     }
-    _dump("exp3_evolution", payload)
+    _dump(f"exp3_evolution_{dataset}", payload)
     return payload
 
 
@@ -389,15 +486,17 @@ def main() -> None:
     ap.add_argument("--rounds", type=int, default=6)
     ap.add_argument("--alpha", type=float, default=0.1)
     ap.add_argument("--repeats", type=int, default=2)
+    ap.add_argument("--dataset", choices=["dev", "heldout"], default="dev",
+                    help="dev=调参用；heldout=冻结测试集，只用于产出最终结果")
     args = ap.parse_args()
 
     t0 = time.time()
     if args.mode in ("retrieval", "all"):
-        exp_retrieval(args.limit, args.k)
+        exp_retrieval(args.limit, args.k, args.dataset)
     if args.mode in ("execution", "all"):
-        exp_execution(args.limit, args.k, args.repeats)
+        exp_execution(args.limit, args.k, args.repeats, args.dataset)
     if args.mode in ("evolution", "all"):
-        exp_evolution(min(args.limit, 8), args.rounds, args.k, args.alpha)
+        exp_evolution(min(args.limit, 8), args.rounds, args.k, args.alpha, args.dataset)
     print(f"\n全部完成，用时 {time.time() - t0:.1f}s，产物见 {config.OUT_DIR}")
 
 

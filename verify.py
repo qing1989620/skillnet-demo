@@ -149,27 +149,60 @@ def main() -> int:
 
     print("\n[3] 强化学习与进化")
 
+    TASK = "单细胞测序数据的质控、聚类与细胞亚群注释"
+
     def t_bandit():
         b = LinUCB(lib, alpha=0.1)
         cands = ["scrna-qc-clustering", "differential-expression", "pathway-enrichment"]
-        n, info = b.select(cands, extra={c: {"retrieval": 0.5} for c in cands})
+        n, info = b.select(TASK, cands, extra={c: {"retrieval": 0.5} for c in cands})
         assert n in cands, f"选择结果越界: {n}"
-        b.update(n, 0.7, {"retrieval": 0.5})
+        b.update(TASK, n, 0.7, {"retrieval": 0.5})
         s = lib.get(n)
         assert s.stats["pulls"] == 1 and abs(s.mean_reward - 0.7) < 1e-6
-        # 二次选择应发生变化（A 矩阵已更新，探索奖励下降）
-        n2, info2 = b.select(cands, extra={c: {"retrieval": 0.5} for c in cands})
+        # 二次选择应发生变化（θ 已更新，探索奖励下降）
+        n2, info2 = b.select(TASK, cands, extra={c: {"retrieval": 0.5} for c in cands})
         assert info2["priority"] != info["priority"] or n2 != n
         return f"首轮选 {n}（探索 {info['exploration_bonus']:.4f}）"
     check("LinUCB 选择与更新", t_bandit)
 
+    def t_bandit_generalization():
+        """v0.3 核心检查：只更新 A，未评估的同领域技能 B 必须被带动，且强于异领域 C。"""
+        groups: dict[str, list[str]] = {}
+        for s in lib:
+            groups.setdefault(s.domain, []).append(s.name)
+        dom = max(groups, key=lambda d: len(groups[d]))
+        near_a, near_b = groups[dom][0], groups[dom][1]
+        far = next(s.name for s in lib if s.domain != dom)
+        task = lib.get(near_a).capability or dom
+
+        b = LinUCB(lib, alpha=0.25)
+        before = {n: b.score(task, n)[1] for n in (near_a, near_b, far)}
+        b.update(task, near_a, 0.95)
+        after = {n: b.score(task, n)[1] for n in (near_a, near_b, far)}
+        d_near = abs(after[near_b] - before[near_b])
+        d_far = abs(after[far] - before[far])
+        assert d_near > 1e-3, f"未评估的同领域技能未被带动（Δ={d_near:.6f}），跨技能泛化失效"
+        assert d_near > d_far, f"同领域 Δ={d_near:.6f} 未大于异领域 Δ={d_far:.6f}"
+        return f"未评估的同领域技能被带动（Δ={d_near:.4f} > 异领域 {d_far:.4f}，{d_near / max(1e-9, d_far):.2f}x）"
+    check("跨技能泛化（shared 参数）", t_bandit_generalization)
+
+    def t_bandit_task_conditioning():
+        b = LinUCB(lib, alpha=0.25)
+        name = "scrna-qc-clustering"
+        t1 = "单细胞测序数据的质控与聚类"
+        t2 = "无机化合物形成能的机器学习预测"
+        d = abs(b.score(t1, name)[0] - b.score(t2, name)[0])
+        assert d > 1e-4, f"同一技能在不同任务上优先级相同（差 {d:.8f}）：未做 task conditioning"
+        return f"同一技能在两任务上优先级差 {d:.4f}"
+    check("task conditioning", t_bandit_task_conditioning)
+
     def t_explore_decay():
         b = LinUCB(lib, alpha=0.3)
         name = "scrna-qc-clustering"
-        _, _, e0 = b.score(name)
+        _, _, e0 = b.score(TASK, name)
         for _ in range(5):
-            b.update(name, 0.5)
-        _, _, e1 = b.score(name)
+            b.update(TASK, name, 0.5)
+        _, _, e1 = b.score(TASK, name)
         assert e1 < e0, f"探索奖励未随观测下降: {e0:.5f} -> {e1:.5f}"
         return f"探索奖励 {e0:.4f} → {e1:.4f}（观测后收敛）"
     check("探索奖励随观测衰减", t_explore_decay)
@@ -177,9 +210,9 @@ def main() -> int:
     def t_random_ablation():
         r = RandomSelector(lib)
         cands = ["scrna-qc-clustering", "differential-expression"]
-        n, info = r.select(cands)
+        n, info = r.select(TASK, cands)
         assert n in cands
-        r.update(n, 0.9)
+        r.update(TASK, n, 0.9)
         assert lib.get(n).stats["pulls"] >= 1
         return "随机消融选择器工作正常"
     check("消融对照选择器", t_random_ablation)

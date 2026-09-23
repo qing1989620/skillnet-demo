@@ -1,0 +1,107 @@
+# ======================================================================
+# 实验配置 —— 单一数据源（Single Source of Truth）
+# ======================================================================
+#
+# 为什么需要这个文件：
+# v0.2 的数字散落在 README、web/index.html、LaTeX 报告、快速开始.txt 里，
+# 手工同步必然漂移。实测已经出现过三类不一致：
+#   - retriever.py 权重是 0.70/0.20/0.10，README 与 Dashboard 仍写 0.55/0.30/0.15
+#   - out/exp2_execution.json 里 bare=8.221，README 后文仍写 8.32
+#   - 快速开始写「21 页」，实际 PDF 是 22 页
+#
+# 从 v0.3 起，所有对外呈现的数字都必须经 scripts/build_report_data.py
+# 从 out/*.json 与这个文件派生，不再手工抄写。
+
+project:
+  name: SkillNet-S1
+  version: "0.3.0"
+  tagline: 面向科研 Agent 的技能运维层
+
+# ---- 数据集版本与划分 ----
+# dev      ：用于调参（融合权重、阈值、关系扩展深度）。可以反复看。
+# heldout  ：冻结集。**只允许跑最终结果，禁止针对其调参**。
+#            一旦发现有调参行为，必须重新生成新的一版 heldout。
+datasets:
+  dev:
+    file: tasks/benchmark.json
+    version: dev-v1
+    n_tasks: 20
+    frozen: false
+    purpose: 调参（retrieval weights / thresholds / 扩展深度）
+  heldout:
+    file: tasks/heldout.json
+    version: heldout-v1
+    n_tasks: 12
+    frozen: true
+    frozen_at: "2026-09-23"
+    purpose: 最终结论。冻结后不得再对其调参
+    notes: 任务措辞、领域组合与 dev 集刻意不同；gold 由与技能库文本独立的过程标注
+
+# ---- 检索配置（实际生效值，由代码读取；此处为报告展示口径）----
+retrieval:
+  bm25:
+    label: BM25 关键词
+  hybrid:
+    label: 混合检索
+    weights:
+      bm25: 0.70
+      vector: 0.20
+      structural: 0.10
+    agreement_bonus: 0.05
+    tuning_note: >
+      权重经 dev 集扫描标定，不是拍脑袋定的。早期 0.55/0.30/0.15 时混合档
+      召回（76.7%）反而低于纯 BM25（77.5%），因为本环境的语义通路是稀疏向量的
+      降级实现、噪声偏大。标定出 0.70/0.20/0.10 后混合档稳定优于基线。
+      接入稠密编码器后此权重需重新标定。
+  fabric:
+    label: Fabric 完整方案
+    graph_expand_depth: 1
+    top_n_for_expand: 3
+    llm_rerank: true
+
+# ---- 选择策略 ----
+selection:
+  policy: shared_linucb
+  policy_label: Shared LinUCB
+  alpha: 0.25
+  ctx_dim: 152
+  ablation: random
+  ablation_label: 随机选择（消融）
+  # 结论的证据等级：本项目的 exp3 只能证明闭环连通，不能证明优于随机
+  evidence_level: preliminary
+
+# ---- 模型 ----
+model:
+  provider: deepseek
+  name: deepseek-chat
+  base_url: https://api.deepseek.com
+  temperature_executor: 0.3
+  temperature_judge: 0.0
+  temperature_router: 0.0
+
+# ---- 计价（用于成本估算，不是账单）----
+# 注意：写「estimated cost」而不是「实际成本」——
+# 无法拿到缓存命中率与错峰时段时，真实账单会与估算有偏差。
+pricing:
+  version: deepseek-2026-09
+  currency: CNY
+  effective_from: "2026-09-01"
+  unit: per_1k_tokens
+  input_cache_hit: 0.0005
+  input_cache_miss: 0.002
+  output: 0.008
+  note: >
+    按标准时段计价估算。未接入缓存命中与错峰折扣信息，
+    因此 UI 与报告中一律标注为「估算成本」而非「实际成本」。
+
+# ---- 展示口径 ----
+display:
+  # 实验二指标的正名：参考要点来自技能库自身的 pitfalls/verification，
+  # 而技能组又会读取这些技能 → 存在同源偏置，不能简单称为「客观指标」。
+  reference_coverage_label: skill-derived reference coverage
+  reference_coverage_note: >
+    该指标从 gold 技能的 pitfalls / verification 抽取参考要点，
+    而技能组 Agent 又会读到这些技能，因此对技能组天然有利。
+    它是「技能衍生覆盖度」，不是独立客观指标。
+    独立评价见 execution.artifact_checks。
+  cost_label: 估算成本（estimated cost）

@@ -1,6 +1,6 @@
 {
- "passed": 29,
- "total": 29,
+ "passed": 31,
+ "total": 31,
  "checks": [
   {
    "name": "技能库规模",
@@ -60,12 +60,22 @@
   {
    "name": "LinUCB 选择与更新",
    "pass": true,
-   "detail": "首轮选 scrna-qc-clustering（探索 0.1448）"
+   "detail": "首轮选 scrna-qc-clustering（探索 0.2361）"
+  },
+  {
+   "name": "跨技能泛化（shared 参数）",
+   "pass": true,
+   "detail": "未评估的同领域技能被带动（Δ=0.7013 > 异领域 0.5651，1.24x）"
+  },
+  {
+   "name": "task conditioning",
+   "pass": true,
+   "detail": "同一技能在两任务上优先级差 0.0079"
   },
   {
    "name": "探索奖励随观测衰减",
    "pass": true,
-   "detail": "探索奖励 0.4076 → 0.1274（观测后收敛）"
+   "detail": "探索奖励 0.6923 → 0.1317（观测后收敛）"
   },
   {
    "name": "消融对照选择器",
@@ -140,7 +150,7 @@
   {
    "name": "并发读写安全",
    "pass": true,
-   "detail": "2 写 4 读并发 2 秒：零异常、零幽灵技能（库规模做到 157）"
+   "detail": "2 写 4 读并发 2 秒：零异常、零幽灵技能（库规模做到 88）"
   },
   {
    "name": "成本账本请求级隔离",

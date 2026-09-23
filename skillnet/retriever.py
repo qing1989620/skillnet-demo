@@ -15,6 +15,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Any
 
+from . import config
 from .catalog import SkillLibrary
 from .index import BM25Index, VectorIndex, tokenize, weighted_fuse
 from .llm import chat_json
@@ -44,6 +45,15 @@ class RetrievalResult:
     candidates: list[Candidate] = field(default_factory=list)
     trace: list[str] = field(default_factory=list)
 
+    # ---- 降级可观测性 ----
+    # 缺 DEEPSEEK_API_KEY 时，fabric 的关系图扩展仍然会跑，但 LLM 重排不会。
+    # 早先这种情况是**静默**的：使用者看到 mode=fabric 就以为重排生效了，
+    # 实际拿到的是未重排的结果，而 trace 里也不会有任何提示。
+    # 现在每个组件是否真正执行都被显式记录下来。
+    components: dict[str, bool] = field(default_factory=dict)
+    degraded: bool = False
+    degraded_reason: str = ""
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "query": self.query,
@@ -51,6 +61,9 @@ class RetrievalResult:
             "selected": self.selected,
             "candidates": [c.__dict__ for c in self.candidates],
             "trace": self.trace,
+            "degraded": self.degraded,
+            "components": self.components,
+            "degraded_reason": self.degraded_reason,
         }
 
 
@@ -134,8 +147,10 @@ class Retriever:
         chan_map = self._channel_map(query, bm25_hits, pool)
 
         # ---- 关系图扩展（Fabric 的 relation expansion）----
+        graph_ran = False
         if mode == MODE_FABRIC and expand and ranked:
             ranked, added = self._graph_expand(ranked)
+            graph_ran = True
             if added:
                 res.trace.append(
                     f"关系图扩展补入 {len(added)} 条：{', '.join(added[:6])}"
@@ -153,19 +168,54 @@ class Retriever:
             c.rank = i
 
         # ---- LLM 重排 ----
-        if mode == MODE_FABRIC and rerank and len(cands) > k:
-            ordered = self._llm_rerank(query, [c.name for c in cands[: min(pool, 16)]])
-            if ordered:
-                rank_of = {n: i for i, n in enumerate(ordered)}
-                head = [c for c in cands if c.name in rank_of]
-                head.sort(key=lambda c: rank_of[c.name])
-                tail = [c for c in cands if c.name not in rank_of]
-                cands = []
-                for i, c in enumerate(head + tail, 1):
-                    c.rerank_score = 1.0 - (rank_of.get(c.name, 99) / max(1, len(rank_of)))
-                    c.rank = i
-                    cands.append(c)
-                res.trace.append(f"LLM 重排 {len(rank_of)} 条候选")
+        rerank_ran = False
+        skip_reason = ""
+        if mode == MODE_FABRIC and rerank:
+            if not config.API_KEY:
+                skip_reason = "DEEPSEEK_API_KEY not configured"
+            elif len(cands) <= k:
+                skip_reason = f"candidates({len(cands)}) <= k({k})"
+            else:
+                ordered = self._llm_rerank(query, [c.name for c in cands[: min(pool, 16)]])
+                if ordered:
+                    rerank_ran = True
+                    rank_of = {n: i for i, n in enumerate(ordered)}
+                    head = [c for c in cands if c.name in rank_of]
+                    head.sort(key=lambda c: rank_of[c.name])
+                    tail = [c for c in cands if c.name not in rank_of]
+                    cands = []
+                    for i, c in enumerate(head + tail, 1):
+                        c.rerank_score = 1.0 - (rank_of.get(c.name, 99) / max(1, len(rank_of)))
+                        c.rank = i
+                        cands.append(c)
+                    res.trace.append(f"LLM 重排 {len(rank_of)} 条候选")
+                else:
+                    skip_reason = "LLM rerank call failed or returned empty"
+
+        # ---- 降级状态：任何组件没按预期执行都必须显式暴露，不允许静默 ----
+        multi = mode != MODE_BM25
+        res.components = {
+            "bm25": True,
+            "vector": multi,
+            "structural": multi,
+            "graph_expansion": graph_ran,
+            "llm_rerank": rerank_ran,
+        }
+        expected = {
+            "bm25": True,
+            "vector": multi,
+            "structural": multi,
+            "graph_expansion": mode == MODE_FABRIC and expand and bool(ranked),
+            "llm_rerank": mode == MODE_FABRIC and rerank,
+        }
+        missing = [k for k, want in expected.items() if want and not res.components.get(k)]
+        res.degraded = bool(missing)
+        if skip_reason:
+            res.degraded_reason = f"llm_rerank skipped: {skip_reason}"
+        elif missing:
+            res.degraded_reason = "components not executed: " + ", ".join(missing)
+        if res.degraded:
+            res.trace.append(f"[degraded] {res.degraded_reason}")
 
         res.candidates = cands
         res.selected = [c.name for c in cands[:k]]
