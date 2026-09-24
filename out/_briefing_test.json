@@ -1,0 +1,194 @@
+{
+ "task": "我拿到一批 PBMC 的 10x 单细胞 RNA 测序数据，想先做质控并识别出免疫细胞亚群，然后比较两组患者在这些细胞亚群上的差异表达",
+ "stages": [
+  {
+   "stage": "检索对比",
+   "detail": {
+    "bm25": {
+     "selected": [
+      "scrna-qc-clustering",
+      "differential-expression",
+      "variant-calling",
+      "survival-analysis",
+      "statistical-testing"
+     ],
+     "recall": 0.6667,
+     "trace": [
+      "BM25 召回 20 条"
+     ]
+    },
+    "hybrid": {
+     "selected": [
+      "scrna-qc-clustering",
+      "differential-expression",
+      "variant-calling",
+      "survival-analysis",
+      "statistical-testing"
+     ],
+     "recall": 0.6667,
+     "trace": [
+      "BM25 召回 20 条",
+      "语义向量召回 20 条",
+      "结构信号召回 7 条",
+      "加权融合后候选池 29 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
+     ]
+    },
+    "fabric": {
+     "selected": [
+      "scrna-qc-clustering",
+      "differential-expression",
+      "statistical-testing",
+      "scientific-visualization",
+      "variant-calling"
+     ],
+     "recall": 1.0,
+     "trace": [
+      "BM25 召回 20 条",
+      "语义向量召回 20 条",
+      "结构信号召回 7 条",
+      "加权融合后候选池 29 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+      "关系图扩展补入 4 条：scientific-visualization, gwas-prs, spatial-autocorrelation, meta-analysis",
+      "LLM 重排 4 条候选"
+     ]
+    }
+   }
+  },
+  {
+   "stage": "任务级 Wiki 路由与编排",
+   "detail": {
+    "wiki_size": 24,
+    "skills": [
+     "scrna-qc-clustering",
+     "differential-expression",
+     "statistical-testing",
+     "pathway-enrichment",
+     "scientific-visualization"
+    ],
+    "workflow": [
+     [
+      "scrna-qc-clustering",
+      "differential-expression"
+     ],
+     [
+      "differential-expression",
+      "statistical-testing"
+     ],
+     [
+      "differential-expression",
+      "pathway-enrichment"
+     ],
+     [
+      "statistical-testing",
+      "scientific-visualization"
+     ],
+     [
+      "pathway-enrichment",
+      "scientific-visualization"
+     ]
+    ],
+    "order": [
+     "scrna-qc-clustering",
+     "differential-expression",
+     "pathway-enrichment",
+     "statistical-testing",
+     "scientific-visualization"
+    ],
+    "reason": "先用 scrna-qc-clustering 完成质控、聚类与免疫亚群识别，再在其细胞亚群基础上做 differential-expression 比较两组差异，配合 statistical-testing 保证统计严谨，用 pathway-enrichment 解释差异基因功能，最后由 scientific-visualization 产出可发表图表。"
+   }
+  },
+  {
+   "stage": "技能驱动执行与盲评",
+   "detail": {
+    "skills": [
+     "scrna-qc-clustering",
+     "differential-expression",
+     "statistical-testing",
+     "pathway-enrichment",
+     "scientific-visualization"
+    ],
+    "steps": 6,
+    "adoption": 1.0,
+    "judge": {
+     "scores": {
+      "skill_grounding": 9.0,
+      "executability": 9.0,
+      "rigor": 9.0,
+      "scientific_validity": 9.0
+     },
+     "weighted": 9.0,
+     "coverage": 1.0,
+     "covered": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+     ],
+     "n_points": 9,
+     "comment": "方案完整覆盖了从QC、批次校正、聚类注释到以样本为单位的伪批量差异表达与富集分析的全流程，参数、阈值、工具与校验判据具体可执行，并明确识别了伪重复、批次混杂、阈值一刀切等关键陷阱及应对措施；P1-P9全部实质性覆盖。"
+    }
+   }
+  },
+  {
+   "stage": "轨迹蒸馏",
+   "detail": {
+    "accepted": true,
+    "name": "scrna-pbmc-qc-cluster-pseudobulk-de",
+    "generation": 1,
+    "capability": "产出一套以样本为推断单位的单细胞质控-聚类-注释-差异表达-富集-可视化可复现分析流程及全部结果表与矢量图。",
+    "library_size": 52,
+    "delta": 1,
+    "records": [
+     {
+      "op": "distill",
+      "name": "scrna-pbmc-qc-cluster-pseudobulk-de",
+      "accepted": true,
+      "reason": "G1 新技能入库",
+      "parent": [
+       "scrna-qc-clustering"
+      ]
+     }
+    ]
+   }
+  }
+ ],
+ "library_size": 52,
+ "cost_yuan": 0.0591,
+ "tokens": 16927,
+ "usage_by_role": {
+  "router": {
+   "calls": 1,
+   "prompt": 1113,
+   "completion": 26,
+   "cost_yuan": 0.0024
+  },
+  "explorer": {
+   "calls": 1,
+   "prompt": 4235,
+   "completion": 174,
+   "cost_yuan": 0.0099
+  },
+  "executor": {
+   "calls": 1,
+   "prompt": 2690,
+   "completion": 2082,
+   "cost_yuan": 0.022
+  },
+  "judge": {
+   "calls": 1,
+   "prompt": 2362,
+   "completion": 137,
+   "cost_yuan": 0.0058
+  },
+  "teacher": {
+   "calls": 1,
+   "prompt": 2320,
+   "completion": 1788,
+   "cost_yuan": 0.0189
+  }
+ }
+}

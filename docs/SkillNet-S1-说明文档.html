@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>SkillNet-S1 Demo 说明文档</title>
+<style>
+  @page { size: A4; margin: 20mm 18mm 18mm 18mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif;
+    font-size: 10.5pt; line-height: 1.75; color: #2b3440; margin: 0;
+  }
+  h1 { font-size: 21pt; color: #1a2733; margin: 0 0 4px 0; letter-spacing: .5px; }
+  h2 {
+    font-size: 14pt; color: #1a3a5c; margin: 26px 0 10px 0; padding-bottom: 5px;
+    border-bottom: 2px solid #1a3a5c; page-break-after: avoid;
+  }
+  h3 { font-size: 11.5pt; color: #24557a; margin: 16px 0 6px 0; page-break-after: avoid; }
+  p { margin: 6px 0; text-align: justify; }
+  .meta { color: #6b7684; font-size: 9pt; margin-bottom: 18px; }
+  .cover { border-left: 5px solid #1a3a5c; padding-left: 16px; margin: 6px 0 22px 0; }
+  .lead { background: #f2f6fa; border-left: 4px solid #24557a; padding: 10px 14px; margin: 10px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 9.5pt; page-break-inside: avoid; }
+  th { background: #1a3a5c; color: #fff; padding: 6px 8px; text-align: left; font-weight: 600; }
+  td { border: 1px solid #d4dce4; padding: 5px 8px; vertical-align: top; }
+  tr:nth-child(even) td { background: #f6f8fa; }
+  code, .mono { font-family: Consolas, "Courier New", monospace; font-size: 9pt; background: #eef1f4; padding: 1px 4px; border-radius: 3px; color: #1a2733; }
+  pre {
+    background: #f4f6f8; border: 1px solid #d9e0e6; border-left: 3px solid #24557a;
+    padding: 9px 12px; font-family: Consolas, monospace; font-size: 8.5pt; line-height: 1.5;
+    overflow-x: hidden; white-space: pre-wrap; word-break: break-all; page-break-inside: avoid; margin: 8px 0;
+  }
+  ul, ol { margin: 6px 0 6px 0; padding-left: 22px; }
+  li { margin: 3px 0; }
+  .tag { display: inline-block; font-size: 8pt; padding: 1px 7px; border-radius: 9px; margin-right: 5px; font-weight: 600; }
+  .t-demonstrated { background: #e3f2e5; color: #1e6b2e; border: 1px solid #b7d9bc; }
+  .t-supported   { background: #e3edf8; color: #1a4f7c; border: 1px solid #b9d2e8; }
+  .t-preliminary { background: #fbf3dc; color: #8a6d1a; border: 1px solid #ecd9a0; }
+  .t-notyet      { background: #f3e6e6; color: #8a3030; border: 1px solid #dfbcbc; }
+  .warn { background: #fdf6ec; border-left: 4px solid #c98a2d; padding: 8px 12px; margin: 10px 0; }
+  .newpage { page-break-before: always; }
+  .fig { text-align: center; margin: 12px 0; page-break-inside: avoid; }
+  .figcap { font-size: 8.5pt; color: #6b7684; margin-top: 4px; }
+  .kv td:first-child { width: 34%; font-weight: 600; color: #1a3a5c; background: #f0f4f8; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>SkillNet-S1 Demo 说明文档</h1>
+  <div style="font-size:12.5pt; color:#44566b;">能力总览 · 业务价值 · 真实产品接入指南</div>
+</div>
+<div class="meta">
+  版本 v0.3（可信度优先重构版） · 文档日期 2026-09-23 · 对应仓库 skillnet-demo（commit 4722272）<br>
+  阅读对象：技术负责人 / Agent 系统工程师 / 准备把 SkillNet 接入业务产品的开发者
+</div>
+
+<div class="lead">
+  <b>一句话定位：</b>SkillNet-S1 是给 Agent 产品（如立理 S1）做的<b>「技能运维层」原型</b>——
+  把 Agent 的能力以「技能」为单位资产化，提供检索路由、编排执行、效果度量与进化治理的完整闭环。
+  它要回答的问题是：<b>Agent 的技能从哪来、怎么找对、用了有没有效、如何持续变好。</b>
+</div>
+
+<h2>一、Demo 当前能做什么</h2>
+
+<p>Demo 是一个可一键运行的完整系统：FastAPI 后端（默认 <code>http://127.0.0.1:8848</code>）+ 单页 Dashboard，
+<b>无需任何 API Key 即可体验核心链路</b>（离线降级模式，且降级状态显式可见）。六大能力如下：</p>
+
+<h3>1. 技能库与技能契约（资产的「仓库 + 规格书」）</h3>
+<ul>
+  <li><b>51 个科研领域技能，17 个领域</b>，技能之间用 <b>62 条类型化关系边</b>（依赖 / 补充 / 前置等）连接成图。</li>
+  <li>每个技能是一份 <b>Skill Contract</b>：能力描述、适用时机、执行指令、陷阱提示（pitfalls）、验证方式（verification）、
+  五维质量分（5D quality）。契约即规格——下游（人、Agent、其他框架）按同一份规格消费。</li>
+  <li>技能库持久化（原子写盘）、并发安全（读写锁 + 索引原子替换），Demo 状态与正式库可隔离。</li>
+</ul>
+
+<h3>2. 三档检索路由（「找对技能」的核心）</h3>
+<table>
+  <tr><th style="width:14%">档位</th><th>机制</th><th style="width:34%">适用场景</th></tr>
+  <tr><td><code>bm25</code></td><td>关键词倒排，纯本地</td><td>无网络 / 无模型，兜底可用</td></tr>
+  <tr><td><code>hybrid</code></td><td>BM25 + 语义向量 + 领域/标签结构信号，加权融合（当前权重 0.70 / 0.20 / 0.10）+ 多路一致性加成</td><td>常规生产路径</td></tr>
+  <tr><td><code>fabric</code></td><td>在 hybrid 之上叠加<b>关系图扩展</b>（沿 62 条关系边补入关联技能）+ <b>LLM 重排</b></td><td>复杂任务、依赖链长的场景</td></tr>
+</table>
+<p>每条检索结果带<b>证据链</b>：命中通道归因（channel attribution）、结构得分、关系扩展理由、重排得分。
+API Key 缺失时 fabric 自动降级为「图扩展可用、LLM 重排不执行」，响应中显式返回
+<code>degraded: true</code>、<code>components: {...}</code>、<code>degraded_reason</code>，<b>不允许静默降级</b>。</p>
+
+<h3>3. 编排与执行（「用上技能」）</h3>
+<p>Orchestrator 根据检索结果与技能依赖关系排出执行顺序（DAG），Agent 携带选中技能的契约执行科研任务；
+执行轨迹、工具调用、产物均被记录，成本按 token 计入请求级账本。</p>
+
+<h3>4. 评估体系（「有没有效」——分主观与客观两条线）</h3>
+<ul>
+  <li><b>主客观分离</b>：LLM judge 盲评（主观）与 <b>skill-derived reference coverage</b>（从技能契约的陷阱/验证要点中抽取参照点做覆盖判分，客观但需注明同源偏置）分开呈现，不混为一谈。</li>
+  <li><b>数据集治理</b>：任务集分为 <b>DEV（调参集）</b> 与 <b>HELD-OUT（冻结测试集）</b>，措辞与标注路径刻意不同源；
+  Dashboard 与报告明确区分两套数字，最终结论只允许引用 held-out。</li>
+  <li><b>Provenance 可追溯</b>：<code>out/manifest.json</code> 统一记录 git commit、模型、温度、检索权重、各实验文件哈希；
+  README / Dashboard / 报告的数字全部由 <code>config/experiment.yaml + scripts/build_report_data.py</code> 单一来源生成，杜绝手工同步漂移。</li>
+</ul>
+
+<h3>5. 选择策略与技能进化（「持续变好」）</h3>
+<ul>
+  <li><b>Shared LinUCB 上下文老虎机</b>（v0.3 重写）：全局共享参数，上下文 φ(task, skill) 编码任务词袋、技能词袋、
+  领域 one-hot、交互与元特征，<b>跨进程哈希稳定</b>。实测一个技能的反馈可泛化影响同领域未评估技能
+  （同领域技能的预测变化约为异领域的 1.24 倍）；预测奖励随轮次真实增长（0 → 0.52 → 0.73），探索奖励同步衰减。</li>
+  <li><b>技能进化</b>：从执行轨迹中提炼候选技能（parent、diff、质量、风险、相似度），经启发式评估后进入候选队列；
+  实验闭环「选择 → 执行 → 奖励 → 更新 → 进化」可完整运行。</li>
+  <li><b>诚实的统计结论</b>：实验三采用 mean ± std 与 4000 次配对 bootstrap。当前样本下 LinUCB 与随机选择
+  <b>不可区分</b>（95% CI 跨 0），Demo 如实标注「本实验仅验证闭环连通性」，不包装成 RL 收益。</li>
+</ul>
+
+<h3>6. 跨框架导出与工程化（「不是孤岛」）</h3>
+<ul>
+  <li><b>适配器导出</b>：技能库可一键导出为 <code>.claude/skills</code>、<code>.agents/skills</code>、
+  <code>.cursor/skills</code>、<code>.gemini/skills</code> 及 <code>AGENTS.md</code>，供 Claude Code、Cursor、Gemini CLI 等直接加载。</li>
+  <li><b>工程化</b>：pytest 测试（含跨技能泛化、task conditioning、跨进程可复现性、结构护栏）、
+  <code>verify.py</code> 31 项交付自检、前端渲染自检 5 项、token 鉴权、参数校验 422、稳定 CRC32 哈希。</li>
+</ul>
+
+<h2>二、实验证据：它到底有没有用（按证据等级如实呈现）</h2>
+
+<table>
+  <tr><th style="width:13%">证据等级</th><th>含义</th><th style="width:40%">本项目对应结论</th></tr>
+  <tr><td><span class="tag t-demonstrated">Demonstrated</span></td><td>有直接实验数据支撑</td><td>闭环链路可运行；学习曲线真实（预测奖励单调上升、探索衰减）；跨技能泛化在单元测试中被锁定</td></tr>
+  <tr><td><span class="tag t-supported">Supported</span></td><td>有数据但有条件/偏置</td><td>技能使盲评均分 8.22 → 8.86（+7.8%）；skill-derived 覆盖率 81.3% → 92.8%（+11.5pp）；技能采纳率 67%–91%（均基于 dev 集，coverage 指标有同源偏置）</td></tr>
+  <tr><td><span class="tag t-preliminary">Preliminary</span></td><td>方向性信号，样本不足</td><td>LinUCB 与随机在当前样本下不可区分（差值 −0.037，95% CI [−0.089, 0.022] 跨 0），仅验证策略闭环</td></tr>
+  <tr><td><span class="tag t-notyet">Not yet validated</span></td><td>尚未验证</td><td>held-out 集上的执行质量实验（exp2/exp3）；技能进化对长期任务成功率的影响；产物级（sandbox）评估</td></tr>
+</table>
+
+<h3>dev 与 held-out 的差异（本轮最重要的发现）</h3>
+<table>
+  <tr><th>fabric 检索指标</th><th>DEV（调参集）</th><th>HELD-OUT（冻结测试集）</th><th>说明</th></tr>
+  <tr><td>gold 召回率</td><td>95.8%</td><td>86.1%</td><td rowspan="3">held-out 措辞与组合方式不同源（词面重合度仅 0.052）。
+  编排完整度大幅下降说明 <b>dev 高分含过拟合成分</b>；关系图覆盖（62 条人工边）是当前最薄弱环节。</td></tr>
+  <tr><td>完整覆盖任务占比</td><td>90.0%</td><td>66.7%</td></tr>
+  <tr><td>编排完整度</td><td>92.5%</td><td><b>25.0%</b></td></tr>
+</table>
+<p>这一落差正是「防泄漏方法论」的价值：如果只用 dev 集汇报，会把被调参污染的数字带进产品。</p>
+
+<h2>三、它有什么用：业务价值</h2>
+
+<table>
+  <tr><th style="width:30%">Agent 产品的常见痛点</th><th>SkillNet 提供的解法</th></tr>
+  <tr><td>能力沉淀靠「写死在提示词里」，无法复用、无法版本化</td><td>技能资产化：Skill Contract 统一规格，入库、检索、导出全生命周期管理</td></tr>
+  <tr><td>技能多了以后 Agent「找不准」，检索只靠关键词</td><td>三档检索 + 关系图扩展 + 证据链归因，每一步可解释</td></tr>
+  <tr><td>说不清「技能到底带来多少收益」，汇报靠感觉</td><td>评估管线：主客观分离、dev/held-out 治理、统计检验、manifest 追溯</td></tr>
+  <tr><td>技能库只进不出、良莠不齐，越用越乱</td><td>质量分 + 候选评估 +（v0.4 规划中）候选审批/回滚治理，隔离 Demo 状态</td></tr>
+  <tr><td>绑定单一模型/框架，迁移成本高</td><td>OpenAI 兼容接口 + 跨框架导出（Claude Code / Cursor / Gemini 等）</td></tr>
+</table>
+
+<p><b>一个经过数据验证的判断</b>：技能的核心价值体现在<b>要点覆盖率</b>的提升（+11.5pp，dev 集），
+而非盲评均分（+7.8%）——因为均分存在天花板效应。这决定了接入业务时应优先关注「Agent 是否照做了该做的事」，
+而不是只看评分。</p>
+
+<h2 class="newpage">四、如何接入真实业务产品</h2>
+
+<h3>4.1 SkillNet 在整体架构中的位置</h3>
+<div class="fig">
+<svg width="660" height="200" viewBox="0 0 660 200" xmlns="http://www.w3.org/2000/svg" font-family="Microsoft YaHei">
+  <rect x="10" y="55" width="150" height="90" rx="8" fill="#eef3f8" stroke="#24557a" stroke-width="1.5"/>
+  <text x="85" y="92" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a3a5c">业务 Agent</text>
+  <text x="85" y="112" text-anchor="middle" font-size="9" fill="#44566b">（S1 / 客服 / 代码助手…）</text>
+
+  <rect x="255" y="35" width="170" height="130" rx="8" fill="#1a3a5c"/>
+  <text x="340" y="62" text-anchor="middle" font-size="13" font-weight="bold" fill="#ffffff">SkillNet 技能运维层</text>
+  <text x="340" y="86" text-anchor="middle" font-size="9.5" fill="#cfe0ef">检索路由 /search /route</text>
+  <text x="340" y="105" text-anchor="middle" font-size="9.5" fill="#cfe0ef">编排执行 /run</text>
+  <text x="340" y="124" text-anchor="middle" font-size="9.5" fill="#cfe0ef">评估与进化 /evolve</text>
+  <text x="340" y="143" text-anchor="middle" font-size="9.5" fill="#cfe0ef">导出 /adapters</text>
+
+  <rect x="520" y="55" width="130" height="90" rx="8" fill="#eef3f8" stroke="#24557a" stroke-width="1.5"/>
+  <text x="585" y="92" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a3a5c">技能资产库</text>
+  <text x="585" y="112" text-anchor="middle" font-size="9" fill="#44566b">领域专家沉淀 · 进化候选</text>
+
+  <line x1="160" y1="85" x2="255" y2="85" stroke="#24557a" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="207" y="77" text-anchor="middle" font-size="8.5" fill="#44566b">任务查询</text>
+  <line x1="255" y1="120" x2="160" y2="120" stroke="#24557a" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#arr)"/>
+  <text x="207" y="136" text-anchor="middle" font-size="8.5" fill="#44566b">技能契约 + 证据</text>
+  <line x1="425" y1="100" x2="520" y2="100" stroke="#24557a" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="472" y="92" text-anchor="middle" font-size="8.5" fill="#44566b">读写 / 审批</text>
+
+  <defs><marker id="arr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+  <path d="M0,0 L8,4 L0,8 z" fill="#24557a"/></marker></defs>
+</svg>
+<div class="figcap">图 1 · SkillNet 作为独立服务层，业务 Agent 按需取用技能；技能资产库由专家与进化共同供给</div>
+</div>
+
+<h3>4.2 接入方式 A：HTTP 服务（推荐，改动最小）</h3>
+<p>以独立进程部署 SkillNet，业务 Agent 通过 API 消费。当前可用端点：</p>
+<table>
+  <tr><th style="width:22%">端点</th><th style="width:14%">方法</th><th>用途</th><th style="width:20%">鉴权</th></tr>
+  <tr><td><code>/api/search</code></td><td>POST</td><td>三档检索（bm25 / hybrid / fabric），返回候选技能 + 证据链 + 降级状态</td><td>开放</td></tr>
+  <tr><td><code>/api/route</code></td><td>POST</td><td>检索 + 编排：返回带依赖顺序的执行方案（DAG）</td><td>Token</td></tr>
+  <tr><td><code>/api/run</code></td><td>POST</td><td>携带技能执行任务，返回轨迹 / 评分 / 成本</td><td>Token</td></tr>
+  <tr><td><code>/api/evolve</code></td><td>POST</td><td>从轨迹提炼候选技能（供人工审批）</td><td>Token</td></tr>
+  <tr><td><code>/api/demo</code></td><td>POST</td><td>五阶段一键演示：检索 → 编排 → 执行 → 评估 → 学习</td><td>Token</td></tr>
+  <tr><td><code>/api/adapters</code></td><td>POST</td><td>导出为 Claude Code / Cursor / Gemini 等框架的技能目录</td><td>Token</td></tr>
+  <tr><td><code>/api/skills, /api/graph, /api/stats, /api/health, /api/results</code></td><td>GET</td><td>技能列表 / 关系图 / 库状态 / 健康检查 / 实验结果</td><td>开放</td></tr>
+</table>
+<p>鉴权方式：设置环境变量 <code>SKILLNET_TOKEN</code> 后，受保护端点要求请求头 <code>x-skillnet-token</code>。
+接入方最小改造：在 Agent 的「工具/技能选择」环节调用 <code>/api/search</code>，
+把返回的技能契约注入系统提示或工具描述，即可获得检索路由能力。</p>
+
+<h3>4.3 接入方式 B：静态导出（零依赖）</h3>
+<p>调用 <code>/api/adapters</code> 一次性导出为各框架认可的技能目录格式，直接放进业务仓库：
+适合不想增加服务依赖、只需要「把专家知识带进 Agent」的场景。缺点是失去检索路由、评估与进化能力。</p>
+
+<h3>4.4 业务知识 → 技能资产的迁移方法</h3>
+<p>把业务中的专家经验整理为 Skill Contract，示例骨架：</p>
+<pre>
+name: order-refund-policy
+domain: 客服运营
+capability: 处理订单退款申请，判断是否符合退款条件并给出处理路径
+when_to_use: 用户提出退款、退货、仅退款相关诉求时
+instructions:
+  - 先核对订单状态与退款政策矩阵（7 天无理由 / 质量问题 / 超期）
+  - 质量问题需引导上传凭证，走极速退款通道
+  - 超期订单需先申请售后期_special 审批
+pitfalls:
+  - 不要在未核对物流签收状态时承诺退款
+  - 部分退款与整单退款的优惠券回退逻辑不同，勿混用
+verification:
+  - 回复中明确给出时效与到账路径
+  - 涉及审批的必须告知审批入口
+relations:            # 类型化关系：依赖 / 前置 / 补充
+  - {type: depends_on, target: order-status-query}
+</pre>
+<p>迁移建议：<b>从高频且易判错的任务开始</b>（判错代价大、规则可枚举的场景收益最高），
+每个领域先沉淀 3–5 个种子技能，把 SkillNet 的检索命中率和采纳率跑起来，再批量扩充。</p>
+
+<h3>4.5 分阶段接入路线</h3>
+<table>
+  <tr><th style="width:16%">阶段</th><th style="width:26%">做什么</th><th>验收标准</th></tr>
+  <tr><td><b>Phase 1</b><br>只读接入（1–2 周）</td><td>部署服务；Agent 调 <code>/api/search</code> 取技能并注入提示词；接入 <code>/api/stats</code> 做埋点看板</td><td>检索采纳率有埋点；同任务对比「带技能 / 不带技能」的要点覆盖率与人工抽检质量</td></tr>
+  <tr><td><b>Phase 2</b><br>反馈闭环（2–4 周）</td><td>把业务侧人工反馈 / 工单结果回传为 reward，写入技能 stats；建立 DEV/HELD-OUT 业务任务集</td><td>能回答「哪些技能在拉高成功率」；检索权重按业务数据重调（只动 dev）</td></tr>
+  <tr><td><b>Phase 3</b><br>进化与治理（v0.4 后）</td><td>开启 <code>/api/evolve</code> 候选生成 + 人工审批门 + 回滚；高危技能加隔离与扫描</td><td>候选技能「生成 → 审批 → 上线 → 可回滚」全流程留痕，无人工审批不入库</td></tr>
+</table>
+
+<h3>4.6 安全与治理要求（供应链视角）</h3>
+<ul>
+  <li>技能是<b>可执行知识</b>，会被下游 Agent 当指令加载——必须有人工审批门，生成技能默认标记 untrusted 并隔离（v0.4 规划）。</li>
+  <li>服务层启用 <code>SKILLNET_TOKEN</code>；对外仅暴露必要端点；路径校验已有，生成技能的指令扫描待补。</li>
+  <li>业务接入时建议为技能内容建立变更审核（diff + 审批留痕），防止提示注入内容借技能库扩散。</li>
+</ul>
+
+<h3>4.7 运行环境要求</h3>
+<table class="kv">
+  <tr><td>启动方式</td><td><code>python run.py</code>（需 Python ≥3.10 + 依赖 fastapi/uvicorn/httpx/pydantic/numpy），默认端口 8848</td></tr>
+  <tr><td>离线模式</td><td>无 <code>DEEPSEEK_API_KEY</code> 时：bm25 / hybrid / 图扩展 / Dashboard 全可用；fabric 的 LLM 重排显式降级并标注原因</td></tr>
+  <tr><td>在线模式</td><td>配置 DeepSeek 或任意 OpenAI 兼容端点后，fabric 重排、执行、评估、进化全链路可用，成本按 token 计量</td></tr>
+  <tr><td>自检</td><td><code>python verify.py</code>（31 项）；<code>pytest tests/</code>；<code>node tools/front_check.js</code>（5 项）</td></tr>
+</table>
+
+<h2>五、当前边界与已知限制（如实告知）</h2>
+<ul>
+  <li><b>执行质量结论暂基于 dev 集</b>：held-out 的 exp2/exp3 尚未运行，技能对执行质量的提升属于偏乐观证据（Supported 级）。</li>
+  <li><b>编排完整度在 held-out 上仅 25%</b>：关系图覆盖是短板，接入业务前需要按业务任务补齐关系边。</li>
+  <li><b>选择策略收益未证实</b>：LinUCB 与随机当前不可区分，不应作为接入理由；接入理由应是「技能本身 + 检索 + 治理」。</li>
+  <li><b>评估仍以 LLM judge 为主</b>：产物级（sandbox 可执行判分）评估未接入，评估层级待升级。</li>
+  <li><b>生命周期状态机未完成</b>：evolve 产物仍直接入库，candidate/approve/rollback 为 v0.4 首要事项。</li>
+  <li><b>模型层单供应商绑定</b>：当前执行/评估默认 DeepSeek，抽象 ModelProfile 待做。</li>
+</ul>
+
+<h2>六、快速开始</h2>
+<pre>
+# 1. 启动（本仓库已装好依赖）
+python run.py                # 打开 http://127.0.0.1:8848 即是 Dashboard
+
+# 2. 自检
+python verify.py             # 31 项交付自检
+python -m pytest tests/ -q   # 工程测试
+
+# 3. 体验五阶段闭环
+curl -X POST http://127.0.0.1:8848/api/demo -H "Content-Type: application/json" \
+     -d '{"query":"单细胞测序数据的质控、聚类与细胞亚群注释","mode":"fabric"}'
+
+# 4. 导出给 Claude Code / Cursor 等框架
+curl -X POST http://127.0.0.1:8848/api/adapters
+</pre>
+
+<p style="margin-top:18px; color:#6b7684; font-size:9pt;">
+本文档中的全部数字来自 <code>out/*.json</code> 与 <code>out/manifest.json</code>（单一数据源生成），
+dev 与 held-out 结果分开存放；证据等级标注遵循 Demonstrated / Supported / Preliminary / Not yet validated 四级约定。
+</p>
+
+</body>
+</html>
