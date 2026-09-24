@@ -378,11 +378,13 @@ function addBot() {
     <div class="tl-item" data-s="1"><div class="tl-rail"><div class="tl-no">1</div><div class="tl-line"></div></div>
       <div class="tl-card"><h4>检索对比 · 三档同题对照 <span class="st"></span></h4><div class="tl-body"></div></div></div>
     <div class="tl-item" data-s="2"><div class="tl-rail"><div class="tl-no">2</div><div class="tl-line"></div></div>
-      <div class="tl-card"><h4>任务级路由与编排 <span class="st"></span></h4><div class="tl-body"></div></div></div>
+      <div class="tl-card"><h4>策略选择 · LinUCB 历史反馈排序 <span class="st"></span></h4><div class="tl-body"></div></div></div>
     <div class="tl-item" data-s="3"><div class="tl-rail"><div class="tl-no">3</div><div class="tl-line"></div></div>
-      <div class="tl-card"><h4>技能驱动执行与盲评 <span class="st"></span></h4><div class="tl-body"></div></div></div>
+      <div class="tl-card"><h4>任务级路由与编排 <span class="st"></span></h4><div class="tl-body"></div></div></div>
     <div class="tl-item" data-s="4"><div class="tl-rail"><div class="tl-no">4</div><div class="tl-line"></div></div>
-      <div class="tl-card"><h4>轨迹蒸馏 · 留下了什么 <span class="st"></span></h4><div class="tl-body"></div></div></div>
+      <div class="tl-card"><h4>技能驱动执行与盲评 <span class="st"></span></h4><div class="tl-body"></div></div></div>
+    <div class="tl-item" data-s="5"><div class="tl-rail"><div class="tl-no">5</div><div class="tl-line"></div></div>
+      <div class="tl-card"><h4>反馈回流与技能蒸馏 · 留下了什么 <span class="st"></span></h4><div class="tl-body"></div></div></div>
   </div><div class="costbar" style="display:none"></div>`;
   $("chat").appendChild(d); return d;
 }
@@ -417,6 +419,45 @@ function renderStage2(d) {
   const nodes = (d.order || d.skills || []).map(n => `<span class="dagn">${esc(n)}</span>`).join('<span class="dagi">→</span>');
   return `<div class="dag">${nodes || "<i>无</i>"}<span class="dagi">→</span><span class="dagn end">执行产物</span></div>
     <div>任务级 Wiki：${d.wiki_size ?? "—"} 个候选 · ${esc(d.reason || "")}</div>`;
+}
+
+function renderBandit(d) {
+  if (!d.rows || !d.rows.length) return "<i>候选为空</i>";
+  const rows = d.rows.map((r, i) => `<tr>
+    <td style="color:#9aa7b3">${i + 1}</td>
+    <td>${esc(r.name)}${i === 0 ? ' <span class="skl hit" style="margin-left:4px">top-1</span>' : ""}</td>
+    <td style="font-variant-numeric:tabular-nums">${r.exploit.toFixed(4)}</td>
+    <td style="font-variant-numeric:tabular-nums">${r.explore.toFixed(4)}</td>
+    <td style="font-variant-numeric:tabular-nums;font-weight:700;color:var(--brand)">${r.priority.toFixed(4)}</td>
+  </tr>`).join("");
+  return `<div style="font-size:11.5px;color:#8a97a4;margin-bottom:6px">${esc(d.note || "")}（候选池 ${d.n_candidates} 条）</div>
+    <table class="cmp"><tr><th style="width:30px">#</th><th>技能</th><th style="width:78px">预测收益</th><th style="width:78px">探索奖励</th><th style="width:78px">优先级</th></tr>${rows}</table>
+    <div style="font-size:11.5px;color:#8a97a4;margin-top:4px">预测收益由历史任务反馈训练而来（旧数据驱动）；探索奖励随评估次数衰减——越没试过的技能越有机会被尝试。</div>`;
+}
+
+function renderFeedback(d) {
+  let fb = "";
+  const rows = (d.feedback || []).map(f => {
+    const up = f.delta > 1e-6, dn = f.delta < -1e-6;
+    const arr = up ? '<span style="color:var(--ok)">↑</span>' : dn ? '<span style="color:var(--bad)">↓</span>' : '·';
+    return `<tr><td>${esc(f.name)}${f.nudged ? ' <span class="skl hit">本次采纳</span>' : ""}</td>
+      <td style="font-variant-numeric:tabular-nums">${f.exploit_before.toFixed(4)}</td>
+      <td style="font-variant-numeric:tabular-nums">${f.exploit_after.toFixed(4)}</td>
+      <td>${arr} <b style="color:${up ? "var(--ok)" : dn ? "var(--bad)" : "inherit"}">${(f.delta >= 0 ? "+" : "") + f.delta.toFixed(4)}</b></td></tr>`;
+  }).join("");
+  if (rows) {
+    fb = `<div style="font-size:12.5px;margin:8px 0 4px">本次盲评奖励 <b style="color:var(--brand)">${(d.reward ?? 0).toFixed(2)}/1.0</b>
+      已写回共享参数 θ（采纳 ${esc((d.adopted || []).join("、"))}）——<b>所有</b>技能的预测随之更新，同领域技能变化最大：</div>
+    <table class="cmp"><tr><th>技能</th><th style="width:86px">更新前预测</th><th style="width:86px">更新后预测</th><th style="width:74px">变化</th></tr>${rows}</table>
+    <div style="font-size:11.5px;color:var(--ok);margin:4px 0 10px">这就是「根据旧数据迭代」：下次遇到相似任务，排序将不同——学习可见、可追溯。</div>`;
+  }
+  const distill = d.accepted
+    ? `<div class="nskill"><b>新候选技能：${esc(d.name)}</b>
+        <div style="font-size:12px;color:var(--ink2);margin-top:3px">${esc(d.capability || "")}</div>
+        <div class="meta">第 ${d.generation} 代 · 库规模 → <b style="color:var(--ok)">${d.library_size}</b></div></div>
+       <div style="margin-top:6px;color:var(--ok)">新技能下次将以探索加成的方式获得优先尝试——闭环合拢。</div>`
+    : `<div style="font-size:12.5px;color:var(--ink2)">本次轨迹未通过质量准入（阈值拦截）——治理的一部分：不是所有蒸馏都会入库。当前库规模 ${d.library_size}。</div>`;
+  return fb + distill;
 }
 
 function renderPlan(plan) {
@@ -481,11 +522,13 @@ async function runDemo() {
     await tick(300);
     setStage(bot, 1, "done"); bot.querySelector('[data-s="1"] .tl-body').innerHTML = renderStage1(stages[0].detail, CUR_GOLD);
     await tick(200);
-    setStage(bot, 2, "done"); bot.querySelector('[data-s="2"] .tl-body').innerHTML = renderStage2(stages[1].detail);
+    setStage(bot, 2, "done"); bot.querySelector('[data-s="2"] .tl-body').innerHTML = renderBandit(stages[1].detail);
     await tick(200);
-    setStage(bot, 3, "done"); bot.querySelector('[data-s="3"] .tl-body').innerHTML = renderStage3(stages[2].detail, CUR_GOLD);
+    setStage(bot, 3, "done"); bot.querySelector('[data-s="3"] .tl-body').innerHTML = renderStage2(stages[2].detail);
     await tick(200);
-    setStage(bot, 4, "done"); bot.querySelector('[data-s="4"] .tl-body').innerHTML = renderStage4(stages[3].detail);
+    setStage(bot, 4, "done"); bot.querySelector('[data-s="4"] .tl-body').innerHTML = renderStage3(stages[3].detail, CUR_GOLD);
+    await tick(200);
+    setStage(bot, 5, "done"); bot.querySelector('[data-s="5"] .tl-body').innerHTML = renderFeedback(stages[4].detail);
     const secs = ((performance.now() - t0) / 1000).toFixed(1);
     const cb = bot.querySelector(".costbar"); cb.style.display = "flex";
     cb.innerHTML = `<span>真实成本 <b>¥${r.cost_yuan}</b></span><span>Token <b>${r.tokens}</b></span><span>用时 <b>${secs}s</b></span><span>技能库 <b>${r.library_size}</b></span>`;

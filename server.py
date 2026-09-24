@@ -24,6 +24,7 @@ from pydantic import BaseModel, Field
 from skillnet import config, llm
 from skillnet.adapters import export_all
 from skillnet.agent import ResearchAgent, STYLE_BARE, STYLE_CARDS, STYLE_GUIDED
+from skillnet.bandit import SharedLinUCB
 from skillnet.catalog import SkillLibrary
 from skillnet.evolver import SkillEvolver
 from skillnet.judge import reference_points_from_skills, score_plan
@@ -95,6 +96,16 @@ def refresh_runtime() -> None:
         STATE["retriever"] = Retriever(cur).build()
         STATE["orchestrator"] = Orchestrator(cur)
         STATE["agent"] = ResearchAgent(cur)
+        # 策略层重建，但继承已积累的反馈（A/b 矩阵）——技能库刷新不能把学习清零
+        old_b = STATE.get("bandit")
+        if old_b is not None:
+            nb = SharedLinUCB(cur, alpha=old_b.alpha)
+            nb.A = old_b.A.copy()
+            nb.b = old_b.b.copy()
+            nb.n_updates = old_b.n_updates
+            STATE["bandit"] = nb
+        else:
+            STATE["bandit"] = None
 
 
 def persist_library() -> None:
@@ -389,6 +400,19 @@ def demo(req: DemoReq) -> dict[str, Any]:
         return _run_demo(req, led)
 
 
+def _bandit() -> SharedLinUCB:
+    """服务运行期共享的 LinUCB 单例：反馈在多次请求间持续累积。
+
+    服务重启后从零开始（A=I, b=0），依赖探索机制重新积累——
+    这是有意为之：策略参数不持久化，演示状态不污染正式库。
+    """
+    b = STATE.get("bandit")
+    if b is None:
+        b = SharedLinUCB(lib(), alpha=0.3)
+        STATE["bandit"] = b
+    return b
+
+
 def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
     r: Retriever = STATE["retriever"]
     agent: ResearchAgent = STATE["agent"]
@@ -404,6 +428,24 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
             "trace": res.trace,
         }
     stages.append({"stage": "检索对比", "detail": retrieval})
+
+    # 1.5) 策略选择：LinUCB 用历史反馈对候选池排序（任务条件化）
+    bandit = _bandit()
+    cand = list(dict.fromkeys((retrieval["fabric"]["selected"] or [])))[:10]
+    before_rows = bandit.rank(req.task, cand) if cand else []
+    stages.append(
+        {
+            "stage": "策略选择（LinUCB）",
+            "detail": {
+                "n_candidates": len(cand),
+                "rows": [
+                    {"name": n, "priority": round(p, 4), "exploit": round(e, 4), "explore": round(x, 4)}
+                    for n, p, e, x in before_rows
+                ],
+                "note": "预测收益来自历史反馈（旧任务数据），探索奖励保证未被评估过的技能保留尝试机会",
+            },
+        }
+    )
 
     # 2) Fabric 路由 + 编排
     wiki = r.route_with_wiki(req.task, k=req.k)
@@ -444,6 +486,26 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
         }
     )
 
+    # 3.5) 反馈写回：本次盲评奖励更新共享参数 θ——影响所有技能的下一次预测
+    reward = j["weighted"] / 10.0
+    adopted = [s for s in skills if s and s != "manual"]
+    for s in adopted:
+        bandit.update(req.task, s, reward)
+    after_rows = bandit.rank(req.task, cand) if cand else []
+    after_map = {r[0]: (r[2], r[3]) for r in after_rows}
+    feedback = []
+    for n, _p, e0, x0 in before_rows:
+        e1, x1 = after_map.get(n, (e0, x0))
+        feedback.append(
+            {
+                "name": n,
+                "exploit_before": round(e0, 4),
+                "exploit_after": round(e1, 4),
+                "delta": round(e1 - e0, 4),
+                "nudged": n in adopted,
+            }
+        )
+
     # 4) 从执行轨迹蒸馏新技能
     evolver = SkillEvolver(lib())
     before = len(lib())
@@ -456,8 +518,11 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
 
     stages.append(
         {
-            "stage": "轨迹蒸馏",
+            "stage": "反馈回流与轨迹蒸馏",
             "detail": {
+                "feedback": feedback,
+                "reward": round(reward, 4),
+                "adopted": adopted,
                 "accepted": new_skill is not None,
                 "name": new_skill.name if new_skill else None,
                 "generation": new_skill.generation if new_skill else None,
