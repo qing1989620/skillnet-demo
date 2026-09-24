@@ -609,6 +609,22 @@ if WEB_DIR.exists():
 
 @app.get("/")
 def index() -> Any:
+    """首页即汇报演示页；完整 Dashboard 移至 /dashboard。
+
+    演示与日常使用共用一个入口，避免「两个前端地址」造成困惑：
+    briefing.html 右上角可进 /dashboard，dashboard 顶栏可返回 /。
+    """
+    f = WEB_DIR / "briefing.html"
+    if not f.exists():
+        legacy = WEB_DIR / "index.html"
+        if legacy.exists():
+            return FileResponse(str(legacy))
+        return JSONResponse({"error": "web/briefing.html 不存在"}, status_code=404)
+    return FileResponse(str(f))
+
+
+@app.get("/dashboard")
+def dashboard() -> Any:
     f = WEB_DIR / "index.html"
     if not f.exists():
         return JSONResponse({"error": "web/index.html 不存在"}, status_code=404)

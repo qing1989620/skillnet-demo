@@ -86,6 +86,25 @@
   .spin { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--line); border-top-color: var(--brand2); border-radius: 50%; animation: sp .8s linear infinite; vertical-align: -2px; }
   @keyframes sp { to { transform: rotate(360deg); } }
 
+  /* ---------- 执行过程动画 ---------- */
+  .tl-item .tl-card { transition: border-color .45s, box-shadow .45s; }
+  .tl-item.running .tl-no { border-color: var(--brand2); color: var(--brand2); animation: pulse 1.15s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(36,85,122,.32);} 55% { box-shadow: 0 0 0 9px rgba(36,85,122,0);} }
+  .tl-item.running .tl-card { border-color: var(--brand2); box-shadow: 0 2px 14px rgba(36,85,122,.10); }
+  .tl-item.done .tl-no { border-color: var(--ok); background: var(--ok); color: #fff; animation: pop .5s cubic-bezier(.2,1.6,.4,1) both; }
+  @keyframes pop { 0% { transform: scale(.3);} 70% { transform: scale(1.22);} 100% { transform: scale(1);} }
+  .tl-item.done .tl-line { background: linear-gradient(180deg, var(--ok), #b9dcc6); }
+  .tl-item.done .tl-card { border-color: #cfe6d6; }
+  .tl-item.fail .tl-card { border-color: #e3c5c2; }
+  .reveal { animation: reveal .6s cubic-bezier(.22,.8,.3,1) both; }
+  @keyframes reveal { from { opacity: 0; transform: translateY(12px);} to { opacity: 1; transform: none; } }
+  .shimmer { height: 4px; border-radius: 2px; overflow: hidden; margin-top: 10px;
+    background: linear-gradient(90deg,#e8edf2 25%,#c2d5e6 50%,#e8edf2 75%); background-size: 200% 100%;
+    animation: sweep 1.05s linear infinite; }
+  @keyframes sweep { to { background-position: -200% 0; } }
+  #prog { position: fixed; top: 52px; left: 0; height: 3px; width: 0;
+    background: linear-gradient(90deg, var(--brand2), var(--ok)); transition: width .55s cubic-bezier(.4,0,.2,1); z-index: 60; }
+
   table.cmp { width: 100%; border-collapse: collapse; font-size: 12px; }
   table.cmp th { background: var(--brand); color: #fff; text-align: left; padding: 6px 9px; font-weight: 600; }
   table.cmp td { border: 1px solid var(--line); padding: 5px 9px; vertical-align: top; }
@@ -176,7 +195,7 @@
     <span class="stat"><span class="dot" id="dot-key"></span>模型密钥 <span id="key-txt">—</span></span>
     <span class="stat">技能库 <b id="lib-n" style="color:var(--ink)">—</b></span>
     <span class="spacer"></span>
-    <a href="/" target="_blank">完整 Dashboard</a>
+    <a href="/dashboard" target="_blank">完整 Dashboard</a>
   </div>
 </div>
 
@@ -391,8 +410,23 @@ function addBot() {
 function setStage(bot, n, st) {
   const it = bot.querySelector(`[data-s="${n}"]`); it.className = "tl-item " + st;
   const stEl = it.querySelector(".st"), body = it.querySelector(".tl-body");
-  stEl.textContent = st === "running" ? "运行中" : st === "done" ? "完成" : "失败";
-  if (st === "running") body.innerHTML = '<span class="spin"></span> 正在调用真实接口…';
+  stEl.textContent = st === "running" ? "执行中" : st === "done" ? "完成" : "失败";
+  if (st === "running") body.innerHTML = '<div><span class="spin"></span> 正在调用真实接口…</div><div class="shimmer"></div>';
+  if (st === "done") { body.innerHTML = `<div class="reveal">${body.innerHTML}</div>`; }
+  const pr = document.getElementById("prog");
+  if (pr) {
+    const doneN = bot.querySelectorAll(".tl-item.done").length;
+    pr.style.width = Math.min(100, (doneN / 5) * 100) + "%";
+  }
+}
+function rollNum(el, target, dec) {
+  const t0 = performance.now();
+  (function f(now) {
+    const k = Math.min(1, (now - t0) / 700);
+    const ease = 1 - Math.pow(1 - k, 3);
+    el.textContent = (target * ease).toFixed(dec);
+    if (k < 1) requestAnimationFrame(f);
+  })(t0);
 }
 const tick = ms => new Promise(r => setTimeout(r, ms));
 
@@ -514,33 +548,47 @@ async function runDemo() {
   addUser(q);
   const bot = addBot();
   bot.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (!document.getElementById("prog")) {
+    const pr = document.createElement("div"); pr.id = "prog"; pr.style.width = "0";
+    document.body.appendChild(pr);
+  } else { document.getElementById("prog").style.width = "0"; }
+  $("run").textContent = "闭环运行中…";
   const t0 = performance.now(); const id = ++RUN_ID;
   try {
     const r = await jget2(API + "/api/demo", { task: q, gold: CUR_GOLD, k: 5 }, 300000);
     if (id !== RUN_ID) return;
     const stages = r.stages || [];
-    await tick(300);
-    setStage(bot, 1, "done"); bot.querySelector('[data-s="1"] .tl-body').innerHTML = renderStage1(stages[0].detail, CUR_GOLD);
-    await tick(200);
-    setStage(bot, 2, "done"); bot.querySelector('[data-s="2"] .tl-body').innerHTML = renderBandit(stages[1].detail);
-    await tick(200);
-    setStage(bot, 3, "done"); bot.querySelector('[data-s="3"] .tl-body').innerHTML = renderStage2(stages[2].detail);
-    await tick(200);
-    setStage(bot, 4, "done"); bot.querySelector('[data-s="4"] .tl-body').innerHTML = renderStage3(stages[3].detail, CUR_GOLD);
-    await tick(200);
-    setStage(bot, 5, "done"); bot.querySelector('[data-s="5"] .tl-body').innerHTML = renderFeedback(stages[4].detail);
-    const secs = ((performance.now() - t0) / 1000).toFixed(1);
+    const inject = (n, html) => { bot.querySelector(`[data-s="${n}"] .tl-body`).innerHTML = html; };
+    setStage(bot, 1, "running"); await tick(650);
+    inject(1, renderStage1(stages[0].detail, CUR_GOLD)); setStage(bot, 1, "done");
+    await tick(480);
+    setStage(bot, 2, "running"); await tick(560);
+    inject(2, renderBandit(stages[1].detail)); setStage(bot, 2, "done");
+    await tick(480);
+    setStage(bot, 3, "running"); await tick(560);
+    inject(3, renderStage2(stages[2].detail)); setStage(bot, 3, "done");
+    await tick(480);
+    setStage(bot, 4, "running"); await tick(620);
+    inject(4, renderStage3(stages[3].detail, CUR_GOLD)); setStage(bot, 4, "done");
+    await tick(480);
+    setStage(bot, 5, "running"); await tick(560);
+    inject(5, renderFeedback(stages[4].detail)); setStage(bot, 5, "done");
+    const secs = (performance.now() - t0) / 1000;
     const cb = bot.querySelector(".costbar"); cb.style.display = "flex";
-    cb.innerHTML = `<span>真实成本 <b>¥${r.cost_yuan}</b></span><span>Token <b>${r.tokens}</b></span><span>用时 <b>${secs}s</b></span><span>技能库 <b>${r.library_size}</b></span>`;
+    cb.innerHTML = `<span>真实成本 ¥<b id="cv-${id}">0.00</b></span><span>Token <b id="tk-${id}">0</b></span><span>用时 <b>${secs.toFixed(1)}s</b></span><span>技能库 <b>${r.library_size}</b></span>`;
+    rollNum(document.getElementById(`cv-${id}`), r.cost_yuan, 4);
+    rollNum(document.getElementById(`tk-${id}`), r.tokens, 0);
     $("lib-n").textContent = r.library_size + " 个技能";
+    $("run").textContent = "发送";
   } catch (e) {
+    $("run").textContent = "发送";
     const run = bot.querySelector(".tl-item.running");
     if (run) run.className = "tl-item fail";
     const rest = bot.querySelectorAll(".tl-item:not(.done):not(.fail)");
     rest.forEach(x => (x.className = "tl-item fail"));
     $("err").style.display = "block";
     $("err").textContent = "调用失败：" + (e.message || e) + "。若提示 503 请在 .env 配置 DEEPSEEK_API_KEY；若服务未启动先运行 python run.py。";
-  } finally { input.disabled = false; $("run").disabled = false; }
+  } finally { input.disabled = false; $("run").disabled = false; $("run").textContent = "发送"; }
 }
 
 async function jget2(url, body, t) {
