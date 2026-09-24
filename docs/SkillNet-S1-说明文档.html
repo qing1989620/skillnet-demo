@@ -51,7 +51,7 @@
   <div style="font-size:12.5pt; color:#44566b;">能力总览 · 业务价值 · 真实产品接入指南</div>
 </div>
 <div class="meta">
-  版本 v0.3（可信度优先重构版） · 文档日期 2026-09-23 · 对应仓库 skillnet-demo（commit 4722272）<br>
+  版本 v0.4-pre（可信度重构 + 策略层闭环演示） · 文档日期 2026-09-24 · 对应仓库 skillnet-demo（commit f3af611）<br>
   阅读对象：技术负责人 / Agent 系统工程师 / 准备把 SkillNet 接入业务产品的开发者
 </div>
 
@@ -89,6 +89,12 @@ API Key 缺失时 fabric 自动降级为「图扩展可用、LLM 重排不执行
 <p>Orchestrator 根据检索结果与技能依赖关系排出执行顺序（DAG），Agent 携带选中技能的契约执行科研任务；
 执行轨迹、工具调用、产物均被记录，成本按 token 计入请求级账本。</p>
 
+<h3>3.5 汇报演示模式（对话式入口）</h3>
+<p>访问 <code>/static/briefing.html</code> 进入演示页：<b>输入任何科研问题</b>（不限领域、不限预设），
+系统以对话流形式逐段展示五阶段闭环——检索对比 → <b>LinUCB 策略选择</b>（候选池按历史反馈排序，展示预测收益 / 探索奖励 / 优先级）→
+依赖编排 → 技能驱动执行与盲评 → <b>反馈回流与蒸馏</b>（更新前后预测对比表 + 新候选技能卡），
+并附真实成本与 Token 记账。任意问题的回答都会展示「这次调用了哪些技能、旧数据如何影响本次排序、本次反馈如何改变下一次」。</p>
+
 <h3>4. 评估体系（「有没有效」——分主观与客观两条线）</h3>
 <ul>
   <li><b>主客观分离</b>：LLM judge 盲评（主观）与 <b>skill-derived reference coverage</b>（从技能契约的陷阱/验证要点中抽取参照点做覆盖判分，客观但需注明同源偏置）分开呈现，不混为一谈。</li>
@@ -103,8 +109,10 @@ API Key 缺失时 fabric 自动降级为「图扩展可用、LLM 重排不执行
   <li><b>Shared LinUCB 上下文老虎机</b>（v0.3 重写）：全局共享参数，上下文 φ(task, skill) 编码任务词袋、技能词袋、
   领域 one-hot、交互与元特征，<b>跨进程哈希稳定</b>。实测一个技能的反馈可泛化影响同领域未评估技能
   （同领域技能的预测变化约为异领域的 1.24 倍）；预测奖励随轮次真实增长（0 → 0.52 → 0.73），探索奖励同步衰减。</li>
-  <li><b>技能进化</b>：从执行轨迹中提炼候选技能（parent、diff、质量、风险、相似度），经启发式评估后进入候选队列；
-  实验闭环「选择 → 执行 → 奖励 → 更新 → 进化」可完整运行。</li>
+  <li><b>技能进化</b>：从执行轨迹中提炼候选技能（parent、diff、质量、风险、相似度），经质量准入后回流技能库。</li>
+  <li><b>实时反馈回流（演示闭环内已接入）</b>：每次任务执行后，盲评奖励即时写回共享参数 θ——
+  <b>所有技能</b>的预测随之更新（同领域变化最大），排序随每一次任务演化；实测第二次相似请求中
+  5 个技能预测转为非零、探索奖励同步衰减，「根据旧数据迭代」全程可见、可追溯。</li>
   <li><b>诚实的统计结论</b>：实验三采用 mean ± std 与 4000 次配对 bootstrap。当前样本下 LinUCB 与随机选择
   <b>不可区分</b>（95% CI 跨 0），Demo 如实标注「本实验仅验证闭环连通性」，不包装成 RL 收益。</li>
 </ul>
@@ -193,7 +201,7 @@ API Key 缺失时 fabric 自动降级为「图扩展可用、LLM 重排不执行
   <tr><td><code>/api/route</code></td><td>POST</td><td>检索 + 编排：返回带依赖顺序的执行方案（DAG）</td><td>Token</td></tr>
   <tr><td><code>/api/run</code></td><td>POST</td><td>携带技能执行任务，返回轨迹 / 评分 / 成本</td><td>Token</td></tr>
   <tr><td><code>/api/evolve</code></td><td>POST</td><td>从轨迹提炼候选技能（供人工审批）</td><td>Token</td></tr>
-  <tr><td><code>/api/demo</code></td><td>POST</td><td>五阶段一键演示：检索 → 编排 → 执行 → 评估 → 学习</td><td>Token</td></tr>
+  <tr><td><code>/api/demo</code></td><td>POST</td><td>五阶段闭环演示：检索对比 → LinUCB 策略选择 → 编排 → 执行盲评 → 反馈写回与蒸馏；接受任意任务文本</td><td>Token</td></tr>
   <tr><td><code>/api/adapters</code></td><td>POST</td><td>导出为 Claude Code / Cursor / Gemini 等框架的技能目录</td><td>Token</td></tr>
   <tr><td><code>/api/skills, /api/graph, /api/stats, /api/health, /api/results</code></td><td>GET</td><td>技能列表 / 关系图 / 库状态 / 健康检查 / 实验结果</td><td>开放</td></tr>
 </table>
@@ -270,9 +278,13 @@ python run.py                # 打开 http://127.0.0.1:8848 即是 Dashboard
 python verify.py             # 31 项交付自检
 python -m pytest tests/ -q   # 工程测试
 
-# 3. 体验五阶段闭环
+# 3. 汇报演示页（对话式入口，推荐现场使用）
+#    浏览器打开 http://127.0.0.1:8848/static/briefing.html
+#    输入任意科研问题，逐段展示：检索对比 / LinUCB 策略选择 / 编排 / 执行盲评 / 反馈回流与蒸馏
+
+# 4. API 方式调用同一闭环
 curl -X POST http://127.0.0.1:8848/api/demo -H "Content-Type: application/json" \
-     -d '{"query":"单细胞测序数据的质控、聚类与细胞亚群注释","mode":"fabric"}'
+     -d '{"task":"单细胞测序数据的质控、聚类与细胞亚群注释","k":5}'
 
 # 4. 导出给 Claude Code / Cursor 等框架
 curl -X POST http://127.0.0.1:8848/api/adapters
