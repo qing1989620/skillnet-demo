@@ -434,6 +434,12 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
                 "steps": len(run.response.get("steps") or []),
                 "adoption": round(run.adoption, 4),
                 "judge": j,
+                "plan": {
+                    "approach": run.response.get("approach", ""),
+                    "steps": run.response.get("steps") or [],
+                    "risks": run.response.get("risks") or [],
+                    "artifacts": run.response.get("artifacts") or [],
+                },
             },
         }
     )

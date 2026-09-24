@@ -116,6 +116,25 @@
 
   .errmsg { display: none; background: #faf1f0; border: 1px solid #e3c5c2; color: var(--bad); padding: 10px 14px; font-size: 12.5px; margin-top: 12px; }
 
+  /* ---------- 对话式演示 ---------- */
+  .chat { margin-top: 14px; display: flex; flex-direction: column; gap: 14px; }
+  .msg-user { align-self: flex-end; max-width: 76%; background: var(--brand); color: #fff; padding: 9px 15px; border-radius: 12px 12px 2px 12px; font-size: 13px; }
+  .msg-bot { align-self: stretch; }
+  .plan-steps { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .pstep { border: 1px solid var(--line); border-left: 3px solid var(--brand2); background: #fff; padding: 9px 12px; font-size: 12px; }
+  .pstep .ph { display: flex; gap: 8px; align-items: baseline; }
+  .pstep .no { color: var(--brand2); font-weight: 800; font-size: 12.5px; }
+  .pstep .act { font-weight: 700; color: var(--ink); }
+  .pstep .klabel { color: #8a97a4; margin: 4px 0 1px; font-size: 11px; }
+  .pstep ul { margin-left: 16px; color: var(--ink2); }
+  .pstep .chk { color: var(--ok); margin-top: 3px; }
+  .risk-box, .art-box { margin-top: 10px; font-size: 12px; padding: 9px 12px; border: 1px solid var(--line); background: var(--soft); color: var(--ink2); }
+  .risk-box b, .art-box b { color: var(--brand); }
+  .risk-box li, .art-box li { margin: 2px 0; }
+  .inputline { display: flex; gap: 10px; align-items: stretch; }
+  .inputline input { flex: 1; border: 1px solid var(--line); padding: 11px 14px; font: inherit; font-size: 13.5px; background: #fff; color: var(--ink); }
+  .inputline input:focus { outline: 2px solid var(--brand2); border-color: transparent; }
+
   /* ---------- 幕4 对比 ---------- */
   table.vs { width: 100%; border-collapse: collapse; font-size: 12.5px; background: #fff; }
   table.vs th { background: var(--brand); color: #fff; text-align: left; padding: 8px 12px; font-weight: 600; }
@@ -230,32 +249,22 @@
   </div>
 </section>
 
-<!-- ==================== 幕 3 · 现场演示 ==================== -->
+<!-- ==================== 幕 3 · 现场演示（对话式） ==================== -->
 <section class="wrap" id="s3">
-  <div class="kicker">LIVE DEMO · 现场运行</div>
-  <h2>一次真实科研任务，跑通完整闭环</h2>
-  <div class="sub">以下全部是真实调用：真实检索真实执行真实评分，成本与 Token 实时记账，无任何预置结果。</div>
+  <div class="kicker">LIVE DEMO · 问什么都能跑</div>
+  <h2>像问同事一样问它</h2>
+  <div class="sub">输入任何科研任务——不限于预设示例。系统自动完成检索、编排、执行、评分、学习五步，并把全过程与最终方案展示出来。</div>
 
   <div class="demo-box">
-    <div class="taskrow">
-      <textarea id="task" placeholder="输入一条科研任务，或点下方示例">我拿到一批 PBMC 的 10x 单细胞 RNA 测序数据，想先做质控并识别出免疫细胞亚群</textarea>
-    </div>
     <div class="chips" id="chips"></div>
-    <button class="runbtn" id="run" onclick="runDemo()">运行闭环</button>
-    <span class="runhint" id="hint">全程约 1–2 分钟，五阶段逐步点亮</span>
+    <div class="inputline">
+      <input id="task" placeholder="例如：我有一批肿瘤患者的随访数据，想找出影响预后的因素并构建风险评分" onkeydown="if(event.key==='Enter')runDemo()">
+      <button class="runbtn" id="run" onclick="runDemo()">发送</button>
+    </div>
+    <div class="runhint" id="hint" style="margin-top:8px">每次真实调用 DeepSeek，约 20–60 秒；成本与 Token 实时记账</div>
     <div class="errmsg" id="err"></div>
 
-    <div class="timeline" id="tl">
-      <div class="tl-item" id="st1"><div class="tl-rail"><div class="tl-no">1</div><div class="tl-line"></div></div>
-        <div class="tl-card"><h4>检索对比 · 三档同题对照 <span class="st" id="st1-s"></span></h4><div class="tl-body" id="st1-b">BM25（关键词）／ Hybrid（融合）／ Fabric（图扩展 + 重排）三档同时检索同一任务，看谁找得全。</div></div></div>
-      <div class="tl-item" id="st2"><div class="tl-rail"><div class="tl-no">2</div><div class="tl-line"></div></div>
-        <div class="tl-card"><h4>任务级路由与编排 <span class="st" id="st2-s"></span></h4><div class="tl-body" id="st2-b">把候选技能与证据组织成任务级 Wiki，按依赖关系排出执行 DAG。</div></div></div>
-      <div class="tl-item" id="st3"><div class="tl-rail"><div class="tl-no">3</div><div class="tl-line"></div></div>
-        <div class="tl-card"><h4>技能驱动执行与盲评 <span class="st" id="st3-s"></span></h4><div class="tl-body" id="st3-b">Agent 携带技能契约执行任务，LLM 盲评打分（主观线），技能要点覆盖率独立计算（客观线）。</div></div></div>
-      <div class="tl-item" id="st4"><div class="tl-rail"><div class="tl-no">4</div><div class="tl-line"></div></div>
-        <div class="tl-card"><h4>轨迹蒸馏 · 这次任务留下了什么 <span class="st" id="st4-s"></span></h4><div class="tl-body" id="st4-b">从执行轨迹提炼候选技能，通过质量门槛后回流技能库——下次相似任务直接受益。</div></div></div>
-    </div>
-    <div class="costbar" id="cost" style="display:none"></div>
+    <div class="chat" id="chat"></div>
   </div>
 </section>
 
@@ -325,6 +334,7 @@
 <script>
 const API = location.port ? location.origin : "http://127.0.0.1:8848";
 const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 async function jget(url, t = 8000) {
   const c = new AbortController(); const to = setTimeout(() => c.abort(), t);
@@ -332,7 +342,7 @@ async function jget(url, t = 8000) {
   finally { clearTimeout(to); }
 }
 
-let TASKS = [];
+let TASKS = [], CUR_GOLD = [], RUN_ID = 0;
 async function boot() {
   try {
     const h = await jget(API + "/api/health", 4000);
@@ -345,133 +355,157 @@ async function boot() {
   }
   try {
     TASKS = await jget(API + "/api/tasks", 4000);
-    const picks = [TASKS[0], TASKS[2], TASKS[3], TASKS[5]].filter(Boolean);
-    $("chips").innerHTML = picks.map((t, i) =>
-      `<button class="chip${i === 0 ? " sel" : ""}" data-i="${TASKS.indexOf(t)}">${t.query.slice(0, 18)}…</button>`).join("");
+    const picks = [TASKS[1], TASKS[4], TASKS[5]].filter(Boolean);
+    $("chips").innerHTML = '<span style="font-size:11.5px;color:#9aa7b3;margin-right:2px">试试：</span>' +
+      picks.map(t => `<button class="chip" data-i="${TASKS.indexOf(t)}">${esc(t.query.slice(0, 16))}…</button>`).join("");
     document.querySelectorAll(".chip").forEach(c => c.onclick = () => {
-      document.querySelectorAll(".chip").forEach(x => x.classList.remove("sel"));
-      c.classList.add("sel");
       const t = TASKS[+c.dataset.i];
-      $("task").value = t.query;
-      $("task").dataset.gold = JSON.stringify(t.gold || []);
+      $("task").value = t.query; CUR_GOLD = t.gold || [];
     });
-    if (picks[0]) $("task").dataset.gold = JSON.stringify(picks[0].gold || []);
-  } catch (e) { $("chips").innerHTML = '<span style="font-size:12px;color:#9aa7b3">服务未启动，预设任务不可用</span>'; }
+  } catch (e) { $("chips").innerHTML = ""; }
 }
 
-function stageState(id, st) {
-  const it = $(id); it.className = "tl-item " + st;
-  $(id + "-s").textContent = st === "running" ? "运行中" : st === "done" ? "完成" : st === "fail" ? "失败" : "";
-  if (st === "running") $(id + "-b").innerHTML = '<span class="spin"></span> 正在调用真实接口…';
+function addUser(q) {
+  const d = document.createElement("div"); d.className = "msg-user"; d.textContent = q;
+  $("chat").appendChild(d); return d;
 }
+function addBot() {
+  const d = document.createElement("div"); d.className = "msg-bot";
+  d.innerHTML = `<div class="timeline" style="display:block">
+    <div class="tl-item" data-s="1"><div class="tl-rail"><div class="tl-no">1</div><div class="tl-line"></div></div>
+      <div class="tl-card"><h4>检索对比 · 三档同题对照 <span class="st"></span></h4><div class="tl-body"></div></div></div>
+    <div class="tl-item" data-s="2"><div class="tl-rail"><div class="tl-no">2</div><div class="tl-line"></div></div>
+      <div class="tl-card"><h4>任务级路由与编排 <span class="st"></span></h4><div class="tl-body"></div></div></div>
+    <div class="tl-item" data-s="3"><div class="tl-rail"><div class="tl-no">3</div><div class="tl-line"></div></div>
+      <div class="tl-card"><h4>技能驱动执行与盲评 <span class="st"></span></h4><div class="tl-body"></div></div></div>
+    <div class="tl-item" data-s="4"><div class="tl-rail"><div class="tl-no">4</div><div class="tl-line"></div></div>
+      <div class="tl-card"><h4>轨迹蒸馏 · 留下了什么 <span class="st"></span></h4><div class="tl-body"></div></div></div>
+  </div><div class="costbar" style="display:none"></div>`;
+  $("chat").appendChild(d); return d;
+}
+function setStage(bot, n, st) {
+  const it = bot.querySelector(`[data-s="${n}"]`); it.className = "tl-item " + st;
+  const stEl = it.querySelector(".st"), body = it.querySelector(".tl-body");
+  stEl.textContent = st === "running" ? "运行中" : st === "done" ? "完成" : "失败";
+  if (st === "running") body.innerHTML = '<span class="spin"></span> 正在调用真实接口…';
+}
+const tick = ms => new Promise(r => setTimeout(r, ms));
 
 function sklList(sel, gold) {
   const g = gold || [];
-  return sel.map(s => {
-    const inGold = g.includes(s);
-    return `<span class="skl${inGold ? " hit" : ""}" title="${inGold ? "gold 技能" : "候选"}">${s}</span>`;
-  }).join("");
+  return sel.map(s => `<span class="skl${g.includes(s) ? " hit" : ""}">${esc(s)}</span>`).join("");
 }
 
 function renderStage1(d, gold) {
   const rows = ["bm25", "hybrid", "fabric"].map(m => {
     const x = d[m]; if (!x) return "";
-    const rc = x.recall == null ? "" : `召回 <b style="color:var(--brand)">${(x.recall * 100).toFixed(1)}%</b>`;
+    const rc = x.recall == null ? '<span style="color:#9aa7b3">无 gold 基准（任意问题按技能相关性检索）</span>'
+                               : `召回 <b style="color:var(--brand)">${(x.recall * 100).toFixed(1)}%</b>`;
     return `<tr><td style="width:76px;font-weight:700;color:var(--brand)">${m.toUpperCase()}</td>
       <td>${sklList(x.selected, gold)} <span style="color:#9aa7b3">${rc}</span></td></tr>`;
   }).join("");
-  const tr = (d.fabric?.trace || []).map(t => `<div>· ${t}</div>`).join("");
-  const miss = gold.filter(g => !(d.bm25?.selected || []).includes(g) && (d.fabric?.selected || []).includes(g));
-  let note = "";
-  if (miss.length) note = `<div style="margin-top:6px;color:var(--ok)">BM25 漏掉、Fabric 通过<b>关系图扩展</b>补回：${sklList(miss, gold)}</div>`;
+  const tr = (d.fabric?.trace || []).map(t => `<div>· ${esc(t)}</div>`).join("");
+  const miss = (gold || []).filter(g => !(d.bm25?.selected || []).includes(g) && (d.fabric?.selected || []).includes(g));
+  const note = miss.length ? `<div style="margin-top:6px;color:var(--ok)">BM25 漏掉、Fabric 通过<b>关系图扩展</b>补回：${sklList(miss, gold)}</div>` : "";
   return `<table class="cmp">${rows}</table>${tr ? `<div class="trace">${tr}</div>` : ""}${note}`;
 }
 
 function renderStage2(d) {
-  const nodes = (d.order || d.skills || []).map(n => `<span class="dagn">${n}</span>`).join('<span class="dagi">→</span>');
+  const nodes = (d.order || d.skills || []).map(n => `<span class="dagn">${esc(n)}</span>`).join('<span class="dagi">→</span>');
   return `<div class="dag">${nodes || "<i>无</i>"}<span class="dagi">→</span><span class="dagn end">执行产物</span></div>
-    <div>任务级 Wiki：${d.wiki_size ?? "—"} 个技能候选 · ${d.reason || ""}</div>`;
+    <div>任务级 Wiki：${d.wiki_size ?? "—"} 个候选 · ${esc(d.reason || "")}</div>`;
 }
 
-function renderStage3(d) {
+function renderPlan(plan) {
+  if (!plan || !plan.steps || !plan.steps.length) return "";
+  const steps = plan.steps.map((s, i) => {
+    const ps = typeof s === "string" ? { action: s } : s;
+    const params = (ps.key_params || []).map(x => `<li>${esc(x)}</li>`).join("");
+    return `<div class="pstep"><div class="ph"><span class="no">S${i + 1}</span><span class="act">${esc(ps.action)}</span></div>
+      ${ps.skill ? `<div class="klabel">调用技能 <span class="skl">${esc(ps.skill)}</span></div>` : ""}
+      ${params ? `<div class="klabel">关键参数</div><ul>${params}</ul>` : ""}
+      ${ps.expected_output ? `<div class="klabel">产出</div><div>${esc(ps.expected_output)}</div>` : ""}
+      ${ps.check ? `<div class="chk">校验：${esc(ps.check)}</div>` : ""}</div>`;
+  }).join("");
+  const risks = (plan.risks || []).length ? `<div class="risk-box"><b>风险与应对</b><ul>${plan.risks.map(r => `<li>${esc(r)}</li>`).join("")}</ul></div>` : "";
+  const arts = (plan.artifacts || []).length ? `<div class="art-box"><b>交付物</b> ${plan.artifacts.map(a => esc(a)).join(" · ")}</div>` : "";
+  return `<div style="margin-top:10px;font-size:13px">${esc(plan.approach || "")}</div>
+    <div class="plan-steps">${steps}</div>${risks}${arts}`;
+}
+
+function renderStage3(d, gold) {
   const j = d.judge || {};
   const dims = j.dimensions || j.scores || {};
-  const contracts = (d.skills || []).map(s => `<span class="skl">${s}</span>`).join("");
+  const contracts = (d.skills || []).map(s => `<span class="skl">${esc(s)}</span>`).join("");
   let bars = "";
-  const obj = j.coverage != null ? [[`要点覆盖 ${j.covered?.length ?? "—"}/${j.n_points ?? "—"}`, j.coverage, true]] : [];
   const subj = Object.entries(dims).filter(([k, v]) => typeof v === "number");
   bars += subj.map(([k, v]) => brow(k, v, false)).join("");
-  if (subj.length && obj.length) bars += '<div class="split">── 客观线（可程序化）──</div>';
-  bars += obj.map(([k, v, o]) => brow(k, v, o)).join("");
+  const hasCov = j.coverage != null;
+  if (subj.length) bars += `<div class="split">── ${hasCov ? "客观线（可程序化）" : "客观线：无 gold 基准，本次跳过"} ──</div>`;
+  if (hasCov) bars += brow(`要点覆盖 ${j.covered?.length ?? "—"}/${j.n_points ?? "—"}`, j.coverage, true);
   return `<div style="margin-bottom:8px;font-size:11.5px;color:#8a97a4">加载的技能契约：${contracts}</div>
     <div class="bars">${bars}</div>
     <div style="margin-top:8px">技能采纳率 <b style="color:var(--brand)">${(d.adoption * 100).toFixed(0)}%</b> ·
     执行步骤 ${d.steps} · 盲评均分 <b style="color:var(--brand)">${(j.weighted ?? 0).toFixed(2)}/10</b></div>
-    ${j.comment ? `<div class="trace">盲评意见：${j.comment}</div>` : ""}`;
+    ${j.comment ? `<div class="trace">盲评意见：${esc(j.comment)}</div>` : ""}
+    ${renderPlan(d.plan)}`;
   function brow(k, v, isObj) {
     const pct = Math.max(0, Math.min(100, v <= 1 ? v * 100 : v * 10));
-    return `<div class="brow"><span>${k}</span><div class="btrack"><div class="bfill${isObj ? " obj" : ""}" style="width:${pct}%"></div></div><span class="bval">${typeof v === "number" ? v.toFixed(v <= 1 ? 2 : 1) : v}</span></div>`;
+    return `<div class="brow"><span>${esc(k)}</span><div class="btrack"><div class="bfill${isObj ? " obj" : ""}" style="width:${pct}%"></div></div><span class="bval">${typeof v === "number" ? v.toFixed(v <= 1 ? 2 : 1) : v}</span></div>`;
   }
 }
 
-function renderStage4(d, before) {
-  if (!d.accepted) {
-    return `<div>本次轨迹未通过质量准入（阈值拦截）——这是治理的一部分：不是所有蒸馏都会入库。当前库规模 ${d.library_size}。</div>`;
-  }
-  return `<div class="nskill">
-    <b>新候选技能：${d.name}</b>
-    <div style="font-size:12px;color:var(--ink2);margin-top:3px">${d.capability || ""}</div>
-    <div class="meta">第 ${d.generation} 代 · 蒸馏记录 ${d.records} 条 · 库规模 ${before} → <b style="color:var(--ok)">${d.library_size}</b></div>
+function renderStage4(d) {
+  if (!d.accepted) return `<div>本次轨迹未通过质量准入（阈值拦截）——治理的一部分：不是所有蒸馏都会入库。当前库规模 ${d.library_size}。</div>`;
+  return `<div class="nskill"><b>新候选技能：${esc(d.name)}</b>
+    <div style="font-size:12px;color:var(--ink2);margin-top:3px">${esc(d.capability || "")}</div>
+    <div class="meta">第 ${d.generation} 代 · 蒸馏记录 ${d.records} 条 · 库规模 → <b style="color:var(--ok)">${d.library_size}</b></div>
     </div><div style="margin-top:6px;color:var(--ok)">下次遇到相似任务，它会被检索并优先推荐——闭环合拢。</div>`;
 }
 
 async function runDemo() {
-  const btn = $("run"); const task = $("task").value.trim();
-  if (!task) return;
-  let gold = []; try { gold = JSON.parse($("task").dataset.gold || "[]"); } catch (e) {}
-  btn.disabled = true; $("err").style.display = "none";
-  $("tl").style.display = "block"; $("cost").style.display = "none";
-  ["st1", "st2", "st3", "st4"].forEach(id => { $(id).className = "tl-item"; $(id + "-s").textContent = ""; });
-  stageState("st1", "running");
-  const t0 = performance.now();
+  const input = $("task"); const q = input.value.trim();
+  if (!q || input.disabled) return;
+  input.disabled = true; $("run").disabled = true; $("err").style.display = "none";
+  addUser(q);
+  const bot = addBot();
+  bot.scrollIntoView({ behavior: "smooth", block: "start" });
+  const t0 = performance.now(); const id = ++RUN_ID;
   try {
-    const r = await jget2(API + "/api/demo", { task, gold, k: 5 }, 300000);
+    const r = await jget2(API + "/api/demo", { task: q, gold: CUR_GOLD, k: 5 }, 300000);
+    if (id !== RUN_ID) return;
     const stages = r.stages || [];
-    const before = (r.library_size || 0) - ((stages[3]?.detail?.delta) || 0);
-
-    stageState("st1", "running");
-    await tick(300); stageState("st1", "done");
-    $("st1-b").innerHTML = renderStage1(stages[0].detail, gold);
-
-    stageState("st2", "running"); await tick(250); stageState("st2", "done");
-    $("st2-b").innerHTML = renderStage2(stages[1].detail);
-
-    stageState("st3", "running"); await tick(250); stageState("st3", "done");
-    $("st3-b").innerHTML = renderStage3(stages[2].detail);
-
-    stageState("st4", "running"); await tick(250); stageState("st4", "done");
-    $("st4-b").innerHTML = renderStage4(stages[3].detail, before);
-
+    await tick(300);
+    setStage(bot, 1, "done"); bot.querySelector('[data-s="1"] .tl-body').innerHTML = renderStage1(stages[0].detail, CUR_GOLD);
+    await tick(200);
+    setStage(bot, 2, "done"); bot.querySelector('[data-s="2"] .tl-body').innerHTML = renderStage2(stages[1].detail);
+    await tick(200);
+    setStage(bot, 3, "done"); bot.querySelector('[data-s="3"] .tl-body').innerHTML = renderStage3(stages[2].detail, CUR_GOLD);
+    await tick(200);
+    setStage(bot, 4, "done"); bot.querySelector('[data-s="4"] .tl-body').innerHTML = renderStage4(stages[3].detail);
     const secs = ((performance.now() - t0) / 1000).toFixed(1);
-    $("cost").style.display = "flex";
-    $("cost").innerHTML = `<span>本次闭环真实成本 <b>¥${r.cost_yuan}</b></span><span>Token <b>${r.tokens}</b></span><span>用时 <b>${secs}s</b></span><span>技能库 <b>${r.library_size}</b></span>`;
+    const cb = bot.querySelector(".costbar"); cb.style.display = "flex";
+    cb.innerHTML = `<span>真实成本 <b>¥${r.cost_yuan}</b></span><span>Token <b>${r.tokens}</b></span><span>用时 <b>${secs}s</b></span><span>技能库 <b>${r.library_size}</b></span>`;
+    $("lib-n").textContent = r.library_size + " 个技能";
   } catch (e) {
-    const run = document.querySelector(".tl-item.running");
-    if (run) { run.className = "tl-item fail"; }
+    const run = bot.querySelector(".tl-item.running");
+    if (run) run.className = "tl-item fail";
+    const rest = bot.querySelectorAll(".tl-item:not(.done):not(.fail)");
+    rest.forEach(x => (x.className = "tl-item fail"));
     $("err").style.display = "block";
-    $("err").textContent = "调用失败：" + (e.message || e) + "。若提示 503，请在 .env 配置 DEEPSEEK_API_KEY；若服务未启动，先运行 python run.py。";
-  } finally { btn.disabled = false; }
+    $("err").textContent = "调用失败：" + (e.message || e) + "。若提示 503 请在 .env 配置 DEEPSEEK_API_KEY；若服务未启动先运行 python run.py。";
+  } finally { input.disabled = false; $("run").disabled = false; }
 }
 
 async function jget2(url, body, t) {
   const c = new AbortController(); const to = setTimeout(() => c.abort(), t);
   try {
     const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: c.signal });
-    if (!r.ok) { const d = await r.json().catch(() => ({})); throw new Error(d.detail || r.status); }
+    if (!r.ok) { const d = await r.json().catch(() => ({})); throw new Error(typeof d.detail === "string" ? d.detail : JSON.stringify(d.detail) || r.status); }
     return await r.json();
   } finally { clearTimeout(to); }
 }
-const tick = ms => new Promise(r => setTimeout(r, ms));
+$("task").addEventListener("input", () => { CUR_GOLD = []; });
 boot();
 </script>
 </body>
