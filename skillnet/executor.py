@@ -294,7 +294,12 @@ def execute_step(task: str, step: dict[str, Any], skill: Any,
     else:
         verify_skip = ""
 
+    exec_record = _record_execution(skill, task, step, result, attempts)
+
     return {
+        "exec_record": exec_record,
+        "skill_exec_stats": ({k: v for k, v in (getattr(skill, "stats", {}) or {}).items()
+                              if k.startswith("exec_")} if skill is not None else {}),
         "verify_skip_reason": verify_skip,
         "has_verification": has_vf,
         "skill": getattr(skill, "name", None),
@@ -316,6 +321,55 @@ def execute_step(task: str, step: dict[str, Any], skill: Any,
         "workdir": str(workdir),
         "mode": mode,
     }
+
+
+def _record_execution(skill: Any, task: str, step: dict[str, Any],
+                      result: dict[str, Any], attempts: list[dict[str, Any]],
+                      dest: pathlib.Path | None = None) -> dict[str, Any]:
+    """把执行结果记到技能身上，并把失败样本归档。
+
+    为什么必须做：执行失败率是**技能质量的直接信号**——某个技能反复执行失败，
+    说明它的 steps 描述不够可执行、或 pitfalls 没覆盖真实坑点。这些数据此前
+    只存在于本次请求的内存里，用完即弃，无法反哺技能改进。
+
+    记账字段（写入 skill.stats，与既有 pulls/reward_sum 并存）：
+      exec_total / exec_ok / exec_fix / exec_fail —— 执行统计
+      exec_last_error —— 最近一次失败的错误类型（供质量评估与人工排查）
+    """
+    import json as _json
+    from . import config as _cfg
+
+    stats = getattr(skill, "stats", None) if skill is not None else None
+    ok = bool(result.get("ok"))
+    if isinstance(stats, dict):
+        stats["exec_total"] = stats.get("exec_total", 0) + 1
+        stats["exec_ok"] = stats.get("exec_ok", 0) + (1 if ok else 0)
+        if len(attempts) > 1:
+            stats["exec_fix"] = stats.get("exec_fix", 0) + (1 if ok else 0)
+        if not ok:
+            stats["exec_fail"] = stats.get("exec_fail", 0) + 1
+            stats["exec_last_error"] = str(result.get("error_kind") or "unknown")
+
+    record = {
+        "skill": getattr(skill, "name", None),
+        "task": task[:200],
+        "action": str(step.get("action", ""))[:200],
+        "ok": ok,
+        "n_attempts": len(attempts),
+        "error_kind": result.get("error_kind") or "",
+        "stderr_tail": (result.get("stderr") or "")[-400:],
+        "code_chars": len(result.get("stdout") or "") + 0,
+    }
+    # 归档：成功的也留一条（用于统计成功率），失败的带完整错误尾巴
+    try:
+        d = pathlib.Path(dest) if dest else (_cfg.OUT_DIR / "exec_log")
+        d.mkdir(parents=True, exist_ok=True)
+        f = d / "executions.jsonl"
+        with f.open("a", encoding="utf-8") as fh:
+            fh.write(_json.dumps(record, ensure_ascii=False) + "\n")
+    except OSError:
+        pass                                  # 归档失败绝不影响主链路
+    return record
 
 
 def pick_executable_step(plan: dict[str, Any]) -> int:

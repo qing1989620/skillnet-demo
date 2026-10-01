@@ -377,8 +377,17 @@ function selectNode(n) {
   document.getElementById("cDom").textContent =
     `${n.domain}　|　${n.source === "seed" ? "种子技能" : "演化技能（G" + (n.generation || 0) + "）"}`;
   const q = n.quality || {};
+  const st = n.stats || {};
+  const tot = st.exec_total || 0;
+  const execLine = tot
+    ? `沙箱执行 <b>${tot}</b> 次 · 成功 <b style="color:${(st.exec_ok || 0) / tot >= .7 ? "#5fd0a0" : "#f0b23a"}">${st.exec_ok || 0}</b>`
+      + (st.exec_fix ? ` · 修复后成功 <b>${st.exec_fix}</b>` : "")
+      + (st.exec_fail ? ` · 失败 <b style="color:#ff5a4d">${st.exec_fail}</b>` : "")
+      + "<br>"
+    : "";
   document.getElementById("cKv").innerHTML =
     `平均奖励 <b>${(n.mean_reward || 0).toFixed(3)}</b>　·　被调用 <b>${n.pulls || 0}</b> 次<br>`
+    + execLine
     + `质量：安全性 <b>${q.safety || "—"}</b> · 完整性 <b>${q.completeness || "—"}</b> · 可执行性 <b>${q.executability || "—"}</b>`;
   const rels = n.relations || [];
   document.getElementById("cRel").innerHTML = rels.length

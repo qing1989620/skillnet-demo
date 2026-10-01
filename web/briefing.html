@@ -770,6 +770,18 @@ function renderSandbox(d, slug) {
       ${d.skill ? `调用技能 <span class="skl hit">${esc(d.skill)}</span>` : ""}
       <span style="color:#8a97a4">｜执行方式：生成代码 → 沙箱真实运行 → ${d.fixed ? "失败修复重试 → " : ""}技能验收</span>
     </div>
+    ${(() => {
+      const st = d.skill_exec_stats || {};
+      const tot = st.exec_total || 0;
+      if (!tot) return "";
+      const okN = st.exec_ok || 0;
+      const rate = Math.round(okN / tot * 100);
+      return `<div style="font-size:11.5px;color:#8a97a4;margin-bottom:8px">该技能的历史执行记录：
+        累计执行 <b style="color:var(--ink)">${tot}</b> 次 · 成功 <b style="color:${rate >= 70 ? "var(--ok)" : "var(--warn)"}">${okN}</b> 次（${rate}%）
+        ${st.exec_fix ? `· 其中 ${st.exec_fix} 次经修复后成功` : ""}
+        ${st.exec_fail ? `· 失败 ${st.exec_fail} 次（最近错误类型 ${esc(st.exec_last_error || "")}）` : ""}
+        <span style="opacity:.8">—— 执行可靠性正在成为技能的质量信号</span></div>`;
+    })()}
     <div>${trail}</div>${fixNote}${truncNote}${codeBlock}${outBlock}${imgBlock}${otherBlock}${vfBlock}
     ${ok ? "" : `<div style="margin-top:8px;font-size:12px;color:var(--bad)">本次沙箱执行未成功（已尝试 ${d.n_attempts} 次）：${esc((d.attempts[d.attempts.length - 1] || {}).stderr || "")}</div>`}
     ${ok && d.skill ? `<div style="margin-top:10px"><button class="abtn solid" onclick="runCompare(this)">跑三方对照：裸模型 / 提示词塞技能 / SkillNet</button></div><div id="cmpbox"></div>` : ""}`;
