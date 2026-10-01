@@ -14,6 +14,7 @@ import os
 import secrets
 import re
 import threading
+from urllib.parse import quote
 from pathlib import Path
 from typing import Any
 
@@ -703,8 +704,13 @@ def artifact(slug: str, fname: str, download: int = 0) -> Any:
     路径校验：slug 与文件名都只允许安全字符，且解析后必须落在产物目录内——
     防止 `../` 穿越读到仓库其他文件（与既有路径校验策略一致）。
     """
-    if not re.fullmatch(r"[0-9a-f]{8}", slug) or not re.fullmatch(r"[A-Za-z0-9_.\-]{1,64}", fname):
-        raise HTTPException(400, "非法的产物标识")
+    if not re.fullmatch(r"[0-9a-f]{8}", slug):
+        raise HTTPException(400, "非法的任务指纹")
+    # 文件名允许中文（交付物名由模型生成，含中文是常态）；只禁止路径分隔符、
+    # 控制字符与相对路径标记——真正的越界防护靠下面的 resolve 前缀校验。
+    if (not fname or len(fname) > 80 or fname in (".", "..")
+            or re.search(r"[/\\\x00-\x1f]", fname)):
+        raise HTTPException(400, "非法的产物文件名")
     base = (config.OUT_DIR / "demo_artifacts" / slug).resolve()
     target = (base / fname).resolve()
     if base not in target.parents or not target.is_file():
@@ -714,7 +720,11 @@ def artifact(slug: str, fname: str, download: int = 0) -> Any:
              else "text/plain; charset=utf-8")
     headers = {}
     if download:
-        headers["Content-Disposition"] = f'attachment; filename="{fname}"'
+        # 中文文件名必须用 RFC 5987 的 filename*，并且 ASCII 兜底名不能为空
+        ascii_fallback = re.sub(r"[^A-Za-z0-9_.\-]", "_", fname) or "artifact"
+        headers["Content-Disposition"] = (
+            f"attachment; filename=\"{ascii_fallback}\"; "
+            f"filename*=UTF-8''{quote(fname)}")
     return Response(content=target.read_text(encoding="utf-8", errors="replace"),
                     media_type=media, headers=headers)
 

@@ -590,7 +590,7 @@ function renderArtifacts(d) {
       <div class="ak">${esc(a.kind)} · ${(a.bytes / 1024).toFixed(1)} KB${a.declared_as ? " · 兑现清单项：" + esc(a.declared_as) : ""}</div></div>
       <div class="sp"></div>
       <button class="abtn" onclick="previewArtifact('${esc(d.slug)}','${esc(a.name)}')">在线查看</button>
-      <a class="abtn solid" href="${API}/api/artifact/${esc(d.slug)}/${esc(a.name)}?download=1">下载</a>
+      <a class="abtn solid" href="${API}/api/artifact/${esc(d.slug)}/${encodeURIComponent(a.name)}?download=1">下载</a>
     </div>`;
   const deliv = d.artifacts.filter(isDeliv);
   const docs = d.artifacts.filter(a => !isDeliv(a));
@@ -624,7 +624,7 @@ function openLayer(title, { html = "", src = "", text = "" } = {}) {
   document.body.appendChild(l);
 }
 async function previewArtifact(slug, name) {
-  const url = `${API}/api/artifact/${slug}/${name}`;
+  const url = `${API}/api/artifact/${slug}/${encodeURIComponent(name)}`;
   if (name.endsWith(".html")) return openLayer(name, { src: url });
   try {
     const r = await fetch(url); const txt = await r.text();
