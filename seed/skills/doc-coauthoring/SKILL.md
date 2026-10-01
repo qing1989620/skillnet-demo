@@ -1,6 +1,6 @@
 ---
 name: "doc-coauthoring"
-description: "Guide users through a structured workflow for co-authoring documentation. Use when user wants to write documen。"
+description: "文档协同创作：Guide users through a structured workflow for co-authoring documentation. Use when user wants to write documen。"
 ---
 
 # doc-coauthoring
@@ -9,7 +9,7 @@ description: "Guide users through a structured workflow for co-authoring documen
 
 ## 能力契约 / Capability
 
-Guide users through a structured workflow for co-authoring documentation. Use when user wants to write documentation, proposals, technical specs, decision docs, or similar structured content. This workflow helps users efficiently transfer context, refine content through iteration, and verify the doc
+Guide users through a structured workflow for co-authoring documentation. Use when user wants to write documentation, proposals, technical specs, decision docs, or similar structured content.
 
 **输入**：文档目标与读者；已有素材与上下文
 

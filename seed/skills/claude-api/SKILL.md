@@ -1,6 +1,6 @@
 ---
 name: "claude-api"
-description: "|-。"
+description: "Claude 接口参考：Reference for the Claude API / Anthropic SDK — model ids, pricing, params, streaming, tool use, MCP, agents, c。"
 ---
 
 # claude-api
@@ -9,7 +9,7 @@ description: "|-。"
 
 ## 能力契约 / Capability
 
-Claude 接口参考：|-
+Reference for the Claude API / Anthropic SDK — model ids, pricing, params, streaming, tool use, MCP, agents, caching, token counting, model migration. TRIGGER — read BEFORE opening the target file; don't skip because it "looks like a one-liner" — whenever: the prompt names Claude/Anthropic in any fo
 
 **输入**：待接入的模型调用需求
 

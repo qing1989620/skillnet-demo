@@ -12,18 +12,20 @@ import json
 import logging
 import os
 import secrets
+import re
 import threading
 from pathlib import Path
 from typing import Any
 
 from fastapi import Depends, FastAPI, Header, HTTPException
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from skillnet import config, llm
 from skillnet.adapters import export_all
 from skillnet.agent import ResearchAgent, STYLE_BARE, STYLE_CARDS, STYLE_GUIDED
+from skillnet.artifacts import render_bundle, save_bundle
 from skillnet.bandit import SharedLinUCB
 from skillnet.catalog import SkillLibrary
 from skillnet.evolver import SkillEvolver
@@ -538,6 +540,36 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
         }
     )
 
+    # 5) 本次产出：把执行结果渲染为可预览/可下载的真实文件
+    bundle = render_bundle(req.task, run.response, j, skills, run.adoption)
+    art_dir = config.OUT_DIR / "demo_artifacts" / bundle["meta"]["slug"]
+    try:
+        manifest = save_bundle(bundle, art_dir)
+        save_err = ""
+    except OSError as exc:                     # 落盘失败不影响主链路
+        log.error("产物落盘失败：%s", exc)
+        manifest, save_err = [
+            {"name": f["name"], "kind": f["kind"], "bytes": f["bytes"],
+             "slug": bundle["meta"]["slug"], "inline": True}
+            for f in bundle["files"]
+        ], str(exc)
+    stages.append(
+        {
+            "stage": "本次产出",
+            "detail": {
+                "slug": bundle["meta"]["slug"],
+                "digest": bundle["meta"]["digest"],
+                "artifacts": manifest,
+                "saved": not save_err,
+                "save_error": save_err,
+                "preview": {
+                    f["name"]: f["body"][:20000] for f in bundle["files"]
+                    if f["name"].endswith((".html", ".md"))
+                },
+            },
+        }
+    )
+
     return {
         "task": req.task,
         "stages": stages,
@@ -545,6 +577,7 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
         "cost_yuan": round(led.cost_yuan, 5),
         "tokens": led.prompt_tokens + led.completion_tokens,
         "usage_by_role": led.snapshot()["by_role"],
+        "slug": bundle["meta"]["slug"],
     }
 
 
@@ -633,6 +666,45 @@ def dashboard() -> Any:
     if not f.exists():
         return JSONResponse({"error": "web/index.html 不存在"}, status_code=404)
     return FileResponse(str(f))
+
+
+@app.get("/api/skill/{name}/raw")
+def skill_raw(name: str) -> Any:
+    """返回技能的 SKILL.md 原文（供演示页「查看生成的技能全文」）。"""
+    s = lib().get(name)
+    if s is None:
+        raise HTTPException(404, f"技能不存在：{name}")
+    f = config.SEED_DIR / "skills" / name / "SKILL.md"
+    if f.exists():
+        return {
+            "name": name,
+            "source": "disk",
+            "content": f.read_text(encoding="utf-8", errors="replace"),
+        }
+    return {"name": name, "source": "library", "content": s.to_skill_md()}
+
+
+@app.get("/api/artifact/{slug}/{fname}")
+def artifact(slug: str, fname: str, download: int = 0) -> Any:
+    """产物文件预览/下载。
+
+    路径校验：slug 与文件名都只允许安全字符，且解析后必须落在产物目录内——
+    防止 `../` 穿越读到仓库其他文件（与既有路径校验策略一致）。
+    """
+    if not re.fullmatch(r"[0-9a-f]{8}", slug) or not re.fullmatch(r"[A-Za-z0-9_.\-]{1,64}", fname):
+        raise HTTPException(400, "非法的产物标识")
+    base = (config.OUT_DIR / "demo_artifacts" / slug).resolve()
+    target = (base / fname).resolve()
+    if base not in target.parents or not target.is_file():
+        raise HTTPException(404, "产物不存在")
+    media = ("text/html; charset=utf-8" if fname.endswith(".html")
+             else "text/markdown; charset=utf-8" if fname.endswith(".md")
+             else "text/plain; charset=utf-8")
+    headers = {}
+    if download:
+        headers["Content-Disposition"] = f'attachment; filename="{fname}"'
+    return Response(content=target.read_text(encoding="utf-8", errors="replace"),
+                    media_type=media, headers=headers)
 
 
 @app.get("/api/config")

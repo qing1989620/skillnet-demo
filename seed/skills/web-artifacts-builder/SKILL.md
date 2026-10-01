@@ -1,6 +1,6 @@
 ---
 name: "web-artifacts-builder"
-description: "Suite of tools for creating elaborate, multi-component claude.ai HTML artifacts using modern frontend web tech。"
+description: "网页应用构建：Suite of tools for creating elaborate, multi-component claude.ai HTML artifacts using modern frontend web tech。"
 ---
 
 # web-artifacts-builder
@@ -9,7 +9,7 @@ description: "Suite of tools for creating elaborate, multi-component claude.ai H
 
 ## 能力契约 / Capability
 
-Suite of tools for creating elaborate, multi-component claude.ai HTML artifacts using modern frontend web technologies (React, Tailwind CSS, shadcn/ui). Use for complex artifacts requiring state management, routing, or shadcn/ui components - not for simple single-file HTML/JSX artifacts
+Suite of tools for creating elaborate, multi-component claude.ai HTML artifacts using modern frontend web technologies (React, Tailwind CSS, shadcn/ui). Use for complex artifacts requiring state management, routing, or shadcn/ui components - not for simple single-file HTML/JSX artifacts.
 
 **输入**：应用需求与交互说明
 

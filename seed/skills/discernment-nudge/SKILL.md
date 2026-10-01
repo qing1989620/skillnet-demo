@@ -1,6 +1,6 @@
 ---
 name: "discernment-nudge"
-description: ">。"
+description: "判断校准助手：After you give a substantive answer or draft that the user may act on — advice or recommendations, drafted art。"
 ---
 
 # discernment-nudge
@@ -9,7 +9,7 @@ description: ">。"
 
 ## 能力契约 / Capability
 
-判断校准助手：>
+After you give a substantive answer or draft that the user may act on — advice or recommendations, drafted artifacts such as goals, plans, pitches, proposals, or emails, estimates or projections, analysis or interpretation of data, factual claims they may rely on, or a multi-step argument — invoke t
 
 **输入**：待复核的结论或判断
 

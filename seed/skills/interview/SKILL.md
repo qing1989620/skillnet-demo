@@ -1,6 +1,6 @@
 ---
 name: "interview"
-description: ">。"
+description: "SDE 面试备考教练：SDE interview preparation daily workflow and weekly mock interviews. Triggers on /interview or natural phrases。"
 ---
 
 # interview
@@ -9,7 +9,7 @@ description: ">。"
 
 ## 能力契约 / Capability
 
-SDE 面试备考教练：>
+SDE interview preparation daily workflow and weekly mock interviews. Triggers on /interview or natural phrases like "daily problem", "practice today", "interview drill", "mock interview", "interview session", "show me today's problem", "interview practice", "start interview prep".
 
 **输入**：面试目标岗位与时间线；当前准备状态
 

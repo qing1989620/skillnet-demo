@@ -996,14 +996,13 @@ S(
     [("depend_on", "signal-processing")],
 )
 
-
 # ===== BEGIN member-import skills (Nexus) =====
 # 由 tools/import_member_skills.py 生成，请勿手工编辑本块。
 # 来源：开发组成员项目（Nexus）的 skills/ 目录，共 24 个技能。
 
 S(
     "docx", "文档工程",
-    "Word 文档处理：Word 文档处理：技能详情见同名 SKILL.md 原文",
+    "Word 文档处理：create, read, edit, or manipulate Word documents (.docx files) or Word templates (.dotx files). Triggers include: any mention of 'Word doc', 'word document', '.docx', '.d",
     "依据原文 SKILL.md 提供Word 文档处理能力（member-import 导入，契约字段由原文提炼）",
     ["待处理的 .docx/.dotx 文件或文档需求说明", "正文内容与格式要求"],
     ["处理完成的 Word 文档", "渲染校验截图"],
@@ -1018,7 +1017,7 @@ S(
 
 S(
     "pdf", "文档工程",
-    "PDF 文档处理：PDF 文档处理：技能详情见同名 SKILL.md 原文",
+    "PDF 文档处理：do anything with PDF files. This includes reading or extracting text/tables from PDFs, combining or merging multiple PDFs into one, splitting PDFs apart, rotating pages,",
     "依据原文 SKILL.md 提供PDF 文档处理能力（member-import 导入，契约字段由原文提炼）",
     ["PDF 文件或生成 PDF 的内容源", "页面/提取/合并等操作需求"],
     ["处理后的 PDF 文件", "文本或表格提取结果"],
@@ -1033,7 +1032,7 @@ S(
 
 S(
     "pptx", "文档工程",
-    "演示文稿制作：Use this skill any time a .pptx or .potx file is involved in any way — as input, output, or both. This includes: creating slide decks, pitch decks, or presentations; read",
+    "演示文稿制作：a .pptx or .potx file is involved in any way — as input, output, or both. This includes: creating slide decks, pitch decks, or presentations; reading, parsing, or extract",
     "依据原文 SKILL.md 提供演示文稿制作能力（member-import 导入，契约字段由原文提炼）",
     ["演示主题与素材内容", "可选 .pptx 模板"],
     ["生成的 .pptx 演示文稿", "版式校验结果"],
@@ -1048,7 +1047,7 @@ S(
 
 S(
     "xlsx", "文档工程",
-    "Excel 表格处理：Use this skill any time a spreadsheet file is the primary input or output. This means any task where the user wants to: open, read, edit, or fix an existing .xlsx, .xlsm,",
+    "Excel 表格处理：a spreadsheet file is the primary input or output. This means any task where the user wants to: open, read, edit, or fix an existing .xlsx, .xlsm, .xltx, .csv, or .tsv fi",
     "依据原文 SKILL.md 提供Excel 表格处理能力（member-import 导入，契约字段由原文提炼）",
     ["表格数据或 .xlsx 文件", "公式/图表/格式要求"],
     ["生成的表格文件", "公式重算校验结果"],
@@ -1078,7 +1077,7 @@ S(
 
 S(
     "internal-comms", "文档工程",
-    "内部沟通文案：A set of resources to help me write all kinds of internal communications, using the formats that my company likes to use. Claude should",
+    "内部沟通文案：A set of resources to help me write all kinds of internal communications, using the formats that my company likes to use. Claude should use this skill whenever asked to w",
     "依据原文 SKILL.md 提供内部沟通文案能力（member-import 导入，契约字段由原文提炼）",
     ["沟通场景与受众", "要传达的事实要点"],
     ["内部通告/邮件/简报等文案"],
@@ -1123,7 +1122,7 @@ S(
 
 S(
     "claude-api", "技能工程",
-    "Claude 接口参考：|-",
+    "Claude 接口参考：Reference for the Claude API / Anthropic SDK — model ids, pricing, params, streaming, tool use, MCP, agents, caching, token counting, model migration. TRIGGER — read BEFO",
     "依据原文 SKILL.md 提供Claude 接口参考能力（member-import 导入，契约字段由原文提炼）",
     ["待接入的模型调用需求"],
     ["正确的接口调用参数与代码"],
@@ -1138,7 +1137,7 @@ S(
 
 S(
     "code-helper", "技能工程",
-    "Python 代码生成助手：帮助编写、解释和优化 Python 代码，覆盖算法、数据结构与常见实用示例",
+    "Python 代码生成助手：帮助编写、解释和优化 Python 代码，覆盖算法、数据结构与常见实用示例。",
     "依据原文 SKILL.md 提供Python 代码生成助手能力（member-import 导入，契约字段由原文提炼）",
     ["编程需求或待排错代码"],
     ["可运行代码与解释说明"],
@@ -1183,7 +1182,7 @@ S(
 
 S(
     "canvas-design", "设计与创意",
-    "视觉海报设计：Create beautiful visual art in .png and .pdf documents using design philosophy. You should use this skill when the user asks to create a poster, piece of art, design, or ",
+    "视觉海报设计：Create beautiful visual art in .png and .pdf documents using design philosophy. You should use this skill when the user asks to create a poster, piece of art, design, or",
     "依据原文 SKILL.md 提供视觉海报设计能力（member-import 导入，契约字段由原文提炼）",
     ["设计主题与参考意象", "输出尺寸与格式要求"],
     ["PNG/PDF 视觉成品", "设计说明"],
@@ -1243,7 +1242,7 @@ S(
 
 S(
     "theme-factory", "设计与创意",
-    "主题样式工厂：Toolkit for styling artifacts with a theme. These artifacts can be slides, docs, reportings, HTML landing pages, etc. There are 10 pre-set themes with colors/fonts that y",
+    "主题样式工厂：Toolkit for styling artifacts with a theme. These artifacts can be slides, docs, reportings, HTML landing pages, etc.",
     "依据原文 SKILL.md 提供主题样式工厂能力（member-import 导入，契约字段由原文提炼）",
     ["待套用主题的产物（幻灯片/网页/文档）", "主题偏好"],
     ["应用主题后的产物", "主题定义文件"],
@@ -1258,7 +1257,7 @@ S(
 
 S(
     "slack-gif-creator", "设计与创意",
-    "Slack 动图制作：Knowledge and utilities for creating animated GIFs optimized for Slack. Provides constraints, validation tools, and animation concepts. Use when users request animated GI",
+    "Slack 动图制作：Knowledge and utilities for creating animated GIFs optimized for Slack. Provides constraints, validation tools, and animation concepts.",
     "依据原文 SKILL.md 提供Slack 动图制作能力（member-import 导入，契约字段由原文提炼）",
     ["动图创意与尺寸要求"],
     ["符合规格的 GIF 动图"],
@@ -1273,7 +1272,7 @@ S(
 
 S(
     "interview", "职业与学习",
-    "SDE 面试备考教练：>",
+    "SDE 面试备考教练：SDE interview preparation daily workflow and weekly mock interviews. Triggers on /interview or natural phrases like 'daily problem', 'practice today', 'interview drill',",
     "依据原文 SKILL.md 提供SDE 面试备考教练能力（member-import 导入，契约字段由原文提炼）",
     ["面试目标岗位与时间线", "当前准备状态"],
     ["分阶段备考计划", "模拟面试与反馈"],
@@ -1288,7 +1287,7 @@ S(
 
 S(
     "leetcode-hot100-coach", "职业与学习",
-    "LeetCode Hot100 教练：面向算法初学者的 LeetCode Hot 100 教练。按固定八步带学、示范后逐步减少帮助，记录学习断点、错题、独立解题证据和延迟复习；支持本地学习页面。用于开始或继续算法学习、检查练习代码、复习和查看学习进度",
+    "LeetCode Hot100 教练：面向算法初学者的 LeetCode Hot 100 教练。按固定八步带学、示范后逐步减少帮助，记录学习断点、错题、独立解题证据和延迟复习；支持本地学习页面。用于开始或继续算法学习、检查练习代码、复习和查看学习进度。",
     "依据原文 SKILL.md 提供LeetCode Hot100 教练能力（member-import 导入，契约字段由原文提炼）",
     ["当前刷题进度", "目标题目与薄弱点"],
     ["固定流程的刷题指导与复盘"],
@@ -1318,7 +1317,7 @@ S(
 
 S(
     "academy-guide", "职业与学习",
-    "Claude 学堂向导：>",
+    "Claude 学堂向导：Stop and check this skill before finishing any reply to a question about how to use Claude or a Claude product — it recommends matching courses, tutorials, and use cases",
     "依据原文 SKILL.md 提供Claude 学堂向导能力（member-import 导入，契约字段由原文提炼）",
     ["学习目标与当前水平"],
     ["课程化的学习路径与练习"],
@@ -1333,7 +1332,7 @@ S(
 
 S(
     "contract-review", "知识与合规",
-    "合同审查专家：审查中文商业合同，识别风险条款并给出修改建议",
+    "合同审查专家：审查中文商业合同，识别风险条款并给出修改建议。",
     "依据原文 SKILL.md 提供合同审查专家能力（member-import 导入，契约字段由原文提炼）",
     ["待审查合同文本", "审查立场（甲方/乙方）"],
     ["风险条款清单与修改建议"],
@@ -1348,7 +1347,7 @@ S(
 
 S(
     "discernment-nudge", "知识与合规",
-    "判断校准助手：>",
+    "判断校准助手：After you give a substantive answer or draft that the user may act on — advice or recommendations, drafted artifacts such as goals, plans, pitches, proposals, or emails,",
     "依据原文 SKILL.md 提供判断校准助手能力（member-import 导入，契约字段由原文提炼）",
     ["待复核的结论或判断"],
     ["校准提问与判断修正建议"],

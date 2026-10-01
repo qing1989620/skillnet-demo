@@ -1,6 +1,6 @@
 ---
 name: "pptx"
-description: "Use this skill any time a .pptx or .potx file is involved in any way — as input, output, or both. This include。"
+description: "演示文稿制作：a .pptx or .potx file is involved in any way — as input, output, or both. This includes: creating slide decks。"
 ---
 
 # pptx
@@ -9,7 +9,7 @@ description: "Use this skill any time a .pptx or .potx file is involved in any w
 
 ## 能力契约 / Capability
 
-Use this skill any time a .pptx or .potx file is involved in any way — as input, output, or both. This includes: creating slide decks, pitch decks, or presentations; reading, parsing, or extracting text from any .pptx or .potx file (even if the extracted content will be used elsewhere, like in an em
+a .pptx or .potx file is involved in any way — as input, output, or both. This includes: creating slide decks, pitch decks, or presentations; reading, parsing, or extracting text from any .pptx or .potx file (even if the extracted content will be used elsewhere, like in an email or summary); editing
 
 **输入**：演示主题与素材内容；可选 .pptx 模板
 

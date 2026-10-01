@@ -1,6 +1,6 @@
 ---
 name: "theme-factory"
-description: "Toolkit for styling artifacts with a theme. These artifacts can be slides, docs, reportings, HTML landing page。"
+description: "主题样式工厂：Toolkit for styling artifacts with a theme. These artifacts can be slides, docs, reportings, HTML landing page。"
 ---
 
 # theme-factory
@@ -9,7 +9,7 @@ description: "Toolkit for styling artifacts with a theme. These artifacts can be
 
 ## 能力契约 / Capability
 
-Toolkit for styling artifacts with a theme. These artifacts can be slides, docs, reportings, HTML landing pages, etc. There are 10 pre-set themes with colors/fonts that you can apply to any artifact that has been creating, or can generate a new theme on-the-fly
+Toolkit for styling artifacts with a theme. These artifacts can be slides, docs, reportings, HTML landing pages, etc.
 
 **输入**：待套用主题的产物（幻灯片/网页/文档）；主题偏好
 

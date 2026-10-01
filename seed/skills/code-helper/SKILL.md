@@ -1,6 +1,6 @@
 ---
 name: "code-helper"
-description: "帮助编写、解释和优化 Python 代码，覆盖算法、数据结构与常见实用示例。"
+description: "Python 代码生成助手：帮助编写、解释和优化 Python 代码，覆盖算法、数据结构与常见实用示例。"
 ---
 
 # code-helper
@@ -9,7 +9,7 @@ description: "帮助编写、解释和优化 Python 代码，覆盖算法、数�
 
 ## 能力契约 / Capability
 
-帮助编写、解释和优化 Python 代码，覆盖算法、数据结构与常见实用示例
+帮助编写、解释和优化 Python 代码，覆盖算法、数据结构与常见实用示例。
 
 **输入**：编程需求或待排错代码
 

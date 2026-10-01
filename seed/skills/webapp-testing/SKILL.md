@@ -1,6 +1,6 @@
 ---
 name: "webapp-testing"
-description: "Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend 。"
+description: "网页应用测试：Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend 。"
 ---
 
 # webapp-testing
@@ -9,7 +9,7 @@ description: "Toolkit for interacting with and testing local web applications us
 
 ## 能力契约 / Capability
 
-Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs
+Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser screenshots, and viewing browser logs.
 
 **输入**：本地 Web 应用地址或代码
 

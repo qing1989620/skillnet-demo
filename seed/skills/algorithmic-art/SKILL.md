@@ -1,6 +1,6 @@
 ---
 name: "algorithmic-art"
-description: "Creating algorithmic art using p5.js with seeded randomness and interactive parameter exploration. Use this wh。"
+description: "算法生成艺术：Creating algorithmic art using p5.js with seeded randomness and interactive parameter exploration. Use this wh。"
 ---
 
 # algorithmic-art
@@ -9,7 +9,7 @@ description: "Creating algorithmic art using p5.js with seeded randomness and in
 
 ## 能力契约 / Capability
 
-Creating algorithmic art using p5.js with seeded randomness and interactive parameter exploration. Use this when users request creating art using code, generative art, algorithmic art, flow fields, or particle systems. Create original algorithmic art rather than copying existing artists' work to avo
+Creating algorithmic art using p5.js with seeded randomness and interactive parameter exploration. Use this when users request creating art using code, generative art, algorithmic art, flow fields, or particle systems.
 
 **输入**：艺术概念种子；生成参数与交互要求
 

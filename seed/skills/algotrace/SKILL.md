@@ -1,6 +1,6 @@
 ---
 name: "algotrace"
-description: "Visual-first DSA tutor and coach for LeetCode, online assessments (OA), and placement/interview prep. Use when。"
+description: "算法可视化教练：Visual-first DSA tutor and coach for LeetCode, online assessments (OA), and placement/interview prep. Use when。"
 ---
 
 # algotrace

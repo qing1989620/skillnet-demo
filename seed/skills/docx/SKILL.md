@@ -1,9 +1,6 @@
 ---
 name: "docx"
-description: "Word 文档处理：A `.docx` is a ZIP archive of XML files. Choose your approach by task:
-
-| Task | Approach |
-|---|---。"
+description: "Word 文档处理：create, read, edit, or manipulate Word documents (.docx files) or Word templates (.dotx files). Triggers inclu。"
 ---
 
 # docx
@@ -12,11 +9,7 @@ description: "Word 文档处理：A `.docx` is a ZIP archive of XML files. Choos
 
 ## 能力契约 / Capability
 
-Word 文档处理：A `.docx` is a ZIP archive of XML files. Choose your approach by task:
-
-| Task | Approach |
-|---|---|
-| **Create** a new
+create, read, edit, or manipulate Word documents (.docx files) or Word templates (.dotx files). Triggers include: any mention of 'Word doc', 'word document', '.docx', '.dotx', or requests to produce professional documents with formatting like tables of contents, headings, page numbers, or letterhead
 
 **输入**：待处理的 .docx/.dotx 文件或文档需求说明；正文内容与格式要求
 

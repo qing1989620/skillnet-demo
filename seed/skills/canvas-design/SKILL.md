@@ -1,6 +1,6 @@
 ---
 name: "canvas-design"
-description: "Create beautiful visual art in .png and .pdf documents using design philosophy. You should use this skill when。"
+description: "视觉海报设计：Create beautiful visual art in .png and .pdf documents using design philosophy. You should use this skill when。"
 ---
 
 # canvas-design
@@ -9,7 +9,7 @@ description: "Create beautiful visual art in .png and .pdf documents using desig
 
 ## 能力契约 / Capability
 
-Create beautiful visual art in .png and .pdf documents using design philosophy. You should use this skill when the user asks to create a poster, piece of art, design, or other static piece. Create original visual designs, never copying existing artists' work to avoid copyright violations
+Create beautiful visual art in .png and .pdf documents using design philosophy. You should use this skill when the user asks to create a poster, piece of art, design, or other static piece.
 
 **输入**：设计主题与参考意象；输出尺寸与格式要求
 

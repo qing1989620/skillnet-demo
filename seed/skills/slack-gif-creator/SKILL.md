@@ -1,6 +1,6 @@
 ---
 name: "slack-gif-creator"
-description: "Knowledge and utilities for creating animated GIFs optimized for Slack. Provides constraints, validation tools。"
+description: "Slack 动图制作：Knowledge and utilities for creating animated GIFs optimized for Slack. Provides constraints, validation tools。"
 ---
 
 # slack-gif-creator
@@ -9,7 +9,7 @@ description: "Knowledge and utilities for creating animated GIFs optimized for S
 
 ## 能力契约 / Capability
 
-Knowledge and utilities for creating animated GIFs optimized for Slack. Provides constraints, validation tools, and animation concepts. Use when users request animated GIFs for Slack like "make me a GIF of X doing Y for Slack
+Knowledge and utilities for creating animated GIFs optimized for Slack. Provides constraints, validation tools, and animation concepts.
 
 **输入**：动图创意与尺寸要求
 

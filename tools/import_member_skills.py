@@ -256,20 +256,47 @@ def _clean(s: str) -> str:
 
 
 def _frontmatter(text: str) -> dict[str, str]:
+    """解析 SKILL.md 的 YAML frontmatter。
+
+    必须用真正的 YAML 解析：技能描述大量使用多行标量（`description: >`）与
+    含逗号的引号串，逐行正则会截断成 ">" 之类的残片（实测 interview 技能）。
+    """
     m = re.match(r"^---\r?\n(.*?)\r?\n---", text, re.S)
     if not m:
         return {}
-    fm: dict[str, str] = {}
-    for line in m.group(1).splitlines():
-        mm = re.match(r"^([a-zA-Z_]+):\s*(.*)$", line)
-        if mm:
-            fm[mm.group(1)] = mm.group(2).strip().strip('"').strip("'")
-    return fm
+    raw = m.group(1)
+    try:
+        import yaml
+        data = yaml.safe_load(raw) or {}
+        return {str(k): ("" if v is None else str(v).strip()) for k, v in data.items()
+                if isinstance(k, (str, int))}
+    except Exception:                     # YAML 异常时回退逐行解析（保底不阻断导入）
+        fm: dict[str, str] = {}
+        for line in raw.splitlines():
+            mm = re.match(r"^([a-zA-Z_]+):\s*(.*)$", line)
+            if mm:
+                fm[mm.group(1)] = mm.group(2).strip().strip('"').strip("'")
+        return fm
 
 
 def _body(text: str) -> str:
     parts = re.split(r"^---\s*$", text, maxsplit=2, flags=re.M)
     return parts[2] if len(parts) >= 3 else text
+
+
+def _clean_desc(desc: str) -> str:
+    """描述清洗：压缩空白、去掉 "Use this skill ..." 引导语、按句截到两句。
+
+    英文官方技能的 description 常以 "Use this skill whenever ..." 开头且很长，
+    但它包含最有价值的关键词（文件名后缀、工具名），因此**保留正文、只去引导语**，
+    不整句删除——早先按 [^.]* 删句会踩到 "(.docx files)" 里的点号截成残片。
+    """
+    s = re.sub(r"\s+", " ", str(desc or "")).strip()
+    s = re.sub(r"^Use this skill (any time|whenever)\s*", "", s, flags=re.I)
+    s = re.sub(r"^(Use|Use this) when\s*", "", s, flags=re.I)
+    s = re.sub(r"^the user (wants? to|needs? to|is asking to)\s*", "", s, flags=re.I)
+    parts = re.split(r"(?<=[.。!?！？])\s+", s)
+    return " ".join(parts[:2]).strip()
 
 
 def _sections(body: str) -> list[tuple[str, str]]:
@@ -422,11 +449,11 @@ def build_raw_entry(skill_id: str, src_dir: pathlib.Path, meta: dict,
     text = (src_dir / "SKILL.md").read_text(encoding="utf-8-sig", errors="replace")
     fm = _frontmatter(text)
     sections = _sections(_body(text))
-    desc_raw = _clean(fm.get("description", ""))
-    desc_raw = re.sub(r"\s*Use this skill whenever.*$", "", desc_raw, flags=re.I).strip()
-    if not desc_raw:
-        desc_raw = f"{meta['cn']}：技能详情见同名 SKILL.md 原文"
-    desc = f"{meta['cn']}：{desc_raw[:170]}"
+    desc_raw = _clean_desc(fm.get("description", ""))
+    desc_core = desc_raw[:170]
+    if not desc_core.startswith(meta["cn"]):
+        desc_core = f"{meta['cn']}：{desc_core}"
+    desc = desc_core
     cap = f"依据原文 SKILL.md 提供{meta['cn']}能力（member-import 导入，契约字段由原文提炼）"
     use_when = extract_use_when(fm, fm.get("description", ""))
     steps = extract_steps(sections)
@@ -435,16 +462,26 @@ def build_raw_entry(skill_id: str, src_dir: pathlib.Path, meta: dict,
     quality = rate_quality(pitfalls, verify, steps, len(text.splitlines()))
     quality["member_import"] = "true"
 
+    def esc_lit(s: str) -> str:
+        """把任意文本安全嵌入 Python 双引号字面量。
+
+        必须转义：英文官方技能描述里含双引号（如 natural phrases like "daily problem"），
+        直接拼接会生成语法错误的 catalog_data.py（实测踩过）。
+        """
+        s = str(s).replace("\\", "/").replace('"', "'")
+        s = re.sub(r"\s+", " ", s).strip()
+        return s
+
     def lit(items: list[str]) -> str:
-        return "[" + ", ".join('"' + s.replace('"', "'").replace("\\", "/") + '"' for s in items) + "]"
+        return "[" + ", ".join(f'"{esc_lit(s)}"' for s in items) + "]"
 
     rels = "[" + ", ".join(f'("{r}", "{t}")' for r, t in relations) + "]"
-    q = "{" + ", ".join(f'"{k}": "{v}"' for k, v in quality.items()) + "}"
+    qmap = "{" + ", ".join(f'"{esc_lit(k)}": "{esc_lit(v)}"' for k, v in quality.items()) + "}"
     return (
         "S(\n"
-        f'    "{skill_id}", "{meta["domain"]}",\n'
-        f'    "{desc}",\n'
-        f'    "{cap}",\n'
+        f'    "{esc_lit(skill_id)}", "{esc_lit(meta["domain"])}",\n'
+        f'    "{esc_lit(desc)}",\n'
+        f'    "{esc_lit(cap)}",\n'
         f'    {lit(meta["inputs"])},\n'
         f'    {lit(meta["outputs"])},\n'
         f'    {lit(use_when)},\n'
@@ -453,7 +490,7 @@ def build_raw_entry(skill_id: str, src_dir: pathlib.Path, meta: dict,
         f'    {lit(verify)},\n'
         f'    {lit(meta["tags"])},\n'
         f'    {rels},\n'
-        f'    {q},\n'
+        f'    {qmap},\n'
         ")\n"
     )
 
@@ -464,19 +501,18 @@ def build(skill_id: str, src_dir: pathlib.Path, meta: dict) -> str:
     body = _body(text)
     sections = _sections(body)
 
-    desc_raw = _clean(fm.get("description", ""))
-    desc_raw = re.sub(r"\s*Use this skill whenever.*$", "", desc_raw, flags=re.I).strip()
+    desc_raw = _clean_desc(fm.get("description", ""))
     if not desc_raw:
-        desc_raw = f"{meta['cn']}：{sections[0][1].strip()[:120]}" if sections else meta["cn"]
+        desc_raw = sections[0][1].strip()[:160] if sections and sections[0][1].strip() else meta["cn"]
 
-    capability = desc_raw if len(desc_raw) > 20 else f"{meta['cn']}：{desc_raw}"
+    capability = desc_raw if len(desc_raw) > 20 else meta["cn"]
     use_when = extract_use_when(fm, fm.get("description", ""))
     steps = extract_steps(sections)
     pitfalls = extract_pitfalls(sections, fm.get("description", ""))
     verification = extract_verification(sections)
     quality = rate_quality(pitfalls, verification, steps, len(text.splitlines()))
 
-    desc_short = desc_raw[:110].rstrip("，,。.") + "。"
+    desc_short = f"{meta['cn']}：" + desc_raw[:110].rstrip("，,。.") + "。"
     lines: list[str] = []
     lines.append("---")
     lines.append(f'name: "{skill_id}"')

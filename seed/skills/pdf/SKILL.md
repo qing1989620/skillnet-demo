@@ -1,6 +1,6 @@
 ---
 name: "pdf"
-description: "PDF 文档处理：。"
+description: "PDF 文档处理：do anything with PDF files. This includes reading or extracting text/tables from PDFs, combining or merging mu。"
 ---
 
 # pdf
@@ -9,7 +9,7 @@ description: "PDF 文档处理：。"
 
 ## 能力契约 / Capability
 
-PDF 文档处理：PDF 文档处理：
+do anything with PDF files. This includes reading or extracting text/tables from PDFs, combining or merging multiple PDFs into one, splitting PDFs apart, rotating pages, adding watermarks, creating new PDFs, filling PDF forms, encrypting/decrypting PDFs, extracting images, and OCR on scanned PDFs to
 
 **输入**：PDF 文件或生成 PDF 的内容源；页面/提取/合并等操作需求
 

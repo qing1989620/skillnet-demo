@@ -1,6 +1,6 @@
 ---
 name: "internal-comms"
-description: "A set of resources to help me write all kinds of internal communications, using the formats that my company li。"
+description: "内部沟通文案：A set of resources to help me write all kinds of internal communications, using the formats that my company li。"
 ---
 
 # internal-comms
@@ -9,7 +9,7 @@ description: "A set of resources to help me write all kinds of internal communic
 
 ## 能力契约 / Capability
 
-A set of resources to help me write all kinds of internal communications, using the formats that my company likes to use. Claude should
+A set of resources to help me write all kinds of internal communications, using the formats that my company likes to use. Claude should use this skill whenever asked to write some sort of internal communications (status reports, leadership updates, 3P updates, company newsletters, FAQs, incident rep
 
 **输入**：沟通场景与受众；要传达的事实要点
 

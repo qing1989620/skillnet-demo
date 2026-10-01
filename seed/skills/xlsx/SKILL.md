@@ -1,6 +1,6 @@
 ---
 name: "xlsx"
-description: "Use this skill any time a spreadsheet file is the primary input or output. This means any task where the user 。"
+description: "Excel 表格处理：a spreadsheet file is the primary input or output. This means any task where the user wants to: open, read, ed。"
 ---
 
 # xlsx
@@ -9,7 +9,7 @@ description: "Use this skill any time a spreadsheet file is the primary input or
 
 ## 能力契约 / Capability
 
-Use this skill any time a spreadsheet file is the primary input or output. This means any task where the user wants to: open, read, edit, or fix an existing .xlsx, .xlsm, .xltx, .csv, or .tsv file (e.g., adding columns, computing formulas, formatting, charting, cleaning messy data); create a new spr
+a spreadsheet file is the primary input or output. This means any task where the user wants to: open, read, edit, or fix an existing .xlsx, .xlsm, .xltx, .csv, or .tsv file (e.g., adding columns, computing formulas, formatting, charting, cleaning messy data); create a new spreadsheet from scratch or
 
 **输入**：表格数据或 .xlsx 文件；公式/图表/格式要求
 

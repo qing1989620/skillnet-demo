@@ -1,6 +1,6 @@
 ---
 name: "skill-creator"
-description: "Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to c。"
+description: "技能创作工坊：Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to c。"
 ---
 
 # skill-creator

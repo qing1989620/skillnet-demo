@@ -1,6 +1,6 @@
 ---
 name: "frontend-design"
-description: "Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps w。"
+description: "前端视觉设计：Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps w。"
 ---
 
 # frontend-design
@@ -9,7 +9,7 @@ description: "Guidance for distinctive, intentional visual design when building 
 
 ## 能力契约 / Capability
 
-Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults
+Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults.
 
 **输入**：产品定位与目标用户；设计参考
 

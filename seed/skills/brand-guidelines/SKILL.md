@@ -1,6 +1,6 @@
 ---
 name: "brand-guidelines"
-description: "Applies Anthropic's official brand colors and typography to any sort of artifact that may benefit from having 。"
+description: "品牌视觉规范：Applies Anthropic's official brand colors and typography to any sort of artifact that may benefit from having 。"
 ---
 
 # brand-guidelines
@@ -9,7 +9,7 @@ description: "Applies Anthropic's official brand colors and typography to any so
 
 ## 能力契约 / Capability
 
-Applies Anthropic's official brand colors and typography to any sort of artifact that may benefit from having Anthropic's look-and-feel. Use it when brand colors or style guidelines, visual formatting, or company design standards apply
+Applies Anthropic's official brand colors and typography to any sort of artifact that may benefit from having Anthropic's look-and-feel. Use it when brand colors or style guidelines, visual formatting, or company design standards apply.
 
 **输入**：待应用的品牌素材与使用场景
 

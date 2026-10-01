@@ -1,6 +1,6 @@
 ---
 name: "mcp-builder"
-description: "Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with externa。"
+description: "MCP 服务构建器：Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with externa。"
 ---
 
 # mcp-builder
@@ -9,7 +9,7 @@ description: "Guide for creating high-quality MCP (Model Context Protocol) serve
 
 ## 能力契约 / Capability
 
-Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services through well-designed tools. Use when building MCP servers to integrate external APIs or services, whether in Python (FastMCP) or Node/TypeScript (MCP SDK)
+Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services through well-designed tools. Use when building MCP servers to integrate external APIs or services, whether in Python (FastMCP) or Node/TypeScript (MCP SDK).
 
 **输入**：外部服务/API 的能力边界说明；认证与调用方式
 
