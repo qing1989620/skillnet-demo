@@ -718,6 +718,44 @@ def dashboard() -> Any:
     return FileResponse(str(f))
 
 
+class CompareReq(BaseModel):
+    task: str = Field(min_length=1, max_length=6000)
+    step: dict[str, Any] = Field(default_factory=dict)
+    skill: str | None = None
+
+
+@app.post("/api/execute_one", dependencies=[Depends(require_token)])
+def execute_one(req: CompareReq) -> Any:
+    """单步真实执行（可选技能约束）。
+
+    用途有二：① 演示页对某一步做单独重跑；② **技能对照实验**——
+    同一步骤分别在有/无技能约束下执行，对比产物，回答「技能到底带来什么差异」。
+    """
+    require_llm()
+    led = llm.current_ledger()
+    with llm.ledger_scope(led):
+        sk = lib().get(req.skill) if req.skill else None
+        step = req.step or {"action": req.task}
+        slug = task_slug(f"{req.task}|{step.get('action', '')}|{req.skill or 'bare'}")
+        result = execute_step(
+            req.task, step, sk,
+            config.OUT_DIR / "demo_artifacts" / slug / "run",
+            max_fix=2, timeout=75)
+        result["slug"] = slug
+        result["with_skill"] = bool(req.skill)
+        # 落盘产物供前端预览
+        art_dir = config.OUT_DIR / "demo_artifacts" / slug
+        result["files"] = collect_execution_artifacts(result, art_dir, prefix="step")
+        try:
+            save_manifest = [{"name": f["name"], "kind": f["kind"], "bytes": f["bytes"], "slug": slug}
+                             for f in result["files"]]
+            result["artifacts_manifest"] = save_manifest
+        except Exception:
+            result["artifacts_manifest"] = []
+    result["cost_yuan"] = round(led.cost_yuan, 5)
+    return result
+
+
 @app.get("/api/skill/{name}/raw")
 def skill_raw(name: str) -> Any:
     """返回技能的 SKILL.md 原文（供演示页「查看生成的技能全文」）。"""

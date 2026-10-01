@@ -584,6 +584,43 @@ function renderStage4(d) {
     </div><div style="margin-top:6px;color:var(--ok)">下次遇到相似任务，它会被检索并优先推荐——闭环合拢。</div>`;
 }
 
+let LAST_EXEC = null;   // {task, step, skill, metrics} 供「无技能对照」复用
+
+async function runCompare(btn) {
+  if (!LAST_EXEC) return;
+  btn.disabled = true; const old = btn.textContent;
+  btn.textContent = "对照运行中（无技能约束，约 30 秒）…";
+  const box = document.getElementById("cmpbox");
+  try {
+    const r = await jget2(API + "/api/execute_one",
+      { task: LAST_EXEC.task, step: LAST_EXEC.step, skill: null }, 300000);
+    const g = LAST_EXEC.metrics;
+    const row = (k, a, b, better) => {
+      const hi = better === "a" ? "var(--ok)" : better === "b" ? "var(--bad)" : "inherit";
+      return `<tr><td>${k}</td><td style="color:${better === "a" ? "var(--ok)" : "inherit"};font-weight:600">${a}</td><td style="color:${better === "b" ? "var(--ok)" : "inherit"}">${b}</td></tr>`;
+    };
+    const b = {
+      code: (r.code || "").length, out: (r.stdout || "").length,
+      files: (r.artifacts || []).length, vf: "无验收标准",
+      fix: r.fixed ? "触发修复 " + r.n_attempts + " 次" : "一次通过",
+    };
+    box.innerHTML = `<div class="reveal">
+      <div class="klabel" style="margin-top:12px">技能对照实验 · 同一步骤、同一模型，唯一变量是「有无技能约束」</div>
+      <table class="cmp">
+        <tr><th>指标</th><th style="width:34%">有技能（${esc(LAST_EXEC.skill || "")}）</th><th style="width:34%">无技能（裸模型）</th></tr>
+        ${row("生成代码规模", g.code + " 字", b.code + " 字", g.code > b.code ? "a" : "b")}
+        ${row("运行输出信息量", g.out + " 字", b.out + " 字", g.out > b.out ? "a" : "b")}
+        ${row("落盘真实产物", g.files + " 个", b.files + " 个", g.files > b.files ? "a" : "b")}
+        ${row("技能验收", g.vf, b.vf, "a")}
+        ${row("修复情况", g.fix, b.fix, "")}
+      </table>
+      <div style="font-size:12px;color:var(--ok);margin-top:6px">差异来源：技能契约把「该怎么做（steps）」「别踩什么坑（pitfalls）」「怎么算做完（verification）」一起给了模型——这正是技能区别于提示词的地方。</div>
+    </div>`;
+  } catch (e) {
+    box.innerHTML = `<div style="font-size:12px;color:var(--bad);margin-top:8px">对照运行失败：${esc(e.message || e)}</div>`;
+  } finally { btn.disabled = false; btn.textContent = old; }
+}
+
 function renderSandbox(d, slug) {
   if (!d || (!d.attempts || !d.attempts.length)) {
     return `<div style="font-size:12.5px;color:var(--ink2)">本方案未包含适合自动化执行的分析步骤（通常是文献/写作类任务），已跳过沙箱执行。</div>`;
@@ -625,7 +662,8 @@ function renderSandbox(d, slug) {
       <span style="color:#8a97a4">｜执行方式：生成代码 → 沙箱真实运行 → ${d.fixed ? "失败修复重试 → " : ""}技能验收</span>
     </div>
     <div>${trail}</div>${fixNote}${codeBlock}${outBlock}${imgBlock}${otherBlock}${vfBlock}
-    ${ok ? "" : `<div style="margin-top:8px;font-size:12px;color:var(--bad)">本次沙箱执行未成功（已尝试 ${d.n_attempts} 次）：${esc((d.attempts[d.attempts.length - 1] || {}).stderr || "")}</div>`}`;
+    ${ok ? "" : `<div style="margin-top:8px;font-size:12px;color:var(--bad)">本次沙箱执行未成功（已尝试 ${d.n_attempts} 次）：${esc((d.attempts[d.attempts.length - 1] || {}).stderr || "")}</div>`}
+    ${ok && d.skill ? `<div style="margin-top:10px"><button class="abtn solid" onclick="runCompare(this)">跑一次「无技能」对照，看技能带来什么差异</button></div><div id="cmpbox"></div>` : ""}`;
 }
 
 function renderArtifacts(d) {
@@ -717,7 +755,22 @@ async function runDemo() {
     inject(4, renderStage3(stages[3].detail, CUR_GOLD)); setStage(bot, 4, "done");
     await tick(480);
     setStage(bot, 5, "running"); await tick(700);
-    inject(5, renderSandbox(stages[4] && stages[4].detail, r.slug)); setStage(bot, 5, "done");
+    const sbDet = stages[4] && stages[4].detail;
+    if (sbDet) {
+      const planSteps = ((stages[3] || {}).detail || {}).plan || {};
+      LAST_EXEC = {
+        task: q,
+        step: (planSteps.steps || [])[sbDet.step_index] || { action: sbDet.action },
+        skill: sbDet.skill,
+        metrics: {
+          code: (sbDet.code || "").length, out: (sbDet.stdout || "").length,
+          files: (sbDet.artifacts || []).length,
+          vf: sbDet.verification_total ? `${sbDet.verification_passed}/${sbDet.verification_total} 逐条带证据` : "无清单",
+          fix: sbDet.fixed ? "触发修复 " + sbDet.n_attempts + " 次" : "一次通过",
+        },
+      };
+    }
+    inject(5, renderSandbox(sbDet, r.slug)); setStage(bot, 5, "done");
     await tick(480);
     setStage(bot, 6, "running"); await tick(560);
     inject(6, renderFeedback(stages[5].detail)); setStage(bot, 6, "done");
