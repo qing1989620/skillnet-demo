@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<title>研究执行方案 · mathorcup大数据竞赛</title>
+<style>
+ :root { --ink:#22303e; --dim:#64748a; --line:#dfe6ec; --brand:#1a3a5c; --ok:#2e7d4f; }
+ * { box-sizing:border-box; margin:0; padding:0; }
+ body { font-family:"Microsoft YaHei","PingFang SC",sans-serif; color:var(--ink);
+        background:#fbfaf8; line-height:1.75; padding:34px 22px; }
+ .wrap { max-width:820px; margin:0 auto; background:#fff; border:1px solid var(--line); padding:32px 36px; }
+ h1 { font-size:21px; color:var(--brand); margin-bottom:6px; line-height:1.4; }
+ .lead { color:var(--dim); font-size:12.5px; padding-bottom:14px; border-bottom:2px solid var(--brand); margin-bottom:20px; }
+ h2 { font-size:15px; color:var(--brand); margin:24px 0 10px; padding-bottom:5px; border-bottom:1px solid var(--line); }
+ .approach { background:#f2f6fa; border-left:3px solid var(--brand); padding:12px 15px; font-size:13.5px; }
+ .step { border:1px solid var(--line); border-left:3px solid #24557a; padding:12px 15px; margin-bottom:10px; }
+ .sh { display:flex; gap:9px; align-items:baseline; }
+ .sn { color:#24557a; font-weight:800; }
+ .sa { font-weight:700; font-size:13.5px; }
+ .k { color:var(--dim); font-size:11.5px; margin-top:6px; }
+ .v { font-size:12.5px; }
+ .chk { color:var(--ok); font-size:12px; margin-top:4px; }
+ ul { margin-left:18px; font-size:12.5px; }
+ code { background:#eef1f4; padding:1px 5px; border-radius:3px; font-size:12px; }
+ .row { display:grid; grid-template-columns:150px 1fr 46px; gap:10px; align-items:center; font-size:12.5px; margin:3px 0; }
+ .bar { height:8px; background:#edf1f4; } .bar i { display:block; height:100%; background:#24557a; } .bar.obj i { background:var(--ok); }
+ .meta { color:var(--dim); font-size:12px; }
+ .box { border:1px solid var(--line); background:#f7f9fb; padding:11px 15px; font-size:12.5px; margin-top:10px; }
+ footer { margin-top:26px; padding-top:12px; border-top:1px solid var(--line); color:var(--dim); font-size:11.5px; }
+</style></head><body><div class="wrap">
+ <h1>研究执行方案</h1>
+ <div class="lead">
+   任务：mathorcup大数据竞赛<br>
+   生成方式：SkillNet-S1 技能运维层（技能驱动执行）　|　任务指纹 <code>ea6887f2</code><br>
+   加载技能：<code>data-cleaning</code>、<code>eda-profiling</code>、<code>tabular-ml-baseline</code>、<code>statistical-testing</code>、<code>scientific-visualization</code>
+   ｜技能采纳率 100%
+ </div>
+ <h2>研究思路</h2>
+ <div class="approach">针对 MathorCup 大数据竞赛，先锁定赛题给定的预测/评价目标与官方评价指标，按「数据清洗→EDA→基线建模→统计检验与误差归因→出版级可视化与报告」的链路推进：清洗阶段保留审计轨迹并防止泄漏，EDA 阶段确定候选特征与分组可比性，建模阶段用固定划分与随机种子建立可复现强基线，统计阶段对关键结论做效应量与多重比较校正，最后产出可复现脚本、矢量图与结论报告。</div>
+ <h2>执行步骤（5 步）</h2>
+ 
+    <div class="step">
+      <div class="sh"><span class="sn">S1</span><span class="sa">读取官方原始数据（train/test 或全量），做结构与类型探查、主键唯一性校验、缺失模式标记、按业务规则识别异常值，并统一单位与字段口径，输出干净数据集与清洗审计日志。</span></div>
+      <div class="k">调用技能 <code>data-cleaning</code></div>
+      <div class="k">关键参数</div><ul><li>主键唯一性阈值：重复率必须为 0，否则回溯数据来源</li><li>缺失率分层阈值：&gt;50% 的字段标记为高风险并单独决策，5%-50% 做缺失指示变量，&lt;5% 按类型填补</li><li>异常值判定：优先用业务规则（如年龄&lt;0、金额为负、时间戳越界），统计阈值仅作辅助（IQR 3 倍或 |z|&gt;4）</li><li>填补策略：数值型用中位数、类别型用众数，并新增 is_missing 指示列，禁止对非随机缺失做均值填补</li></ul>
+      <div class="k">预期产出</div><div class="v">clean_train.csv / clean_test.csv、cleaning_audit_log.csv（每步原因、影响行数、前后分布）、data_dictionary.md（字段口径与单位）</div>
+      <div class="chk">校验：清洗后主键唯一；审计日志可逐步复现；关键字段清洗前后分布变化有文字解释；缺失指示列与填补列成对出现</div>
+    </div>
+    <div class="step">
+      <div class="sh"><span class="sn">S2</span><span class="sa">对清洗后数据做单变量分布与缺失率排行、按关键分组变量做组间基线对比、计算相关矩阵并标注高共线性特征对、检查目标变量分布与类别不平衡程度，输出候选特征清单与风险项。</span></div>
+      <div class="k">调用技能 <code>eda-profiling</code></div>
+      <div class="k">关键参数</div><ul><li>共线性阈值：|Pearson r|&gt;0.85 或 VIF&gt;10 的特征对标记为候选剔除</li><li>类别不平衡判定：少数类占比&lt;10% 时启用分层划分与类别权重</li><li>分组对比：每组样本量&lt;30 的分组只做描述性报告，不做推断</li><li>相关性方法：连续-连续用 Pearson，序数/非正态用 Spearman，类别-类别用 Cramér&#x27;s V</li></ul>
+      <div class="k">预期产出</div><div class="v">EDA 报告（分布图组、相关热力图、分组对比表）、candidate_features.csv、risk_items.md</div>
+      <div class="chk">校验：分布图覆盖全部关键变量；共线性项已标注并给出保留/剔除建议；每个风险项有具体处理动作；分组样本量差异已显式报告</div>
+    </div>
+    <div class="step">
+      <div class="sh"><span class="sn">S3</span><span class="sa">按赛题评价指标建立可解释强基线：先跑线性/逻辑回归作为不可再简化基线，再跑 LightGBM/XGBoost，做特征编码与缺失指示变量，用固定划分与固定随机种子保证可比，并做误差分布与子群误差分析。</span></div>
+      <div class="k">调用技能 <code>tabular-ml-baseline</code></div>
+      <div class="k">关键参数</div><ul><li>划分方式：按赛题要求（时序题用时间切分，非时序用 5 折分层交叉验证），random_state=42</li><li>标准化：仅在训练折内 fit，再 transform 验证/测试折，防止泄漏</li><li>树模型参数起点：n_estimators=500、learning_rate=0.05、num_leaves=31、early_stopping_rounds=50</li><li>评价指标：严格对齐赛题官方指标（如 RMSE/MAE/AUC/F1），并同时报告子群指标</li></ul>
+      <div class="k">预期产出</div><div class="v">baseline_model.pkl、model_comparison.csv（线性 vs 树模型）、feature_importance.csv、error_analysis.md</div>
+      <div class="chk">校验：划分与随机种子固定且脚本可复现；简单模型能复现基线数值；子群性能差异已报告；测试集未参与任何调参</div>
+    </div>
+    <div class="step">
+      <div class="sh"><span class="sn">S4</span><span class="sa">对关键结论（如特征组间差异、模型 A/B 对比、分组指标差异）做统计检验，报告效应量与置信区间，并对多重比较做 FDR 校正。</span></div>
+      <div class="k">调用技能 <code>statistical-testing</code></div>
+      <div class="k">关键参数</div><ul><li>显著性水平：α=0.05，双尾</li><li>正态性检验：Shapiro-Wilk（n&lt;50）或 Kolmogorov-Smirnov（n≥50），不满足则用 Mann-Whitney U / Wilcoxon</li><li>效应量：连续用 Cohen&#x27;s d，类别用 Cramér&#x27;s V 或 odds ratio</li><li>多重比较：Benjamini-Hochberg FDR，q&lt;0.05</li></ul>
+      <div class="k">预期产出</div><div class="v">statistical_results.csv（检验统计量、自由度、p 值、效应量、95% CI）、methods_paragraph.md</div>
+      <div class="chk">校验：每个检验的前提假设已验证并记录；效应量与置信区间齐备；多重比较已校正；结论表述与效应量方向一致</div>
+    </div>
+    <div class="step">
+      <div class="sh"><span class="sn">S5</span><span class="sa">将 EDA、模型性能与统计检验结果绘制为出版级矢量图，统一配色与字号，显式绘制误差条与样本量，标注显著性水平与检验方法，并保留绘图脚本与图注。</span></div>
+      <div class="k">调用技能 <code>scientific-visualization</code></div>
+      <div class="k">关键参数</div><ul><li>图形选择：分布用箱线/小提琴，趋势用折线+误差带，关系用散点+拟合，模型对比用带误差条的条形图</li><li>导出格式：PDF/SVG 矢量，同时导出 300dpi PNG 供预览</li><li>字号：正文 8-10pt，缩放到单栏宽度仍可读；配色使用色觉障碍友好调色板（如 Okabe-Ito）</li><li>误差条：报告 95% CI 或标准差，并标注 n</li></ul>
+      <div class="k">预期产出</div><div class="v">figures/*.pdf、figures/*.svg、plot_scripts/*.py、figure_captions.md</div>
+      <div class="chk">校验：坐标轴与单位标注完整；误差条与样本量齐备；图为矢量且字号达标；无截断坐标轴或双轴误导</div>
+    </div>
+ <h2>风险与应对</h2>
+ <ul><li>数据泄漏：在划分前做标准化/填补或使用未来信息，导致离线指标虚高——应对：所有预处理封装进 Pipeline，仅在训练折 fit，并用泄漏检查脚本验证</li><li>评价指标与赛题不一致：自选指标与官方评分口径偏离——应对：第一步即锁定官方指标与提交格式，建模与报告全程对齐</li><li>类别不平衡或子群样本过少：整体指标掩盖子群崩溃——应对：分层划分、报告子群指标、必要时启用类别权重或重采样</li><li>多重比较假阳性：大量特征/分组检验未校正——应对：统一使用 BH-FDR 校正，并报告效应量而非仅 p 值</li></ul>
+ <h2>交付物清单</h2>
+ <ul><li>clean_train.csv / clean_test.csv</li><li>cleaning_audit_log.csv 与 data_dictionary.md</li><li>EDA 报告与 candidate_features.csv</li><li>baseline_model.pkl 与 model_comparison.csv</li><li>statistical_results.csv 与 methods_paragraph.md</li><li>figures/*.pdf、figures/*.svg 与绘图脚本</li><li>可复现实验脚本（含固定随机种子）与最终结论报告</li></ul>
+ <h2>落盘代码产物</h2>
+ <ul><li class="meta">本次方案未包含可落盘代码块</li></ul>
+ <h2>评估（主客观分列）</h2>
+ <div class="row"><span>skill_grounding</span><div class="bar"><i style="width:80%"></i></div><b>8.0</b></div><div class="row"><span>executability</span><div class="bar"><i style="width:70%"></i></div><b>7.0</b></div><div class="row"><span>rigor</span><div class="bar"><i style="width:80%"></i></div><b>8.0</b></div><div class="row"><span>scientific_validity</span><div class="bar"><i style="width:80%"></i></div><b>8.0</b></div>
+ <div class="box">盲评均分 <b>7.75/10</b>　|　技能采纳率 <b>100%</b></div>
+ <div class="meta">客观线：无 gold 基准，本次跳过</div>
+ <div class="box">盲评意见：方案覆盖数据清洗、EDA、基线建模、统计检验与可视化全链路，参数阈值、工具名与校验判据具体，并显式处理数据泄漏、多重比较与子群误差等关键陷阱；但未针对MathorCup具体赛题类型（如预测/评价）给出指标锁定与提交格式的落地细节，执行者仍需自行补充赛题适配。</div>
+ <footer>
+   本文件由执行器输出渲染，内容为<b>研究方案与要点</b>（非实验结论）；参数取值与判据需在真实数据上验证后采用。<br>
+   SkillNet-S1 · 产物指纹 <code>c65b6edcee6f</code>
+ </footer>
+</div></body></html>

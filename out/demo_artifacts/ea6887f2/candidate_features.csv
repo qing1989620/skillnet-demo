@@ -1,0 +1,11 @@
+feature,type,missing_rate,iv_or_mi,corr_with_target,high_collinearity_pair,recommendation
+feature_1,numeric,0.021,0.18,0.31,feature_3,保留
+feature_2,numeric,0.064,0.12,0.22,feature_5,保留并加缺失指示
+feature_3,numeric,0.015,0.17,0.29,feature_1,与feature_1二选一
+category_1,category,0.008,0.09,0.14,,保留并做目标编码
+feature_4,numeric,0.412,0.03,0.05,,默认剔除
+feature_5,numeric,0.033,0.11,0.20,feature_2,保留
+feature_6,numeric,0.027,0.21,0.35,feature_7,保留
+feature_7,numeric,0.019,0.20,0.33,feature_6,与feature_6二选一
+
+注：以上数值均为示意值，需真实数据验证。

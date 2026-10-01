@@ -1,0 +1,8 @@
+comparison,test_method,statistic,p_value,effect_size,ci_lower,ci_upper,adjusted_p,fdr_significant
+feature_1组间差异,Mann-Whitney U,1234.5,0.012,0.31,0.08,0.54,0.036,TRUE
+模型A vs 模型B AUC,DeLong test,2.14,0.032,0.12,0.01,0.23,0.048,TRUE
+分组指标差异,卡方检验,5.67,0.017,0.18,0.03,0.33,0.034,TRUE
+feature_2与目标相关,Spearman,0.22,0.041,0.22,0.01,0.43,0.049,TRUE
+子群误差差异,Bootstrap,0.08,0.210,0.05,-0.03,0.13,0.210,FALSE
+
+注：以上统计量、p 值与效应量均为示意值，需真实数据验证；FDR 校正采用 Benjamini-Hochberg，阈值 0.05。

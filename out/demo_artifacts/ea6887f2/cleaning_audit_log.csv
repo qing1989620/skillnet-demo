@@ -1,0 +1,9 @@
+step,field,action,rule,affected_rows,timestamp
+S1,record_id,drop,主键去重保留首次出现,12,2025-01-01T10:00:00Z
+S1,event_time,clip,统一时区为UTC+8,0,2025-01-01T10:01:00Z
+S1,feature_1,flag,IQR 3倍标记异常,37,2025-01-01T10:02:00Z
+S1,feature_2,fill,负值置为缺失后中位数填充,8,2025-01-01T10:03:00Z
+S1,category_1,fill,未知类别归为Unknown,5,2025-01-01T10:04:00Z
+S1,feature_1,fill,缺失率<5%中位数填充,21,2025-01-01T10:05:00Z
+S1,feature_2,flag,缺失率5%-30%保留缺失指示,64,2025-01-01T10:06:00Z
+S1,target,keep,目标变量不参与清洗变换,0,2025-01-01T10:07:00Z

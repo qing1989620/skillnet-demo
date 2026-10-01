@@ -339,7 +339,68 @@
   </div>
 </section>
 
-<!-- ==================== 幕 5 · 工作量 ==================== -->
+<!-- ==================== 幕 5 · 强在哪 ==================== -->
+<section class="wrap" id="s5">
+  <div class="kicker">DIFFERENTIATION · 凭什么说它更好</div>
+  <h2>四种做法放在一起看</h2>
+  <div class="sub">同一个任务、同一个模型，差别只在「技能怎么被用起来」。右侧三张卡是本项目的独有能力，点击可直接跳到真实产物。</div>
+
+  <table class="vs">
+    <tr><th style="width:20%">能力</th><th>裸模型</th><th>提示词塞技能</th><th>通用向量 RAG</th><th style="width:20%">SkillNet（本项目）</th></tr>
+    <tr><td>技能组织方式</td><td class="no">无</td><td class="no">平铺文本</td><td class="no">向量库</td><td class="ours">类型化关系图（90 条边）</td></tr>
+    <tr><td>检索</td><td class="no">无</td><td class="no">无（全靠上下文）</td><td>单路向量</td><td class="ours">三档：关键词 + 语义 + <b>关系图扩展</b></td></tr>
+    <tr><td>是否真的执行</td><td class="no">只输出文本</td><td class="no">只输出文本</td><td class="no">只输出文本</td><td class="ours"><b>沙箱真实运行</b> + 失败修复循环</td></tr>
+    <tr><td>产物验收</td><td class="no">无</td><td class="no">无</td><td class="no">无</td><td class="ours"><b>技能 verification 逐条验收</b>（带证据）</td></tr>
+    <tr><td>选择策略</td><td class="no">无</td><td class="no">无</td><td class="no">无</td><td class="ours"><b>LinUCB + 反馈回流</b>（下次排序会变）</td></tr>
+    <tr><td>技能进化</td><td class="no">无</td><td class="no">手工维护</td><td class="no">手工维护</td><td class="ours"><b>轨迹蒸馏 + 质量准入</b>（库自己长）</td></tr>
+    <tr><td>效果如何证明</td><td class="no">无</td><td class="no">无</td><td class="no">无</td><td class="ours">有/无技能<b>对照实验</b> + dev/heldout 隔离</td></tr>
+  </table>
+
+  <div class="uniq" style="grid-template-columns:repeat(3,1fr)">
+    <div class="uq">
+      <b>唯一：产物级技能验收</b>
+      <span>别的方案到「执行」就结束了。我们把技能里的 verification 变成<b>逐条验收标准</b>，
+      要求验收员引用产物中的具体证据、不得推测——未满足的如实标 FAIL。</span>
+      <div style="margin-top:8px;font-size:11.5px;color:var(--brand2)">实测证据：<code>corr(dose,log10(dose))=0.7081，标注高度共线</code></div>
+    </div>
+    <div class="uq">
+      <b>唯一：检索会沿关系图补漏</b>
+      <span>关键词检索漏掉的技能，沿 <b>90 条类型化关系边</b>补回来。
+      同一份任务实测：BM25 召回 66.7% → Fabric 100%。</span>
+      <div style="margin-top:8px;font-size:11.5px;color:var(--brand2)">演示页第 1 阶段可直接看到「补回了哪几条」</div>
+    </div>
+    <div class="uq">
+      <b>唯一：反馈真的改变下次</b>
+      <span>本次任务的评分写回共享参数 θ，<b>同领域技能的预测随之变化</b>。
+      实测：一次任务后预测值 0 → 0.73，探索奖励同步衰减。</span>
+      <div style="margin-top:8px;font-size:11.5px;color:var(--brand2)">演示页第 6 阶段有「更新前 → 更新后」对比表</div>
+    </div>
+  </div>
+
+  <div class="next" style="border-left:3px solid var(--ok)">
+    <b>实测数字（同任务、同模型、同步骤，只改「技能怎么被用」）：</b>
+    运行输出信息量 裸模型 <b>1285</b> 字 / 提示词塞技能 <b>1510</b> 字 / <b>契约模式 2217 字</b>；
+    产物验收 前两者<b>无标准</b>、契约模式 <b>2/3 条通过且逐条给出证据</b>
+    （如「输出标注剂量与 log10 剂量高度共线」）。失败重试时，前两者只能盲试，
+    契约模式可以对照技能里记录的已知陷阱定位。
+  </div>
+
+  <div class="next" style="border-left:3px solid var(--warn)">
+    <b>哪里不占优（不吹）：</b>产物<b>数量</b>契约模式并非最多（实测 2 个 vs 提示词模式的 3 个）——
+    它的优势在<b>可验证性与约束落地</b>，不在堆数量。另外当前只对方案中的一步做真实执行，
+    全流程分步执行尚未实现；沙箱面向可信代码，不是对抗性隔离。
+  </div>
+
+  <div class="next" style="border-left:3px solid var(--brand)">
+    <b>和 Anthropic 官方 Agent Skills 的关系（诚实说明）：</b>
+    官方标准解决的是「技能怎么打包、怎么被加载」，我们在此基础上补的是
+    <b>技能怎么被选、怎么被执行、产物怎么被验收、库怎么自己变大</b>。
+    我们的技能目录完全遵循 agentskills.io 规范，可直接导出给 Claude Code / Cursor / ADK 使用——
+    <b>不是替代，是补齐技能生命周期的后半段。</b>
+  </div>
+</section>
+
+<!-- ==================== 幕 6 · 工作量 ==================== -->
 <section class="wrap" id="s5">
   <div class="kicker">EVIDENCE OF WORK · 工作量与工程可信度</div>
   <h2>数字都是自己长出来的</h2>
@@ -383,6 +444,7 @@
 </section>
 
 <script>
+const PAGE_VER = "2026-10-02d";   // 改版递增：与服务端不一致时自动强制刷新
 const API = location.port ? location.origin : "http://127.0.0.1:8848";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -397,6 +459,14 @@ let TASKS = [], CUR_GOLD = [], RUN_ID = 0;
 async function boot() {
   try {
     const h = await jget(API + "/api/health", 4000);
+    // 缓存自愈：版本不一致时强制刷新一次（带 cache-bust 参数）
+    if (h.ui_version && h.ui_version !== PAGE_VER && !sessionStorage.getItem("verfix_" + h.ui_version)) {
+      sessionStorage.setItem("verfix_" + h.ui_version, "1");
+      const u = new URL(location.href);
+      u.searchParams.set("v", h.ui_version);
+      location.replace(u.toString());
+      return;
+    }
     $("dot-srv").className = "dot on"; $("srv-txt").textContent = "在线";
     $("dot-key").className = "dot " + (h.api_key_configured ? "on" : "off");
     $("key-txt").textContent = h.api_key_configured ? "已配置（全功能）" : "未配置（离线模式）";
@@ -588,37 +658,43 @@ let LAST_EXEC = null;   // {task, step, skill, metrics} 供「无技能对照」
 
 async function runCompare(btn) {
   if (!LAST_EXEC) return;
-  btn.disabled = true; const old = btn.textContent;
-  btn.textContent = "对照运行中（无技能约束，约 30 秒）…";
+  btn.disabled = true; const oldTxt = btn.textContent;
   const box = document.getElementById("cmpbox");
+  box.innerHTML = '<div style="font-size:12px;color:var(--brand2);margin-top:10px"><span class="spin"></span> 正在跑两种对照：裸模型 · 提示词塞技能（各约 30 秒）…</div>';
+  const call = (mode) => jget2(API + "/api/execute_one",
+    { task: LAST_EXEC.task, step: LAST_EXEC.step, skill: LAST_EXEC.skill, mode }, 300000);
   try {
-    const r = await jget2(API + "/api/execute_one",
-      { task: LAST_EXEC.task, step: LAST_EXEC.step, skill: null }, 300000);
-    const g = LAST_EXEC.metrics;
-    const row = (k, a, b, better) => {
-      const hi = better === "a" ? "var(--ok)" : better === "b" ? "var(--bad)" : "inherit";
-      return `<tr><td>${k}</td><td style="color:${better === "a" ? "var(--ok)" : "inherit"};font-weight:600">${a}</td><td style="color:${better === "b" ? "var(--ok)" : "inherit"}">${b}</td></tr>`;
-    };
-    const b = {
+    const rBare = await call("none");
+    const rPrompt = await call("prompt");
+    const g = LAST_EXEC.metrics, s = LAST_EXEC.skill || "";
+    const m = r => ({
       code: (r.code || "").length, out: (r.stdout || "").length,
-      files: (r.artifacts || []).length, vf: "无验收标准",
-      fix: r.fixed ? "触发修复 " + r.n_attempts + " 次" : "一次通过",
-    };
+      files: (r.artifacts || []).length,
+      vf: r.verification_total ? r.verification_passed + "/" + r.verification_total + " 条带证据" : "无验收标准",
+      ok: r.final_ok ? "成功" : "未成功",
+    });
+    const B = m(rBare), P = m(rPrompt);
+    const cell = (v, best) => `<td style="color:${best ? "var(--ok)" : "inherit"};font-weight:${best ? 700 : 400}">${v}</td>`;
+    const win = (a, b, c) => [a, b, c].map(Number).indexOf(Math.max(a, b, c));
+    const wCode = win(g.code, P.code, B.code), wOut = win(g.out, P.out, B.out), wFile = win(g.files, P.files, B.files);
     box.innerHTML = `<div class="reveal">
-      <div class="klabel" style="margin-top:12px">技能对照实验 · 同一步骤、同一模型，唯一变量是「有无技能约束」</div>
+      <div class="klabel" style="margin-top:12px">三方对照 · 同一任务、同一模型、同一步骤，唯一变量是「技能怎么被用」</div>
       <table class="cmp">
-        <tr><th>指标</th><th style="width:34%">有技能（${esc(LAST_EXEC.skill || "")}）</th><th style="width:34%">无技能（裸模型）</th></tr>
-        ${row("生成代码规模", g.code + " 字", b.code + " 字", g.code > b.code ? "a" : "b")}
-        ${row("运行输出信息量", g.out + " 字", b.out + " 字", g.out > b.out ? "a" : "b")}
-        ${row("落盘真实产物", g.files + " 个", b.files + " 个", g.files > b.files ? "a" : "b")}
-        ${row("技能验收", g.vf, b.vf, "a")}
-        ${row("修复情况", g.fix, b.fix, "")}
+        <tr><th>指标</th><th style="width:22%">裸模型</th><th style="width:22%">提示词塞技能</th><th style="width:26%">SkillNet（契约模式）</th></tr>
+        <tr><td>运行结果</td>${cell(B.ok, false)}${cell(P.ok, false)}${cell(g.ok + "（" + (LAST_EXEC.metrics.fix || "") + "）", true)}</tr>
+        <tr><td>生成代码规模</td>${cell(B.code + " 字", wCode === 2)}${cell(P.code + " 字", wCode === 1)}${cell(g.code + " 字", wCode === 0)}</tr>
+        <tr><td>运行输出信息量</td>${cell(B.out + " 字", wOut === 2)}${cell(P.out + " 字", wOut === 1)}${cell(g.out + " 字", wOut === 0)}</tr>
+        <tr><td>落盘真实产物</td>${cell(B.files + " 个", wFile === 2)}${cell(P.files + " 个", wFile === 1)}${cell(g.files + " 个", wFile === 0)}</tr>
+        <tr><td>产物验收</td>${cell("无", false)}${cell("无", false)}${cell(g.vf, true)}</tr>
+        <tr><td>失败时修复依据</td>${cell("盲试", false)}${cell("盲试", false)}${cell("技能已知陷阱", true)}</tr>
       </table>
-      <div style="font-size:12px;color:var(--ok);margin-top:6px">差异来源：技能契约把「该怎么做（steps）」「别踩什么坑（pitfalls）」「怎么算做完（verification）」一起给了模型——这正是技能区别于提示词的地方。</div>
+      <div style="font-size:12px;color:var(--ok);margin-top:6px">差异全部来自「技能被当成了什么」：背景资料（prompt）只是多了一段文字，
+      而契约模式把它变成<b>执行步骤 + 红线 + 验收标准 + 修复线索</b>——这才是技能资产该有的用法。</div>
+      <div style="font-size:11.5px;color:#8a97a4;margin-top:4px">说明：单次对照是演示性证据，不是统计结论；要做统计判断需多任务多轮次（与实验三同口径）。</div>
     </div>`;
   } catch (e) {
     box.innerHTML = `<div style="font-size:12px;color:var(--bad);margin-top:8px">对照运行失败：${esc(e.message || e)}</div>`;
-  } finally { btn.disabled = false; btn.textContent = old; }
+  } finally { btn.disabled = false; btn.textContent = oldTxt; }
 }
 
 function renderSandbox(d, slug) {
@@ -645,7 +721,7 @@ function renderSandbox(d, slug) {
   const imgs = arts.filter(a => /\.(png|jpg|jpeg|svg)$/i.test(a.name));
   const others = arts.filter(a => !/\.(png|jpg|jpeg|svg)$/i.test(a.name));
   const imgBlock = imgs.length ? `<div style="margin-top:12px"><div class="klabel">真实产物 · 图像（由代码运行生成）</div>${
-      imgs.map(a => `<div style="margin-top:6px"><img src="${API}/api/artifact/${esc(slug)}/${encodeURIComponent(a.name)}" style="max-width:100%;border:1px solid var(--line);border-radius:4px" alt="${esc(a.name)}">
+      imgs.map(a => `<div style="margin-top:6px"><img src="${API}/api/artifact/${esc(slug)}/${encodeURIComponent(a.name)}" onerror="this.insertAdjacentHTML('afterend','<div style=&quot;color:#a8433a;font-size:12px&quot;>图片加载失败：浏览器可能缓存了旧版页面，请按 Ctrl+Shift+R 强制刷新</div>')" style="max-width:100%;border:1px solid var(--line);border-radius:4px" alt="${esc(a.name)}">
         <div style="font-size:11px;color:#8a97a4">${esc(a.name)} · ${(a.bytes / 1024).toFixed(1)} KB · <a class="abtn" style="padding:1px 10px" href="${API}/api/artifact/${esc(slug)}/${encodeURIComponent(a.name)}?download=1">下载</a></div></div>`).join("")}</div>` : "";
   const otherBlock = others.length ? `<div style="margin-top:10px;font-size:12px">落盘数据文件：${others.map(a => `<span class="skl">${esc(a.name)} · ${(a.bytes / 1024).toFixed(1)}KB</span>`).join(" ")}</div>` : "";
 
@@ -663,7 +739,7 @@ function renderSandbox(d, slug) {
     </div>
     <div>${trail}</div>${fixNote}${codeBlock}${outBlock}${imgBlock}${otherBlock}${vfBlock}
     ${ok ? "" : `<div style="margin-top:8px;font-size:12px;color:var(--bad)">本次沙箱执行未成功（已尝试 ${d.n_attempts} 次）：${esc((d.attempts[d.attempts.length - 1] || {}).stderr || "")}</div>`}
-    ${ok && d.skill ? `<div style="margin-top:10px"><button class="abtn solid" onclick="runCompare(this)">跑一次「无技能」对照，看技能带来什么差异</button></div><div id="cmpbox"></div>` : ""}`;
+    ${ok && d.skill ? `<div style="margin-top:10px"><button class="abtn solid" onclick="runCompare(this)">跑三方对照：裸模型 / 提示词塞技能 / SkillNet</button></div><div id="cmpbox"></div>` : ""}`;
 }
 
 function renderArtifacts(d) {

@@ -154,6 +154,20 @@ def require_llm() -> None:
 # ======================================================================
 # 基础资源
 # ======================================================================
+UI_VERSION_FILE = WEB_DIR / "briefing.html"
+
+
+def _ui_version() -> str:
+    """演示页版本戳：浏览器据此自愈缓存（改版后自动强制刷新一次）。"""
+    try:
+        txt = UI_VERSION_FILE.read_text(encoding="utf-8", errors="replace")
+        import re as _re
+        m = _re.search(r'const PAGE_VER = "([^"]+)"', txt)
+        return m.group(1) if m else "0"
+    except OSError:
+        return "0"
+
+
 @app.get("/api/health")
 def health() -> dict[str, Any]:
     """健康检查。除了存活，也暴露「是否需要密钥」「是否有未落盘的改动」这类运行状态。"""
@@ -165,6 +179,7 @@ def health() -> dict[str, Any]:
         "model": config.MODEL,
         "api_key_configured": bool(config.API_KEY),
         "token_required": bool(ACCESS_TOKEN),
+        "ui_version": _ui_version(),
         "library_path": str(config.LIBRARY_FILE),
     }
 
@@ -722,6 +737,7 @@ class CompareReq(BaseModel):
     task: str = Field(min_length=1, max_length=6000)
     step: dict[str, Any] = Field(default_factory=dict)
     skill: str | None = None
+    mode: str = Field(default="contract", pattern="^(contract|prompt|none)$")
 
 
 @app.post("/api/execute_one", dependencies=[Depends(require_token)])
@@ -734,13 +750,13 @@ def execute_one(req: CompareReq) -> Any:
     require_llm()
     led = llm.current_ledger()
     with llm.ledger_scope(led):
-        sk = lib().get(req.skill) if req.skill else None
+        sk = lib().get(req.skill) if (req.skill and req.mode != "none") else None
         step = req.step or {"action": req.task}
-        slug = task_slug(f"{req.task}|{step.get('action', '')}|{req.skill or 'bare'}")
+        slug = task_slug(f"{req.task}|{step.get('action', '')}|{req.skill or 'bare'}|{req.mode}")
         result = execute_step(
             req.task, step, sk,
             config.OUT_DIR / "demo_artifacts" / slug / "run",
-            max_fix=2, timeout=75)
+            max_fix=2, timeout=75, mode=req.mode)
         result["slug"] = slug
         result["with_skill"] = bool(req.skill)
         # 落盘产物供前端预览

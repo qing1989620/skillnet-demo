@@ -34,10 +34,21 @@ def config_code_tokens() -> int:
     return CODE_MAX_TOKENS
 
 
-def _skill_brief(skill: Any) -> str:
-    """把技能契约整理成执行约束（不是背景介绍，而是「必须遵守什么」）。"""
+def _skill_brief(skill: Any, mode: str = "contract") -> str:
+    """把技能组织进执行提示词。
+
+    mode 决定技能的「用法」，这是本项目的核心差异点：
+      contract —— 契约约束：steps 当步骤、pitfalls 当红线、verification 当验收标准，
+                  失败修复时也会带上 pitfalls（SkillNet 的做法）
+      prompt   —— 背景资料：只把能力与步骤当参考塞进提示词，无陷阱约束、无验收
+                  （「提示词里塞技能」的常见做法）
+      none     —— 不给技能（裸模型）
+    """
     if skill is None:
         return "（本步无对应技能，按通用最佳实践执行）"
+    if mode == "prompt":
+        return (f"参考资料（可选采纳）：{skill.name} —— {skill.capability}\n"
+                + "\n".join(f"  - {s}" for s in (skill.steps or [])[:6]))
     lines = [f"技能：{skill.name}（{skill.domain}）", f"能力：{skill.capability}"]
     if skill.steps:
         lines.append("标准步骤（按此执行，可精简）：")
@@ -52,7 +63,8 @@ def _skill_brief(skill: Any) -> str:
 
 
 def _gen_code_prompt(task: str, step: dict[str, Any], skill: Any,
-                     stack: dict[str, str], prev_output: str = "") -> str:
+                     stack: dict[str, str], prev_output: str = "",
+                     mode: str = "contract") -> str:
     libs = "、".join(f"{k} {v}" for k, v in stack.items()) or "仅标准库"
     action = step.get("action") or step.get("title") or ""
     params = step.get("key_params") or []
@@ -65,7 +77,7 @@ def _gen_code_prompt(task: str, step: dict[str, Any], skill: Any,
 关键参数：{json.dumps(params, ensure_ascii=False)}
 预期产出：{expect}
 
-{_skill_brief(skill)}
+{_skill_brief(skill, mode)}
 
 执行环境（**只能使用这些库**，不要 import 其他第三方包）：
 {libs}
@@ -83,9 +95,10 @@ def _gen_code_prompt(task: str, step: dict[str, Any], skill: Any,
 {sandbox.MATPLOTLIB_CJK_HINT}"""
 
 
-def _fix_prompt(code: str, err: str, skill: Any, attempt: int) -> str:
+def _fix_prompt(code: str, err: str, skill: Any, attempt: int,
+                mode: str = "contract") -> str:
     traps = ""
-    if skill is not None and skill.pitfalls:
+    if mode == "contract" and skill is not None and skill.pitfalls:
         traps = ("\n对照该技能记录的已知陷阱逐条排查（这是技能最有价值的部分）：\n"
                  + "\n".join(f"  - {p}" for p in skill.pitfalls[:5]))
     return f"""下面这段 Python 代码运行失败了（第 {attempt} 次尝试）。请修复它。
@@ -189,7 +202,7 @@ def _verify_with_skill(skill: Any, task: str, action: str, code: str,
 
 def execute_step(task: str, step: dict[str, Any], skill: Any,
                  workdir: pathlib.Path, max_fix: int = 2,
-                 timeout: int = 90) -> dict[str, Any]:
+                 timeout: int = 90, mode: str = "contract") -> dict[str, Any]:
     """执行单个步骤：生成代码 → 沙箱运行 → 失败修复重试 → 技能验收。
 
     返回结构化结果，供 API/前端展示（含每次尝试的真实输出，失败也如实返回）。
@@ -203,13 +216,13 @@ def execute_step(task: str, step: dict[str, Any], skill: Any,
         if i == 0:
             raw = llm.chat(
                 [{"role": "system", "content": "你是严谨的科研工程师，只输出可运行代码。"},
-                 {"role": "user", "content": _gen_code_prompt(task, step, skill, stack)}],
+                 {"role": "user", "content": _gen_code_prompt(task, step, skill, stack, mode=mode)}],
                 role="executor", temperature=0.2, max_tokens=config_code_tokens())
             code = _extract_code(raw)
         else:
             raw = llm.chat(
                 [{"role": "system", "content": "你是严谨的科研工程师，只输出修复后的完整代码。"},
-                 {"role": "user", "content": _fix_prompt(code, attempts[-1]["stderr"], skill, i)}],
+                 {"role": "user", "content": _fix_prompt(code, attempts[-1]["stderr"], skill, i, mode)}],
                 role="executor", temperature=0.1, max_tokens=config_code_tokens())
             code = _extract_code(raw)
 
@@ -244,8 +257,9 @@ def execute_step(task: str, step: dict[str, Any], skill: Any,
     (workdir / "final_code.py").write_text(code, encoding="utf-8")
 
     files = [a["name"] for a in result.get("artifacts", [])]
-    checks = _verify_with_skill(skill, task, step.get("action", ""), code,
-                                result.get("stdout", ""), files) if result.get("ok") else []
+    checks = (_verify_with_skill(skill, task, step.get("action", ""), code,
+                                 result.get("stdout", ""), files)
+              if (result.get("ok") and mode == "contract") else [])
     passed = sum(1 for c in checks if c["passed"])
 
     return {
@@ -262,6 +276,7 @@ def execute_step(task: str, step: dict[str, Any], skill: Any,
         "verification_passed": passed,
         "verification_total": len(checks),
         "workdir": str(workdir),
+        "mode": mode,
     }
 
 
