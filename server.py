@@ -426,6 +426,10 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
             "selected": res.selected,
             "recall": round(gold_overlap(res.selected, req.gold), 4) if req.gold else None,
             "trace": res.trace,
+            "confidence": res.confidence,
+            "raw_bm25_top": res.raw_bm25_top,
+            "decision": res.decision,
+            "decision_reason": res.decision_reason,
         }
     stages.append({"stage": "检索对比", "detail": retrieval})
 

@@ -995,3 +995,370 @@ S(
     ["光变曲线", "周期搜索", "凌星", "天文"],
     [("depend_on", "signal-processing")],
 )
+
+
+# ===== BEGIN member-import skills (Nexus) =====
+# 由 tools/import_member_skills.py 生成，请勿手工编辑本块。
+# 来源：开发组成员项目（Nexus）的 skills/ 目录，共 24 个技能。
+
+S(
+    "docx", "文档工程",
+    "Word 文档处理：Word 文档处理：技能详情见同名 SKILL.md 原文",
+    "依据原文 SKILL.md 提供Word 文档处理能力（member-import 导入，契约字段由原文提炼）",
+    ["待处理的 .docx/.dotx 文件或文档需求说明", "正文内容与格式要求"],
+    ["处理完成的 Word 文档", "渲染校验截图"],
+    ["用户需要创建、读取、编辑 Word 文档（.docx/.dotx），或提到 Word 文档/模板相关任务时触发", "用户提到 any mention of 'Word doc 时", "用户提到 word document 时", "用户提到 .docx 时"],
+    ["Page size defaults to A4. For US Letter set page: { size: { width: 12240, height: 15840 } } (DXA; 1440 = 1″)", "Landscape: pass portrait dimensions and orientation: PageOrientation.LANDSCAPE — docx-js swaps width/height internally", "Tables need dual widths: set columnWidths on the table AND width on every cell, both in WidthType.DXA (PERCENTAGE breaks in Google Docs). Column widths must sum to the table width", "Table shading: use ShadingType.CLEAR, never SOLID (renders black)", "Lists: never insert • literally; use a numbering config with LevelFormat.BULLET"],
+    ["Page size defaults to A4. For US Letter set page: { size: { width: 12240, height: 15840 } } (DXA; 1440 = 1″)", "Landscape: pass portrait dimensions and orientation: PageOrientation.LANDSCAPE — docx-js swaps width/height internally", "Table shading: use ShadingType.CLEAR, never SOLID (renders black)", "Lists: never insert • literally; use a numbering config with LevelFormat.BULLET", "ImageRun requires type: ('png', 'jpg', …)", "PageBreak must be inside a Paragraph"],
+    ["After writing a .docx, render it and look at it:", "python scripts/office/soffice.py --headless --convert-to pdf output.docx"],
+    ["Word", "docx", "文档生成", "docx-js", "版式"],
+    [("compose_with", "scientific-writing"), ("similar_to", "pdf")],
+    {"safety": "Good", "completeness": "Average", "executability": "Good", "maintainability": "Good", "cost_awareness": "Average", "member_import": "true"},
+)
+
+S(
+    "pdf", "文档工程",
+    "PDF 文档处理：PDF 文档处理：技能详情见同名 SKILL.md 原文",
+    "依据原文 SKILL.md 提供PDF 文档处理能力（member-import 导入，契约字段由原文提炼）",
+    ["PDF 文件或生成 PDF 的内容源", "页面/提取/合并等操作需求"],
+    ["处理后的 PDF 文件", "文本或表格提取结果"],
+    ["用户需要对 PDF 做任何操作——读取提取、合并拆分、生成、表单处理等触发"],
+    ["For advanced pypdfium2 usage, see REFERENCE.md", "For JavaScript libraries (pdf-lib), see REFERENCE.md", "If you need to fill out a PDF form, follow the instructions in FORMS.md", "For troubleshooting guides, see REFERENCE.md"],
+    ["导入时未从原文提取到显式陷阱条目，执行前请复核原文正文"],
+    ["产出物已按原文「验证」章节要求自查（原文未提供结构化清单）"],
+    ["PDF", "文本提取", "表单", "文档转换"],
+    [("compose_with", "literature-review")],
+    {"safety": "Good", "completeness": "Good", "executability": "Average", "maintainability": "Basic", "cost_awareness": "Average", "member_import": "true"},
+)
+
+S(
+    "pptx", "文档工程",
+    "演示文稿制作：Use this skill any time a .pptx or .potx file is involved in any way — as input, output, or both. This includes: creating slide decks, pitch decks, or presentations; read",
+    "依据原文 SKILL.md 提供演示文稿制作能力（member-import 导入，契约字段由原文提炼）",
+    ["演示主题与素材内容", "可选 .pptx 模板"],
+    ["生成的 .pptx 演示文稿", "版式校验结果"],
+    ["涉及 .pptx/.potx 演示文稿的创建、解析、编辑或文本提取时触发"],
+    ["Set pres.layout before adding slides. The default canvas is LAYOUT16x9 = 10' × 5.625', not 13.3' wide. Coordinates past the edge are written, not clamped — the shape just isn't on the slide. (LAYOUTWIDE is 13.3' × 7.5'.)", "Hex colors: never #, never 8 digits. color: 'FF0000'. Both '#FF0000' and alpha baked into the hex ('00000020') corrupt the file. For translucency: transparency: 0-100 on fills and images, opacity: 0.0-1.0 on shadows — each is silently ignored on the other", "pptxgenjs mutates option objects in place (converts values to EMU on first use). Never share one shadow/options object across two add calls — build a fresh object each time", "Shadow offset must be ≥ 0 — a negative offset corrupts the file. To cast a shadow upward, use angle: 270 with a positive offset", "letterSpacing is silently ignored — the real option is charSpacing"],
+    ["Shadow offset must be ≥ 0 — a negative offset corrupts the file. To cast a shadow upward, use angle: 270 with a positive offset", "letterSpacing is silently ignored — the real option is charSpacing", "One new pptxgen() per output file — never reuse an instance", "rectRadius only works on ROUNDEDRECTANGLE, not RECTANGLE", "Gradient fills aren't supported — use a gradient image as the background instead", "Text boxes have built-in internal padding — set margin: 0 whenever text must align with a shape, line, or icon at the same x"],
+    ["产出物已按原文「验证」章节要求自查（原文未提供结构化清单）"],
+    ["PPT", "pptxgenjs", "演示", "模板"],
+    [("compose_with", "poster-slides"), ("similar_to", "docx")],
+    {"safety": "Good", "completeness": "Good", "executability": "Good", "maintainability": "Good", "cost_awareness": "Average", "member_import": "true"},
+)
+
+S(
+    "xlsx", "文档工程",
+    "Excel 表格处理：Use this skill any time a spreadsheet file is the primary input or output. This means any task where the user wants to: open, read, edit, or fix an existing .xlsx, .xlsm,",
+    "依据原文 SKILL.md 提供Excel 表格处理能力（member-import 导入，契约字段由原文提炼）",
+    ["表格数据或 .xlsx 文件", "公式/图表/格式要求"],
+    ["生成的表格文件", "公式重算校验结果"],
+    ["以电子表格为主要输入或输出的任务——打开/读取/编辑 .xlsx/.csv、写公式、格式化、图表分析等触发"],
+    ["Professional font (Arial, Times New Roman) throughout, unless the user says otherwise", "Zero formula errors. Never ship while recalc.py reports errorsfound. If you think an error predates you, prove it: load the original with dataonly=True and look at that cell. An error you introduced looks exactly like one you inherited", "Use formulas, never hardcoded results. Write sheet['B10'] = '=SUM(B2:B9)', not the Python-computed total. The sheet must recalculate when its inputs change", "Follow the user's spec literally. Exact tab names, exact column headers, and the formula they spelled out. A redesign that computes something else fails, however elegant", "Document every assumption and hardcoded number where the reader will see it — a cell comment, or an adjacent cell at a table's end. Cite a real source when one exists (Source: Company 10-K, FY2024, Page 45, Revenue Note, [SEC EDGAR URL]); when the number came from the user, say so plainly"],
+    ["openpyxl writes formulas as strings with no cached values. Until you recalculate, every", "formula cell reads back as None to anything reading cached values — pandas,", "loadworkbook(dataonly=True), and most previewers", "python scripts/recalc.py output.xlsx [timeoutseconds] # default 30", "LibreOffice computes every formula, the file is rewritten in place, and you get JSON:", "status (success | errorsfound), totalformulas, totalerrors, and an"],
+    ["产出物已按原文「验证」章节要求自查（原文未提供结构化清单）"],
+    ["Excel", "xlsx", "公式", "数据表"],
+    [("compose_with", "eda-profiling"), ("similar_to", "docx")],
+    {"safety": "Good", "completeness": "Average", "executability": "Good", "maintainability": "Good", "cost_awareness": "Average", "member_import": "true"},
+)
+
+S(
+    "doc-coauthoring", "文档工程",
+    "文档协同创作：Guide users through a structured workflow for co-authoring documentation. Use when user wants to write documentation, proposals, technical specs, decision docs, or simila",
+    "依据原文 SKILL.md 提供文档协同创作能力（member-import 导入，契约字段由原文提炼）",
+    ["文档目标与读者", "已有素材与上下文"],
+    ["分阶段打磨后的文档", "结构与措辞修订记录"],
+    ["用户需要撰写文档、提案、技术规格或决策文档等结构化内容并希望协同打磨时触发"],
+    ["User mentions writing documentation: 'write a doc', 'draft a proposal', 'create a spec', 'write up'", "User mentions specific doc types: 'PRD', 'design doc', 'decision doc', 'RFC'", "User seems to be starting a substantial writing task", "Context Gathering: User provides all relevant context while Claude asks clarifying questions", "Refinement & Structure: Iteratively build each section through brainstorming and editing", "Reader Testing: Test the doc with a fresh Claude (no context) to catch blind spots before others read it"],
+    ["导入时未从原文提取到显式陷阱条目，执行前请复核原文正文"],
+    ["Open a fresh Claude conversation: https://claude.ai", "Paste or share the document content (if using a shared doc platform with connectors enabled, provide the link)", "Ask Reader Claude the generated questions", "The answer", "Whether anything was ambiguous or unclear"],
+    ["协同写作", "工作流", "审阅", "修订"],
+    [("compose_with", "docx"), ("compose_with", "scientific-writing")],
+    {"safety": "Good", "completeness": "Good", "executability": "Good", "maintainability": "Good", "cost_awareness": "Average", "member_import": "true"},
+)
+
+S(
+    "internal-comms", "文档工程",
+    "内部沟通文案：A set of resources to help me write all kinds of internal communications, using the formats that my company likes to use. Claude should",
+    "依据原文 SKILL.md 提供内部沟通文案能力（member-import 导入，契约字段由原文提炼）",
+    ["沟通场景与受众", "要传达的事实要点"],
+    ["内部通告/邮件/简报等文案"],
+    ["用户要求撰写企业内部沟通文案（公告、通知、周报等）时触发"],
+    ["Identify the communication type from the request", "Load the appropriate guideline file from the examples/ directory:", "examples/3p-updates.md - For Progress/Plans/Problems team updates", "examples/company-newsletter.md - For company-wide newsletters", "examples/faq-answers.md - For answering frequently asked questions", "examples/general-comms.md - For anything else that doesn't explicitly match one of the above"],
+    ["导入时未从原文提取到显式陷阱条目，执行前请复核原文正文"],
+    ["产出物已按原文「验证」章节要求自查（原文未提供结构化清单）"],
+    ["内部沟通", "文案", "通告"],
+    [("similar_to", "doc-coauthoring")],
+    {"safety": "Good", "completeness": "Basic", "executability": "Good", "maintainability": "Basic", "cost_awareness": "Average", "member_import": "true"},
+)
+
+S(
+    "skill-creator", "技能工程",
+    "技能创作工坊：Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit, or optimize an existing sk",
+    "依据原文 SKILL.md 提供技能创作工坊能力（member-import 导入，契约字段由原文提炼）",
+    ["待沉淀的能力描述与使用场景", "可选参考材料"],
+    ["符合规范的 SKILL.md 技能定义", "技能评估与改进建议"],
+    ["用户想从零创建技能、改进现有技能或运行评测检验技能效果时触发"],
+    ["Decide what you want the skill to do and roughly how it should do it", "Write a draft of the skill", "Create a few test prompts and run claude-with-access-to-the-skill on them", "Help the user evaluate the results both qualitatively and quantitatively", "While the runs happen in the background, draft some quantitative evals if there aren't any (if there are some, you can either use as is or modify if you feel something needs to change about them). Then explain them to the user (or if they already existed, explain the ones that already exist)"],
+    ["导入时未从原文提取到显式陷阱条目，执行前请复核原文正文"],
+    ["Skill path: <path-to-skill>", "Task: <eval prompt>", "Input files: <eval files if any, or 'none'>", "Save outputs to: <workspace>/iteration-<N>/eval-<ID>/withskill/outputs/", "Outputs to save: <what the user cares about — e.g., 'the .docx file', 'the final CSV'>"],
+    ["技能创作", "SKILL.md", "规范", "元技能"],
+    [("compose_with", "mcp-builder")],
+    {"safety": "Good", "completeness": "Good", "executability": "Good", "maintainability": "Good", "cost_awareness": "Average", "member_import": "true"},
+)
+
+S(
+    "mcp-builder", "技能工程",
+    "MCP 服务构建器：Guide for creating high-quality MCP (Model Context Protocol) servers that enable LLMs to interact with external services through well-designed tools. Use when building MC",
+    "依据原文 SKILL.md 提供MCP 服务构建器能力（member-import 导入，契约字段由原文提炼）",
+    ["外部服务/API 的能力边界说明", "认证与调用方式"],
+    ["MCP 服务端实现", "工具定义与测试"],
+    ["需要创建高质量 MCP（Model Context Protocol）服务器，让 LLM 对接外部服务时触发"],
+    ["Specification overview and architecture", "Transport mechanisms (streamable HTTP, stdio)", "Tool, resource, and prompt definitions", "MCP Best Practices: [📋 View Best Practices](./reference/mcpbestpractices.md) - Core guidelines", "TypeScript SDK: Use WebFetch to load https://raw.githubusercontent.com/modelcontextprotocol/typescript-sdk/main/README.md", "[⚡ TypeScript Guide](./reference/nodemcpserver.md) - TypeScript patterns and examples"],
+    ["导入时未从原文提取到显式陷阱条目，执行前请复核原文正文"],
+    ["产出物已按原文「验证」章节要求自查（原文未提供结构化清单）"],
+    ["MCP", "工具集成", "服务端"],
+    [("compose_with", "claude-api")],
+    {"safety": "Good", "completeness": "Good", "executability": "Good", "maintainability": "Basic", "cost_awareness": "Average", "member_import": "true"},
+)
+
+S(
+    "claude-api", "技能工程",
+    "Claude 接口参考：|-",
+    "依据原文 SKILL.md 提供Claude 接口参考能力（member-import 导入，契约字段由原文提炼）",
+    ["待接入的模型调用需求"],
+    ["正确的接口调用参数与代码"],
+    ["涉及 Claude API / Anthropic SDK 开发——模型选择、定价、参数、流式、工具调用、缓存等参考查询时触发"],
+    ["The official Anthropic SDK for the project's language (anthropic, @anthropic-ai/sdk, com.anthropic., etc.). This is the default whenever a supported SDK exists for the project", "Raw HTTP (curl, requests, fetch, httpx, etc.) - only when the user explicitly asks for cURL/REST/raw HTTP, the project is a shell/cURL project, or the language has no official SDK", "Look at project files to infer the language:", ".py, requirements.txt, pyproject.toml, setup.py, Pipfile -> Python - read from python/", ".ts, .tsx, package.json, tsconfig.json -> TypeScript - read from typescript/"],
+    ["The {lang}/ files in this skill are authoritative over recalled patterns"],
+    ["产出物已按原文「验证」章节要求自查（原文未提供结构化清单）"],
+    ["API", "模型调用", "参数", "版本漂移"],
+    [("similar_to", "mcp-builder")],
+    {"safety": "Good", "completeness": "Good", "executability": "Good", "maintainability": "Basic", "cost_awareness": "Average", "member_import": "true"},
+)
+
+S(
+    "code-helper", "技能工程",
+    "Python 代码生成助手：帮助编写、解释和优化 Python 代码，覆盖算法、数据结构与常见实用示例",
+    "依据原文 SKILL.md 提供Python 代码生成助手能力（member-import 导入，契约字段由原文提炼）",
+    ["编程需求或待排错代码"],
+    ["可运行代码与解释说明"],
+    ["用户要求写代码、讲代码、排查报错或优化算法时触发（如排序、字符串处理、数据结构、冒泡排序等经典算法）"],
+    ["理解需求与输入输出约定；", "生成带注释的代码；", "给出复杂度分析与测试样例"],
+    ["单次回答总长度控制在 2000 token 以内（系统已强制 maxtokens=2000），宁可精炼不可冗长；", "直接输出结论与核心内容：不写开场白、不复述用户问题、不输出与需求无关的铺垫与总结套话；", "代码类输出：只给干净的核心代码与必要注释，不重复给多种等价实现，不做逐行长篇讲解；", "用户明确要求更完整、更长或更详细的内容时，以用户需求为准——上述默认限制可被用户的显式要求覆盖"],
+    ["产出物已按原文「验证」章节要求自查（原文未提供结构化清单）"],
+    ["Python", "代码生成", "调试"],
+    [("compose_with", "webapp-testing")],
+    {"safety": "Good", "completeness": "Basic", "executability": "Average", "maintainability": "Average", "cost_awareness": "Average", "member_import": "true"},
+)
+
+S(
+    "webapp-testing", "技能工程",
+    "网页应用测试：Toolkit for interacting with and testing local web applications using Playwright. Supports verifying frontend functionality, debugging UI behavior, capturing browser scre",
+    "依据原文 SKILL.md 提供网页应用测试能力（member-import 导入，契约字段由原文提炼）",
+    ["本地 Web 应用地址或代码"],
+    ["浏览器自动化测试结果", "截图与问题清单"],
+    ["需要用 Playwright 与本地 Web 应用交互、验证功能、调试 UI 或截图时触发"],
+    ["scripts/withserver.py - Manages server lifecycle (supports multiple servers)", "Navigate and wait for networkidle", "Take screenshot or inspect DOM", "Identify selectors from rendered state", "Execute actions with discovered selectors"],
+    ["❌ Don't inspect the DOM before waiting for networkidle on dynamic apps", "✅ Do wait for page.waitforloadstate('networkidle') before inspection"],
+    ["产出物已按原文「验证」章节要求自查（原文未提供结构化清单）"],
+    ["Web 测试", "浏览器自动化", "Playwright"],
+    [("compose_with", "web-artifacts-builder")],
+    {"safety": "Good", "completeness": "Average", "executability": "Good", "maintainability": "Average", "cost_awareness": "Average", "member_import": "true"},
+)
+
+S(
+    "web-artifacts-builder", "技能工程",
+    "网页应用构建：Suite of tools for creating elaborate, multi-component claude.ai HTML artifacts using modern frontend web technologies (React, Tailwind CSS, shadcn/ui). Use for complex a",
+    "依据原文 SKILL.md 提供网页应用构建能力（member-import 导入，契约字段由原文提炼）",
+    ["应用需求与交互说明"],
+    ["可运行的前端应用产物"],
+    ["需要构建复杂的多组件网页应用（React/Tailwind/shadcn，含状态管理）时触发"],
+    ["✅ React + TypeScript (via Vite)", "✅ Tailwind CSS 3.4.1 with shadcn/ui theming system", "✅ Path aliases (@/) configured", "✅ 40+ shadcn/ui components pre-installed", "✅ All Radix UI dependencies included", "✅ Parcel configured for bundling (via .parcelrc)"],
+    ["导入时未从原文提取到显式陷阱条目，执行前请复核原文正文"],
+    ["产出物已按原文「验证」章节要求自查（原文未提供结构化清单）"],
+    ["前端", "Web 应用", "组件化"],
+    [("depend_on", "frontend-design")],
+    {"safety": "Good", "completeness": "Average", "executability": "Good", "maintainability": "Basic", "cost_awareness": "Average", "member_import": "true"},
+)
+
+S(
+    "canvas-design", "设计与创意",
+    "视觉海报设计：Create beautiful visual art in .png and .pdf documents using design philosophy. You should use this skill when the user asks to create a poster, piece of art, design, or ",
+    "依据原文 SKILL.md 提供视觉海报设计能力（member-import 导入，契约字段由原文提炼）",
+    ["设计主题与参考意象", "输出尺寸与格式要求"],
+    ["PNG/PDF 视觉成品", "设计说明"],
+    ["用户要求制作海报、视觉艺术作品或其他静态平面设计（.png/.pdf）时触发"],
+    ["Design Philosophy Creation (.md file)", "Express by creating it on a canvas (.pdf file or .png file)", "Form, space, color, composition", "Images, graphics, shapes, patterns", "Minimal text as visual accent"],
+    ["导入时未从原文提取到显式陷阱条目，执行前请复核原文正文"],
+    ["产出物已按原文「验证」章节要求自查（原文未提供结构化清单）"],
+    ["海报", "视觉设计", "排版"],
+    [("compose_with", "scientific-visualization"), ("similar_to", "brand-guidelines")],
+    {"safety": "Good", "completeness": "Good", "executability": "Good", "maintainability": "Basic", "cost_awareness": "Average", "member_import": "true"},
+)
+
+S(
+    "brand-guidelines", "设计与创意",
+    "品牌视觉规范：Applies Anthropic's official brand colors and typography to any sort of artifact that may benefit from having Anthropic's look-and-feel. Use it when brand colors or style",
+    "依据原文 SKILL.md 提供品牌视觉规范能力（member-import 导入，契约字段由原文提炼）",
+    ["待应用的品牌素材与使用场景"],
+    ["符合品牌规范的视觉方案"],
+    ["需要为幻灯片/文档/网页等制品应用 Anthropic 官方品牌配色与排版风格时触发"],
+    ["Dark: #141413 - Primary text and dark backgrounds", "Light: #faf9f5 - Light backgrounds and text on dark", "Mid Gray: #b0aea5 - Secondary elements", "Light Gray: #e8e6dc - Subtle backgrounds", "Orange: #d97757 - Primary accent"],
+    ["导入时未从原文提取到显式陷阱条目，执行前请复核原文正文"],
+    ["产出物已按原文「验证」章节要求自查（原文未提供结构化清单）"],
+    ["品牌", "配色", "字体规范"],
+    [("similar_to", "theme-factory")],
+    {"safety": "Good", "completeness": "Average", "executability": "Good", "maintainability": "Basic", "cost_awareness": "Average", "member_import": "true"},
+)
+
+S(
+    "algorithmic-art", "设计与创意",
+    "算法生成艺术：Creating algorithmic art using p5.js with seeded randomness and interactive parameter exploration. Use this when users request creating art using code, generative art, al",
+    "依据原文 SKILL.md 提供算法生成艺术能力（member-import 导入，契约字段由原文提炼）",
+    ["艺术概念种子", "生成参数与交互要求"],
+    ["p5.js 生成艺术代码与作品"],
+    ["用户要求用代码创作生成艺术、算法艺术、流场图案或交互式参数视觉作品时触发"],
+    ["Interpret the user's intent - What aesthetic is being sought?", "Create an algorithmic philosophy (4-6 paragraphs) describing the computational approach", "Implement it in code - Build the algorithm that expresses this philosophy", "Design appropriate parameters - What should be tunable?", "Build matching UI controls - Sliders/inputs for those parameters", "Anthropic branding (colors, fonts, layout)"],
+    ["导入时未从原文提取到显式陷阱条目，执行前请复核原文正文"],
+    ["产出物已按原文「验证」章节要求自查（原文未提供结构化清单）"],
+    ["生成艺术", "p5.js", "算法美学"],
+    [("similar_to", "canvas-design")],
+    {"safety": "Good", "completeness": "Good", "executability": "Good", "maintainability": "Basic", "cost_awareness": "Average", "member_import": "true"},
+)
+
+S(
+    "frontend-design", "设计与创意",
+    "前端视觉设计：Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that",
+    "依据原文 SKILL.md 提供前端视觉设计能力（member-import 导入，契约字段由原文提炼）",
+    ["产品定位与目标用户", "设计参考"],
+    ["有辨识度的界面设计方案"],
+    ["构建新 UI 或改造现有界面，需要独特有辨识度的视觉设计与排版方向时触发"],
+    ["a near-black background with a single bright acid-green or vermilion accent;", "a broadsheet-style layout with hairline rules, zero border-radius, and dense newspaper-like columns;", "Color: describe the core base palette as 4–6 named hex values", "Type: the typefaces and their roles", "Principles: the high-level guidance for what makes this page unique"],
+    ["导入时未从原文提取到显式陷阱条目，执行前请复核原文正文"],
+    ["产出物已按原文「验证」章节要求自查（原文未提供结构化清单）"],
+    ["界面设计", "视觉规范", "克制美学"],
+    [("similar_to", "canvas-design")],
+    {"safety": "Good", "completeness": "Average", "executability": "Good", "maintainability": "Basic", "cost_awareness": "Average", "member_import": "true"},
+)
+
+S(
+    "theme-factory", "设计与创意",
+    "主题样式工厂：Toolkit for styling artifacts with a theme. These artifacts can be slides, docs, reportings, HTML landing pages, etc. There are 10 pre-set themes with colors/fonts that y",
+    "依据原文 SKILL.md 提供主题样式工厂能力（member-import 导入，契约字段由原文提炼）",
+    ["待套用主题的产物（幻灯片/网页/文档）", "主题偏好"],
+    ["应用主题后的产物", "主题定义文件"],
+    ["需要给幻灯片/文档/报告/网页等制品套用预设主题（10 套配色与字体）时触发"],
+    ["Ask for their choice: Ask which theme to apply to the deck", "Wait for selection: Get explicit confirmation about the chosen theme", "Apply the theme: Once a theme has been chosen, apply the selected theme's colors and fonts to the deck/artifact", "Read the corresponding theme file from the themes/ directory", "Apply the specified colors and fonts consistently throughout the deck", "Ensure proper contrast and readability"],
+    ["导入时未从原文提取到显式陷阱条目，执行前请复核原文正文"],
+    ["产出物已按原文「验证」章节要求自查（原文未提供结构化清单）"],
+    ["主题", "样式系统", "一致性"],
+    [("compose_with", "pptx")],
+    {"safety": "Good", "completeness": "Average", "executability": "Good", "maintainability": "Basic", "cost_awareness": "Average", "member_import": "true"},
+)
+
+S(
+    "slack-gif-creator", "设计与创意",
+    "Slack 动图制作：Knowledge and utilities for creating animated GIFs optimized for Slack. Provides constraints, validation tools, and animation concepts. Use when users request animated GI",
+    "依据原文 SKILL.md 提供Slack 动图制作能力（member-import 导入，契约字段由原文提炼）",
+    ["动图创意与尺寸要求"],
+    ["符合规格的 GIF 动图"],
+    ["用户要求制作适配 Slack 的动画 GIF（如 make me a GIF for Slack 类需求）时触发"],
+    ["Emoji GIFs: 128x128 (recommended)", "Message GIFs: 480x480", "FPS: 10-30 (lower is smaller file size)", "Colors: 48-128 (fewer = smaller file size)", "Duration: Keep under 3 seconds for emoji GIFs"],
+    ["导入时未从原文提取到显式陷阱条目，执行前请复核原文正文"],
+    ["产出物已按原文「验证」章节要求自查（原文未提供结构化清单）"],
+    ["GIF", "动效", "消息表情"],
+    [("similar_to", "algorithmic-art")],
+    {"safety": "Good", "completeness": "Good", "executability": "Good", "maintainability": "Basic", "cost_awareness": "Average", "member_import": "true"},
+)
+
+S(
+    "interview", "职业与学习",
+    "SDE 面试备考教练：>",
+    "依据原文 SKILL.md 提供SDE 面试备考教练能力（member-import 导入，契约字段由原文提炼）",
+    ["面试目标岗位与时间线", "当前准备状态"],
+    ["分阶段备考计划", "模拟面试与反馈"],
+    ["用户触发 /interview 或提到每日一题、练习、面试演练、模拟面试等备考场景时触发"],
+    ["Type /interview in any Claude Code session", "The skill detects today's mode (daily or mock) and begins", "Follow the interactive prompts to solve problems or complete the mock", "Your progress is logged automatically"],
+    ["Keep EVERY response within ~2000 tokens (the system enforces maxtokens=2000). Prefer lean over long", "Get straight to the point: no preamble, no restating the user's question, no filler or boilerplate summaries", "Code output: clean core code with essential comments only — no duplicate equivalent implementations, no line-by-line essay", "When the user explicitly asks for a fuller trace, more rounds, or complete detail, the user's request overrides these defaults — then be as complete as needed", "This skill runs your daily SDE interview prep workflow. It has two modes:", "Daily Mode (Mon–Fri, Sun): ~30–45 min interactive practice session on a single DSA problem"],
+    ["产出物已按原文「验证」章节要求自查（原文未提供结构化清单）"],
+    ["面试", "职业发展", "模拟问答"],
+    [("similar_to", "leetcode-hot100-coach")],
+    {"safety": "Good", "completeness": "Good", "executability": "Average", "maintainability": "Good", "cost_awareness": "Average", "member_import": "true"},
+)
+
+S(
+    "leetcode-hot100-coach", "职业与学习",
+    "LeetCode Hot100 教练：面向算法初学者的 LeetCode Hot 100 教练。按固定八步带学、示范后逐步减少帮助，记录学习断点、错题、独立解题证据和延迟复习；支持本地学习页面。用于开始或继续算法学习、检查练习代码、复习和查看学习进度",
+    "依据原文 SKILL.md 提供LeetCode Hot100 教练能力（member-import 导入，契约字段由原文提炼）",
+    ["当前刷题进度", "目标题目与薄弱点"],
+    ["固定流程的刷题指导与复盘"],
+    ["算法初学者开始/继续 LeetCode Hot 100 学习、检查练习代码、复习或查看学习进度时触发"],
+    ["用户指定工作区优先；当前目录已有 state.json 和 review-queue.json 就直接使用，否则使用 ./leetcode-hot100-study。不要嵌套同名目录", "有未结束课程先续上当前步骤，有网页提交先评阅。没有当前课程，再优先到期复习和薄弱前置知识", "初次只做轻量摸底：确认语言、可用时间（可以稍后补），用简短问题判断列表、循环等基础。最多五个诊断问题，不做面试式考试；未知信息留空", "用一句话说明本次可检验的小目标。读 [课程安排](references/curriculum-14d.md) 选题和角色，核实题意和官方来源。第一课读 [两数之和带学范例](references/two-sum-lesson.md)"],
+    ["单次回答总长度控制在 2000 token 以内（系统已强制 maxtokens=2000），宁可精炼不可冗长；", "直接输出结论与核心内容：不写开场白、不复述用户问题、不输出与需求无关的铺垫与总结套话；", "代码类输出：只给干净的核心代码与必要注释，不重复给多种等价实现，不做逐行长篇讲解；", "用户明确要求更完整、更长或更详细的内容时，以用户需求为准——上述默认限制可被用户的显式要求覆盖", "帮助算法初学者建立可复用的解题思路。用中文说人话，一次只推进一个问题。以核心知识的实际掌握为目标；14 天是可调整的学习周期，不承诺两周刷完或掌握 100 题"],
+    ["产出物已按原文「验证」章节要求自查（原文未提供结构化清单）"],
+    ["算法刷题", "Hot100", "讲解"],
+    [],
+    {"safety": "Good", "completeness": "Average", "executability": "Average", "maintainability": "Good", "cost_awareness": "Average", "member_import": "true"},
+)
+
+S(
+    "algotrace", "职业与学习",
+    "算法可视化教练：Visual-first DSA tutor and coach for LeetCode, online assessments (OA), and placement/interview prep. Use whenever the user mentions leetcode, dsa, data structures, algor",
+    "依据原文 SKILL.md 提供算法可视化教练能力（member-import 导入，契约字段由原文提炼）",
+    ["待讲解的算法或数据结构问题"],
+    ["可视化讲解与逐步执行轨迹"],
+    ["用户提到 LeetCode、数据结构、算法可视化、模拟动画或求职刷题备考时触发"],
+    ["Keep EVERY response within ~2000 tokens (the system enforces maxtokens=2000). Prefer lean over long", "Get straight to the point: no preamble, no restating the user's question, no filler or boilerplate summaries", "Code output: clean core code with essential comments only — no duplicate equivalent implementations, no line-by-line essay", "Diagrams must be lean: show ONLY the core partition/pointer/sweep steps (AT MOST 3 rounds/frames), never print the array frame by frame, and by default NEVER exceed 50 lines of ASCII art", "When the user explicitly asks for a fuller trace, more rounds, or complete detail, the user's request overrides these defaults — then be as complete as needed"],
+    ["Keep EVERY response within ~2000 tokens (the system enforces maxtokens=2000). Prefer lean over long", "Get straight to the point: no preamble, no restating the user's question, no filler or boilerplate summaries", "Code output: clean core code with essential comments only — no duplicate equivalent implementations, no line-by-line essay", "When the user explicitly asks for a fuller trace, more rounds, or complete detail, the user's request overrides these defaults — then be as complete as needed"],
+    ["产出物已按原文「验证」章节要求自查（原文未提供结构化清单）"],
+    ["算法可视化", "数据结构", "教学"],
+    [("similar_to", "leetcode-hot100-coach")],
+    {"safety": "Good", "completeness": "Average", "executability": "Good", "maintainability": "Average", "cost_awareness": "Average", "member_import": "true"},
+)
+
+S(
+    "academy-guide", "职业与学习",
+    "Claude 学堂向导：>",
+    "依据原文 SKILL.md 提供Claude 学堂向导能力（member-import 导入，契约字段由原文提炼）",
+    ["学习目标与当前水平"],
+    ["课程化的学习路径与练习"],
+    ["用户询问如何使用 Claude/Claude 产品功能，需要推荐配套课程、教程与用例时触发"],
+    ["Courses — structured, multi-lesson learning paths, most with a", "Tutorials — short practical guides to a single feature or workflow", "Use cases — worked examples of applying Claude to a concrete task,", "Answer the question first. Always give the user a direct, helpful", "Only recommend on strong matches. A strong match is about intent,"],
+    ["导入时未从原文提取到显式陷阱条目，执行前请复核原文正文"],
+    ["产出物已按原文「验证」章节要求自查（原文未提供结构化清单）"],
+    ["教学", "课程设计", "向导"],
+    [("similar_to", "skill-creator")],
+    {"safety": "Good", "completeness": "Good", "executability": "Good", "maintainability": "Basic", "cost_awareness": "Average", "member_import": "true"},
+)
+
+S(
+    "contract-review", "知识与合规",
+    "合同审查专家：审查中文商业合同，识别风险条款并给出修改建议",
+    "依据原文 SKILL.md 提供合同审查专家能力（member-import 导入，契约字段由原文提炼）",
+    ["待审查合同文本", "审查立场（甲方/乙方）"],
+    ["风险条款清单与修改建议"],
+    ["用户上传或粘贴合同/协议文本，明确要求'审/查/检查/把关合同'时触发；也适用于条款合规性检查"],
+    ["单次回答总长度控制在 2000 token 以内（系统已强制 maxtokens=2000），宁可精炼不可冗长；", "直接输出结论与核心内容：不写开场白、不复述用户问题、不输出与需求无关的铺垫与总结套话；", "代码类输出：只给干净的核心代码与必要注释，不重复给多种等价实现，不做逐行长篇讲解；", "用户明确要求更完整、更长或更详细的内容时，以用户需求为准——上述默认限制可被用户的显式要求覆盖"],
+    ["单次回答总长度控制在 2000 token 以内（系统已强制 maxtokens=2000），宁可精炼不可冗长；", "直接输出结论与核心内容：不写开场白、不复述用户问题、不输出与需求无关的铺垫与总结套话；", "代码类输出：只给干净的核心代码与必要注释，不重复给多种等价实现，不做逐行长篇讲解；", "用户明确要求更完整、更长或更详细的内容时，以用户需求为准——上述默认限制可被用户的显式要求覆盖"],
+    ["产出物已按原文「验证」章节要求自查（原文未提供结构化清单）"],
+    ["合同", "风险识别", "条款审查"],
+    [("compose_with", "docx")],
+    {"safety": "Good", "completeness": "Basic", "executability": "Average", "maintainability": "Average", "cost_awareness": "Average", "member_import": "true"},
+)
+
+S(
+    "discernment-nudge", "知识与合规",
+    "判断校准助手：>",
+    "依据原文 SKILL.md 提供判断校准助手能力（member-import 导入，契约字段由原文提炼）",
+    ["待复核的结论或判断"],
+    ["校准提问与判断修正建议"],
+    ["在给出实质性建议、方案、计划或预估等可能被直接采纳的内容后，提示用户校验关键假设与判断时触发"],
+    ["Checking facts — which specific claims in this answer would be", "Questioning reasoning — where did the logic take a step the user", "Noticing missing context — what did the answer have to assume", "You gave estimates, projections, or numbers (costs, timelines,", "You gave advice or a recommendation in a consequential domain —"],
+    ["导入时未从原文提取到显式陷阱条目，执行前请复核原文正文"],
+    ["产出物已按原文「验证」章节要求自查（原文未提供结构化清单）"],
+    ["判断校准", "批判性思维", "自省"],
+    [("similar_to", "peer-review-response")],
+    {"safety": "Good", "completeness": "Good", "executability": "Good", "maintainability": "Basic", "cost_awareness": "Average", "member_import": "true"},
+)
+
+# ===== END member-import skills (Nexus) =====

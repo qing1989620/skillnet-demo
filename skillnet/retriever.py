@@ -26,6 +26,32 @@ MODE_HYBRID = "hybrid"
 MODE_FABRIC = "fabric"
 MODES = (MODE_BM25, MODE_HYBRID, MODE_FABRIC)
 
+# ----------------------------------------------------------------------
+# 检索置信度分流（吸收自开发组成员项目 Nexus 的混合调度设计）
+# ----------------------------------------------------------------------
+# Nexus 用 Top-1 余弦相似度分三档决定下游动作（自动执行 / 人工确认 / 无匹配直答）。
+# 本项目的融合分经过 min-max 归一化，**对候选池组成敏感、跨查询不可比**
+# （同一个技能在不同查询下分数尺度不同），不能直接套绝对阈值。
+# 因此改用 BM25 原始分——它是 TF-IDF 累加值，量纲固定、跨查询可比。
+#
+# 阈值依据本项目 42 条查询的实测分布标定：
+#   真实科研任务 dev (20)   9.9 – 88.9（中位 42.6）
+#   真实科研任务 heldout(12) 20.7 – 61.8（中位 33.7）
+#   交付物任务 (5)           8.0 – 29.0
+#   无关问题 (5)             0.0 – 4.6
+#
+# 标定过程中的一个发现（诚实记录）：纯词汇法对「措辞与技能文本重叠少」的真实任务
+# 会低估相关度——dev 集里「省级面板数据评估产业政策」「农田耕作方式对产量影响」
+# 两条真实任务的 BM25 原始分只有 3.80 / 4.27，低于 6.0 的初版阈值，会被误判为
+# 无匹配。因此阈值改为**保守标定**：只有词面几乎完全不重叠（raw < 2.0）才判无匹配，
+# 其余一律建议人工确认。设计原则是「错杀技能的代价 > 多问一句的代价」。
+AUTO_EXECUTE_THRESHOLD = 15.0    # BM25 原始分 >= 15：技能匹配明确，直接执行
+MANUAL_CONFIRM_THRESHOLD = 2.0   # [2, 15) 建议人工确认；< 2 判为无匹配（实测无关查询为 0）
+
+DECISION_AUTO = "auto"
+DECISION_CONFIRM = "confirm"
+DECISION_DIRECT = "direct"
+
 
 @dataclass
 class Candidate:
@@ -54,6 +80,16 @@ class RetrievalResult:
     degraded: bool = False
     degraded_reason: str = ""
 
+    # ---- 置信度分流（产品化决策）----
+    # 用 BM25 原始分（跨查询可比的绝对信号）-> 自动执行 / 人工确认 / 无匹配直答。
+    # confidence 为归一到 0–1 的相关度（raw / AUTO_THRESHOLD，封顶 1.0），
+    # raw_bm25_top 保留原始值便于审计；fusion_score 是归一化融合分（仅作排序参考）。
+    confidence: float = 0.0
+    raw_bm25_top: float = 0.0
+    fusion_score: float = 0.0
+    decision: str = DECISION_DIRECT
+    decision_reason: str = ""
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "query": self.query,
@@ -61,6 +97,11 @@ class RetrievalResult:
             "selected": self.selected,
             "candidates": [c.__dict__ for c in self.candidates],
             "trace": self.trace,
+            "confidence": self.confidence,
+            "raw_bm25_top": self.raw_bm25_top,
+            "fusion_score": self.fusion_score,
+            "decision": self.decision,
+            "decision_reason": self.decision_reason,
             "degraded": self.degraded,
             "components": self.components,
             "degraded_reason": self.degraded_reason,
@@ -112,6 +153,7 @@ class Retriever:
 
         # ---- 通路 1：BM25 ----
         bm25_hits = self.bm25.search(query, top_k=pool)
+        res.raw_bm25_top = float(bm25_hits[0][1]) if bm25_hits else 0.0
         res.trace.append(f"BM25 召回 {len(bm25_hits)} 条")
         if mode == MODE_BM25:
             fused = bm25_hits
@@ -219,7 +261,37 @@ class Retriever:
 
         res.candidates = cands
         res.selected = [c.name for c in cands[:k]]
+        self._decide(res)
         return res
+
+    @staticmethod
+    def _decide(res: "RetrievalResult") -> None:
+        """按 top-1 融合分给出下游动作建议（置信度分流）。
+
+        分档依据本项目实测分布标定（见模块常量注释），只改「建议」不改检索结果，
+        避免把阈值误用成硬过滤——错杀技能比多问一句代价大得多。
+        """
+        raw = res.raw_bm25_top
+        res.fusion_score = round(res.candidates[0].score, 4) if res.candidates else 0.0
+        res.confidence = round(min(1.0, raw / AUTO_EXECUTE_THRESHOLD), 4)
+        top = raw
+        if top >= AUTO_EXECUTE_THRESHOLD:
+            res.decision = DECISION_AUTO
+            res.decision_reason = (
+                f"BM25 原始分 {top:.2f} ≥ {AUTO_EXECUTE_THRESHOLD}：技能匹配明确，可直接执行"
+            )
+        elif top >= MANUAL_CONFIRM_THRESHOLD:
+            res.decision = DECISION_CONFIRM
+            res.decision_reason = (
+                f"BM25 原始分 {top:.2f} 落在 [{MANUAL_CONFIRM_THRESHOLD}, "
+                f"{AUTO_EXECUTE_THRESHOLD})：建议展示候选让使用者确认后再执行"
+            )
+        else:
+            res.decision = DECISION_DIRECT
+            res.decision_reason = (
+                f"BM25 原始分 {top:.2f} < {MANUAL_CONFIRM_THRESHOLD}：词面与技能库几乎无重叠，"
+                "建议由通用模型直答而非强行套用技能"
+            )
 
     # ------------------------------------------------------------------
     def _structural_hits(self, query: str, top_k: int) -> list[tuple[str, float]]:

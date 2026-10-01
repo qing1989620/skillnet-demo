@@ -255,7 +255,7 @@
       <text x="604" y="146" text-anchor="middle" font-size="11" fill="#2e7d4f">反馈回流：实测奖励更新选择策略 · 新技能回流库（这次演示就会跑一遍）</text>
       <!-- 治理底座 -->
       <rect x="14" y="168" width="976" height="32" rx="4" fill="#f2f5f8" stroke="#dde4ea"/>
-      <text x="502" y="188" text-anchor="middle" font-size="11" fill="#5b6b7c">治理底座（四篇论文都没有的）：dev / held-out 数据集隔离 · manifest 单一数据源 · 全链路成本账本 · 降级显式可观测 · 证据分级标注</text>
+      <text x="502" y="188" text-anchor="middle" font-size="11" fill="#5b6b7c">治理底座（四篇论文都没有的）：dev / held-out 数据集隔离 · manifest 单一数据源 · 全链路成本账本 · 降级显式可观测 · 证据分级标注 · 置信度分流（自动 / 确认 / 直答）</text>
     </svg>
     <div class="legend">
       <span><i style="background:#1a3a5c"></i>实现并已验证</span>
@@ -303,6 +303,8 @@
     <tr><td>技能选择（RL）</td><td class="no">无</td><td class="ours">Shared LinUCB：任务条件化，实测跨技能泛化（同领域响应 1.24 倍于异领域），配单元测试锁定</td></tr>
     <tr><td>技能进化</td><td class="no">无</td><td class="ours">四种算子（蒸馏 / 变异 / 交叉 / 再生）+ 质量准入，闭环可现场演示</td></tr>
     <tr><td>评估体系</td><td class="no">仅库级质量评估</td><td class="ours">主客分离双线评估 + dev/held-out 数据集治理 + 配对 bootstrap 统计检验</td></tr>
+    <tr><td>置信度分流</td><td class="no">无（仅检索排序）</td><td class="ours">Top-1 相关度分三档：自动执行 / 人工确认 / 无匹配直答，阈值按 42 条查询实测标定</td></tr>
+    <tr><td>技能库构成</td><td class="no">单一类型</td><td class="ours">75 技能 / 22 领域：51 个科研方法技能 + 24 个交付物与工具技能（导入自开发组成员项目）</td></tr>
     <tr><td>成本核算</td><td class="no">未核算</td><td class="ours">请求级 Token / 费用账本，汇报页实时可见</td></tr>
     <tr><td>跨框架互操作</td><td class="no">无</td><td class="ours">一键导出 Claude Code / Cursor / Gemini / AGENTS 四种格式</td></tr>
     <tr><td>可复现工程</td><td class="no">未开放</td><td class="ours">31 项交付自检 · pytest · manifest 数字溯源（git commit / 模型 / 权重 / 文件哈希）</td></tr>
@@ -322,14 +324,21 @@
   <div class="kicker">EVIDENCE OF WORK · 工作量与工程可信度</div>
   <h2>数字都是自己长出来的</h2>
   <div class="kpi">
-    <div class="kp"><div class="n">51</div><div class="t">种子技能 · 17 个科研领域</div></div>
-    <div class="kp"><div class="n">62</div><div class="t">类型化关系边 · 图驱动编排</div></div>
+    <div class="kp"><div class="n">75</div><div class="t">技能 · 22 个领域（51 科研方法 + 24 工具交付）</div></div>
+    <div class="kp"><div class="n">90</div><div class="t">类型化关系边 · 图驱动编排</div></div>
     <div class="kp"><div class="n">152</div><div class="t">维任务-技能联合上下文（LinUCB）</div></div>
     <div class="kp"><div class="n">31</div><div class="t">项交付自检（verify.py）</div></div>
-    <div class="kp"><div class="n">6</div><div class="t">项 pytest（泛化 / 可复现 / 结构护栏）</div></div>
+    <div class="kp"><div class="n">11</div><div class="t">项 pytest（泛化 / 可复现 / 分流政策）</div></div>
     <div class="kp"><div class="n">5</div><div class="t">阶段闭环 API（/api/demo 全链路）</div></div>
     <div class="kp"><div class="n">4</div><div class="t">种跨框架导出格式</div></div>
     <div class="kp"><div class="n">2</div><div class="t">套数据集（dev / held-out 隔离治理）</div></div>
+  </div>
+  <div class="next" style="border-left:3px solid var(--ok)">
+    <b>技能库已完成一次跨项目扩容：</b>吸收开发组成员项目（Nexus）的 24 个技能——
+    含 Anthropic 官方的 docx / pdf / pptx / xlsx / skill-creator / mcp-builder 等工具技能，
+    以及面试教练、算法可视化等中文自制技能。转换脚本自动提取契约字段并建立跨领域关系边
+    （Word ↔ 科研写作、PDF ↔ 文献综述、Excel ↔ EDA 分析），使技能库从「只会科研方法」
+    变为「科研方法 + 交付物产出」的完整体系。脚本可幂等重跑（tools/import_member_skills.py）。
   </div>
   <div class="next">
     <b>接入公司产品的路径已备好：</b>Phase 1 只读接入（Agent 调 /api/search 注入技能，1–2 周）→
@@ -436,17 +445,26 @@ function sklList(sel, gold) {
 }
 
 function renderStage1(d, gold) {
+  const badge = m => {
+    const x = d[m]; if (!x || !x.decision) return "";
+    const map = { auto: ["可自动执行", "var(--ok)", "#eef7f1", "#9fd0af"],
+                  confirm: ["建议人工确认", "var(--warn)", "#fdf6ec", "#ecd9a0"],
+                  direct: ["无匹配 · 直答", "#8a97a4", "#f2f5f8", "#dde4ea"] };
+    const [label, color, bg, bd] = map[x.decision] || map.direct;
+    return `<span title="${esc(x.decision_reason || "")}" style="display:inline-block;margin-left:6px;font-size:10.5px;color:${color};background:${bg};border:1px solid ${bd};border-radius:999px;padding:0 7px">${label} · ${(x.confidence * 100).toFixed(0)}%</span>`;
+  };
   const rows = ["bm25", "hybrid", "fabric"].map(m => {
     const x = d[m]; if (!x) return "";
     const rc = x.recall == null ? '<span style="color:#9aa7b3">无 gold 基准（任意问题按技能相关性检索）</span>'
                                : `召回 <b style="color:var(--brand)">${(x.recall * 100).toFixed(1)}%</b>`;
     return `<tr><td style="width:76px;font-weight:700;color:var(--brand)">${m.toUpperCase()}</td>
-      <td>${sklList(x.selected, gold)} <span style="color:#9aa7b3">${rc}</span></td></tr>`;
+      <td>${sklList(x.selected, gold)} <span style="color:#9aa7b3">${rc}</span>${badge(m)}</td></tr>`;
   }).join("");
   const tr = (d.fabric?.trace || []).map(t => `<div>· ${esc(t)}</div>`).join("");
   const miss = (gold || []).filter(g => !(d.bm25?.selected || []).includes(g) && (d.fabric?.selected || []).includes(g));
   const note = miss.length ? `<div style="margin-top:6px;color:var(--ok)">BM25 漏掉、Fabric 通过<b>关系图扩展</b>补回：${sklList(miss, gold)}</div>` : "";
-  return `<table class="cmp">${rows}</table>${tr ? `<div class="trace">${tr}</div>` : ""}${note}`;
+  const dec = d.fabric?.decision_reason ? `<div class="trace">决策：${esc(d.fabric.decision_reason)}</div>` : "";
+  return `<table class="cmp">${rows}</table>${tr ? `<div class="trace">${tr}</div>` : ""}${dec}${note}`;
 }
 
 function renderStage2(d) {
