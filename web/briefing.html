@@ -584,17 +584,29 @@ function renderStage4(d) {
 
 function renderArtifacts(d) {
   if (!d || !d.artifacts || !d.artifacts.length) return "<i>本次未生成产物</i>";
-  const cards = d.artifacts.map(a => `<div class="artcard">
-      <div><div class="an">${esc(a.name)}</div><div class="ak">${esc(a.kind)} · ${(a.bytes / 1024).toFixed(1)} KB</div></div>
+  const isDeliv = a => (a.kind || "").indexOf("方案交付物") >= 0;
+  const card = a => `<div class="artcard">
+      <div><div class="an">${esc(a.name)}</div>
+      <div class="ak">${esc(a.kind)} · ${(a.bytes / 1024).toFixed(1)} KB${a.declared_as ? " · 兑现清单项：" + esc(a.declared_as) : ""}</div></div>
       <div class="sp"></div>
       <button class="abtn" onclick="previewArtifact('${esc(d.slug)}','${esc(a.name)}')">在线查看</button>
       <a class="abtn solid" href="${API}/api/artifact/${esc(d.slug)}/${esc(a.name)}?download=1">下载</a>
-    </div>`).join("");
+    </div>`;
+  const deliv = d.artifacts.filter(isDeliv);
+  const docs = d.artifacts.filter(a => !isDeliv(a));
+  const stat = d.declared != null
+    ? `<div style="font-size:12px;margin-bottom:8px">方案声明交付物 <b style="color:var(--brand)">${d.declared}</b> 项 · 实际生成 <b style="color:var(--ok)">${d.generated}</b> 项${
+        d.generated < d.declared ? '<span style="color:var(--warn)">（未全部兑现，下方列出实际落盘的文件）</span>' : "（全部兑现）"}${d.deliverable_error ? `　<span style="color:var(--warn)">${esc(d.deliverable_error)}</span>` : ""}</div>`
+    : "";
   const note = d.saved
     ? `<div style="font-size:11.5px;color:var(--ok);margin-bottom:6px">已落盘到 out/demo_artifacts/${esc(d.slug)}/ —— 可直接交付或打印为 PDF</div>`
     : `<div style="font-size:11.5px;color:var(--warn);margin-bottom:6px">内存产物（落盘失败：${esc(d.save_error || "未知")}）</div>`;
-  return `${note}<div class="art">${cards}</div>
-    <div class="digest">任务指纹 ${esc(d.slug)} · 产物指纹 ${esc(d.digest)}（同一任务重复运行产物一致，可审计）</div>`;
+  const head = t => `<div style="font-size:12px;color:#8a97a4;letter-spacing:1px;margin:10px 0 2px">── ${t} ──</div>`;
+  return `${stat}${note}
+    ${deliv.length ? head("方案声明的交付物（本次已生成内容）") + `<div class="art">${deliv.map(card).join("")}</div>` : ""}
+    ${docs.length ? head("过程文档（方案与依据）") + `<div class="art">${docs.map(card).join("")}</div>` : ""}
+    <div class="digest">任务指纹 ${esc(d.slug)} · 产物指纹 ${esc(d.digest)}（同一任务重复运行产物一致，可审计）</div>
+    <div style="font-size:11.5px;color:#8a97a4;margin-top:6px">交付物为方案级产出：内容具体到条目与参数，但涉及实验结果的数值均标注为示意值，需在真实数据上验证。</div>`;
 }
 
 /* ---------- 弹层：产物预览 / 技能全文 ---------- */

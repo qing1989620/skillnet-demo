@@ -25,7 +25,7 @@ from pydantic import BaseModel, Field
 from skillnet import config, llm
 from skillnet.adapters import export_all
 from skillnet.agent import ResearchAgent, STYLE_BARE, STYLE_CARDS, STYLE_GUIDED
-from skillnet.artifacts import render_bundle, save_bundle
+from skillnet.artifacts import generate_deliverables, render_bundle, save_bundle
 from skillnet.bandit import SharedLinUCB
 from skillnet.catalog import SkillLibrary
 from skillnet.evolver import SkillEvolver
@@ -542,6 +542,15 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
 
     # 5) 本次产出：把执行结果渲染为可预览/可下载的真实文件
     bundle = render_bundle(req.task, run.response, j, skills, run.adoption)
+
+    # 5.1) 兑现交付物清单：方案里声明的东西必须真的生成出来，否则它只是承诺
+    deliv = generate_deliverables(req.task, run.response, skills)
+    for f in deliv["files"]:
+        bundle["files"].append({
+            "name": f["name"], "kind": f["kind"], "body": f["body"], "bytes": f["bytes"],
+            "note": f.get("note", ""), "declared_as": f.get("declared_as", ""),
+        })
+
     art_dir = config.OUT_DIR / "demo_artifacts" / bundle["meta"]["slug"]
     try:
         manifest = save_bundle(bundle, art_dir)
@@ -562,6 +571,9 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
                 "artifacts": manifest,
                 "saved": not save_err,
                 "save_error": save_err,
+                "declared": deliv["declared"],
+                "generated": deliv["generated"],
+                "deliverable_error": deliv["error"],
                 "preview": {
                     f["name"]: f["body"][:20000] for f in bundle["files"]
                     if f["name"].endswith((".html", ".md"))

@@ -252,3 +252,116 @@ def save_bundle(bundle: dict[str, Any], out_dir) -> list[dict[str, Any]]:
             "slug": bundle["meta"]["slug"],
         })
     return manifest
+
+
+# ======================================================================
+# 交付物真实生成（回应「清单里说的东西在哪」）
+# ======================================================================
+# 背景：执行方案会声明一份「交付物清单」（如"泄漏审计报告""蒙特卡洛验证代码"），
+# 但那只是**承诺**——早先的产物层只把方案本身渲染成报告，清单里的东西并不存在。
+# 这里补上兑现环节：逐项生成实际内容并落盘。
+#
+# 诚实约束（重要）：
+# - 生成的是**方案级产出**（文本/代码/表格骨架），不是真实实验结论；
+# - 提示词明确要求标注「需在真实数据上验证」，禁止编造实验结果数字；
+# - 生成失败如实降级并说明，绝不假装成功。
+
+DELIVERABLE_SCHEMA = """{
+  "deliverables": [
+    {"name": "文件名（含扩展名，如 leak-audit-report.md / monte_carlo.py）",
+     "kind": "doc|code|table",
+     "content": "完整内容本身（不是对内容的描述）",
+     "note": "一句话说明该产物是什么、可信度边界"}
+  ]
+}"""
+
+_KIND_EXT = {"doc": ".md", "code": ".py", "table": ".csv"}
+
+
+def safe_filename(name: str, kind: str) -> str:
+    """文件名安全化：保留中文/字母/数字/-_.，其余替换为 -，并补正确扩展名。
+
+    必须做：交付物名称来自模型输出，直接当路径用会有穿越与非法字符风险。
+    """
+    base = str(name or "").strip().replace("\\", "/").split("/")[-1]
+    base = re.sub(r"[^\w\u4e00-\u9fff.\-]+", "-", base, flags=re.UNICODE).strip("-._") or "deliverable"
+    ext = _KIND_EXT.get(kind, ".md")
+    stem, _, old = base.rpartition(".")
+    if not stem or len(old) > 5:            # 无扩展名或扩展名异常
+        base = base + ext
+    return base[:80]
+
+
+def generate_deliverables(task: str, plan: dict[str, Any], skills: list[str],
+                          max_items: int = 6, max_tokens: int = 8000) -> dict[str, Any]:
+    """按方案声明的交付物清单逐项生成真实内容。
+
+    返回 {"files": [...], "error": "", "declared": N, "generated": M}。
+    任何失败（无密钥 / JSON 异常 / 内容过短）都如实返回 error，不抛异常阻断主链路。
+    """
+    from . import llm
+
+    declared = [str(a) for a in (plan.get("artifacts") or []) if str(a).strip()]
+    if not declared:
+        return {"files": [], "error": "", "declared": 0, "generated": 0}
+
+    steps_txt = "\n".join(
+        f"S{i}. {st.get('action', '') if isinstance(st, dict) else st}"
+        for i, st in enumerate(plan.get("steps") or [], 1))
+    prompt = f"""研究任务：
+{task}
+
+已确定的执行方案：
+思路：{plan.get('approach') or ''}
+步骤：
+{steps_txt}
+已加载技能：{'、'.join(skills) if skills else '（无）'}
+
+方案的交付物清单（共 {len(declared)} 项）：
+{chr(10).join('- ' + d for d in declared)}
+
+请为其中最重要的 {min(max_items, len(declared))} 项生成**实际内容**——不是描述它应该包含什么，
+而是把它本身写出来。要求：
+1. doc 类：完整 Markdown 正文（标题、章节、具体条目），不低于 400 字；
+2. code 类：可直接运行的 Python 代码（含 import、主函数、示例调用与注释），不低于 30 行；
+3. table 类：CSV 文本，含表头与 5 行以上示例数据（数据须标注为示意值）；
+4. 内容具体到参数、阈值、判据；范本条款/清单类要给出可直接套用的条目；
+5. **诚实红线**：这是方案级产出，凡涉及实验结果的数字必须标注「示意值，需真实数据验证」，
+   不得编造具体实验结论；不确定处显式写明。
+
+严格输出 JSON（不要额外文字）：
+{DELIVERABLE_SCHEMA}"""
+
+    try:
+        obj = llm.chat_json(
+            [{"role": "system", "content": "你是科研方案交付物撰写助手，输出严格 JSON。"},
+             {"role": "user", "content": prompt}],
+            role="executor", temperature=0.3, max_tokens=max_tokens)
+    except Exception as exc:                       # 无密钥 / 网络 / 解析失败
+        return {"files": [], "error": f"交付物生成失败：{exc}", "declared": len(declared), "generated": 0}
+
+    raw = obj.get("deliverables") if isinstance(obj, dict) else None
+    if not isinstance(raw, list):
+        return {"files": [], "error": "交付物生成返回格式异常（缺 deliverables 数组）",
+                "declared": len(declared), "generated": 0}
+
+    files: list[dict[str, Any]] = []
+    for d in raw[:max_items]:
+        if not isinstance(d, dict):
+            continue
+        content = str(d.get("content") or "").strip()
+        if len(content) < 120:                     # 过短视为生成失败（防占位符）
+            continue
+        kind = str(d.get("kind") or "doc").lower()
+        kind = kind if kind in _KIND_EXT else "doc"
+        fname = safe_filename(str(d.get("name") or f"deliverable_{len(files) + 1}"), kind)
+        files.append({
+            "name": fname,
+            "kind": f"方案交付物（{kind}）",
+            "body": content if content.endswith("\n") else content + "\n",
+            "bytes": len(content.encode("utf-8")),
+            "note": str(d.get("note") or ""),
+            "declared_as": str(d.get("name") or ""),
+        })
+    err = "" if files else "模型未产出足够长度的交付物内容"
+    return {"files": files, "error": err, "declared": len(declared), "generated": len(files)}
