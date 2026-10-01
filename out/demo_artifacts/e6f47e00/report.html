@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<title>研究执行方案 · 408</title>
+<style>
+ :root { --ink:#22303e; --dim:#64748a; --line:#dfe6ec; --brand:#1a3a5c; --ok:#2e7d4f; }
+ * { box-sizing:border-box; margin:0; padding:0; }
+ body { font-family:"Microsoft YaHei","PingFang SC",sans-serif; color:var(--ink);
+        background:#fbfaf8; line-height:1.75; padding:34px 22px; }
+ .wrap { max-width:820px; margin:0 auto; background:#fff; border:1px solid var(--line); padding:32px 36px; }
+ h1 { font-size:21px; color:var(--brand); margin-bottom:6px; line-height:1.4; }
+ .lead { color:var(--dim); font-size:12.5px; padding-bottom:14px; border-bottom:2px solid var(--brand); margin-bottom:20px; }
+ h2 { font-size:15px; color:var(--brand); margin:24px 0 10px; padding-bottom:5px; border-bottom:1px solid var(--line); }
+ .approach { background:#f2f6fa; border-left:3px solid var(--brand); padding:12px 15px; font-size:13.5px; }
+ .step { border:1px solid var(--line); border-left:3px solid #24557a; padding:12px 15px; margin-bottom:10px; }
+ .sh { display:flex; gap:9px; align-items:baseline; }
+ .sn { color:#24557a; font-weight:800; }
+ .sa { font-weight:700; font-size:13.5px; }
+ .k { color:var(--dim); font-size:11.5px; margin-top:6px; }
+ .v { font-size:12.5px; }
+ .chk { color:var(--ok); font-size:12px; margin-top:4px; }
+ ul { margin-left:18px; font-size:12.5px; }
+ code { background:#eef1f4; padding:1px 5px; border-radius:3px; font-size:12px; }
+ .row { display:grid; grid-template-columns:150px 1fr 46px; gap:10px; align-items:center; font-size:12.5px; margin:3px 0; }
+ .bar { height:8px; background:#edf1f4; } .bar i { display:block; height:100%; background:#24557a; } .bar.obj i { background:var(--ok); }
+ .meta { color:var(--dim); font-size:12px; }
+ .box { border:1px solid var(--line); background:#f7f9fb; padding:11px 15px; font-size:12.5px; margin-top:10px; }
+ footer { margin-top:26px; padding-top:12px; border-top:1px solid var(--line); color:var(--dim); font-size:11.5px; }
+</style></head><body><div class="wrap">
+ <h1>研究执行方案</h1>
+ <div class="lead">
+   任务：408<br>
+   生成方式：SkillNet-S1 技能运维层（技能驱动执行）　|　任务指纹 <code>e6f47e00</code><br>
+   加载技能：<code>exam-prep-topic-matrix</code>、<code>exam-review-topic-matrix</code>、<code>data-cleaning</code>、<code>statistical-testing</code>、<code>scientific-visualization</code>
+   ｜技能采纳率 60%
+ </div>
+ <h2>研究思路</h2>
+ <div class="approach">把408备考当作以真题为唯一验收标准的项目来执行：先用近10年真题与考纲建立可追溯的考点矩阵并核对分值闭合，再按「分值占比×(6−掌握度)」排优先级生成带量化闭环判据的周计划，随后用固定4类错因的错题台账做数据清洗与描述统计归因，最后以严格计时的限时套卷收敛正确率，对反复出错知识点触发重学复核。</div>
+ <h2>执行步骤（6 步）</h2>
+ 
+    <div class="step">
+      <div class="sh"><span class="sn">S1</span><span class="sa">建立408考点矩阵：按教材章（数据表示、运算器、存储系统、指令系统、CPU、总线、IO）从考纲、指定教材1本、辅导书1本、近10年真题≥8套中抽取「章节-知识点-题型-出现年份-分值-掌握度1-5」到结构化表，掌握度5=能独立限时做对、1=完全不会。</span></div>
+      <div class="k">调用技能 <code>exam-prep-topic-matrix</code></div>
+      <div class="k">关键参数</div><ul><li>真题≥8套（近10年，含目标院校自命题），低于此数量矩阵频次统计不可靠</li><li>掌握度1-5整数刻度，5=独立限时做对，1=完全不会</li><li>各章分值合计与卷面总分误差≤2分（408卷面150分）</li></ul>
+      <div class="k">预期产出</div><div class="v">考点矩阵表（章节×知识点×题型×出现年份×分值×掌握度）+ 各章分值占比汇总</div>
+      <div class="chk">校验：随机抽3个高频知识点能回溯到具体真题年份与题号；各章分值合计与150分误差≤2分；各章分值占比合计=100%</div>
+    </div>
+    <div class="step">
+      <div class="sh"><span class="sn">S2</span><span class="sa">排优先级并制定周计划：按优先级分数=章节分值占比×(6−掌握度)降序排，分值高且掌握度≤3的章节排到前2/3周期，掌握度≥4的章节只做真题抽查；为每章绑定闭环判据。</span></div>
+      <div class="k">调用技能 <code>exam-prep-topic-matrix</code></div>
+      <div class="k">关键参数</div><ul><li>优先级分数=章节分值占比×(6−掌握度)，降序</li><li>单章时间上限≤总复习时长15%，防止难点章节无限拖延</li><li>闭环判据=该章近5年真题正确率≥80%且大题步骤完整率100%</li></ul>
+      <div class="k">预期产出</div><div class="v">带日期与闭环判据的周计划表</div>
+      <div class="chk">校验：所有章节分值占比合计=100%；每章判据均为可量化表述，无「看完/理解」类不可验证词；单章时间占比均≤15%</div>
+    </div>
+    <div class="step">
+      <div class="sh"><span class="sn">S3</span><span class="sa">建立错题台账并做数据清洗：每次做题记录题号、章节、知识点、题型、对错、用时（分钟）、错因；错因固定为概念不清/计算失误/审题/记忆4类，未记录错因标记为待补而非删除；产出数据字典与清洗审计日志。</span></div>
+      <div class="k">调用技能 <code>data-cleaning</code></div>
+      <div class="k">关键参数</div><ul><li>主键=真题年份+题号，保证唯一</li><li>错因枚举固定4类，禁止自由文本</li><li>用时单位统一为分钟，缺失标记待补不删除</li></ul>
+      <div class="k">预期产出</div><div class="v">错题台账 + 清洗审计日志 + 数据字典</div>
+      <div class="chk">校验：台账主键唯一无重复；各章错题数之和=总错题数；随机抽5条记录能对应到原始试卷；审计日志可复现每一步清洗</div>
+    </div>
+    <div class="step">
+      <div class="sh"><span class="sn">S4</span><span class="sa">做误差归因：以「是否做错」为目标，章节、知识点、题型、用时为特征；样本量≥100条时用逻辑回归/决策树做基线，按时间划分前70%训练后30%验证并固定随机种子；样本量&lt;100条时只做描述统计（各章错误率与平均用时）。</span></div>
+      <div class="k">调用技能 <code>statistical-testing</code></div>
+      <div class="k">关键参数</div><ul><li>样本量阈值100条：≥100建模，&lt;100仅描述统计</li><li>时间划分前70%训练/后30%验证，固定随机种子</li><li>评估指标=各章节错误率与平均用时，不只看总体正确率</li></ul>
+      <div class="k">预期产出</div><div class="v">各章错误率与平均用时统计表；样本量≥100时附基线模型验证结果</div>
+      <div class="chk">校验：基线模型验证集错误率排序与人工统计的章节错误率排序Top3重合；超时题清单可回溯到具体题号</div>
+    </div>
+    <div class="step">
+      <div class="sh"><span class="sn">S5</span><span class="sa">限时套卷收敛：每周1套完整真题，严格计时180分钟（含涂卡与检查），按考试流程做，做完立即按台账口径记录；前期每两周1套，冲刺期每周1-2套；连续3套正确率波动≤5%且均≥目标线后进入查漏阶段。</span></div>
+      <div class="k">调用技能 <code>exam-prep-topic-matrix</code></div>
+      <div class="k">关键参数</div><ul><li>计时180分钟（408考试时长），含涂卡与检查</li><li>前期每两周1套，冲刺期每周1-2套</li><li>收敛判据=连续3套正确率波动≤5%且均≥目标线（如75%）</li></ul>
+      <div class="k">预期产出</div><div class="v">套卷成绩曲线与错题归因记录</div>
+      <div class="chk">校验：连续3套正确率波动≤5%且均≥目标线；每套错题均已归因并进入台账</div>
+    </div>
+    <div class="step">
+      <div class="sh"><span class="sn">S6</span><span class="sa">对反复出错知识点做归因复核：同一知识点错≥2次即触发重学；概念性错误回到教材原文重学并做该知识点真题≥5道，正确率≥80%才算通过；计算失误做专项限时训练（每天10道限时计算题，限时≤8分钟/10题）。</span></div>
+      <div class="k">调用技能 <code>exam-prep-topic-matrix</code></div>
+      <div class="k">关键参数</div><ul><li>触发阈值=同一知识点错≥2次</li><li>重学验证=该知识点真题≥5道且正确率≥80%</li><li>计算专项=每天10道，限时≤8分钟/10题</li></ul>
+      <div class="k">预期产出</div><div class="v">重学清单与验证记录、专项训练正确率趋势</div>
+      <div class="chk">校验：所有触发重学的知识点均有重学后≥5道真题验证记录且正确率≥80%；计算专项正确率呈上升趋势</div>
+    </div>
+ <h2>风险与应对</h2>
+ <ul><li>只刷题不建考点矩阵导致覆盖偏差（如只刷网络层忽略数据链路层）：强制产出矩阵并核对各章分值合计与150分误差≤2分</li><li>错因分类主观、台账记录不全导致归因失真：固定4类错因，未记录标记待补而非删除，并用重做正确率交叉验证</li><li>在运算器/浮点数等难点无限拖延挤占其他章节：设单章时间上限15%与闭环判据，到点即推进</li><li>套卷正确率虚高（做过原题）或虚低（计时过严）：优先用未做过的近5年真题，并记录用时区分「不会」与「会但慢」</li></ul>
+ <h2>交付物清单</h2>
+ <ul><li>考点矩阵表（章节×知识点×题型×出现年份×分值×掌握度）</li><li>带日期与闭环判据的周计划表</li><li>错题台账 + 清洗审计日志 + 数据字典</li><li>各章错误率与平均用时统计表（样本量≥100时附基线模型验证结果）</li><li>套卷成绩曲线与错题归因记录</li><li>重学清单与验证记录、专项训练正确率趋势</li></ul>
+ <h2>落盘代码产物</h2>
+ <ul><li class="meta">本次方案未包含可落盘代码块</li></ul>
+ <h2>评估（主客观分列）</h2>
+ <div class="row"><span>skill_grounding</span><div class="bar"><i style="width:80%"></i></div><b>8.0</b></div><div class="row"><span>executability</span><div class="bar"><i style="width:90%"></i></div><b>9.0</b></div><div class="row"><span>rigor</span><div class="bar"><i style="width:80%"></i></div><b>8.0</b></div><div class="row"><span>scientific_validity</span><div class="bar"><i style="width:70%"></i></div><b>7.0</b></div>
+ <div class="box">盲评均分 <b>8.05/10</b>　|　技能采纳率 <b>60%</b></div>
+ <div class="meta">客观线：无 gold 基准，本次跳过</div>
+ <div class="box">盲评意见：方案将备考任务工程化，给出了可追溯的考点矩阵、量化优先级、固定错因台账、样本量阈值与时间划分建模、限时套卷收敛及重学触发阈值，执行参数与校验判据具体；但统计建模部分对408备考场景的样本独立性与特征泄漏风险讨论不足，逻辑回归/决策树的结论边界需更谨慎。</div>
+ <footer>
+   本文件由执行器输出渲染，内容为<b>研究方案与要点</b>（非实验结论）；参数取值与判据需在真实数据上验证后采用。<br>
+   SkillNet-S1 · 产物指纹 <code>2b31fff273dd</code>
+ </footer>
+</div></body></html>

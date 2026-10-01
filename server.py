@@ -26,7 +26,9 @@ from pydantic import BaseModel, Field
 from skillnet import config, llm
 from skillnet.adapters import export_all
 from skillnet.agent import ResearchAgent, STYLE_BARE, STYLE_CARDS, STYLE_GUIDED
-from skillnet.artifacts import generate_deliverables, render_bundle, save_bundle
+from skillnet.artifacts import (collect_execution_artifacts, generate_deliverables,
+                                   render_bundle, save_bundle, task_slug)
+from skillnet.executor import execute_step, pick_executable_step
 from skillnet.bandit import SharedLinUCB
 from skillnet.catalog import SkillLibrary
 from skillnet.evolver import SkillEvolver
@@ -493,6 +495,28 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
         }
     )
 
+    # 3.2) 真实执行（沙箱）：挑选方案中最适合落地的一步，生成代码并真正运行它。
+    # 这是本项目与「写方案的 LLM」的分水岭——产物是跑出来的，不是写出来的。
+    sandbox_result: dict[str, Any] = {}
+    try:
+        idx = pick_executable_step(run.response)
+        all_steps = run.response.get("steps") or []
+        if idx >= 0:
+            st = all_steps[idx] if isinstance(all_steps[idx], dict) else {"action": str(all_steps[idx])}
+            sk_name = st.get("skill")
+            sk = lib().get(sk_name) if sk_name else None
+            sandbox_result = execute_step(
+                req.task, st, sk,
+                config.OUT_DIR / "demo_artifacts" / task_slug(req.task) / "run",
+                max_fix=2, timeout=75)
+            sandbox_result["step_index"] = idx
+            sandbox_result["step_label"] = f"S{idx + 1}"
+    except Exception as exc:                    # 执行失败不影响其余闭环
+        log.error("沙箱执行失败：%s", exc)
+        sandbox_result = {"final_ok": False, "error": f"{type(exc).__name__}: {exc}",
+                          "attempts": [], "artifacts": [], "verification": []}
+    stages.append({"stage": "真实执行（沙箱）", "detail": sandbox_result})
+
     # 3.5) 反馈写回：本次盲评奖励更新共享参数 θ——影响所有技能的下一次预测
     reward = j["weighted"] / 10.0
     adopted = [s for s in skills if s and s != "manual"]
@@ -543,6 +567,19 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
 
     # 5) 本次产出：把执行结果渲染为可预览/可下载的真实文件
     bundle = render_bundle(req.task, run.response, j, skills, run.adoption)
+
+    # 5.0) 收集沙箱真实产物（图片/数据），平铺到产物目录供预览
+    art_dir_pre = config.OUT_DIR / "demo_artifacts" / bundle["meta"]["slug"]
+    try:
+        for a in collect_execution_artifacts(
+                sandbox_result, art_dir_pre,
+                prefix=f"step{sandbox_result.get('step_index', 0) + 1}"):
+            bundle["files"].append({
+                "name": a["name"], "kind": a["kind"], "body": "", "bytes": a["bytes"],
+                "_copy_only": True,          # 已由 collect 落盘，save_bundle 跳过写内容
+            })
+    except OSError as exc:
+        log.error("收集执行产物失败：%s", exc)
 
     # 5.1) 兑现交付物清单：方案里声明的东西必须真的生成出来，否则它只是承诺
     deliv = generate_deliverables(req.task, run.response, skills)
@@ -715,6 +752,16 @@ def artifact(slug: str, fname: str, download: int = 0) -> Any:
     target = (base / fname).resolve()
     if base not in target.parents or not target.is_file():
         raise HTTPException(404, "产物不存在")
+    # 图片类产物必须按二进制读（先前的纯文本读取会把 PNG 读坏）
+    if target.suffix.lower() in (".png", ".jpg", ".jpeg", ".svg", ".gif"):
+        media = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+                 ".svg": "image/svg+xml", ".gif": "image/gif"}[target.suffix.lower()]
+        headers = {}
+        if download:
+            headers["Content-Disposition"] = (
+                f"attachment; filename=\"{target.suffix.lstrip('.')}artifact\"; "
+                f"filename*=UTF-8''{quote(fname)}")
+        return Response(content=target.read_bytes(), media_type=media, headers=headers)
     media = ("text/html; charset=utf-8" if fname.endswith(".html")
              else "text/markdown; charset=utf-8" if fname.endswith(".md")
              else "text/plain; charset=utf-8")

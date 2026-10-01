@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<title>研究执行方案 · 我有一批不同剂量下的药物抑制率实验数据，想估计 IC50 并评估拟合质量与不确定</title>
+<style>
+ :root { --ink:#22303e; --dim:#64748a; --line:#dfe6ec; --brand:#1a3a5c; --ok:#2e7d4f; }
+ * { box-sizing:border-box; margin:0; padding:0; }
+ body { font-family:"Microsoft YaHei","PingFang SC",sans-serif; color:var(--ink);
+        background:#fbfaf8; line-height:1.75; padding:34px 22px; }
+ .wrap { max-width:820px; margin:0 auto; background:#fff; border:1px solid var(--line); padding:32px 36px; }
+ h1 { font-size:21px; color:var(--brand); margin-bottom:6px; line-height:1.4; }
+ .lead { color:var(--dim); font-size:12.5px; padding-bottom:14px; border-bottom:2px solid var(--brand); margin-bottom:20px; }
+ h2 { font-size:15px; color:var(--brand); margin:24px 0 10px; padding-bottom:5px; border-bottom:1px solid var(--line); }
+ .approach { background:#f2f6fa; border-left:3px solid var(--brand); padding:12px 15px; font-size:13.5px; }
+ .step { border:1px solid var(--line); border-left:3px solid #24557a; padding:12px 15px; margin-bottom:10px; }
+ .sh { display:flex; gap:9px; align-items:baseline; }
+ .sn { color:#24557a; font-weight:800; }
+ .sa { font-weight:700; font-size:13.5px; }
+ .k { color:var(--dim); font-size:11.5px; margin-top:6px; }
+ .v { font-size:12.5px; }
+ .chk { color:var(--ok); font-size:12px; margin-top:4px; }
+ ul { margin-left:18px; font-size:12.5px; }
+ code { background:#eef1f4; padding:1px 5px; border-radius:3px; font-size:12px; }
+ .row { display:grid; grid-template-columns:150px 1fr 46px; gap:10px; align-items:center; font-size:12.5px; margin:3px 0; }
+ .bar { height:8px; background:#edf1f4; } .bar i { display:block; height:100%; background:#24557a; } .bar.obj i { background:var(--ok); }
+ .meta { color:var(--dim); font-size:12px; }
+ .box { border:1px solid var(--line); background:#f7f9fb; padding:11px 15px; font-size:12.5px; margin-top:10px; }
+ footer { margin-top:26px; padding-top:12px; border-top:1px solid var(--line); color:var(--dim); font-size:11.5px; }
+</style></head><body><div class="wrap">
+ <h1>研究执行方案</h1>
+ <div class="lead">
+   任务：我有一批不同剂量下的药物抑制率实验数据，想估计 IC50 并评估拟合质量与不确定性<br>
+   生成方式：SkillNet-S1 技能运维层（技能驱动执行）　|　任务指纹 <code>28fc98fa</code><br>
+   加载技能：<code>data-cleaning</code>、<code>eda-profiling</code>、<code>statistical-testing</code>、<code>scientific-visualization</code>、<code>estimator-robustness-audit</code>
+   ｜技能采纳率 100%
+ </div>
+ <h2>研究思路</h2>
+ <div class="approach">以剂量-抑制率数据为输入，先做数据清洗与结构探查，再用四参数 logistic（4PL）或三参数 logistic（3PL）模型拟合剂量-反应曲线并估计 IC50，随后用 bootstrap 与残差诊断评估不确定性和拟合质量，最后用蒙特卡洛稳健性审计与出版级可视化交付可复现结果。</div>
+ <h2>执行步骤（5 步）</h2>
+ 
+    <div class="step">
+      <div class="sh"><span class="sn">S1</span><span class="sa">读取原始剂量-抑制率数据，统一剂量单位（如 μM）、抑制率口径（0-1 或 0-100%），检查重复孔、缺失值与异常点，输出带审计日志的干净数据集。</span></div>
+      <div class="k">调用技能 <code>data-cleaning</code></div>
+      <div class="k">关键参数</div><ul><li>剂量单位统一为 μM 或 log10(μM)，避免跨数量级拟合偏差</li><li>抑制率统一为 0-1 小数，便于模型参数解释</li><li>异常值判定用业务规则：抑制率超出 [0,1] 或剂量为负/零且无载体对照说明时标记</li><li>缺失率 &gt;20% 的剂量点单独标注，不直接删除</li></ul>
+      <div class="k">预期产出</div><div class="v">干净数据表（列：dose、response、replicate、group）、清洗审计日志、数据字典</div>
+      <div class="chk">校验：清洗后主键唯一；审计日志可复现每一步；关键字段分布变化有解释；剂量-响应散点无系统性单位错位</div>
+    </div>
+    <div class="step">
+      <div class="sh"><span class="sn">S2</span><span class="sa">对清洗后数据做单变量分布、分组对比与剂量-响应关系初探，确认是否单调、是否存在平台期、每组重复数是否足够。</span></div>
+      <div class="k">调用技能 <code>eda-profiling</code></div>
+      <div class="k">关键参数</div><ul><li>按剂量分组计算均值、SD、n</li><li>检查最低剂量抑制率是否接近 0、最高剂量是否接近 100%（用于判断 Bottom/Top 是否需固定）</li><li>重复数 n&lt;3 的剂量点标记为低置信</li><li>共线性检查：log10(dose) 与 dose 不共存于同一模型</li></ul>
+      <div class="k">预期产出</div><div class="v">EDA 报告、剂量-响应散点图、候选模型形式建议（4PL/3PL/固定 Bottom）</div>
+      <div class="chk">校验：分布图覆盖全部剂量点；组间样本量差异已标注；曲线形态支持所选模型形式</div>
+    </div>
+    <div class="step">
+      <div class="sh"><span class="sn">S3</span><span class="sa">用非线性最小二乘拟合 4PL/3PL 模型，估计 IC50 及其标准误，并对模型参数做 Wald 检验与似然比检验比较嵌套模型。</span></div>
+      <div class="k">调用技能 <code>statistical-testing</code></div>
+      <div class="k">关键参数</div><ul><li>4PL 公式：y = Bottom + (Top-Bottom)/(1+10^((logIC50-x)*HillSlope))</li><li>若 Bottom 固定为 0 或 Top 固定为 100，用 3PL 并做 F 检验比较</li><li>初始值：Bottom=min(y), Top=max(y), logIC50=median(log10(dose)), HillSlope=1</li><li>显著性水平 α=0.05，多模型比较用 Bonferroni 校正 α&#x27;=0.05/k</li></ul>
+      <div class="k">预期产出</div><div class="v">IC50 点估计、95% 置信区间、HillSlope、Top/Bottom、拟合优度 R² 与残差标准误</div>
+      <div class="chk">校验：参数收敛且标准误有限；残差无系统趋势；嵌套模型比较 p 值经校正后报告</div>
+    </div>
+    <div class="step">
+      <div class="sh"><span class="sn">S4</span><span class="sa">对 IC50 估计量做 bootstrap 不确定性与蒙特卡洛稳健性审计：重采样估计 IC50 分布，检查收敛性与假设违反下的边界行为。</span></div>
+      <div class="k">调用技能 <code>estimator-robustness-audit</code></div>
+      <div class="k">关键参数</div><ul><li>Bootstrap 重复次数 ≥10000，重采样单位=独立实验批次/孔</li><li>样本量梯度 n ∈ {10, 100, 1000, 10000} 用于收敛检查</li><li>α=0.05 双侧，多命题比较 Bonferroni α&#x27;=0.05/k</li><li>随机种子运行前固定并写入日志，更换种子重跑确认方向不变</li><li>反例边界：HillSlope→0（无响应）、HillSlope 极大（陡峭）、Bottom/Top 不可识别</li></ul>
+      <div class="k">预期产出</div><div class="v">IC50 bootstrap 分布、95% CI、收敛曲线、泄漏审计报告、适用范围表</div>
+      <div class="chk">校验：收敛曲线斜率与理论 O(n^{-1/2}) 在置信带内一致；更换种子后结论方向不变；样本流与命题一一对应无重叠</div>
+    </div>
+    <div class="step">
+      <div class="sh"><span class="sn">S5</span><span class="sa">绘制出版级剂量-响应曲线图：散点+拟合曲线+95% 置信带，标注 IC50 与置信区间、HillSlope、样本量。</span></div>
+      <div class="k">调用技能 <code>scientific-visualization</code></div>
+      <div class="k">关键参数</div><ul><li>x 轴 log10(dose)，y 轴抑制率 0-1 或 0-100%</li><li>误差条为 SD 或 SEM，图注注明 n</li><li>导出 PDF/SVG 矢量格式，字体 ≥7 pt，单栏宽度可读</li><li>配色对色觉障碍友好（如 Okabe-Ito）</li></ul>
+      <div class="k">预期产出</div><div class="v">矢量图 PDF/SVG、绘图脚本、自解释图注</div>
+      <div class="chk">校验：坐标轴与单位标注完整；误差条与样本量齐备；图为矢量且字号达标；IC50 标注与统计结果一致</div>
+    </div>
+ <h2>风险与应对</h2>
+ <ul><li>剂量-响应曲线未覆盖平台期导致 Top/Bottom 不可识别，IC50 外推不可靠——应对：检查最低/最高剂量抑制率，必要时固定 Bottom=0 或 Top=100 并报告为 3PL。</li><li>HillSlope 接近 0 或极大时 IC50 置信区间爆炸——应对：报告 profile likelihood CI 而非仅 Wald CI，并做 HillSlope 敏感性分析。</li><li>bootstrap 重采样单位错误（按孔而非按独立实验批次）导致 CI 过窄——应对：明确重采样单位，记录在审计日志，并用分层 bootstrap 验证。</li><li>数据清洗阶段静默删除异常点导致选择偏差——应对：保留审计日志，异常点标记而非删除，做含/不含异常点的敏感性对比。</li></ul>
+ <h2>交付物清单</h2>
+ <ul><li>干净数据集与数据字典</li><li>清洗审计日志</li><li>EDA 报告与剂量-响应散点图</li><li>IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²）</li><li>bootstrap 不确定性与蒙特卡洛稳健性审计报告</li><li>出版级剂量-响应曲线矢量图与绘图脚本</li><li>最终研究执行报告（含适用范围与边界条件）</li></ul>
+ <h2>落盘代码产物</h2>
+ <ul><li class="meta">本次方案未包含可落盘代码块</li></ul>
+ <h2>评估（主客观分列）</h2>
+ <div class="row"><span>skill_grounding</span><div class="bar"><i style="width:90%"></i></div><b>9.0</b></div><div class="row"><span>executability</span><div class="bar"><i style="width:80%"></i></div><b>8.0</b></div><div class="row"><span>rigor</span><div class="bar"><i style="width:90%"></i></div><b>9.0</b></div><div class="row"><span>scientific_validity</span><div class="bar"><i style="width:90%"></i></div><b>9.0</b></div>
+ <div class="box">盲评均分 <b>8.75/10</b>　|　技能采纳率 <b>100%</b></div>
+ <div class="meta">客观线：无 gold 基准，本次跳过</div>
+ <div class="box">盲评意见：方案完整覆盖数据清洗、EDA、4PL/3PL 拟合、bootstrap 不确定性与出版级可视化，方法选择与任务高度匹配且给出具体参数、阈值和判据；主要不足是未明确指定拟合工具（如 drc、nls、scipy）及 profile likelihood CI 的具体实现方式，但整体已达专业级。</div>
+ <footer>
+   本文件由执行器输出渲染，内容为<b>研究方案与要点</b>（非实验结论）；参数取值与判据需在真实数据上验证后采用。<br>
+   SkillNet-S1 · 产物指纹 <code>9a256174180d</code>
+ </footer>
+</div></body></html>

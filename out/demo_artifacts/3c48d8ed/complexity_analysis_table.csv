@@ -1,0 +1,13 @@
+数据结构,操作,平均时间复杂度,最坏时间复杂度,空间复杂度,备注
+DynamicArray,索引访问,O(1),O(1),O(n),连续内存
+DynamicArray,尾部插入,O(1)均摊,O(n)扩容,O(n),扩容时复制
+DynamicArray,按值查找,O(n),O(n),O(1)额外,线性扫描
+SinglyLinkedList,头插,O(1),O(1),O(n),修改头指针
+SinglyLinkedList,尾插,O(n),O(n),O(n),无尾指针需遍历
+SinglyLinkedList,查找,O(n),O(n),O(1)额外,顺序遍历
+Stack,push/pop/peek,O(1)均摊,O(1)均摊,O(n),基于动态数组
+Queue,enqueue/dequeue/peek,O(1)均摊,O(1)均摊,O(n),基于deque
+HashTable,put/get/delete,O(1),O(n),O(n),链地址法，冲突严重时退化
+BinarySearchTree,insert/search/delete,O(log n),O(n),O(n),退化为链表时最坏
+MinHeap,push/pop,O(log n),O(log n),O(n),完全二叉树
+MinHeap,peek,O(1),O(1),O(1)额外,查看根节点

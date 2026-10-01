@@ -245,6 +245,10 @@ def save_bundle(bundle: dict[str, Any], out_dir) -> list[dict[str, Any]]:
     out_dir.mkdir(parents=True, exist_ok=True)
     manifest: list[dict[str, Any]] = []
     for f in bundle["files"]:
+        if f.get("_copy_only"):            # 沙箱产物已落盘（二进制），不再覆写
+            manifest.append({"name": f["name"], "kind": f["kind"], "bytes": f["bytes"],
+                             "slug": bundle["meta"]["slug"]})
+            continue
         p = out_dir / f["name"]
         p.write_text(f["body"], encoding="utf-8")
         manifest.append({
@@ -365,3 +369,34 @@ def generate_deliverables(task: str, plan: dict[str, Any], skills: list[str],
         })
     err = "" if files else "模型未产出足够长度的交付物内容"
     return {"files": files, "error": err, "declared": len(declared), "generated": len(files)}
+
+
+# ======================================================================
+# 沙箱执行产物的收集（供演示页直接预览图片/数据）
+# ======================================================================
+def collect_execution_artifacts(result: dict[str, Any], dest_dir, prefix: str = "step1") -> list[dict[str, Any]]:
+    """把沙箱产出的文件复制到产物目录（平铺 + 加前缀），返回展示清单。
+
+    平铺的原因：预览接口按 `demo_artifacts/{slug}/{name}` 一层寻址，
+    沙箱的 try1/try2 子目录结构不适合直接暴露给前端。
+    """
+    import pathlib as _pl
+    import shutil as _sh
+    dest = _pl.Path(dest_dir)
+    dest.mkdir(parents=True, exist_ok=True)
+    out: list[dict[str, Any]] = []
+    for a in result.get("artifacts", []):
+        src = _pl.Path(a["path"])
+        if not src.is_file():
+            continue
+        name = f"{prefix}_{src.name}"
+        try:
+            _sh.copy2(src, dest / name)
+        except OSError:
+            continue
+        out.append({
+            "name": name, "kind": "真实运行产物",
+            "bytes": (dest / name).stat().st_size,
+            "previewable_image": src.suffix.lower() in (".png", ".jpg", ".jpeg", ".svg"),
+        })
+    return out
