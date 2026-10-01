@@ -737,8 +737,13 @@ function renderSandbox(d, slug) {
     return `<span style="display:inline-block;border:1px solid ${cls};color:${cls};border-radius:999px;padding:0 9px;font-size:11px;margin-right:6px">第${a.n}次 ${tag}${a.duration ? " · " + a.duration + "s" : ""}</span>`;
   }).join('<span style="color:#9aa7b3">→</span> ');
   const fixNote = d.fixed
-    ? `<div style="font-size:12px;color:var(--ok);margin-top:6px">技能驱动的修复：第 1 次运行报错，把<b>错误输出 + 该技能的已知陷阱</b>一起交给模型修复后成功——没有技能就只能盲试。</div>`
-    : `<div style="font-size:12px;color:#8a97a4;margin-top:6px">一次运行即通过（未触发修复）。</div>`;
+    ? `<div style="font-size:12px;color:var(--ok);margin-top:6px">技能驱动的修复：前 ${d.n_attempts - 1} 次运行报错，把<b>错误输出 + 该技能的已知陷阱</b>一起交给模型后修复成功——没有技能就只能盲试。</div>`
+    : d.exhausted
+      ? `<div style="font-size:12px;color:var(--bad);margin-top:6px">已尝试 ${d.n_attempts} 次仍未成功：错误与技能陷阱都交付给了模型，说明当前任务粒度超出单次生成能力。这属于<b>需要记录的失败样本</b>（应缩小步骤粒度或改写技能），不做粉饰。</div>`
+      : `<div style="font-size:12px;color:#8a97a4;margin-top:6px">一次运行即通过（未触发修复）。</div>`;
+  const truncNote = d.truncated
+    ? `<div style="font-size:12px;color:var(--warn);margin-top:4px">检测到<b>输出截断</b>（报错指向文件末尾的未闭合结构）：已自动改用「精简重写」策略，不再让模型修补超长代码。</div>`
+    : "";
 
   const codeBlock = `<details style="margin-top:10px"><summary style="cursor:pointer;font-size:12px;color:var(--brand2)">查看本次执行的完整代码（${(d.code || "").length} 字符）</summary><pre style="max-height:340px;overflow:auto;background:#f7f9fb;border:1px solid var(--line);padding:12px;font-size:11.5px;white-space:pre-wrap">${esc(d.code || "")}</pre></details>`;
   const outBlock = d.stdout
@@ -758,14 +763,14 @@ function renderSandbox(d, slug) {
       <table class="cmp">${vf.map(c => `<tr><td style="width:34px;font-weight:700;color:${c.passed ? "var(--ok)" : "var(--bad)"}">${c.passed ? "PASS" : "FAIL"}</td>
         <td>${esc(c.item)}</td><td style="color:#8a97a4">${esc(c.evidence)}</td></tr>`).join("")}</table>
       <div style="font-size:11.5px;color:#8a97a4;margin-top:4px">验收标准来自该技能的 verification 字段——技能契约在这里变成可执行的验收，不只是提示词。</div></div>`
-    : `<div style="font-size:11.5px;color:#8a97a4;margin-top:8px">该技能未提供 verification 清单，本次跳过逐条验收。</div>`;
+    : `<div style="font-size:11.5px;color:#8a97a4;margin-top:8px">${esc(d.verify_skip_reason || "本次未进行逐条验收")}。</div>`;
 
   return `<div style="font-size:12.5px;margin-bottom:8px">
       <b>${esc(d.step_label || "")} · ${esc(d.action || "")}</b>
       ${d.skill ? `调用技能 <span class="skl hit">${esc(d.skill)}</span>` : ""}
       <span style="color:#8a97a4">｜执行方式：生成代码 → 沙箱真实运行 → ${d.fixed ? "失败修复重试 → " : ""}技能验收</span>
     </div>
-    <div>${trail}</div>${fixNote}${codeBlock}${outBlock}${imgBlock}${otherBlock}${vfBlock}
+    <div>${trail}</div>${fixNote}${truncNote}${codeBlock}${outBlock}${imgBlock}${otherBlock}${vfBlock}
     ${ok ? "" : `<div style="margin-top:8px;font-size:12px;color:var(--bad)">本次沙箱执行未成功（已尝试 ${d.n_attempts} 次）：${esc((d.attempts[d.attempts.length - 1] || {}).stderr || "")}</div>`}
     ${ok && d.skill ? `<div style="margin-top:10px"><button class="abtn solid" onclick="runCompare(this)">跑三方对照：裸模型 / 提示词塞技能 / SkillNet</button></div><div id="cmpbox"></div>` : ""}`;
 }

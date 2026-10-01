@@ -25,9 +25,12 @@ from typing import Any
 from . import llm, sandbox
 
 MAX_OUTPUT_IN_PROMPT = 2500
-# 代码生成的 token 预算：实测 3000 会让中等长度的科研代码被截断（结尾缺 ```
-# 导致提取失败），提到 7000 覆盖大多数单文件分析脚本。
-CODE_MAX_TOKENS = 7000
+# 代码生成的 token 预算。两次实测驱动的调整：
+#   3000 -> 中等长度科研代码被截断（围栏未闭合）
+#   7000 -> 仍不够：一次 ML pipeline 任务生成了 19475 字符代码，
+#            在 line 531 处 "'[' was never closed"（写 CSV 表头的列表被截断）
+# 因此提到 12000，并在提示词里显式约束代码规模（见 _gen_code_prompt 要求 7）。
+CODE_MAX_TOKENS = 12000
 
 
 def config_code_tokens() -> int:
@@ -90,9 +93,25 @@ def _gen_code_prompt(task: str, step: dict[str, Any], skill: Any,
    的 matplotlib 配置生成 1 张图并存为 figure.png（中文字体按下面给的方式设置）；
 4. 需要落盘的数据表保存为 CSV；
 5. 代码中要体现对「已知陷阱」的规避（例如做相应检查并 print 检查结论）；
-6. 只输出代码本身，用 ```python 包裹，不要解释。
+6. **代码规模必须可控**：单文件不超过 250 行；若任务较大，只实现最核心的可运行路径，
+   其余用 `# TODO:` 注释标注，不要硬塞（超长输出会被截断，导致整份代码无法运行）；
+7. 所有 import 放在文件顶部，所有落盘文件集中在末尾，便于截断时快速定位；
+8. 只输出代码本身，用 ```python 包裹，不要解释。
 
 {sandbox.MATPLOTLIB_CJK_HINT}"""
+
+
+def _looks_truncated(err: str, code: str) -> bool:
+    """判断失败是否像「输出被截断」（而非逻辑错误）。
+
+    截断类错误的特征：报错指向文件末尾的未闭合结构，且代码本身很长。
+    这类错误不该让模型"修补"，而应让它**用更精简的方式重写**——
+    否则会把同样的超长代码再输出一次，再次截断（实测连续三次 syntax 失败就是这么来的）。
+    """
+    e = (err or "").lower()
+    marks = ("was never closed", "unexpected eof", "eof while scanning",
+             "unterminated string", "expected an indented block")
+    return any(m in e for m in marks) and len(code) > 6000
 
 
 def _fix_prompt(code: str, err: str, skill: Any, attempt: int,
@@ -113,7 +132,10 @@ def _fix_prompt(code: str, err: str, skill: Any, attempt: int,
 {traps}
 
 修复要求：
-1. 只改必要的部分，保持原有逻辑与分析目标；
+0. **若这次失败是因为输出被截断**（报错在文件末尾、结构未闭合）：不要修补，
+   请**重写一份更精简的完整代码**——聚焦最小可运行路径（<=200 行），
+   删掉次要的分析分支并用 `# TODO:` 标注，确保能跑通再说；
+1. 若是逻辑错误，只改必要的部分，保持原有逻辑与分析目标；
 2. 若错误是缺少第三方库，改用标准库或已装库实现（不要 import 未安装的包）；
 3. 若错误与数据/维度/类型有关，做相应检查与兜底；
 4. 修好后确保关键结果有 print 输出；
@@ -262,14 +284,30 @@ def execute_step(task: str, step: dict[str, Any], skill: Any,
               if (result.get("ok") and mode == "contract") else [])
     passed = sum(1 for c in checks if c["passed"])
 
+    has_vf = bool(getattr(skill, "verification", None)) if skill is not None else False
+    if not result.get("ok"):
+        verify_skip = "执行未成功，无法进行产物验收"
+    elif mode != "contract":
+        verify_skip = "该模式未启用技能契约，无验收标准"
+    elif not has_vf:
+        verify_skip = "该技能未定义 verification 清单"
+    else:
+        verify_skip = ""
+
     return {
+        "verify_skip_reason": verify_skip,
+        "has_verification": has_vf,
         "skill": getattr(skill, "name", None),
         "action": step.get("action", ""),
         "code": code,
         "final_ok": bool(result.get("ok")),
         "attempts": attempts,
         "n_attempts": len(attempts),
-        "fixed": len(attempts) > 1,
+        # fixed 必须表示「修复之后真的成功了」——早先只看 len(attempts)>1，
+        # 导致三次全失败也被前端描述成「修复后成功」（实测暴露的文案错误）。
+        "fixed": len(attempts) > 1 and bool(result.get("ok")),
+        "exhausted": (not result.get("ok")) and len(attempts) > 1,
+        "truncated": bool(attempts) and _looks_truncated(attempts[-1].get("stderr", ""), code),
         "stdout": result.get("stdout", "")[-4000:],
         "artifacts": result.get("artifacts", []),
         "verification": checks,
