@@ -725,6 +725,15 @@ def index() -> Any:
     return FileResponse(str(f))
 
 
+@app.get("/graph")
+def graph_page() -> Any:
+    """交互式技能星图（Canvas 力导向，可拖拽/缩放/悬停高亮）。"""
+    f = WEB_DIR / "graph.html"
+    if not f.exists():
+        raise HTTPException(404, "web/graph.html 不存在")
+    return FileResponse(str(f))
+
+
 @app.get("/dashboard")
 def dashboard() -> Any:
     f = WEB_DIR / "index.html"
