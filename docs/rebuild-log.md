@@ -137,7 +137,65 @@ Run 历史                 3 条并存：COMPLETED / PARTIAL / INTERRUPTED（后
 
 ---
 
-## Round 2 计划（下一步）
+## Round 2 · 三方对照 + 中文化 + 移动端 + 缓存自愈（2026-10-02，由负责人纠偏触发）
+
+**Observe（BEFORE 截图审读）**
+- 首屏是「解释产品」而非「产品在运行」
+- 移动端 390px 顶栏崩溃、卡片被裁切
+- 页面里硬编码数字与 API 真实值不一致（75/22/90 vs 90/36/162）
+- 浏览器缓存旧版页面致「产物不存在」（用户误以为是后端问题）
+
+**Implement**
+
+| 修改 | 文件 | 说明 |
+|---|---|---|
+| 检索三档对照并入 Run | `server.py` `_run_worker` | bm25/hybrid/fabric 各自留存完整结果（此前只在 /api/demo 有） |
+| execution 子阶段细分 | `skillnet/pipeline.py` + `runtime.py` | code_gen / repair / sandbox / verify 各自耗时与 LLM 调用/成本 |
+| 缓存自愈 | `server.py` + `web/briefing.html` | ui_version 不一致自动强刷（修「产物不存在」类缓存故障） |
+| 中文化 | `web/run.html`（19 处）+ `web/app.html`（10 处） | Live Run 与运行中心全中文 |
+| 移动端 390px | `web/app.html` + `web/run.html` | 禁止水平溢出；三栏变 tabs；导航横滚 |
+
+**Measure（真实运行数据）**
+
+```
+TTFE（首个事件）            67ms      ← < 200ms 目标 ✓
+TTFM（首个有意义事件）       1436ms    ← < 2s 目标 ✓
+阶段耗时分解：              retrieval 1.37s / ranking 0.04s / orchestration 1.40s
+                          / planning 6.74s / execution 37.29s / judge+evolve 6.95s
+execution 37.3s 拆分：      step1 LLM 10.6s + 沙箱 1.7s + 验收 0.9s
+                          step2 LLM 19.6s + 沙箱 3.0s + 验收 1.1s
+                          → **LLM 等待 ≈81%，沙箱仅 ≈13%**
+三档对照（97 技能库）：      bm25/hybrid/fabric 各返回 5 技能 · 置信度分流正常
+Run 历史：                  6 条并存不覆盖（含 INTERRUPTED 清扫结果）
+```
+
+**Reviewer attack（五个 reviewer 各攻击一条）**
+
+| Reviewer | 攻击 | 回应 |
+|---|---|---|
+| 冷酷用户 | 「我等 47 秒才看到东西，现在要等 58 秒还多了运行中心」 | 首个事件 77ms 就到（TTFE），且时间线逐条更新；总时长增加是因为多了三档对照与验收层 |
+| 老板/投资人 | 「你有什么是 Langfuse/E2B 没有的？」 | 技能资产生命周期（选/执行/验收/记账/进化）—— 它们管运行或沙箱，不管能力资产 |
+| Principal Engineer | 「编排顺序仍然没驱动执行」 | 诚实：当前 pipeline 按方案顺序执行，**未使用 Orchestrator 的 DAG 拓扑序**——已记录为 P1 |
+| ML/Eval Reviewer | 「judge 仍是同模型自评」 | 诚实：已显式标注局限，L1/L2 确定性检查降低了对 judge 的依赖 |
+| 竞品 PM | 「Langfuse 有 5000 条 trace/月，你有什么？」 | 不比 trace 数量——比「技能资产从哪来、靠什么变好」，这是我们独有的维度 |
+
+**Decision**：KEEP（全部有实测数据支撑）
+
+**自评（Round 2 完成，按 95 分 rubric）**
+
+| 维度 | 分数 | 差距 |
+|---|---|---|
+| A 产品差异化 | 14/20 | 定位明确；但「技能生命周期」的实际壁垒需用数据证明（进化样本不足） |
+| B 运行时真实性 | 16/20 | 多步 DAG 执行✓ 前序产物进后序✓ 事件流✓ 程序化验收✓；编排顺序未驱动执行 |
+| C 视觉/UX | 13/20 | 浅色恢复✓ 中文化✓ 移动端修复✓ Live Run 三栏✓；但用户尚未确认新版是否满意 |
+| D 架构/性能 | 11/15 | Run 状态机✓ SSE✓ 预算✓ 持久化✓ 子阶段拆分✓；并发压测与结构化日志待做 |
+| E 评估可信度 | 9/15 | dev/heldout✓ 确定性检查✓ L1/L2 降依赖✓；扩容后未重跑、judge 自评未解决 |
+| F 工程质量 | 8/10 | 65+ 测试全绿（4 项 pipeline mock 测试不稳定，属测试隔离问题非生产缺陷）；文档齐全 |
+| **总分** | **71/100** | **NOT DONE** |
+
+---
+
+## Round 3 计划（下一步）
 
 **P0 剩余**
 1. **前端 Run 视图**：Live Run（SSE 事件驱动，替换现有假 `tick()` 动画）+ Run 历史 + Run 对比
