@@ -425,3 +425,93 @@ def test_build_steps_workflow_mapping():
     assert [st.depends_on for st in steps] == [[], [0], [0], [1, 2]]
     steps2 = pipeline.build_steps(_dag_plan(), None)     # 线性兜底不回归
     assert [st.depends_on for st in steps2] == [[], [0], [1], [2]]
+
+
+def test_two_runs_concurrent_smoke(tmp_path):
+    """并发 smoke：两个 Run 同时提交——工作区不串、状态互不污染（指令 31）。
+
+    账本不串已由 ledger_scope 单测与 context 传播覆盖；这里验证
+    DAG 调度器线程 + 外层线程并存时，两条 Run 都能完整收敛。
+    """
+    import threading
+    from skillnet import llm as _llm
+
+    seq_holder = {"n": 0}
+    lock = threading.Lock()
+
+    def fake_chat(messages, **kw):
+        with lock:
+            i = seq_holder["n"]
+            seq_holder["n"] += 1
+        code = GOOD_STEP1 if i % 2 == 0 else GOOD_STEP2
+        return code
+
+    orig = pipeline.llm.chat
+    pipeline.llm.chat = fake_chat
+    try:
+        results = {}
+        def one(tag):
+            ws = tmp_path / f"ws-{tag}"
+            r = _mkrun(tag)
+            plan = {"steps": [{"action": "产数据"}, {"action": "读数据做分析"}]}
+            pipeline.execute_run(r, None, ws, plan, max_steps=2)
+            pipeline.finalize_status(r)
+            results[tag] = r
+
+        ths = [threading.Thread(target=one, args=(t,)) for t in ("A", "B")]
+        for x in ths: x.start()
+        for x in ths: x.join(60)
+        assert set(results) == {"A", "B"}, "有 Run 未在时限内完成"
+        for tag, r in results.items():
+            assert r.status == "COMPLETED", (tag, r.status, r.error)
+            assert (tmp_path / f"ws-{tag}" / "artifacts" / "step1_clean.csv").exists()
+        # 两条 Run 的步骤状态互不污染
+        assert all(s.status == "done" for s in results["A"].steps)
+        assert all(s.status == "done" for s in results["B"].steps)
+    finally:
+        pipeline.llm.chat = orig
+
+
+def test_two_runs_concurrent_smoke(tmp_path):
+    """并发 smoke：两个 Run 同时提交——工作区不串、状态互不污染（指令 31）。
+
+    账本不串已由 ledger_scope 单测与 context 传播覆盖；这里验证
+    DAG 调度器线程 + 外层线程并存时，两条 Run 都能完整收敛。
+    """
+    import threading
+    from skillnet import llm as _llm
+
+    seq_holder = {"n": 0}
+    lock = threading.Lock()
+
+    def fake_chat(messages, **kw):
+        with lock:
+            i = seq_holder["n"]
+            seq_holder["n"] += 1
+        code = GOOD_STEP1 if i % 2 == 0 else GOOD_STEP2
+        return code
+
+    orig = pipeline.llm.chat
+    pipeline.llm.chat = fake_chat
+    try:
+        results = {}
+        def one(tag):
+            ws = tmp_path / f"ws-{tag}"
+            r = _mkrun(tag)
+            plan = {"steps": [{"action": "产数据"}, {"action": "读数据做分析"}]}
+            pipeline.execute_run(r, None, ws, plan, max_steps=2)
+            pipeline.finalize_status(r)
+            results[tag] = r
+
+        ths = [threading.Thread(target=one, args=(t,)) for t in ("A", "B")]
+        for x in ths: x.start()
+        for x in ths: x.join(60)
+        assert set(results) == {"A", "B"}, "有 Run 未在时限内完成"
+        for tag, r in results.items():
+            assert r.status == "COMPLETED", (tag, r.status, r.error)
+            assert (tmp_path / f"ws-{tag}" / "artifacts" / "step1_clean.csv").exists()
+        # 两条 Run 的步骤状态互不污染
+        assert all(s.status == "done" for s in results["A"].steps)
+        assert all(s.status == "done" for s in results["B"].steps)
+    finally:
+        pipeline.llm.chat = orig
