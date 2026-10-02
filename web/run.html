@@ -241,7 +241,7 @@ function tickHeader(){
   const ms = ended ? (RUN.ended_at_ms - RUN.started_at_ms) : (Date.now() - (RUN.started_at_ms || Date.now()));
   $("elapsed").textContent = fmtMs(ms);
   if (RUN.cost_yuan != null){
-    $("cost").textContent = "¥" + Number(RUN.cost_yuan).toFixed(4);
+    $("cost").textContent = "¥" + Number(RUN.cost_yuan).toFixed(3);
     const cap = RUN.budget?.max_cost_yuan || 1;
     const pct = Math.min(100, RUN.cost_yuan / cap * 100);
     $("costbar").querySelector("i").style.width = pct + "%";
@@ -329,7 +329,7 @@ const EV_TEXT = (ev) => {
     case "code.generating": return `Step ${ev.step+1}: generating code (attempt ${d.attempt})`;
     case "step.attempt": return `Step ${ev.step+1} attempt #${d.attempt} <b>${d.ok?"PASSED":"FAILED"}</b>${d.error_kind?` · ${esc(d.error_kind)}`:""} · ${fmtMs(d.duration_ms||0)}`;
     case "step.retry": return `Step ${ev.step+1}: repair requested — ${esc(d.reason||"")}`;
-    case "artifact.created": return `✓ <b>${esc(d.name)}</b> created (${(d.bytes/1024).toFixed(1)} KB)`;
+    case "artifact.created": return `✓ <b>${esc(d.name)}</b> 已创建 (${(d.bytes/1024).toFixed(1)} KB)`;
     case "check.result": return `${d.passed?"✓":"✗"} ${esc(d.name)}${d.passed?"":` — ${esc((d.detail||"").slice(0,70))}`}`;
     case "step.completed": return `Step ${ev.step+1} completed — ${d.status} · ${d.artifacts} artifacts · checks ${d.checks} · ${fmtMs(d.duration_ms||0)}`;
     case "step.error": return `Step ${ev.step+1} error — ${esc((d.error||"").slice(0,90))}`;
@@ -337,7 +337,7 @@ const EV_TEXT = (ev) => {
     case "execution.finished": return `Execution finished — done <b>${d.done}</b> · failed <b>${d.failed}</b> · ${fmtMs(d.duration_ms||0)}`;
     case "judge.completed": return `Semantic review — weighted <b>${d.weighted}</b>${d.coverage!=null?` · coverage ${d.coverage}`:""}`;
     case "evolution.proposed": return `Skill distillation — ${d.accepted?`accepted <b>${esc(d.name)}</b>`:"not admitted"} · library ${d.library_size}`;
-    case "run.finished": return `<b>Run ${d.status}</b> · ${fmtMs(d.duration_ms||0)} · ¥${Number(d.cost||0).toFixed(4)}`;
+    case "run.finished": return `<b>Run ${d.status}</b> · ${fmtMs(d.duration_ms||0)} · ¥${Number(d.cost||0).toFixed(3)}`;
     default: return `${esc(ev.type)} ${esc(JSON.stringify(d).slice(0,90))}`;
   }
 };
