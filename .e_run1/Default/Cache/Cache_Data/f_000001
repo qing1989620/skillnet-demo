@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<title>SkillNet · Live Run</title>
+<style>
+  /* 视觉原则：technical / precise / quiet / trustworthy / dense but legible
+     —— 不使用霓虹渐变、玻璃拟态、彩色 KPI 卡；状态色有语义。 */
+  :root{
+    --bg:#0e1116; --panel:#151a21; --panel2:#1b222b; --line:#242c37;
+    --ink:#e6ecf3; --ink2:#9aa8b8; --ink3:#6b7a8c;
+    --ok:#3fb950; --warn:#d29922; --bad:#f85149; --info:#58a6ff; --run:#d29922;
+    --mono:"Cascadia Mono",Consolas,"Courier New",monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font:13px/1.6 "Microsoft YaHei","PingFang SC",sans-serif;
+       display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+  /* ---------- Header ---------- */
+  header{flex:0 0 auto;border-bottom:1px solid var(--line);background:var(--panel);padding:10px 16px;
+         display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+  .h-left{display:flex;align-items:center;gap:12px;min-width:0}
+  .badge{font:600 11px/1 var(--mono);letter-spacing:.4px;padding:5px 9px;border-radius:3px;
+         border:1px solid currentColor;white-space:nowrap}
+  .st-COMPLETED{color:var(--ok)} .st-PARTIAL{color:var(--warn)} .st-FAILED{color:var(--bad)}
+  .st-RUNNING,.st-EXECUTING,.st-RETRIEVING,.st-ORCHESTRATING,.st-VERIFYING,.st-EVOLVING{color:var(--info)}
+  .st-CANCELLED,.st-INTERRUPTED{color:var(--ink3)}
+  .st-BUDGET_EXCEEDED{color:var(--warn)} .st-CREATED{color:var(--ink3)}
+  .task{font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rid{font:400 11px/1 var(--mono);color:var(--ink3);margin-top:2px}
+  .h-right{display:flex;align-items:center;gap:16px;font:12px/1.5 var(--mono);color:var(--ink2)}
+  .kv b{color:var(--ink);font-weight:600}
+  .bar{width:88px;height:4px;background:var(--panel2);border-radius:2px;overflow:hidden;display:inline-block;vertical-align:middle}
+  .bar i{display:block;height:100%;background:var(--ok);transition:width .4s}
+  .bar.warn i{background:var(--warn)}
+  button{font:600 12px/1 inherit;padding:7px 13px;border-radius:3px;cursor:pointer;
+         background:var(--panel2);color:var(--ink);border:1px solid var(--line)}
+  button:hover{border-color:var(--ink3)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  button.danger{color:var(--bad);border-color:#4a2224}
+
+  /* ---------- 三栏 ---------- */
+  main{flex:1 1 auto;display:grid;grid-template-columns:290px 1fr 400px;min-height:0}
+  .col{min-height:0;display:flex;flex-direction:column;border-right:1px solid var(--line)}
+  .col:last-child{border-right:none;border-left:1px solid var(--line)}
+  .col-h{flex:0 0 auto;padding:9px 14px;border-bottom:1px solid var(--line);
+         font:600 11px/1 var(--mono);letter-spacing:.6px;color:var(--ink2);text-transform:uppercase;
+         display:flex;justify-content:space-between;align-items:center}
+  .col-b{flex:1 1 auto;overflow:auto;padding:12px 14px}
+
+  /* ---------- Graph ---------- */
+  .gnode{border:1px solid var(--line);background:var(--panel);border-radius:4px;padding:9px 11px;
+         margin-bottom:0;cursor:pointer;transition:border-color .18s,background .18s;position:relative}
+  .gnode:hover{border-color:var(--ink3)}
+  .gnode.sel{border-color:var(--info);background:var(--panel2)}
+  .gnode .grow1{display:flex;align-items:center;gap:8px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--ink3);flex:0 0 auto}
+  .s-waiting .dot{background:var(--ink3)} .s-running .dot{background:var(--info);animation:pulse 1.1s infinite}
+  .s-verifying .dot{background:var(--warn);animation:pulse 1.1s infinite} .s-passed .dot{background:var(--ok)}
+  .s-retrying .dot{background:var(--warn)} .s-failed .dot{background:var(--bad)} .s-skipped .dot{background:#3a4351}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(88,166,255,.5)}55%{box-shadow:0 0 0 6px rgba(88,166,255,0)}}
+  .gnode .gname{font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .gnode .gmeta{font:11px/1.6 var(--mono);color:var(--ink3);margin-top:3px}
+  .gnode .gskill{display:inline-block;font:11px/1 var(--mono);color:var(--info);
+                 border:1px solid #1f3b5c;background:#101a26;border-radius:3px;padding:2px 6px;margin-top:5px}
+  .gretry{color:var(--warn);font:600 11px var(--mono)}
+  /* 依赖边：标出真实 artifact */
+  .gedge{display:flex;flex-direction:column;align-items:center;padding:3px 0;color:var(--ink3)}
+  .gedge .ln{width:1px;height:12px;background:var(--line)}
+  .gedge .art{font:10.5px/1.4 var(--mono);color:var(--info);border:1px dashed #1f3b5c;border-radius:3px;
+              padding:2px 7px;margin:2px 0;cursor:pointer;background:#0f1720}
+  .gedge .art:hover{border-style:solid}
+
+  /* ---------- Timeline ---------- */
+  .tl{font:11.5px/1.7 var(--mono)}
+  .ev{display:grid;grid-template-columns:96px 1fr;gap:10px;padding:2px 0;align-items:baseline}
+  .ev .ts{color:var(--ink3)}
+  .ev .msg{color:var(--ink2);word-break:break-word}
+  .ev .msg b{color:var(--ink);font-weight:600}
+  .ev.ok .msg{color:#9fdcae} .ev.bad .msg{color:#ffb4b0} .ev.warn .msg{color:#f0cf8a}
+  .ev.mile .msg{color:var(--ink);font-weight:600}
+  .ev.new{animation:ins .35s ease}
+  @keyframes ins{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+
+  /* ---------- Inspector ---------- */
+  .ins-sec{border-bottom:1px solid var(--line);padding:12px 0}
+  .ins-sec:first-child{padding-top:0}
+  .ins-k{font:600 10.5px/1 var(--mono);letter-spacing:.6px;color:var(--ink3);text-transform:uppercase;margin-bottom:7px}
+  .row{display:flex;justify-content:space-between;gap:12px;font:12px/1.8 var(--mono);color:var(--ink2)}
+  .row b{color:var(--ink);font-weight:600}
+  pre{background:#0b0f14;border:1px solid var(--line);border-radius:3px;padding:9px 11px;
+      font:11px/1.6 var(--mono);color:#c7d3e0;overflow:auto;max-height:260px;white-space:pre-wrap;word-break:break-word}
+  .chk{display:grid;grid-template-columns:18px 1fr;gap:6px;font:11.5px/1.7 var(--mono);color:var(--ink2)}
+  .chk .m{color:var(--ok)} .chk.bad .m{color:var(--bad)}
+  .layer{border-left:2px solid var(--line);padding-left:10px;margin:9px 0}
+  .layer.l1{border-color:var(--ok)} .layer.l2{border-color:var(--info)} .layer.l3{border-color:var(--warn)}
+  .layer .lh{display:flex;justify-content:space-between;font:600 11.5px/1.6 var(--mono);margin-bottom:5px}
+  .note{font:11.5px/1.6 var(--mono);color:var(--ink3);background:#0f1720;border:1px dashed var(--line);
+        border-radius:3px;padding:7px 10px;margin-top:8px}
+  a{color:var(--info);text-decoration:none} a:hover{text-decoration:underline}
+  .empty{color:var(--ink3);font-size:12px;padding:14px 0}
+
+  /* ---------- Mobile（390 单独设计，不缩小桌面） ---------- */
+  @media (max-width:860px){
+    body{overflow:auto}
+    header{grid-template-columns:1fr;gap:8px}
+    .h-right{flex-wrap:wrap;gap:10px}
+    main{display:block;height:auto}
+    .col{border-right:none;border-bottom:1px solid var(--line)}
+    .col-b{max-height:none;overflow:visible}
+    .tabs{display:flex;gap:6px;padding:8px 14px;border-bottom:1px solid var(--line);background:var(--panel)}
+    .tabs button{flex:1;padding:8px 4px;font-size:11.5px}
+    .col[data-tab]{display:none} .col[data-tab].on{display:flex}
+  }
+  .tabs{display:none}
+</style>
+</head>
+<body>
+<header>
+  <div class="h-left">
+    <span class="badge" id="status">LOADING</span>
+    <div style="min-width:0">
+      <div class="task" id="task">…</div>
+      <div class="rid" id="rid"></div>
+    </div>
+  </div>
+  <div class="h-right">
+    <span class="kv">耗时 <b id="elapsed">0.0s</b></span>
+    <span class="kv">成本 <b id="cost">¥0.000</b> / <span id="budget">¥0.20</span>
+      <span class="bar" id="costbar"><i style="width:0%"></i></span></span>
+    <span class="kv">步骤 <b id="stepstat">0/0</b></span>
+    <button id="cancel" class="danger">Cancel</button>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button data-t="graph" class="on">流程</button>
+  <button data-t="timeline">时间线</button>
+  <button data-t="inspect">详情</button>
+</nav>
+
+<main>
+  <section class="col" data-tab="graph">
+    <div class="col-h"><span>Execution Graph</span><span id="gcount"></span></div>
+    <div class="col-b" id="graph"><div class="empty">等待 run.executing 事件…</div></div>
+  </section>
+
+  <section class="col" data-tab="timeline">
+    <div class="col-h"><span>Live Timeline</span><span id="evcount">0 events</span></div>
+    <div class="col-b" id="timeline"><div class="empty">订阅事件流中…</div></div>
+  </section>
+
+  <section class="col" data-tab="inspect">
+    <div class="col-h"><span>Inspector</span><span id="inswhat">—</span></div>
+    <div class="col-b" id="inspector"><div class="empty">点击左侧节点、产物边或时间线事件查看详情。</div></div>
+  </section>
+</main>
+
+<script>
+/* ============================================================================
+   Live Run —— 全部内容由 SSE 真实事件驱动；**无 fake animation、无 staged delay**。
+   设计约束（来自 Round 2 指令）：
+   - 事件到达即渲染，禁止人为节奏；
+   - 术语严格：L1 通过 = VERIFIED（确定性校验）；L2 = ASSERTIONS；L3 = SEMANTIC REVIEW；
+     **绝不出现 "RESULT CORRECT"**（无 ground truth 时不允许声称结果正确）；
+   - 产物依赖必须可见（点击边看 lineage：SHA256/大小/来源步骤）。
+   ============================================================================ */
+const API = location.port ? location.origin : "http://127.0.0.1:8848";
+const RUN_ID = new URLSearchParams(location.search).get("id") || localStorage.getItem("last_run") || "";
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtMs = ms => ms >= 1000 ? (ms/1000).toFixed(1) + "s" : Math.max(0, Math.round(ms)) + "ms";
+const fmtTs = ms => { const d = new Date(ms); return d.toTimeString().slice(0,8) + "." + String(d.getMilliseconds()).padStart(3,"0"); };
+
+let RUN = null;          // 最近一次 /api/runs/{id}
+let EVENTS = [];         // 收到的全部事件
+let SELECTED = null;     // {kind:"step"|"artifact"|"attempt", idx?, name?}
+const T0 = Date.now();
+
+/* ---------- SSE ---------- */
+function subscribe(){
+  const es = new EventSource(`${API}/api/runs/${encodeURIComponent(RUN_ID)}/stream`);
+  es.onmessage = e => {
+    let ev; try { ev = JSON.parse(e.data); } catch { return; }
+    if (ev.type === "end" || ev.type === "run.finished") {
+      setTimeout(() => { es.close(); refresh(); }, 120);
+    }
+    if (ev.type) { EVENTS.push(ev); appendEvent(ev); reactTo(ev); }
+  };
+  es.addEventListener("end", () => { es.close(); refresh(); });
+  es.onerror = () => { es.close(); setTimeout(refresh, 400); };
+}
+
+/* ---------- Header ---------- */
+async function refresh(){
+  try { RUN = await (await fetch(`${API}/api/runs/${encodeURIComponent(RUN_ID)}`)).json(); } catch { return; }
+  if (RUN.detail) return;
+  $("status").textContent = RUN.status;
+  $("status").className = "badge st-" + RUN.status;
+  $("task").textContent = RUN.task || "";
+  $("rid").textContent = RUN.run_id || "";
+  $("stepstat").textContent = `${(RUN.step_stats||{}).done||0}/${(RUN.step_stats||{}).total||0}`;
+  $("budget").textContent = "¥" + (RUN.budget?.max_cost_yuan ?? 0.2).toFixed(2);
+  renderGraph(); renderTimelineMeta();
+  if (SELECTED) renderInspector();
+  const done = ["COMPLETED","FAILED","PARTIAL","CANCELLED","INTERRUPTED","BUDGET_EXCEEDED"].includes(RUN.status);
+  $("cancel").disabled = done;
+}
+function tickHeader(){
+  if (!RUN) return;
+  const ended = RUN.ended_at_ms || (RUN.status === "COMPLETED" ? RUN.started_at_ms : 0);
+  const ms = ended ? (RUN.ended_at_ms - RUN.started_at_ms) : (Date.now() - (RUN.started_at_ms || Date.now()));
+  $("elapsed").textContent = fmtMs(ms);
+  if (RUN.cost_yuan != null){
+    $("cost").textContent = "¥" + Number(RUN.cost_yuan).toFixed(3);
+    const cap = RUN.budget?.max_cost_yuan || 1;
+    const pct = Math.min(100, RUN.cost_yuan / cap * 100);
+    $("costbar").querySelector("i").style.width = pct + "%";
+    $("costbar").className = "bar" + (pct > 75 ? " warn" : "");
+  }
+}
+setInterval(tickHeader, 200);
+
+/* ---------- Graph ---------- */
+const STEP_STATE = s => {
+  if (s.status === "done") {
+    const failedChk = (s.checks_total || 0) > 0 && (s.checks_passed || 0) === 0;
+    return failedChk ? "verifying" : "passed";
+  }
+  if (s.status === "failed") return s.n_attempts > 1 ? "failed" : "failed";
+  if (s.status === "skipped") return "skipped";
+  if (s.status === "running") return s.n_attempts > 1 ? "retrying" : "running";
+  return "waiting";
+};
+function renderGraph(){
+  const host = $("graph");
+  if (!RUN || !RUN.steps) return;
+  if (!RUN.steps.length){ host.innerHTML = '<div class="empty">尚无步骤（等方案生成）</div>'; return; }
+  const parts = [];
+  RUN.steps.forEach((s, i) => {
+    const st = STEP_STATE(s);
+    const sel = SELECTED && SELECTED.kind === "step" && SELECTED.idx === s.idx ? " sel" : "";
+    parts.push(`<div class="gnode s-${st}${sel}" data-step="${s.idx}">
+      <div class="grow1"><span class="dot"></span><span class="gname">S${s.idx+1} ${esc(s.action || "（未命名步骤）").slice(0,42)}</span></div>
+      <div class="gmeta">${st.toUpperCase()} · ${fmtMs(s.duration_ms||0)}${s.n_attempts>1?` · <span class="gretry">×${s.n_attempts} 尝试</span>`:""}
+        ${s.checks_total?` · 检查 ${s.checks_passed}/${s.checks_total}`:""}
+        ${s.verification_total?` · 语义 ${s.verification_passed}/${s.verification_total}`:""}</div>
+      ${s.skill?`<span class="gskill">${esc(s.skill)}</span>`:""}
+    </div>`);
+    // 依赖边：真实 artifact（下游 inputs）
+    const next = RUN.steps[i+1];
+    if (next) {
+      const carried = (next.inputs || []);
+      parts.push(`<div class="gedge"><div class="ln"></div>
+        ${carried.length ? carried.map(a => `<span class="art" data-art="${esc(a)}" data-from="${s.idx}">${esc(a)}</span>`).join("")
+                         : '<span class="art" style="color:var(--ink3);border-color:var(--line)">（无显式产物传递）</span>'}
+        <div class="ln"></div></div>`);
+    }
+  });
+  host.innerHTML = parts.join("");
+  host.querySelectorAll(".gnode").forEach(el => el.onclick = () => {
+    SELECTED = { kind: "step", idx: +el.dataset.step }; renderGraph(); renderInspector();
+  });
+  host.querySelectorAll(".art").forEach(el => el.onclick = ev => {
+    ev.stopPropagation();
+    SELECTED = { kind: "artifact", name: el.dataset.art, from: +el.dataset.from };
+    renderGraph(); renderInspector();
+  });
+  $("gcount").textContent = `${RUN.steps.length} steps`;
+}
+
+/* ---------- Timeline ---------- */
+const EV_STYLE = t => t.startsWith("run.completed") || t === "execution.finished" ? "mile"
+  : t === "run.finished" ? "mile"
+  : t.includes("error") || t.includes("failed") ? "bad"
+  : t === "step.retry" ? "warn"
+  : t === "artifact.created" || t === "check.result" || t === "step.completed" ? "ok" : "";
+const EV_TEXT = (ev) => {
+  const d = ev.data || {};
+  switch (ev.type) {
+    case "run.started": return `Run started — <b>${esc((d.task||"").slice(0,90))}</b>`;
+    case "retrieval.completed": return `Retrieved <b>${(d.selected||[]).length}</b> candidates · decision <b>${esc(d.decision||"")}</b> · ${fmtMs(d.duration_ms||0)}`;
+    case "ranking.completed": return `Ranking ready — top: <b>${esc(d.top||"—")}</b>`;
+    case "orchestration.completed": return `Workflow ready — <b>${(d.skills||[]).length}</b> skills · ${(d.workflow||0)} edges · ${fmtMs(d.duration_ms||0)}`;
+    case "plan.created": return `Plan created — <b>${d.steps}</b> steps · ${fmtMs(d.duration_ms||0)}`;
+    case "run.executing": return `Executing <b>${d.steps}</b> step(s)`;
+    case "step.started": return `Step ${ev.step+1} started — ${esc((d.action||"").slice(0,80))}${d.skill?` · <b>${esc(d.skill)}</b>`:""}`;
+    case "step.inputs": return `Step ${ev.step+1} input ← <b>${(d.files||[]).join(", ")}</b>`;
+    case "code.generating": return `Step ${ev.step+1}: generating code (attempt ${d.attempt})`;
+    case "step.attempt": return `Step ${ev.step+1} attempt #${d.attempt} <b>${d.ok?"PASSED":"FAILED"}</b>${d.error_kind?` · ${esc(d.error_kind)}`:""} · ${fmtMs(d.duration_ms||0)}`;
+    case "step.retry": return `Step ${ev.step+1}: repair requested — ${esc(d.reason||"")}`;
+    case "artifact.created": return `✓ <b>${esc(d.name)}</b> created (${(d.bytes/1024).toFixed(1)} KB)`;
+    case "check.result": return `${d.passed?"✓":"✗"} ${esc(d.name)}${d.passed?"":` — ${esc((d.detail||"").slice(0,70))}`}`;
+    case "step.completed": return `Step ${ev.step+1} completed — ${d.status} · ${d.artifacts} artifacts · checks ${d.checks} · ${fmtMs(d.duration_ms||0)}`;
+    case "step.error": return `Step ${ev.step+1} error — ${esc((d.error||"").slice(0,90))}`;
+    case "steps.skipped": return `Steps skipped ${JSON.stringify(d.steps)} — ${esc(d.reason||"")}`;
+    case "execution.finished": return `Execution finished — done <b>${d.done}</b> · failed <b>${d.failed}</b> · ${fmtMs(d.duration_ms||0)}`;
+    case "judge.completed": return `Semantic review — weighted <b>${d.weighted}</b>${d.coverage!=null?` · coverage ${d.coverage}`:""}`;
+    case "evolution.proposed": return `Skill distillation — ${d.accepted?`accepted <b>${esc(d.name)}</b>`:"not admitted"} · library ${d.library_size}`;
+    case "run.finished": return `<b>Run ${d.status}</b> · ${fmtMs(d.duration_ms||0)} · ¥${d.cost}`;
+    default: return `${esc(ev.type)} ${esc(JSON.stringify(d).slice(0,90))}`;
+  }
+};
+function appendEvent(ev){
+  const host = $("timeline");
+  if (host.querySelector(".empty")) host.innerHTML = "";
+  const div = document.createElement("div");
+  div.className = "ev " + EV_STYLE(ev.type) + " new";
+  div.innerHTML = `<span class="ts">${fmtTs(ev.ts_ms)}</span><span class="msg">${EV_TEXT(ev)}</span>`;
+  div.onclick = () => { if (ev.step != null) { SELECTED = {kind:"step", idx:ev.step}; renderGraph(); renderInspector(); } };
+  host.appendChild(div);
+  host.scrollTop = host.scrollHeight;
+  $("evcount").textContent = EVENTS.length + " events";
+}
+function renderTimelineMeta(){ $("evcount").textContent = EVENTS.length + " events"; }
+function reactTo(ev){
+  if (ev.type === "step.started" || ev.type === "step.completed" || ev.type === "artifact.created"
+      || ev.type === "check.result" || ev.type === "step.attempt") {
+    fetch(`${API}/api/runs/${encodeURIComponent(RUN_ID)}`).then(r=>r.json()).then(d=>{
+      RUN = d; renderGraph(); tickHeader(); if (SELECTED) renderInspector();
+    }).catch(()=>{});
+  }
+  if (ev.type === "run.finished") refresh();
+}
+
+/* ---------- Inspector ---------- */
+function renderInspector(){
+  const host = $("inspector");
+  if (!RUN || !SELECTED){ host.innerHTML = '<div class="empty">点击左侧节点、产物边或时间线事件查看详情。</div>'; $("inswhat").textContent="—"; return; }
+  if (SELECTED.kind === "step"){ const s = RUN.steps[SELECTED.idx]; if(!s) return; $("inswhat").textContent = `step ${s.idx+1}`; host.innerHTML = stepHtml(s); }
+  else if (SELECTED.kind === "artifact"){ $("inswhat").textContent = "artifact"; host.innerHTML = artifactHtml(SELECTED); }
+  else host.innerHTML = '<div class="empty">—</div>';
+}
+function stepHtml(s){
+  const st = STEP_STATE(s);
+  const q = RUN.retrieval && RUN.retrieval.selected ? RUN.retrieval.selected.indexOf(s.skill) : -1;
+  const rk = (RUN.ranking||[]).find(r => r.name === s.skill);
+  const attempts = (s.attempts||[]).map(a => `
+    <div class="layer ${a.ok?"l1":"l3"}">
+      <div class="lh"><span>Attempt #${a.n} ${a.ok?"PASSED":"FAILED"}</span><span>${fmtMs(a.duration_ms||0)}${a.error_kind?` · ${esc(a.error_kind)}`:""}</span></div>
+      ${a.stderr?`<pre style="max-height:130px">${esc(a.stderr.slice(-700))}</pre>`:""}
+      ${a.stdout?`<pre style="max-height:130px">${esc(a.stdout.slice(0,700))}</pre>`:""}
+    </div>`).join("") || '<div class="empty">尚无尝试</div>';
+  const l1 = (s.checks||[]).filter(c => !String(c.name).startsWith("[技能断言]"));
+  const l2 = (s.checks||[]).filter(c => String(c.name).startsWith("[技能断言]"));
+  const l3 = s.verifications||[];
+  const chk = arr => arr.map(c => `<div class="chk ${c.passed?"":"bad"}"><span class="m">${c.passed?"✓":"✗"}</span>
+      <span>${esc(c.name)}${c.detail?` <span style="color:var(--ink3)">— ${esc(c.detail)}</span>`:""}
+      ${c.evidence?` <span style="color:var(--ink3)">— ${esc(c.evidence)}</span>`:""}</span></div>`).join("") || '<div class="empty">（无）</div>';
+  const stageRows = Object.entries(s.stages||{}).sort((a,b)=>b[1]-a[1]).map(([k,v]) =>
+      `<div class="row"><span>${esc(k)}</span><b>${k.endsWith("_ms")?fmtMs(v):v}</b></div>`).join("") || '<div class="empty">（无细分数据）</div>';
+  const arts = (s.artifacts||[]).map(a => `<div class="row"><a href="${API}/api/runs/${RUN.run_id}/artifacts/${encodeURIComponent(a.name)}" target="_blank">${esc(a.name)}</a><b>${(a.bytes/1024).toFixed(1)} KB</b></div>`).join("") || '<div class="empty">（无）</div>';
+  return `
+  <div class="ins-sec">
+    <div class="ins-k">Step ${s.idx+1} · ${st.toUpperCase()}</div>
+    <div class="row"><span>动作</span><b style="text-align:right;max-width:260px">${esc(s.action)}</b></div>
+    <div class="row"><span>技能</span><b>${esc(s.skill||"—")}</b></div>
+    <div class="row"><span>耗时</span><b>${fmtMs(s.duration_ms||0)}</b></div>
+    <div class="row"><span>尝试次数</span><b>${s.n_attempts}${s.fixed?"（修复后成功）":""}${s.exhausted?"（尝试耗尽）":""}</b></div>
+  </div>
+  ${(q>=0||rk)?`<div class="ins-sec"><div class="ins-k">Why this skill（可解释性，非单一总分）</div>
+    ${q>=0?`<div class="row"><span>检索排名</span><b>#${q+1} / ${(RUN.retrieval.selected||[]).length}</b></div>`:""}
+    ${q>=0?`<div class="row"><span>检索置信度分流</span><b>${esc(RUN.retrieval.decision||"")} (${RUN.retrieval.confidence??"—"})</b></div>`:""}
+    ${rk?`<div class="row"><span>策略预测收益</span><b>${rk.exploit}</b></div>
+         <div class="row"><span>探索奖励</span><b>${rk.explore}</b></div>
+         <div class="row"><span>优先级</span><b>${rk.priority}</b></div>`:""}
+    <div class="note">排序来自历史反馈（预测）+ 探索奖励；当前样本下策略收益未在 heldout 上证实。</div>
+  </div>`:""}
+  <div class="ins-sec"><div class="ins-k">阶段细分（回答"这段时间花在哪"）</div>${stageRows}</div>
+  <div class="ins-sec"><div class="ins-k">Attempts</div>${attempts}</div>
+  <div class="ins-sec"><div class="ins-k">Verification（分层，术语严格）</div>
+    <div class="layer l1"><div class="lh"><span>L1 · Deterministic — VERIFIED</span><span>${l1.filter(c=>c.passed).length}/${l1.length}</span></div>
+      <div class="note" style="border-style:solid;margin:0 0 6px">机器可验证约束（文件/表头/行数/数值范围/可编译）。<b>不等价于结果正确。</b></div>${chk(l1)}</div>
+    <div class="layer l2"><div class="lh"><span>L2 · Skill assertions</span><span>${l2.filter(c=>c.passed).length}/${l2.length}</span></div>${chk(l2)}</div>
+    <div class="layer l3"><div class="lh"><span>L3 · Semantic review</span><span>${l3.filter(c=>c.passed).length}/${l3.length}</span></div>
+      <div class="note" style="border-style:solid;margin:0 0 6px">由模型判定，且<b>与被评者是同一模型</b>——只作参考，不构成独立证据。</div>${chk(l3)}</div>
+    ${s.verify_skip_reason?`<div class="note">${esc(s.verify_skip_reason)}</div>`:""}
+  </div>
+  <div class="ins-sec"><div class="ins-k">Output artifacts</div>${arts}</div>
+  <div class="ins-sec"><div class="ins-k">Generated code</div>
+    <pre style="max-height:300px">${esc((s.code||"（无）").slice(0,6000))}</pre></div>`;
+}
+function artifactHtml(sel){
+  const a = (RUN.steps||[]).flatMap(s=>s.artifacts||[]).find(x=>x.name===sel.name) || {};
+  const consumers = (RUN.steps||[]).filter(s => (s.inputs||[]).includes(sel.name)).map(s=>s.idx+1);
+  return `<div class="ins-sec"><div class="ins-k">Artifact lineage</div>
+    <div class="row"><span>文件名</span><b>${esc(sel.name)}</b></div>
+    <div class="row"><span>来源步骤</span><b>Step ${(sel.from??a.from_step??0)+1}</b></div>
+    <div class="row"><span>被用于</span><b>${consumers.length?consumers.map(i=>"Step "+i).join(", "):"（暂无下游）"}</b></div>
+    <div class="row"><span>大小</span><b>${a.bytes?((a.bytes/1024).toFixed(1)+" KB"):"—"}</b></div>
+    <div class="row"><span>SHA256（前 16）</span><b>${esc(a.sha256||"—")}</b></div>
+    <div style="margin-top:8px"><a href="${API}/api/runs/${RUN.run_id}/artifacts/${encodeURIComponent(sel.name)}" target="_blank">打开 / 预览</a>
+    　<a href="${API}/api/runs/${RUN.run_id}/artifacts/${encodeURIComponent(sel.name)}?download=1">下载</a></div>
+  </div>
+  <div class="ins-sec"><div class="ins-k">说明</div>
+    <div class="note">这条边表示：<b>Step ${(sel.from??0)+1} 的产物作为 Step ${consumers.length?consumers[0]:"?"} 的输入</b>（文件系统级传递，非提示词占位）。</div>
+  </div>`;
+}
+
+/* ---------- Cancel ---------- */
+$("cancel").onclick = async () => {
+  if (!confirm("请求取消该 Run？将在当前步骤检查点退出（不会硬杀沙箱进程）。")) return;
+  $("cancel").disabled = true;
+  await fetch(`${API}/api/runs/${encodeURIComponent(RUN_ID)}/cancel`, {method:"POST"});
+  setTimeout(refresh, 600);
+};
+/* ---------- Tabs（移动端） ---------- */
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#tabs button").forEach(x=>x.classList.remove("on"));
+  b.classList.add("on");
+  document.querySelectorAll(".col").forEach(c => c.classList.toggle("on", c.dataset.tab === b.dataset.t));
+});
+
+/* ---------- boot ---------- */
+(async function boot(){
+  if (!RUN_ID){ document.body.innerHTML = '<div style="padding:24px;font:13px monospace;color:#9aa8b8">缺少 run id —— 请从 Mission Control 启动一次 Run。</div>'; return; }
+  await refresh();
+  // 先回放已发生的事件（刷新页面后时间线不空）
+  try {
+    const evs = (RUN.events || []);
+    evs.forEach(appendEvent);
+  } catch {}
+  subscribe();
+  tickHeader();
+})();
+</script>
+</body>
+</html>

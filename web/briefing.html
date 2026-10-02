@@ -215,8 +215,9 @@
     <span class="stat"><span class="dot" id="dot-key"></span>模型密钥 <span id="key-txt">—</span></span>
     <span class="stat">技能库 <b id="lib-n" style="color:var(--ink)">—</b></span>
     <span class="spacer"></span>
+    <a href="/runs" target="_blank">运行中心</a>
     <a href="/graph" target="_blank">技能星图</a>
-    <a href="/dashboard" target="_blank">完整 Dashboard</a>
+    <a href="/dashboard" target="_blank">完整面板</a>
   </div>
 </div>
 
@@ -300,8 +301,12 @@
 
   <div class="demo-box">
     <div class="chips" id="chips"></div>
-    <div class="inputline">
-      <input id="task" placeholder="例如：我有一批肿瘤患者的随访数据，想找出影响预后的因素并构建风险评分" onkeydown="if(event.key==='Enter')runDemo()">
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+    <button class="btn" style="background:var(--brand2);color:#fff;border:none" onclick="location.reload()">快速演示（本页七阶段）</button>
+    <button class="btn" style="background:#fff;color:var(--brand2);border:1px solid var(--brand2)" onclick="startRealRun()">实时运行（Live Run · SSE 事件流）</button>
+  </div>
+  <div class="inputline">
+      <input id="task" placeholder="例如：我有一批肿瘤患者的随访数据，想找出影响预后的因素并构建风险评分" onkeydown="if(event.key==='Enter')startRealRun()">
       <button class="runbtn" id="run" onclick="runDemo()">发送</button>
     </div>
     <div class="runhint" id="hint" style="margin-top:8px">每次真实调用 DeepSeek，约 20–60 秒；成本与 Token 实时记账</div>
@@ -309,6 +314,16 @@
 
     <div class="chat" id="chat"></div>
   </div>
+</section>
+
+<!-- ==================== 运行中心 ==================== -->
+<section class="wrap" id="runcenter">
+  <div class="kicker">RUN CENTER · 运行中心</div>
+  <h2>每次运行都是一条可追溯的记录</h2>
+  <div class="sub">Run ID 独立（同任务重跑不覆盖）· 每步尝试/产物/验收/成本全程留痕 · 点击行查看 Live Run</div>
+  <section class="card" style="border:1px solid var(--line);border-radius:6px;background:var(--card);padding:16px">
+    <div id="runlist"><div class="empty" style="font-size:12.5px;color:#8a97a4;padding:8px 0">加载中…</div></div>
+  </section>
 </section>
 
 <!-- ==================== 幕 4 · 对比论文 ==================== -->
@@ -845,6 +860,53 @@ async function viewSkillRaw(name) {
   } catch (e) { openLayer(name, { text: "加载失败：" + e.message }); }
 }
 
+async function startRealRun() {
+  const task = $("task").value.trim();
+  if (!task){ $("task").focus(); return; }
+  const btn = $("run"); btn.disabled = true; const oldTxt = btn.textContent;
+  btn.textContent = "创建运行中…";
+  try {
+    let gold = CUR_GOLD || [];
+    const r = await fetch(API + "/api/runs", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({task, gold, k: 5, max_steps: 3, max_cost_yuan: 1.0, max_seconds: 300})
+    });
+    if (!r.ok){ const d = await r.json().catch(()=>({})); throw new Error(typeof d.detail === "string" ? d.detail : r.status); }
+    const d = await r.json();
+    location.href = `/run?id=${encodeURIComponent(d.run_id)}`;
+  } catch (e) {
+    $("err").style.display = "block";
+    $("err").textContent = "创建运行失败：" + (e.message || e);
+    btn.disabled = false; btn.textContent = oldTxt;
+  }
+}
+
+async function loadRunCenter(){
+  let runs = [];
+  try { runs = (await (await fetch(API + "/api/runs?limit=8")).json()).runs || []; } catch {}
+  const host = document.getElementById("runlist");
+  if (!runs.length){ host.innerHTML = '<div style="font-size:12.5px;color:#8a97a4;padding:8px 0">还没有运行记录 —— 在上方输入任务，点「实时运行」创建第一条。</div>'; return; }
+  const ST = {COMPLETED:["已完成","#2e7d4f"],PARTIAL:["部分完成","#b0781a"],FAILED:["失败","#a8433a"],
+              RUNNING:["运行中","#1f5f9e"],EXECUTING:["执行中","#1f5f9e"],RETRIEVING:["检索中","#1f5f9e"],
+              ORCHESTRATING:["编排中","#1f5f9e"],VERIFYING:["验收中","#1f5f9e"],EVOLVING:["进化中","#1f5f9e"],
+              CANCELLED:["已取消","#8a97a4"],INTERRUPTED:["已中断","#8a97a4"],CREATED:["已创建","#8a97a4"],BUDGET_EXCEEDED:["超预算","#a8433a"]};
+  host.innerHTML = '<table style="width:100%;border-collapse:collapse;font:12px/1.7 var(--mono)">' +
+    '<tr><th style="text-align:left;color:#8a97a4;padding:4px 8px;border-bottom:1px solid var(--line)">状态</th>' +
+    '<th style="text-align:left;color:#8a97a4;padding:4px 8px;border-bottom:1px solid var(--line)">任务</th>' +
+    '<th style="text-align:left;color:#8a97a4;padding:4px 8px;border-bottom:1px solid var(--line)">时长</th>' +
+    '<th style="text-align:left;color:#8a97a4;padding:4px 8px;border-bottom:1px solid var(--line)">成本</th>' +
+    '<th style="text-align:left;color:#8a97a4;padding:4px 8px;border-bottom:1px solid var(--line)">产物</th></tr>' +
+    runs.map(r => {
+      const pair = ST[r.status] || [r.status, "#8a97a4"];
+      return '<tr style="cursor:pointer" onclick="location.href=\'/run?id=' + encodeURIComponent(r.run_id) + '\'">' +
+        '<td style="padding:5px 8px;border-bottom:1px solid var(--line)"><span style="color:' + pair[1] + ';font-weight:600">' + pair[0] + '</span></td>' +
+        '<td style="padding:5px 8px;border-bottom:1px solid var(--line);color:var(--ink)">' + esc((r.task||"").slice(0,52)) + '</td>' +
+        '<td style="padding:5px 8px;border-bottom:1px solid var(--line)">' + fmtMs(r.duration_ms) + '</td>' +
+        '<td style="padding:5px 8px;border-bottom:1px solid var(--line)">¥' + Number(r.cost_yuan||0).toFixed(4) + '</td>' +
+        '<td style="padding:5px 8px;border-bottom:1px solid var(--line)">' + (r.artifacts||0) + '</td></tr>';
+    }).join("") + "</table>";
+}
+
 async function runDemo() {
   const input = $("task"); const q = input.value.trim();
   if (!q || input.disabled) return;
@@ -926,6 +988,7 @@ async function jget2(url, body, t) {
 }
 $("task").addEventListener("input", () => { CUR_GOLD = []; });
 boot();
+loadRunCenter();
 fillLiveNumbers();
 </script>
 </body>

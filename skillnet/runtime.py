@@ -153,6 +153,11 @@ class RunStep:
     error: str = ""
     started_at_ms: int = 0
     ended_at_ms: int = 0
+    # 子阶段细分（回应「execution 39.7s 仍是黑盒」）：
+    # 记录每一步内部的阶段耗时、LLM 调用数、token 与成本，用于回答
+    # 「这段时间里有多少是模型等待」。键名形如 code_gen_ms / sandbox_try1_ms /
+    # repair1_llm_ms / verify_det_ms / verify_sem_ms / llm_calls / llm_tokens。
+    stages: dict[str, float] = field(default_factory=dict)
 
     @property
     def duration_ms(self) -> int:
@@ -189,6 +194,9 @@ class RunStep:
             "verify_skip_reason": self.verify_skip_reason,
             "error": self.error,
             "duration_ms": self.duration_ms,
+            "started_at_ms": self.started_at_ms,
+            "ended_at_ms": self.ended_at_ms,
+            "stages": {k: (round(v, 1) if isinstance(v, float) else v) for k, v in self.stages.items()},
         }
 
 
@@ -270,7 +278,7 @@ class Run:
             "artifacts": [a.to_dict() for a in self.artifacts],
             "feedback": self.feedback, "evolution": self.evolution,
             "staged": self.staged, "budget": self.budget.to_dict(),
-            "cost_yuan": round(self.cost_yuan, 5), "tokens": self.tokens,
+            "cost_yuan": round(self.cost_yuan, 4), "tokens": self.tokens,
             "llm_calls": self.llm_calls,
             "duration_ms": self.duration_ms,
             "started_at_ms": self.started_at_ms, "ended_at_ms": self.ended_at_ms,
@@ -445,6 +453,16 @@ class RunStore:
             st.code = sd.get("code") or ""
             st.error = sd.get("error") or ""
             st.verify_skip_reason = sd.get("verify_skip_reason") or ""
+            st.stages = sd.get("stages") or {}
+            # 时间戳必须一并恢复：漏掉会导致 duration_ms 恒为 0（实测踩过——
+            # 页面上所有步骤耗时显示 0ms，而实际是 23.9s/26.0s/96.3s）
+            st.started_at_ms = sd.get("started_at_ms") or 0
+            st.ended_at_ms = sd.get("ended_at_ms") or 0
+            # 兼容早先落盘的文件（那时未写时间戳但写了 duration_ms）：
+            # 用 duration_ms 反推，避免历史 Run 的步骤耗时全部显示 0ms。
+            if not st.started_at_ms and (sd.get("duration_ms") or 0) > 0:
+                st.started_at_ms = 1
+                st.ended_at_ms = 1 + int(sd["duration_ms"])
             st.attempts = [ExecutionAttempt(**a) for a in (sd.get("attempts") or []) if isinstance(a, dict)]
             st.artifacts = [Artifact(**a) for a in (sd.get("artifacts") or []) if isinstance(a, dict)]
             st.checks = [ProgrammaticCheck(**c) for c in (sd.get("checks") or []) if isinstance(c, dict)]

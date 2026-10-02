@@ -1,0 +1,2432 @@
+{
+ "run_id": "6071265d-20261002-104057-6cf2",
+ "task": "分析一批不同剂量下的细胞存活率数据，做清洗、剂量-反应建模与可视化",
+ "task_fp": "6071265d",
+ "status": "COMPLETED",
+ "model": "deepseek-chat",
+ "skills": [
+  "data-cleaning",
+  "eda-profiling",
+  "dose-response-ic50-estimation",
+  "estimator-robustness-audit",
+  "scientific-visualization"
+ ],
+ "retrieval": {
+  "query": "分析一批不同剂量下的细胞存活率数据，做清洗、剂量-反应建模与可视化",
+  "mode": "fabric",
+  "selected": [
+   "dose-response-cleaning-ic50-pipeline",
+   "dose-response-ic50-pipeline",
+   "dose-response-ic50-estimation",
+   "dose-response-ic50-robust-estimation",
+   "data-cleaning"
+  ],
+  "candidates": [
+   {
+    "name": "dose-response-cleaning-ic50-pipeline",
+    "channels": [
+     "bm25",
+     "vector",
+     "structural"
+    ],
+    "score": 0.86091,
+    "rank": 1,
+    "rerank_score": 1.0,
+    "note": ""
+   },
+   {
+    "name": "dose-response-ic50-pipeline",
+    "channels": [
+     "bm25",
+     "vector"
+    ],
+    "score": 1.1245,
+    "rank": 2,
+    "rerank_score": 0.8333333333333334,
+    "note": ""
+   },
+   {
+    "name": "dose-response-ic50-estimation",
+    "channels": [
+     "bm25",
+     "vector"
+    ],
+    "score": 0.45883,
+    "rank": 3,
+    "rerank_score": 0.6666666666666667,
+    "note": ""
+   },
+   {
+    "name": "dose-response-ic50-robust-estimation",
+    "channels": [
+     "bm25",
+     "vector"
+    ],
+    "score": 1.12491,
+    "rank": 4,
+    "rerank_score": 0.5,
+    "note": ""
+   },
+   {
+    "name": "data-cleaning",
+    "channels": [
+     "bm25",
+     "vector",
+     "structural"
+    ],
+    "score": 0.25129,
+    "rank": 5,
+    "rerank_score": 0.33333333333333337,
+    "note": ""
+   },
+   {
+    "name": "scientific-visualization",
+    "channels": [
+     "bm25",
+     "vector",
+     "structural"
+    ],
+    "score": 0.36309,
+    "rank": 6,
+    "rerank_score": 0.16666666666666663,
+    "note": ""
+   },
+   {
+    "name": "estimator-robustness-audit",
+    "channels": [
+     "fused"
+    ],
+    "score": 1.05021,
+    "rank": 7,
+    "rerank_score": -15.5,
+    "note": ""
+   },
+   {
+    "name": "competition-data-science-pipeline",
+    "channels": [
+     "bm25",
+     "vector",
+     "structural"
+    ],
+    "score": 0.35427,
+    "rank": 8,
+    "rerank_score": -15.5,
+    "note": ""
+   },
+   {
+    "name": "scrna-qc-clustering",
+    "channels": [
+     "bm25",
+     "vector"
+    ],
+    "score": 0.34419,
+    "rank": 9,
+    "rerank_score": -15.5,
+    "note": ""
+   },
+   {
+    "name": "tabular-ml-baseline",
+    "channels": [
+     "fused"
+    ],
+    "score": 0.31175,
+    "rank": 10,
+    "rerank_score": -15.5,
+    "note": ""
+   },
+   {
+    "name": "optimization-solver",
+    "channels": [
+     "bm25",
+     "vector",
+     "structural"
+    ],
+    "score": 0.23324,
+    "rank": 11,
+    "rerank_score": -15.5,
+    "note": ""
+   },
+   {
+    "name": "differential-expression",
+    "channels": [
+     "bm25",
+     "vector"
+    ],
+    "score": 0.23004,
+    "rank": 12,
+    "rerank_score": -15.5,
+    "note": ""
+   },
+   {
+    "name": "peer-review-response",
+    "channels": [
+     "bm25",
+     "vector",
+     "structural"
+    ],
+    "score": 0.20022,
+    "rank": 13,
+    "rerank_score": -15.5,
+    "note": ""
+   },
+   {
+    "name": "scientific-writing",
+    "channels": [
+     "bm25",
+     "vector",
+     "structural"
+    ],
+    "score": 0.18304,
+    "rank": 14,
+    "rerank_score": -15.5,
+    "note": ""
+   },
+   {
+    "name": "broad-topic-to-evidence-pipeline",
+    "channels": [
+     "bm25",
+     "vector"
+    ],
+    "score": 0.1735,
+    "rank": 15,
+    "rerank_score": -15.5,
+    "note": ""
+   },
+   {
+    "name": "data-structure-impl-verify",
+    "channels": [
+     "bm25",
+     "vector"
+    ],
+    "score": 0.16044,
+    "rank": 16,
+    "rerank_score": -15.5,
+    "note": ""
+   },
+   {
+    "name": "poster-slides",
+    "channels": [
+     "bm25",
+     "structural"
+    ],
+    "score": 0.12739,
+    "rank": 17,
+    "rerank_score": -15.5,
+    "note": ""
+   },
+   {
+    "name": "venue-template",
+    "channels": [
+     "bm25",
+     "structural"
+    ],
+    "score": 0.1245,
+    "rank": 18,
+    "rerank_score": -15.5,
+    "note": ""
+   },
+   {
+    "name": "competition-reproducible-ml-pipeline",
+    "channels": [
+     "bm25"
+    ],
+    "score": 0.08918,
+    "rank": 19,
+    "rerank_score": -15.5,
+    "note": ""
+   },
+   {
+    "name": "eda-profiling",
+    "channels": [
+     "structural"
+    ],
+    "score": 0.07459,
+    "rank": 20,
+    "rerank_score": -15.5,
+    "note": ""
+   },
+   {
+    "name": "statistical-testing",
+    "channels": [
+     "structural"
+    ],
+    "score": 0.06826,
+    "rank": 21,
+    "rerank_score": -15.5,
+    "note": ""
+   },
+   {
+    "name": "causal-inference",
+    "channels": [
+     "structural"
+    ],
+    "score": 0.06434,
+    "rank": 22,
+    "rerank_score": -15.5,
+    "note": ""
+   }
+  ],
+  "trace": [
+   "BM25 召回 20 条",
+   "语义向量召回 20 条",
+   "结构信号召回 13 条",
+   "加权融合后候选池 30 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+   "关系图扩展补入 2 条：estimator-robustness-audit, tabular-ml-baseline",
+   "LLM 重排 6 条候选"
+  ],
+  "confidence": 1.0,
+  "raw_bm25_top": 46.6018,
+  "fusion_score": 0.8609,
+  "decision": "auto",
+  "decision_reason": "BM25 原始分 46.60 ≥ 15.0：技能匹配明确，可直接执行",
+  "degraded": false,
+  "components": {
+   "bm25": true,
+   "vector": true,
+   "structural": true,
+   "graph_expansion": true,
+   "llm_rerank": true
+  },
+  "degraded_reason": ""
+ },
+ "ranking": [
+  {
+   "name": "dose-response-cleaning-ic50-pipeline",
+   "priority": 0.7582,
+   "exploit": 0.0,
+   "explore": 0.7582
+  },
+  {
+   "name": "dose-response-ic50-robust-estimation",
+   "priority": 0.758,
+   "exploit": 0.0,
+   "explore": 0.758
+  },
+  {
+   "name": "dose-response-ic50-pipeline",
+   "priority": 0.758,
+   "exploit": 0.0,
+   "explore": 0.758
+  },
+  {
+   "name": "dose-response-ic50-estimation",
+   "priority": 0.7542,
+   "exploit": 0.0,
+   "explore": 0.7542
+  },
+  {
+   "name": "data-cleaning",
+   "priority": 0.6835,
+   "exploit": 0.0,
+   "explore": 0.6835
+  }
+ ],
+ "plan": {
+  "approach": "以剂量-响应数据为对象，先做带审计轨迹的清洗与单位统一，再做 EDA 判断平台期覆盖与模型可识别性，随后用 4PL/3PL 非线性最小二乘拟合 IC50 并做 bootstrap 与残差诊断，最后产出出版级矢量图与可复现报告；全程以预注册参数、固定种子和敏感性对比保证结论可复现。",
+  "steps": [
+   {
+    "skill": "data-cleaning",
+    "action": "读取原始剂量-响应数据，统一剂量单位为 μM（或 log10(μM)）与抑制率口径为 0-1 小数；检查主键（dose×replicate×group）唯一性、缺失模式与重复孔；异常点标记而非删除，输出干净数据表与审计日志。",
+    "key_params": [
+     "剂量单位统一为 μM，抑制率统一为 0-1 小数（避免 Top/Bottom 解释错误）",
+     "异常判定用业务规则：抑制率超出 [0,1] 或偏离同剂量组中位数 >3×MAD 标记为可疑",
+     "缺失率 >20% 的剂量点单独标注，不直接删除"
+    ],
+    "expected_output": "干净数据表（dose、response、replicate、group）、清洗审计日志、数据字典",
+    "check": "清洗后主键唯一；审计日志可逐步复现；关键字段分布前后变化有解释；剂量-响应散点无系统性单位错位"
+   },
+   {
+    "skill": "eda-profiling",
+    "action": "按剂量分组计算均值、SD、n，绘制剂量-响应散点与分布图；检查最低剂量抑制率是否接近 0、最高剂量是否接近 100%，判断 Bottom/Top 是否需固定；标注 n<3 的低置信剂量点与组间样本量差异。",
+    "key_params": [
+     "平台期判据：最低剂量均值抑制率 ≤10% 且最高剂量 ≥90% 视为覆盖平台期",
+     "n<3 的剂量点标记为低置信，不参与模型权重调整",
+     "共线性检查：log10(dose) 与 dose 不得同时进入模型"
+    ],
+    "expected_output": "EDA 报告、分布与剂量-响应散点图、候选模型形式建议（4PL 或 3PL）",
+    "check": "分布图覆盖全部剂量点；组间样本量差异已标注；曲线形态支持所选模型形式；平台期覆盖结论有数据支撑"
+   },
+   {
+    "skill": "dose-response-ic50-estimation",
+    "action": "用非线性最小二乘拟合 4PL：y = Bottom + (Top-Bottom)/(1+10^((logIC50-x)*HillSlope))；若平台期覆盖则固定 Bottom=0 或 Top=100 改用 3PL，并用 F 检验比较嵌套模型；对 IC50 做 bootstrap 区间估计与残差诊断。",
+    "key_params": [
+     "初始值：Bottom=min(y)、Top=max(y)、logIC50=median(log10(dose))、HillSlope=1",
+     "bootstrap 重复次数 ≥10000，重采样单位=独立实验批次/孔，随机种子固定并写入日志",
+     "嵌套模型比较 α=0.05，多命题比较用 Bonferroni α'=0.05/k",
+     "HillSlope 接近 0 或极大时报告 profile likelihood CI 而非仅 Wald CI"
+    ],
+    "expected_output": "IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²、残差标准误）、bootstrap 与稳健性审计报告",
+    "check": "参数收敛且标准误有限；残差无系统趋势；bootstrap 收敛曲线斜率与 O(n^{-1/2}) 在置信带内一致；更换种子后结论方向不变"
+   },
+   {
+    "skill": "estimator-robustness-audit",
+    "action": "对 IC50 估计量做有限样本与假设违反下的稳健性验证：预注册蒙特卡洛协议（n ∈ {10,100,1000,10000}）、泄漏审计（种子记录、样本流分配）、反例边界审计（HillSlope→0、Bottom/Top 不可识别、含/不含异常点敏感性对比）。",
+    "key_params": [
+     "样本量梯度 n ∈ {10, 100, 1000, 10000}，重复次数 ≥10000",
+     "显著性水平 α=0.05 双侧，多命题 Bonferroni 校正 α'=0.05/k",
+     "n<5000 用 Shapiro-Wilk，n≥5000 用 Kolmogorov-Smirnov 检验正态性",
+     "分布形状参数做 ±10%、±25% 扰动"
+    ],
+    "expected_output": "预注册蒙特卡洛协议与收敛曲线、泄漏审计报告、反例清单与适用范围表",
+    "check": "每个命题前提可追溯到已声明假设；更换种子重跑结论方向不变；样本流与命题一一对应无重叠；反例确实满足前提但违反结论"
+   },
+   {
+    "skill": "scientific-visualization",
+    "action": "绘制出版级剂量-响应图：x 轴 log10(dose)，y 轴抑制率 0-1 或 0-100%，散点+拟合曲线+95% 置信带，误差条为 SD 或 SEM，标注 IC50 与置信区间、HillSlope、样本量 n；导出 PDF/SVG 矢量格式并保留绘图脚本与图注。",
+    "key_params": [
+     "字体 ≥7 pt，缩放到单栏宽度仍可读",
+     "配色用 Okabe-Ito 等色觉障碍友好方案",
+     "误差条明确标注为 SD 或 SEM，并标注 n"
+    ],
+    "expected_output": "矢量剂量-响应图（PDF/SVG）、绘图脚本、自解释图注",
+    "check": "坐标轴与单位标注完整；误差条与样本量齐备；图为矢量且字号达标；IC50 标注与统计结果一致"
+   }
+  ],
+  "risks": [
+   "剂量-响应曲线未覆盖平台期导致 Top/Bottom 不可识别、IC50 外推不可靠——检查最低/最高剂量抑制率，必要时固定 Bottom=0 或 Top=100 并报告为 3PL",
+   "HillSlope 接近 0 或极大时 IC50 置信区间爆炸——报告 profile likelihood CI 而非仅 Wald CI，并做 HillSlope 敏感性分析",
+   "bootstrap 重采样单位错误（按孔而非按独立实验批次）导致 CI 过窄——明确重采样单位并记录在审计日志，用分层 bootstrap 验证",
+   "数据清洗阶段静默删除异常点导致选择偏差——保留审计日志，异常点标记而非删除，做含/不含异常点的敏感性对比"
+  ],
+  "artifacts": [
+   "带审计日志的干净数据集与数据字典",
+   "EDA 报告与剂量-响应散点图",
+   "IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²、残差标准误）",
+   "bootstrap 与稳健性审计报告（含蒙特卡洛收敛曲线、泄漏审计、反例清单）",
+   "出版级剂量-响应曲线矢量图（PDF/SVG）与绘图脚本",
+   "含适用范围与边界条件的最终执行报告"
+  ]
+ },
+ "judge": {
+  "scores": {
+   "skill_grounding": 9.0,
+   "executability": 8.0,
+   "rigor": 9.0,
+   "scientific_validity": 9.0
+  },
+  "weighted": 8.75,
+  "coverage": null,
+  "covered": [],
+  "n_points": 0,
+  "comment": "方案完整覆盖清洗、EDA、4PL/3PL 拟合、bootstrap 与稳健性审计及出版级可视化，方法选择与剂量-反应任务高度匹配，参数、阈值、判据和失败模式应对均具体可执行；仅蒙特卡洛样本量梯度与真实数据规模的关系略欠说明，但不影响整体专业级质量。"
+ },
+ "steps": [
+  {
+   "idx": 0,
+   "action": "读取原始剂量-响应数据，统一剂量单位为 μM（或 log10(μM)）与抑制率口径为 0-1 小数；检查主键（dose×replicate×group）唯一性、缺失模式与重复孔；异常点标记而非删除，输出干净数据表与审计日志。",
+   "skill": "data-cleaning",
+   "status": "done",
+   "depends_on": [],
+   "inputs": [],
+   "code": "import numpy as np\nimport matplotlib\nmatplotlib.use('Agg')\nimport matplotlib.pyplot as plt\nplt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'DejaVu Sans']\nplt.rcParams['axes.unicode_minus'] = False\nimport csv\n\nrng = np.random.default_rng(42)\n\n# ============================================================\n# 0. 构造模拟数据（模拟数据，非真实实验结论）\n# ============================================================\nraw = []\ngroups = ['A', 'B', 'C']\ndoses_uM = [0.0, 0.1, 1.0, 10.0, 100.0]\nfor g in groups:\n    for d in doses_uM:\n        for rep in range(1, 4):\n            ic50 = 5.0 if g == 'A' else (10.0 if g == 'B' else 2.0)\n            inh = 1.0 / (1.0 + (ic50 / (d + 1e-9)) ** 1.2)\n            inh = float(np.clip(inh + rng.normal(0, 0.05), 0, 1))\n            unit_choice = rng.choice(['nM', 'uM', 'ug/mL'], p=[0.3, 0.5, 0.2])\n            if unit_choice == 'nM':\n                dose_raw = d * 1000.0\n            elif unit_choice == 'uM':\n                dose_raw = d\n            else:\n                dose_raw = d * 0.18\n            if rng.random() < 0.5:\n                resp_raw = inh * 100.0\n                metric = 'inhibition_pct'\n            else:\n                resp_raw = (1.0 - inh) * 100.0\n                metric = 'viability_pct'\n            raw.append({\n                'dose_raw': round(dose_raw, 6),\n                'dose_unit': unit_choice,\n                'response_raw': round(resp_raw, 4),\n                'response_metric': metric,\n                'replicate': rep,\n                'group': g,\n            })\n\nraw[3]['response_raw'] = None\nraw[10]['dose_raw'] = None\nraw[20]['response_raw'] = None\nraw.append(dict(raw[5]))\nraw.append({'dose_raw': -1.0, 'dose_unit': 'uM', 'response_raw': 50.0,\n            'response_metric': 'inhibition_pct', 'replicate': 1, 'group': 'A'})\nraw.append({'dose_raw': 10.0, 'dose_unit': 'uM', 'response_raw': 150.0,\n            'response_metric': 'inhibition_pct', 'replicate': 2, 'group': 'B'})\n\nprint(\"=\" * 60)\nprint(\"【模拟数据声明】以下全部为模拟数据，非真实实验结论\")\nprint(\"=\" * 60)\nprint(f\"原始记录数: {len(raw)}\")\n\n# ============================================================\n# 1. 主键唯一性 + 去重\n# ============================================================\naudit = []\ndef log(step, reason, n_before, n_after, note=\"\"):\n    audit.append({'step': step, 'reason': reason,\n                  'rows_before': n_before, 'rows_after': n_after, 'note': note})\n    print(f\"[审计] {step} | 原因: {reason} | {n_before} -> {n_after} | {note}\")\n\nn0 = len(raw)\nkeys = [(r['dose_raw'], r['dose_unit'], r['replicate'], r['group']) for r in raw]\nseen, dup_idx = set(), []\nfor i, k in enumerate(keys):\n    if k in seen:\n        dup_idx.append(i)\n    else:\n        seen.add(k)\nprint(f\"\\n[主键] 重复孔数量: {len(dup_idx)} (索引 {dup_idx})\")\n\ndup_set = set(dup_idx)\nraw_dedup = [r for i, r in enumerate(raw) if i not in dup_set]\nlog(\"去重\", \"主键(dose×unit×replicate×group)重复，保留首次\", n0, len(raw_dedup),\n    f\"移除{len(dup_idx)}行\")\n\n# ============================================================\n# 2. 缺失模式标记（不删除，仅标记）\n# ============================================================\nfor r in raw_dedup:\n    miss = []\n    if r['dose_raw'] is None:\n        miss.append('dose_raw')\n    if r['response_raw'] is None:\n        miss.append('response_raw')\n    r['missing_fields'] = ';'.join(miss) if miss else ''\n    r['is_missing'] = bool(miss)\n\nn_miss = sum(1 for r in raw_dedup if r['is_missing'])\nprint(f\"\\n[缺失] 含缺失行数: {n_miss} / {len(raw_dedup)}\")\nfrom collections import Counter\npat = Counter(r['missing_fields'] for r in raw_dedup if r['is_missing'])\nfor k, v in pat.items():\n    print(f\"  缺失模式 '{k}': {v} 行\")\nprint(\"  规避陷阱：不删除缺失行，仅标记 is_missing，避免选择偏差\")\n\n# ============================================================\n# 3. 单位统一为 uM，口径统一为抑制率 0-1\n# ============================================================\ndef to_uM(dose, unit):\n    if dose is None:\n        return None\n    if unit == 'nM':\n        return dose / 1000.0\n    if unit == 'uM':\n        return dose\n    if unit == 'ug/mL':\n        return dose / 0.18\n    return None\n\ndef to_inhibition(resp, metric):\n    if resp is None:\n        return None\n    if metric == 'inhibition_pct':\n        return resp / 100.0\n    if metric == 'viability_pct':\n        return 1.0 - resp / 100.0\n    return None\n\nfor r in raw_dedup:\n    r['dose_uM'] = to_uM(r['dose_raw'], r['dose_unit'])\n    r['inhibition'] = to_inhibition(r['response_raw'], r['response_metric'])\n    if r['dose_uM'] is not None and r['dose_uM'] > 0:\n        r['log10_dose_uM'] = float(np.log10(r['dose_uM']))\n    else:\n        r['log10_dose_uM'] = None\n\nprint(f\"\\n[单位统一] 剂量统一为 uM，口径统一为抑制率(0-1)\")\nprint(f\"  转换后 dose_uM 非空: {sum(1 for r in raw_dedup if r['dose_uM'] is not None)}\")\nprint(f\"  转换后 inhibition 非空: {sum(1 for r in raw_dedup if r['inhibition'] is not None)}\")\n\n# ============================================================\n# 4. 业务规则异常标记（不删除）\n# ============================================================\nfor r in raw_dedup:\n    flags = []\n    if r['dose_uM'] is not None and r['dose_uM'] < 0:\n        flags.append('negative_dose')\n    if r['inhibition'] is not None and (r['inhibition'] < -0.05 or r['inhibition'] > 1.05):\n        flags.append('out_of_range_inhibition')\n    r['outlier_flag'] = ';'.join(flags) if flags else ''\n    r['is_outlier'] = bool(flags)\n\nn_out = sum(1 for r in raw_dedup if r['is_outlier'])\nprint(f\"\\n[异常] 业务规则标记异常行数: {n_out}\")\nfor r in raw_dedup:\n    if r['is_outlier']:\n        print(f\"  group={r['group']} rep={r['replicate']} dose_uM={r['dose_uM']} \"\n              f\"inh={r['inhibition']} flags={r['outlier_flag']}\")\nprint(\"  规避陷阱：异常点仅标记不删除，保留审计痕迹\")\n\n# ============================================================\n# 5. 清洗后主键唯一性复核\n# ============================================================\nkeys2 = [(r['dose_uM'], r['replicate'], r['group']) for r in raw_dedup]\nprint(f\"\\n[复核] 清洗后主键唯一性: {len(keys2) == len(set(keys2))} \"\n      f\"(唯一键 {len(set(keys2))} / 总行 {len(keys2)})\")\n\n# ============================================================\n# 6. 关键字段分布变化\n# ============================================================\ndef dist(vals):\n    v = [x for x in vals if x is not None]\n    if not v:\n        return \"无有效值\"\n    return f\"n={len(v)} min={min(v):.4f} max={max(v):.4f} mean={np.mean(v):.4f}\"\n\nprint(f\"\\n[分布] 清洗前 dose_raw: {dist([r['dose_raw'] for r in raw])}\")\nprint(f\"[分布] 清洗后 dose_uM: {dist([r['dose_uM'] for r in raw_dedup])}\")\nprint(f\"[分布] 清洗前 response_raw: {dist([r['response_raw'] for r in raw])}\")\nprint(f\"[分布] 清洗后 inhibition: {dist([r['inhibition'] for r in raw_dedup])}\")\n\n# ============================================================\n# 7. 可视化（修复：x/y 成对收集，保证长度一致）\n# ============================================================\nfig, axes = plt.subplots(1, 2, figsize=(12, 5))\n\nfor g in groups:\n    pts = [(r['log10_dose_uM'], r['inhibition']) for r in raw_dedup\n           if r['group'] == g and r['log10_dose_uM'] is not None\n           and r['inhibition'] is not None and not r['is_outlier']]\n    if pts:\n        xs, ys = zip(*pts)\n        axes[0].scatter(xs, ys, label=f'组 {g}', alpha=0.7)\n\nout_pts = [(r['log10_dose_uM'], r['inhibition']) for r in raw_dedup\n           if r['is_outlier'] and r['log10_dose_uM'] is not None\n           and r['inhibition'] is not None]\nif out_pts:\n    ox, oy = zip(*out_pts)\n    axes[0].scatter(ox, oy, c='red', marker='x', s=100, label='异常(标记未删)')\n\naxes[0].set_xlabel('log10(剂量 / μM)')\naxes[0].set_ylabel('抑制率 (0-1)')\naxes[0].set_title('剂量-抑制率（模拟数据）')\naxes[0].legend()\naxes[0].grid(alpha=0.3)\n\ncats = ['总行', '缺失行', '异常行', '重复孔']\nvals = [len(raw), n_miss, n_out, len(dup_idx)]\naxes[1].bar(cats, vals, color=['steelblue', 'orange', 'red', 'gray'])\nfor i, v in enumerate(vals):\n    axes[1].text(i, v + 0.2, str(v), ha='center')\naxes[1].set_title('数据质量概览（模拟数据）')\naxes[1].set_ylabel('行数')\naxes[1].grid(alpha=0.3, axis='y')\n\nplt.tight_layout()\nplt.savefig('figure.png', dpi=120)\nprint(\"\\n[输出] 图已保存: figure.png\")\n\n# ============================================================\n# 8. 落盘\n# ============================================================\nclean_fields = ['group', 'replicate', 'dose_raw', 'dose_unit', 'dose_uM',\n                'log10_dose_uM', 'response_raw', 'response_metric',\n                'inhibition', 'is_missing', 'missing_fields',\n                'is_outlier', 'outlier_flag']\nwith open('clean_data.csv', 'w', newline='', encoding='utf-8-sig') as f:\n    w = csv.DictWriter(f, fieldnames=clean_fields)\n    w.writeheader()\n    for r in raw_dedup:\n        w.writerow({k: ('' if r.get(k) is None else r.get(k, '')) for k in clean_fields})\n\nwith open('audit_log.csv', 'w', newline='', encoding='utf-8-sig') as f:\n    w = csv.DictWriter(f, fieldnames=['step', 'reason', 'rows_before', 'rows_after', 'note'])\n    w.writeheader()\n    for a in audit:\n        w.writerow(a)\n\nwith open('data_dictionary.csv', 'w', newline='', encoding='utf-8-sig') as f:\n    w = csv.writer(f)\n    w.writerow(['字段', '口径/单位', '说明'])\n    w.writerow(['group', '分类', '实验分组'])\n    w.writerow(['replicate', '整数', '生物学重复编号'])\n    w.writerow(['dose_raw', '原始单位', '原始剂量值'])\n    w.writerow(['dose_unit', 'nM/uM/ug/mL', '原始剂量单位'])\n    w.writerow(['dose_uM', 'μM', '统一后剂量'])\n    w.writerow(['log10_dose_uM', 'log10(μM)', '对数剂量，dose=0时为缺失'])\n    w.writerow(['response_raw', '百分比', '原始响应值'])\n    w.writerow(['response_metric', 'inhibition_pct/viability_pct', '原始响应口径'])\n    w.writerow(['inhibition', '0-1小数', '统一后抑制率'])\n    w.writerow(['is_missing', 'bool', '是否含缺失字段'])\n    w.writerow(['missing_fields', '文本', '缺失字段列表'])\n    w.writerow(['is_outlier', 'bool', '业务规则异常标记'])\n    w.writerow(['outlier_flag', '文本', '异常类型'])\n\nprint(\"[输出] clean_data.csv / audit_log.csv / data_dictionary.csv 已保存\")\nprint(f\"\\n最终干净数据行数: {len(raw_dedup)}\")\nprint(\"=\" * 60)",
+   "n_attempts": 2,
+   "fixed": true,
+   "exhausted": false,
+   "attempts": [
+    {
+     "n": 1,
+     "ok": false,
+     "stdout": "============================================================\n��ģ����������������ȫ��Ϊģ�����ݣ�����ʵʵ�����\n============================================================\nԭʼ��¼��: 48\n\n[����] �ظ�������: 1 (���� [45])\n[���] ȥ�� | ԭ��: ����(dose��unit��replicate��group)�ظ��������״� | 48 -> 47 | �Ƴ�1��\n\n[ȱʧ] ��ȱʧ����: 3 / 47\n  ȱʧģʽ 'response_raw': 2 ��\n  ȱʧģʽ 'dose_raw': 1 ��\n  ������壺��ɾ��ȱʧ�У������ is_missing������ѡ��ƫ��\n\n[��λͳһ] ����ͳһΪ uM���ھ�ͳһΪ������(0-1)\n  ת���� dose_uM �ǿ�: 46\n  ת���� inhibition �ǿ�: 45\n\n[�쳣] ҵ��������쳣����: 2\n  group=A rep=1 dose_uM=-1.0 inh=0.5 flags=negative_dose\n  group=B rep=2 dose_uM=10.0 inh=1.5 flags=out_of_range_inhibition\n  ������壺�쳣�����ǲ�ɾ����������ƺۼ�\n\n[����] ��ϴ������Ψһ��: False (Ψһ�� 46 / ���� 47)\n\n[�ֲ�] ��ϴǰ dose_raw: n=47 min=-1.0000 max=100000.0000 mean=9416.4297\n[�ֲ�] ��ϴ�� dose_uM: n=46 min=-1.0000 max=100.0000 mean=21.7152\n[�ֲ�] ��ϴǰ response_raw: n=46 min=0.0000 max=150.0000 mean=45.9525\n[�ֲ�] ��ϴ�� inhibition: n=45 min=0.0000 max=1.5000 mean=0.4093\n",
+     "stderr": "Traceback (most recent call last):\n  File \"D:\\qing_zhuomian_\\������\\skillnet\\skillnet-demo\\out\\runs\\6071265d-20261002-104057-6cf2\\step1\\try1\\main.py\", line 205, in <module>\n    axes[0].scatter(ox, oy, c='red', marker='x', s=100, label='�쳣(���δɾ)')\n    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\qing\\.workbuddy\\binaries\\python\\versions\\3.13.12\\Lib\\site-packages\\matplotlib\\_api\\deprecation.py\", line 477, in wrapper\n    return func(*args, **kwargs)\n  File \"C:\\Users\\qing\\.workbuddy\\binaries\\python\\versions\\3.13.12\\Lib\\site-packages\\matplotlib\\__init__.py\", line 1531, in inner\n    return func(\n        ax,\n        *map(cbook.sanitize_sequence, args),\n        **{k: cbook.sanitize_sequence(v) for k, v in kwargs.items()})\n  File \"C:\\Users\\qing\\.workbuddy\\binaries\\python\\versions\\3.13.12\\Lib\\site-packages\\matplotlib\\axes\\_axes.py\", line 5329, in scatter\n    raise ValueError(\"x and y must be the same size\")\nValueError: x and y must be the same size\n",
+     "error_kind": "exception",
+     "duration_ms": 1560,
+     "truncated": false
+    },
+    {
+     "n": 2,
+     "ok": true,
+     "stdout": "============================================================\n��ģ����������������ȫ��Ϊģ�����ݣ�����ʵʵ�����\n============================================================\nԭʼ��¼��: 48\n\n[����] �ظ�������: 1 (���� [45])\n[���] ȥ�� | ԭ��: ����(dose��unit��replicate��group)�ظ��������״� | 48 -> 47 | �Ƴ�1��\n\n[ȱʧ] ��ȱʧ����: 3 / 47\n  ȱʧģʽ 'response_raw': 2 ��\n  ȱʧģʽ 'dose_raw': 1 ��\n  ������壺��ɾ��ȱʧ�У������ is_missing������ѡ��ƫ��\n\n[��λͳһ] ����ͳһΪ uM���ھ�ͳһΪ������(0-1)\n  ת���� dose_uM �ǿ�: 46\n  ת���� inhibition �ǿ�: 45\n\n[�쳣] ҵ��������쳣����: 2\n  group=A rep=1 dose_uM=-1.0 inh=0.5 flags=negative_dose\n  group=B rep=2 dose_uM=10.0 inh=1.5 flags=out_of_range_inhibition\n  ������壺�쳣�����ǲ�ɾ����������ƺۼ�\n\n[����] ��ϴ������Ψһ��: False (Ψһ�� 46 / ���� 47)\n\n[�ֲ�] ��ϴǰ dose_raw: n=47 min=-1.0000 max=100000.0000 mean=9416.4297\n[�ֲ�] ��ϴ�� dose_uM: n=46 min=-1.0000 max=100.0000 mean=21.7152\n[�ֲ�] ��ϴǰ response_raw: n=46 min=0.0000 max=150.0000 mean=45.9525\n[�ֲ�] ��ϴ�� inhibition: n=45 min=0.0000 max=1.5000 mean=0.4093\n\n[���] ͼ�ѱ���: figure.png\n[���] clean_data.csv / audit_log.csv / data_dictionary.csv �ѱ���\n\n���ոɾ���������: 47\n============================================================\n",
+     "stderr": "",
+     "error_kind": "",
+     "duration_ms": 1600,
+     "truncated": false
+    }
+   ],
+   "artifacts": [
+    {
+     "name": "step1_audit_log.csv",
+     "kind": "真实运行产物",
+     "bytes": 127,
+     "sha256": "f860093d618d29c9",
+     "from_step": 0,
+     "url": "/api/runs/6071265d-20261002-104057-6cf2/artifacts/step1_audit_log.csv"
+    },
+    {
+     "name": "step1_clean_data.csv",
+     "kind": "真实运行产物",
+     "bytes": 3406,
+     "sha256": "2b99b6e256a97968",
+     "from_step": 0,
+     "url": "/api/runs/6071265d-20261002-104057-6cf2/artifacts/step1_clean_data.csv"
+    },
+    {
+     "name": "step1_data_dictionary.csv",
+     "kind": "真实运行产物",
+     "bytes": 572,
+     "sha256": "9d01c17ade91e572",
+     "from_step": 0,
+     "url": "/api/runs/6071265d-20261002-104057-6cf2/artifacts/step1_data_dictionary.csv"
+    },
+    {
+     "name": "step1_figure.png",
+     "kind": "真实运行产物",
+     "bytes": 56787,
+     "sha256": "920d3a9d9c77bf7c",
+     "from_step": 0,
+     "url": "/api/runs/6071265d-20261002-104057-6cf2/artifacts/step1_figure.png"
+    }
+   ],
+   "checks": [
+    {
+     "name": "执行退出码为 0",
+     "passed": true,
+     "detail": "returncode=0"
+    },
+    {
+     "name": "运行有实质输出",
+     "passed": true,
+     "detail": "1173 字符 / 26 行"
+    },
+    {
+     "name": "产生至少一个文件产物",
+     "passed": true,
+     "detail": "4 个"
+    },
+    {
+     "name": "step1_audit_log.csv 存在",
+     "passed": true,
+     "detail": "127 字节"
+    },
+    {
+     "name": "step1_audit_log.csv 非空",
+     "passed": true,
+     "detail": "127 字节"
+    },
+    {
+     "name": "step1_audit_log.csv 是可解析 CSV",
+     "passed": true,
+     "detail": "2 行（含表头）"
+    },
+    {
+     "name": "step1_audit_log.csv 含表头且列数 > 0",
+     "passed": true,
+     "detail": "列：﻿step, reason, rows_before, rows_after, note"
+    },
+    {
+     "name": "step1_audit_log.csv 含数据行",
+     "passed": true,
+     "detail": "1 行数据"
+    },
+    {
+     "name": "step1_audit_log.csv 各行列数一致",
+     "passed": true,
+     "detail": "列数集合 [5]"
+    },
+    {
+     "name": "step1_clean_data.csv 存在",
+     "passed": true,
+     "detail": "3406 字节"
+    },
+    {
+     "name": "step1_clean_data.csv 非空",
+     "passed": true,
+     "detail": "3406 字节"
+    },
+    {
+     "name": "step1_clean_data.csv 是可解析 CSV",
+     "passed": true,
+     "detail": "48 行（含表头）"
+    },
+    {
+     "name": "step1_clean_data.csv 含表头且列数 > 0",
+     "passed": true,
+     "detail": "列：﻿group, replicate, dose_raw, dose_unit, dose_uM, log10_dose_uM"
+    },
+    {
+     "name": "step1_clean_data.csv 含数据行",
+     "passed": true,
+     "detail": "47 行数据"
+    },
+    {
+     "name": "step1_clean_data.csv 各行列数一致",
+     "passed": true,
+     "detail": "列数集合 [13]"
+    },
+    {
+     "name": "step1_data_dictionary.csv 存在",
+     "passed": true,
+     "detail": "572 字节"
+    },
+    {
+     "name": "step1_data_dictionary.csv 非空",
+     "passed": true,
+     "detail": "572 字节"
+    },
+    {
+     "name": "step1_data_dictionary.csv 是可解析 CSV",
+     "passed": true,
+     "detail": "14 行（含表头）"
+    },
+    {
+     "name": "step1_data_dictionary.csv 含表头且列数 > 0",
+     "passed": true,
+     "detail": "列：﻿字段, 口径/单位, 说明"
+    },
+    {
+     "name": "step1_data_dictionary.csv 含数据行",
+     "passed": true,
+     "detail": "13 行数据"
+    },
+    {
+     "name": "step1_data_dictionary.csv 各行列数一致",
+     "passed": true,
+     "detail": "列数集合 [3]"
+    },
+    {
+     "name": "step1_figure.png 存在",
+     "passed": true,
+     "detail": "56787 字节"
+    },
+    {
+     "name": "step1_figure.png 非空",
+     "passed": true,
+     "detail": "56787 字节"
+    },
+    {
+     "name": "step1_figure.png 是有效 PNG",
+     "passed": true,
+     "detail": "1440×600"
+    },
+    {
+     "name": "step1_figure.png 尺寸合理",
+     "passed": true,
+     "detail": "1440×600（过小可能是空图）"
+    }
+   ],
+   "checks_passed": 25,
+   "checks_total": 25,
+   "verifications": [
+    {
+     "item": "清洗后主键唯一",
+     "passed": false,
+     "evidence": "输出：清洗后主键唯一: False (唯一率 46 / 总数 47)",
+     "layer": "llm"
+    },
+    {
+     "item": "审计日志可复现每一步",
+     "passed": false,
+     "evidence": "仅见去重一条审计记录，其余步骤无审计条目",
+     "layer": "llm"
+    },
+    {
+     "item": "关键字段分布变化有解释",
+     "passed": false,
+     "evidence": "输出仅列分布数值，未见变化原因解释",
+     "layer": "llm"
+    }
+   ],
+   "verification_passed": 0,
+   "verification_total": 3,
+   "verify_skip_reason": "",
+   "error": "",
+   "duration_ms": 23915,
+   "stages": {
+    "code_gen_ms": 11089,
+    "llm_calls": 4,
+    "llm_cost_yuan": 0.1,
+    "syntax_check_ms": 3181,
+    "sandbox_try1_ms": 1560,
+    "repair1_llm_ms": 8432,
+    "sandbox_try2_ms": 1600,
+    "verify_det_ms": 2,
+    "verify_sem_ms": 879
+   }
+  },
+  {
+   "idx": 1,
+   "action": "按剂量分组计算均值、SD、n，绘制剂量-响应散点与分布图；检查最低剂量抑制率是否接近 0、最高剂量是否接近 100%，判断 Bottom/Top 是否需固定；标注 n<3 的低置信剂量点与组间样本量差异。",
+   "skill": "eda-profiling",
+   "status": "done",
+   "depends_on": [
+    0
+   ],
+   "inputs": [
+    "step1_audit_log.csv",
+    "step1_clean_data.csv",
+    "step1_data_dictionary.csv",
+    "step1_figure.png"
+   ],
+   "code": "import numpy as np\nimport matplotlib\nmatplotlib.use('Agg')\nimport matplotlib.pyplot as plt\nimport csv, os, glob\n\nplt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'DejaVu Sans']\nplt.rcParams['axes.unicode_minus'] = False\n\n# ---------- 定位输入文件 ----------\ndef locate(name):\n    if os.path.exists(name):\n        return name\n    for base in ['.', '..', os.path.dirname(os.path.abspath(__file__))]:\n        p = os.path.join(base, name)\n        if os.path.exists(p):\n            return p\n    hits = glob.glob(os.path.join('**', name), recursive=True)\n    if hits:\n        return hits[0]\n    return None\n\ndef read_csv(path):\n    with open(path, 'r', encoding='utf-8-sig', newline='') as f:\n        return list(csv.DictReader(f))\n\nclean_path = locate('step1_clean_data.csv')\naudit_path = locate('step1_audit_log.csv')\nddict_path = locate('step1_data_dictionary.csv')\n\nif clean_path is None:\n    print(\"警告: 未找到 step1_clean_data.csv，使用内置示例数据继续运行\")\n    clean = []\n    for d in [0.1, 0.3, 1, 3, 10, 30, 100]:\n        for _ in range(3):\n            clean.append({'dose': str(d), 'viability': str(max(0.0, 100 - 90 * d / (d + 5)))})\n    audit = []\n    ddict = []\nelse:\n    clean = read_csv(clean_path)\n    audit = read_csv(audit_path) if audit_path else []\n    ddict = read_csv(ddict_path) if ddict_path else []\n\nprint(\"=== 输入文件概览 ===\")\nprint(f\"clean_data 行数: {len(clean)}, 列: {list(clean[0].keys()) if clean else []}\")\nprint(f\"audit_log 行数: {len(audit)}\")\nprint(f\"data_dictionary 行数: {len(ddict)}\")\n\nif not clean:\n    raise SystemExit(\"无可用数据，退出\")\n\n# ---------- 自动识别剂量列与响应列 ----------\ncols = list(clean[0].keys())\ndef find_col(cands):\n    for c in cols:\n        for k in cands:\n            if k.lower() in c.lower():\n                return c\n    return None\n\ndose_col = find_col(['dose', 'conc', '剂量', '浓度'])\nresp_col = find_col(['viab', 'surv', 'response', '存活', '抑制'])\nif dose_col is None or resp_col is None:\n    dose_col, resp_col = cols[0], cols[1]\nprint(f\"剂量列: {dose_col} | 响应列: {resp_col}\")\n\n# ---------- 解析数值 ----------\ndef to_float(x):\n    try:\n        return float(x)\n    except:\n        return np.nan\n\ndoses = np.array([to_float(r[dose_col]) for r in clean])\nresp = np.array([to_float(r[resp_col]) for r in clean])\n\n# 缺失率排行\nprint(\"\\n=== 缺失率排行 ===\")\nmiss = []\nfor c in cols:\n    n_miss = sum(1 for r in clean if r[c] is None or str(r[c]).strip() == '' or str(r[c]).lower() == 'nan')\n    miss.append((c, n_miss / len(clean)))\nfor c, m in sorted(miss, key=lambda x: -x[1]):\n    print(f\"  {c}: 缺失率 {m:.3f}\")\n\n# ---------- 按剂量分组统计 ----------\nuniq = sorted(set(doses[~np.isnan(doses)]))\ngroups = {}\nfor d in uniq:\n    mask = doses == d\n    vals = resp[mask]\n    vals = vals[~np.isnan(vals)]\n    groups[d] = vals\n\nprint(\"\\n=== 按剂量分组统计 (均值/SD/n) ===\")\nrows = []\nfor d in uniq:\n    v = groups[d]\n    n = len(v)\n    mean = float(np.mean(v)) if n > 0 else np.nan\n    sd = float(np.std(v, ddof=1)) if n > 1 else np.nan\n    rows.append((d, mean, sd, n))\n    print(f\"  剂量={d:g}  n={n}  mean={mean:.3f}  SD={sd:.3f}\")\n\n# ---------- Bottom/Top 固定判断 ----------\nlow_d = uniq[0]\nhigh_d = uniq[-1]\nlow_mean = rows[0][1]\nhigh_mean = rows[-1][1]\nprint(\"\\n=== Bottom/Top 固定判断 ===\")\nprint(f\"最低剂量 {low_d:g} 均值={low_mean:.3f} -> 是否接近0: {abs(low_mean) < 10}\")\nprint(f\"最高剂量 {high_d:g} 均值={high_mean:.3f} -> 是否接近100: {abs(high_mean - 100) < 10}\")\nfix_bottom = abs(low_mean) < 10\nfix_top = abs(high_mean - 100) < 10\nprint(f\"建议: Bottom {'固定为0' if fix_bottom else '自由拟合'}, Top {'固定为100' if fix_top else '自由拟合'}\")\n\n# ---------- 低置信点与样本量差异 ----------\nlow_conf = [d for d in uniq if len(groups[d]) < 3]\nns = [len(groups[d]) for d in uniq]\nprint(\"\\n=== 低置信与样本量差异 ===\")\nprint(f\"n<3 的剂量点: {low_conf}\")\nprint(f\"组间样本量: min={min(ns)}, max={max(ns)}, 极差={max(ns)-min(ns)}\")\nif max(ns) - min(ns) >= 3:\n    print(\"警告: 组间样本量差异较大，均值比较需谨慎（规避'忽略分组样本量差异'陷阱）\")\n\n# ---------- 分布形态检查 ----------\nprint(\"\\n=== 分布形态检查（规避只看均值） ===\")\nfor d in uniq:\n    v = groups[d]\n    if len(v) >= 2:\n        sk = float(np.mean(((v - np.mean(v)) / (np.std(v) + 1e-9)) ** 3))\n        print(f\"  剂量={d:g} 偏度={sk:.3f} 范围=[{v.min():.2f},{v.max():.2f}]\")\n\n# ---------- 相关矩阵 ----------\nnum_cols = [c for c in cols if all(not np.isnan(to_float(r[c])) for r in clean)]\nprint(\"\\n=== 数值列相关矩阵 ===\")\nif len(num_cols) >= 2:\n    M = np.array([[to_float(r[c]) for c in num_cols] for r in clean])\n    C = np.corrcoef(M.T)\n    for i in range(len(num_cols)):\n        for j in range(i+1, len(num_cols)):\n            r = C[i, j]\n            flag = \" <-- 高共线\" if abs(r) > 0.8 else \"\"\n            print(f\"  {num_cols[i]} vs {num_cols[j]}: r={r:.3f}{flag}\")\n    print(\"注意: 相关系数仅反映线性关系，剂量-响应常为非线性，勿据此下结论\")\n\n# ---------- 目标变量分布 ----------\nprint(\"\\n=== 目标变量分布 ===\")\nprint(f\"响应值: min={np.nanmin(resp):.2f}, max={np.nanmax(resp):.2f}, mean={np.nanmean(resp):.2f}, std={np.nanstd(resp):.2f}\")\n\n# ---------- 候选特征与风险项 ----------\nprint(\"\\n=== 候选特征清单 ===\")\nprint(f\"  剂量特征: {dose_col}\")\nprint(f\"  响应特征: {resp_col}\")\nprint(\"\\n=== 风险项与处理建议 ===\")\nrisks = []\nif low_conf:\n    risks.append(f\"低置信剂量点 {low_conf} (n<3): 建议合并或加权，拟合时降低权重\")\nif max(ns) - min(ns) >= 3:\n    risks.append(\"组间样本量差异大: 建议用加权回归或分层分析\")\nif not fix_bottom:\n    risks.append(\"最低剂量未接近0: Bottom 建议自由拟合\")\nif not fix_top:\n    risks.append(\"最高剂量未接近100: Top 建议自由拟合\")\nif not risks:\n    risks.append(\"无明显风险项\")\nfor r in risks:\n    print(f\"  - {r}\")\n\n# ---------- 绘图 ----------\nfig, axes = plt.subplots(1, 2, figsize=(13, 5))\n\nax = axes[0]\nax.scatter(doses, resp, alpha=0.4, s=18, color='steelblue', label='原始数据点')\nmeans = [r[1] for r in rows]\nsds = [r[2] if not np.isnan(r[2]) else 0 for r in rows]\nax.errorbar(uniq, means, yerr=sds, fmt='o-', color='crimson', capsize=4, label='均值±SD')\nfor d in low_conf:\n    ax.axvline(d, color='orange', ls='--', alpha=0.5)\n    ax.text(d, ax.get_ylim()[1]*0.95, 'n<3', color='orange', fontsize=8, rotation=90)\nax.set_xlabel(f'剂量 ({dose_col})')\nax.set_ylabel(f'响应 ({resp_col})')\nax.set_title('剂量-响应散点与均值')\nax.legend()\nax.grid(alpha=0.3)\n\nax2 = axes[1]\ndata_list = [groups[d] for d in uniq]\n# 兼容不同 matplotlib 版本：优先 tick_labels，回退 labels\ntry:\n    ax2.boxplot(data_list, tick_labels=[f'{d:g}' for d in uniq])\nexcept TypeError:\n    ax2.boxplot(data_list, labels=[f'{d:g}' for d in uniq])\nax2.set_xlabel('剂量')\nax2.set_ylabel('响应分布')\nax2.set_title('各剂量组分布（箱线）')\nax2.grid(alpha=0.3)\n\nplt.tight_layout()\nplt.savefig('figure.png', dpi=120)\nprint(\"\\n已保存 figure.png\")\n\n# ---------- 落盘 ----------\nwith open('step2_group_stats.csv', 'w', encoding='utf-8-sig', newline='') as f:\n    w = csv.writer(f)\n    w.writerow(['dose', 'mean', 'sd', 'n', 'low_confidence'])\n    for d, m, s, n in rows:\n        w.writerow([d, m, s, n, d in low_conf])\nprint(\"已保存 step2_group_stats.csv\")",
+   "n_attempts": 3,
+   "fixed": true,
+   "exhausted": false,
+   "attempts": [
+    {
+     "n": 1,
+     "ok": false,
+     "stdout": "",
+     "stderr": "Traceback (most recent call last):\n  File \"D:\\qing_zhuomian_\\������\\skillnet\\skillnet-demo\\out\\runs\\6071265d-20261002-104057-6cf2\\step2\\try1\\main.py\", line 15, in <module>\n    clean = read_csv('step1_clean_data.csv')\n  File \"D:\\qing_zhuomian_\\������\\skillnet\\skillnet-demo\\out\\runs\\6071265d-20261002-104057-6cf2\\step2\\try1\\main.py\", line 12, in read_csv\n    with open(path, 'r', encoding='utf-8-sig', newline='') as f:\n         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: 'step1_clean_data.csv'\n",
+     "error_kind": "exception",
+     "duration_ms": 1210,
+     "truncated": false
+    },
+    {
+     "n": 2,
+     "ok": false,
+     "stdout": "=== �����ļ����� ===\nclean_data ����: 47, ��: ['group', 'replicate', 'dose_raw', 'dose_unit', 'dose_uM', 'log10_dose_uM', 'response_raw', 'response_metric', 'inhibition', 'is_missing', 'missing_fields', 'is_outlier', 'outlier_flag']\naudit_log ����: 1\ndata_dictionary ����: 13\n������: dose_raw | ��Ӧ��: response_raw\n\n=== ȱʧ������ ===\n  outlier_flag: ȱʧ�� 0.957\n  missing_fields: ȱʧ�� 0.936\n  log10_dose_uM: ȱʧ�� 0.234\n  response_raw: ȱʧ�� 0.043\n  inhibition: ȱʧ�� 0.043\n  dose_raw: ȱʧ�� 0.021\n  dose_uM: ȱʧ�� 0.021\n  group: ȱʧ�� 0.000\n  replicate: ȱʧ�� 0.000\n  dose_unit: ȱʧ�� 0.000\n  response_metric: ȱʧ�� 0.000\n  is_missing: ȱʧ�� 0.000\n  is_outlier: ȱʧ�� 0.000\n\n=== ����������ͳ�� (��ֵ/SD/n) ===\n  ����=-1  n=1  mean=50.000  SD=nan\n  ����=0  n=9  mean=44.666  SD=50.969\n  ����=0.018  n=3  mean=66.818  SD=56.797\n  ����=0.1  n=3  mean=2.120  SD=3.672\n  ����=0.18  n=3  mean=62.988  SD=33.640\n  ����=1  n=4  mean=66.622  SD=38.794\n  ����=10  n=5  mean=75.679  SD=50.525\n  ����=18  n=1  mean=92.518  SD=nan\n  ����=100  n=5  mean=21.628  SD=42.142\n  ����=1000  n=2  mean=7.071  SD=4.876\n  ����=10000  n=4  mean=51.968  SD=25.532\n  ����=100000  n=4  mean=29.525  SD=47.019\n\n=== Bottom/Top �̶��ж� ===\n��ͼ��� -1 ��ֵ=50.000 -> �Ƿ�ӽ�0: False\n��߼��� 100000 ��ֵ=29.525 -> �Ƿ�ӽ�100: False\n����: Bottom �������, Top �������\n\n=== ������������������ ===\nn<3 �ļ�����: [np.float64(-1.0), np.float64(18.0), np.float64(1000.0)]\n���������: min=1, max=9, ����=8\n����: �������������ϴ󣬾�ֵ�Ƚ�����������'���Է�������������'���壩\n\n=== �ֲ���̬��飨���ֻ����ֵ�� ===\n  ����=0 ƫ��=0.224 ��Χ=[0.00,100.00]\n  ����=0.018 ƫ��=-0.707 ��Χ=[1.24,100.00]\n  ����=0.1 ƫ��=0.707 ��Χ=[0.00,6.36]\n  ����=0.18 ƫ��=-0.484 ��Χ=[25.58,90.74]\n  ����=1 ƫ��=-1.027 ��Χ=[9.49,95.74]\n  ����=10 ƫ��=0.399 ��Χ=[15.31,150.00]\n  ����=100 ƫ��=1.475 ��Χ=[0.00,96.76]\n  ����=1000 ƫ��=-0.000 ��Χ=[3.62,10.52]\n  ����=10000 ƫ��=0.789 ��Χ=[28.50,88.24]\n  ����=100000 ƫ��=1.149 ��Χ=[3.50,100.00]\n\n=== ��ֵ����ؾ��� ===\n\n=== Ŀ������ֲ� ===\n��Ӧֵ: min=0.00, max=150.00, mean=46.97, std=43.35\n\n=== ��ѡ�����嵥 ===\n  ��������: dose_raw\n  ��Ӧ����: response_raw\n\n=== �������봦������ ===\n  - �����ż����� [np.float64(-1.0), np.float64(18.0), np.float64(1000.0)] (n<3): ����ϲ����Ȩ�����ʱ����Ȩ��\n  - ��������������: �����ü�Ȩ�ع��ֲ����\n  - ��ͼ���δ�ӽ�0: Bottom �����������\n  - ��߼���δ�ӽ�100: Top �����������\n",
+     "stderr": "Traceback (most recent call last):\n  File \"D:\\qing_zhuomian_\\������\\skillnet\\skillnet-demo\\out\\runs\\6071265d-20261002-104057-6cf2\\step2\\try2\\main.py\", line 190, in <module>\n    ax2.boxplot(data_list, labels=[f'{d:g}' for d in uniq])\n    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\Users\\qing\\.workbuddy\\binaries\\python\\versions\\3.13.12\\Lib\\site-packages\\matplotlib\\_api\\deprecation.py\", line 477, in wrapper\n    return func(*args, **kwargs)\n  File \"C:\\Users\\qing\\.workbuddy\\binaries\\python\\versions\\3.13.12\\Lib\\site-packages\\matplotlib\\__init__.py\", line 1531, in inner\n    return func(\n        ax,\n        *map(cbook.sanitize_sequence, args),\n        **{k: cbook.sanitize_sequence(v) for k, v in kwargs.items()})\nTypeError: Axes.boxplot() got an unexpected keyword argument 'labels'. Did you mean 'label'?\n",
+     "error_kind": "exception",
+     "duration_ms": 1250,
+     "truncated": false
+    },
+    {
+     "n": 3,
+     "ok": true,
+     "stdout": "=== �����ļ����� ===\nclean_data ����: 47, ��: ['group', 'replicate', 'dose_raw', 'dose_unit', 'dose_uM', 'log10_dose_uM', 'response_raw', 'response_metric', 'inhibition', 'is_missing', 'missing_fields', 'is_outlier', 'outlier_flag']\naudit_log ����: 1\ndata_dictionary ����: 13\n������: dose_raw | ��Ӧ��: response_raw\n\n=== ȱʧ������ ===\n  outlier_flag: ȱʧ�� 0.957\n  missing_fields: ȱʧ�� 0.936\n  log10_dose_uM: ȱʧ�� 0.234\n  response_raw: ȱʧ�� 0.043\n  inhibition: ȱʧ�� 0.043\n  dose_raw: ȱʧ�� 0.021\n  dose_uM: ȱʧ�� 0.021\n  group: ȱʧ�� 0.000\n  replicate: ȱʧ�� 0.000\n  dose_unit: ȱʧ�� 0.000\n  response_metric: ȱʧ�� 0.000\n  is_missing: ȱʧ�� 0.000\n  is_outlier: ȱʧ�� 0.000\n\n=== ����������ͳ�� (��ֵ/SD/n) ===\n  ����=-1  n=1  mean=50.000  SD=nan\n  ����=0  n=9  mean=44.666  SD=50.969\n  ����=0.018  n=3  mean=66.818  SD=56.797\n  ����=0.1  n=3  mean=2.120  SD=3.672\n  ����=0.18  n=3  mean=62.988  SD=33.640\n  ����=1  n=4  mean=66.622  SD=38.794\n  ����=10  n=5  mean=75.679  SD=50.525\n  ����=18  n=1  mean=92.518  SD=nan\n  ����=100  n=5  mean=21.628  SD=42.142\n  ����=1000  n=2  mean=7.071  SD=4.876\n  ����=10000  n=4  mean=51.968  SD=25.532\n  ����=100000  n=4  mean=29.525  SD=47.019\n\n=== Bottom/Top �̶��ж� ===\n��ͼ��� -1 ��ֵ=50.000 -> �Ƿ�ӽ�0: False\n��߼��� 100000 ��ֵ=29.525 -> �Ƿ�ӽ�100: False\n����: Bottom �������, Top �������\n\n=== ������������������ ===\nn<3 �ļ�����: [np.float64(-1.0), np.float64(18.0), np.float64(1000.0)]\n���������: min=1, max=9, ����=8\n����: �������������ϴ󣬾�ֵ�Ƚ�����������'���Է�������������'���壩\n\n=== �ֲ���̬��飨���ֻ����ֵ�� ===\n  ����=0 ƫ��=0.224 ��Χ=[0.00,100.00]\n  ����=0.018 ƫ��=-0.707 ��Χ=[1.24,100.00]\n  ����=0.1 ƫ��=0.707 ��Χ=[0.00,6.36]\n  ����=0.18 ƫ��=-0.484 ��Χ=[25.58,90.74]\n  ����=1 ƫ��=-1.027 ��Χ=[9.49,95.74]\n  ����=10 ƫ��=0.399 ��Χ=[15.31,150.00]\n  ����=100 ƫ��=1.475 ��Χ=[0.00,96.76]\n  ����=1000 ƫ��=-0.000 ��Χ=[3.62,10.52]\n  ����=10000 ƫ��=0.789 ��Χ=[28.50,88.24]\n  ����=100000 ƫ��=1.149 ��Χ=[3.50,100.00]\n\n=== ��ֵ����ؾ��� ===\n\n=== Ŀ������ֲ� ===\n��Ӧֵ: min=0.00, max=150.00, mean=46.97, std=43.35\n\n=== ��ѡ�����嵥 ===\n  ��������: dose_raw\n  ��Ӧ����: response_raw\n\n=== �������봦������ ===\n  - �����ż����� [np.float64(-1.0), np.float64(18.0), np.float64(1000.0)] (n<3): ����ϲ����Ȩ�����ʱ����Ȩ��\n  - ��������������: �����ü�Ȩ�ع��ֲ����\n  - ��ͼ���δ�ӽ�0: Bottom �����������\n  - ��߼���δ�ӽ�100: Top �����������\n\n�ѱ��� figure.png\n�ѱ��� step2_group_stats.csv\n",
+     "stderr": "",
+     "error_kind": "",
+     "duration_ms": 1650,
+     "truncated": false
+    }
+   ],
+   "artifacts": [
+    {
+     "name": "step2_figure.png",
+     "kind": "真实运行产物",
+     "bytes": 68373,
+     "sha256": "05bfb2e25462474a",
+     "from_step": 1,
+     "url": "/api/runs/6071265d-20261002-104057-6cf2/artifacts/step2_figure.png"
+    },
+    {
+     "name": "step2_step2_group_stats.csv",
+     "kind": "真实运行产物",
+     "bytes": 527,
+     "sha256": "59f648d17e1b3482",
+     "from_step": 1,
+     "url": "/api/runs/6071265d-20261002-104057-6cf2/artifacts/step2_step2_group_stats.csv"
+    }
+   ],
+   "checks": [
+    {
+     "name": "执行退出码为 0",
+     "passed": true,
+     "detail": "returncode=0"
+    },
+    {
+     "name": "运行有实质输出",
+     "passed": true,
+     "detail": "2361 字符 / 64 行"
+    },
+    {
+     "name": "产生至少一个文件产物",
+     "passed": true,
+     "detail": "2 个"
+    },
+    {
+     "name": "step2_figure.png 存在",
+     "passed": true,
+     "detail": "68373 字节"
+    },
+    {
+     "name": "step2_figure.png 非空",
+     "passed": true,
+     "detail": "68373 字节"
+    },
+    {
+     "name": "step2_figure.png 是有效 PNG",
+     "passed": true,
+     "detail": "1560×600"
+    },
+    {
+     "name": "step2_figure.png 尺寸合理",
+     "passed": true,
+     "detail": "1560×600（过小可能是空图）"
+    },
+    {
+     "name": "step2_step2_group_stats.csv 存在",
+     "passed": true,
+     "detail": "527 字节"
+    },
+    {
+     "name": "step2_step2_group_stats.csv 非空",
+     "passed": true,
+     "detail": "527 字节"
+    },
+    {
+     "name": "step2_step2_group_stats.csv 是可解析 CSV",
+     "passed": true,
+     "detail": "13 行（含表头）"
+    },
+    {
+     "name": "step2_step2_group_stats.csv 含表头且列数 > 0",
+     "passed": true,
+     "detail": "列：﻿dose, mean, sd, n, low_confidence"
+    },
+    {
+     "name": "step2_step2_group_stats.csv 含数据行",
+     "passed": true,
+     "detail": "12 行数据"
+    },
+    {
+     "name": "step2_step2_group_stats.csv 各行列数一致",
+     "passed": true,
+     "detail": "列数集合 [5]"
+    }
+   ],
+   "checks_passed": 13,
+   "checks_total": 13,
+   "verifications": [
+    {
+     "item": "分布图覆盖全部关键变量",
+     "passed": false,
+     "evidence": "仅见响应值分布，未见剂量分布图",
+     "layer": "llm"
+    },
+    {
+     "item": "共线性项已标注",
+     "passed": false,
+     "evidence": "输出'均值相关性矩阵'为空，无标注",
+     "layer": "llm"
+    },
+    {
+     "item": "风险项有具体处理建议",
+     "passed": true,
+     "evidence": "低置信点建议加权，Bottom/Top建议不固定",
+     "layer": "llm"
+    }
+   ],
+   "verification_passed": 1,
+   "verification_total": 3,
+   "verify_skip_reason": "",
+   "error": "",
+   "duration_ms": 25985,
+   "stages": {
+    "code_gen_ms": 7546,
+    "llm_calls": 5,
+    "llm_cost_yuan": 0.1,
+    "syntax_check_ms": 4142,
+    "sandbox_try1_ms": 1210,
+    "repair1_llm_ms": 7004,
+    "sandbox_try2_ms": 1250,
+    "repair2_llm_ms": 6467,
+    "sandbox_try3_ms": 1650,
+    "verify_det_ms": 1,
+    "verify_sem_ms": 745
+   }
+  },
+  {
+   "idx": 2,
+   "action": "用非线性最小二乘拟合 4PL：y = Bottom + (Top-Bottom)/(1+10^((logIC50-x)*HillSlope))；若平台期覆盖则固定 Bottom=0 或 Top=100 改用 3PL，并用 F 检验比较嵌套模型；对 IC50 做 bootstrap 区间估计与残差诊断。",
+   "skill": "dose-response-ic50-estimation",
+   "status": "done",
+   "depends_on": [
+    1
+   ],
+   "inputs": [
+    "step1_audit_log.csv",
+    "step1_clean_data.csv",
+    "step1_data_dictionary.csv",
+    "step1_figure.png",
+    "step2_figure.png",
+    "step2_step2_group_stats.csv"
+   ],
+   "code": "import numpy as np\nimport matplotlib\nmatplotlib.use('Agg')\nimport matplotlib.pyplot as plt\nimport csv, os, glob\n\nplt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'DejaVu Sans']\nplt.rcParams['axes.unicode_minus'] = False\n\n# ---------- 定位输入文件 ----------\ndef locate(name):\n    cands = [name, os.path.join('..', name), os.path.join('..', '..', name)]\n    for c in cands:\n        if os.path.exists(c):\n            return c\n    hits = glob.glob(os.path.join('**', name), recursive=True)\n    if hits:\n        return hits[0]\n    return None\n\ndef read_csv(path):\n    with open(path, newline='', encoding='utf-8-sig') as f:\n        return list(csv.DictReader(f))\n\ndef load_any(names):\n    for n in names:\n        p = locate(n)\n        if p:\n            print(\"[定位] %s -> %s\" % (n, p))\n            return read_csv(p)\n    return None\n\nclean = load_any(['step1_clean_data.csv', 'clean_data.csv'])\naudit = load_any(['step1_audit_log.csv', 'audit_log.csv'])\nddict = load_any(['step1_data_dictionary.csv', 'data_dictionary.csv'])\ngstats = load_any(['step2_step2_group_stats.csv', 'step2_group_stats.csv', 'group_stats.csv'])\n\nif clean is None:\n    raise FileNotFoundError(\"未找到 step1_clean_data.csv，请确认输入文件已生成\")\n\nprint(\"=== 输入文件读取 ===\")\nprint(\"clean_data 行数:\", len(clean), \"列:\", list(clean[0].keys()))\nprint(\"audit_log 行数:\", len(audit) if audit else 0)\nprint(\"data_dictionary 行数:\", len(ddict) if ddict else 0)\nprint(\"group_stats 行数:\", len(gstats) if gstats else 0)\n\n# ---------- 识别列名 ----------\ncols = list(clean[0].keys())\ndef find_col(cands):\n    for c in cols:\n        for k in cands:\n            if k.lower() in c.lower():\n                return c\n    return None\n\ndose_col = find_col(['dose', 'conc', '剂量'])\nresp_col = find_col(['response', 'inhib', 'viab', '抑制', '存活'])\nrep_col  = find_col(['replicate', 'rep', '孔'])\ngrp_col  = find_col(['group', 'batch', '组'])\n\nprint(\"识别列 -> dose:\", dose_col, \"response:\", resp_col, \"replicate:\", rep_col, \"group:\", grp_col)\nif dose_col is None or resp_col is None:\n    raise ValueError(\"无法识别剂量或响应列，请检查列名\")\n\n# ---------- 解析数据（含空值/非法值兜底） ----------\ndef to_float(v):\n    if v is None:\n        return None\n    s = str(v).strip()\n    if s == '' or s.lower() in ('na', 'nan', 'null', 'none', '-'):\n        return None\n    try:\n        return float(s)\n    except ValueError:\n        return None\n\ndose_list, resp_list, rep_list, grp_list = [], [], [], []\nn_bad = 0\nfor r in clean:\n    dv = to_float(r.get(dose_col))\n    rv = to_float(r.get(resp_col))\n    if dv is None or rv is None:\n        n_bad += 1\n        continue\n    dose_list.append(dv)\n    resp_list.append(rv)\n    rep_list.append(r.get(rep_col) if rep_col else 'R')\n    grp_list.append(r.get(grp_col) if grp_col else 'G')\n\nif n_bad > 0:\n    print(\"[数据清洗] 剔除 %d 行含空值/非法数值的记录\" % n_bad)\nif len(dose_list) == 0:\n    raise ValueError(\"清洗后无有效数据行，请检查剂量/响应列内容\")\n\ndose = np.array(dose_list, dtype=float)\nresp = np.array(resp_list, dtype=float)\nrep  = np.array(rep_list)\ngrp  = np.array(grp_list)\n\n# 单位统一：若剂量最大值 > 1000 视为 nM -> μM\nif dose.max() > 1000:\n    print(\"[单位统一] 剂量最大值 %.1f > 1000，判定为 nM，转换为 μM\" % dose.max())\n    dose = dose / 1000.0\nelse:\n    print(\"[单位统一] 剂量范围 [%.4g, %.4g]，按 μM 处理\" % (dose.min(), dose.max()))\n\n# 抑制率统一为 0-1\nif resp.max() > 1.5:\n    print(\"[响应统一] 响应最大值 %.2f > 1.5，判定为百分数，除以 100\" % resp.max())\n    resp = resp / 100.0\nelse:\n    print(\"[响应统一] 响应范围 [%.3f, %.3f]，按 0-1 处理\" % (resp.min(), resp.max()))\n\n# 剂量必须为正才能取 log\nif dose.min() <= 0:\n    print(\"[警告] 存在非正剂量，剔除 %d 个点\" % int((dose <= 0).sum()))\n    keep = dose > 0\n    dose, resp, rep, grp = dose[keep], resp[keep], rep[keep], grp[keep]\n\nif len(dose) == 0:\n    raise ValueError(\"剔除非正剂量后无数据\")\n\n# 异常点标记（不删除）：|z|>3 基于同剂量分组\nlogd = np.log10(dose)\noutlier = np.zeros(len(resp), dtype=bool)\nfor d in np.unique(dose):\n    m = dose == d\n    if m.sum() >= 3:\n        mu, sd = resp[m].mean(), resp[m].std()\n        if sd > 0:\n            outlier[m] = np.abs((resp[m]-mu)/sd) > 3\nprint(\"[异常点] 标记 %d 个异常点（保留不删除）\" % outlier.sum())\n\n# ---------- 分组统计 ----------\nudoses = np.unique(dose)\nmeans, sds, ns = [], [], []\nfor d in udoses:\n    m = dose == d\n    means.append(resp[m].mean())\n    sds.append(resp[m].std() if m.sum() > 1 else 0.0)\n    ns.append(m.sum())\nmeans, sds, ns = np.array(means), np.array(sds), np.array(ns)\nprint(\"[分组] 剂量点数 %d, n<3 的低置信点: %d\" % (len(udoses), int((ns < 3).sum())))\n\n# 平台期检查\nlow_ok = means[0] < 0.15\nhigh_ok = means[-1] > 0.85\nprint(\"[平台期] 最低剂量抑制率 %.3f (接近0: %s), 最高剂量抑制率 %.3f (接近100%%: %s)\"\n      % (means[0], low_ok, means[-1], high_ok))\n\n# ---------- 4PL 模型 ----------\ndef pl4(x, bottom, top, logIC50, hill):\n    return bottom + (top-bottom)/(1.0 + 10.0**((logIC50-x)*hill))\n\ndef pl3_bottom0(x, top, logIC50, hill):\n    return top/(1.0 + 10.0**((logIC50-x)*hill))\n\ndef pl3_top100(x, bottom, logIC50, hill):\n    return bottom + (1.0-bottom)/(1.0 + 10.0**((logIC50-x)*hill))\n\ndef sse(fn, params, x, y):\n    return float(np.sum((y - fn(x, *params))**2))\n\ndef nelder_mead(fn, x0, x, y, maxiter=2000, tol=1e-10):\n    n = len(x0)\n    simplex = [np.array(x0, dtype=float)]\n    for i in range(n):\n        p = np.array(x0, dtype=float)\n        p[i] += 0.1 if p[i] == 0 else 0.1*abs(p[i]) + 0.01\n        simplex.append(p)\n    simplex = np.array(simplex)\n    fvals = np.array([sse(fn, s, x, y) for s in simplex])\n    for _ in range(maxiter):\n        idx = np.argsort(fvals); simplex = simplex[idx]; fvals = fvals[idx]\n        if abs(fvals[-1]-fvals[0]) < tol*(abs(fvals[0])+tol):\n            break\n        centroid = simplex[:-1].mean(axis=0)\n        xr = centroid + (centroid - simplex[-1]); fr = sse(fn, xr, x, y)\n        if fr < fvals[0]:\n            xe = centroid + 2*(centroid - simplex[-1]); fe = sse(fn, xe, x, y)\n            simplex[-1], fvals[-1] = (xe, fe) if fe < fr else (xr, fr)\n        elif fr < fvals[-2]:\n            simplex[-1], fvals[-1] = xr, fr\n        else:\n            xc = centroid + 0.5*(simplex[-1]-centroid); fc = sse(fn, xc, x, y)\n            if fc < fvals[-1]:\n                simplex[-1], fvals[-1] = xc, fc\n            else:\n                for i in range(1, n+1):\n                    simplex[i] = simplex[0] + 0.5*(simplex[i]-simplex[0])\n                    fvals[i] = sse(fn, simplex[i], x, y)\n    idx = np.argsort(fvals)\n    return simplex[idx[0]], fvals[idx[0]]\n\n# 初始值\nb0 = float(np.clip(means[0], 0, 0.2))\nt0 = float(np.clip(means[-1], 0.8, 1.0))\nli0 = float(np.median(logd))\nh0 = 1.0\n\n# 4PL 拟合\np4, sse4 = nelder_mead(pl4, [b0, t0, li0, h0], logd, resp)\nprint(\"\\n=== 4PL 拟合 ===\")\nprint(\"Bottom=%.4f Top=%.4f logIC50=%.4f HillSlope=%.4f SSE=%.6f\" % (p4[0], p4[1], p4[2], p4[3], sse4))\nprint(\"IC50 = %.4f μM\" % (10**p4[2]))\n\n# 嵌套模型选择\nuse3pl = None\nif low_ok and not high_ok:\n    use3pl = 'bottom0'\nelif high_ok and not low_ok:\n    use3pl = 'top100'\nelif low_ok and high_ok:\n    use3pl = 'bottom0'\n\np3, sse3, k3, k4 = None, None, None, 4\nif use3pl == 'bottom0':\n    p3, sse3 = nelder_mead(pl3_bottom0, [t0, li0, h0], logd, resp); k3 = 3\n    print(\"\\n=== 3PL (Bottom=0) 拟合 ===\")\n    print(\"Top=%.4f logIC50=%.4f HillSlope=%.4f SSE=%.6f\" % (p3[0], p3[1], p3[2], sse3))\n    print(\"IC50 = %.4f μM\" % (10**p3[1]))\nelif use3pl == 'top100':\n    p3, sse3 = nelder_mead(pl3_top100, [b0, li0, h0], logd, resp); k3 = 3\n    print(\"\\n=== 3PL (Top=100) 拟合 ===\")\n    print(\"Bottom=%.4f logIC50=%.4f HillSlope=%.4f SSE=%.6f\" % (p3[0], p3[1], p3[2], sse3))\n    print(\"IC50 = %.4f μM\" % (10**p3[1]))\n\n# F 检验比较嵌套模型\nn_obs = len(resp)\nif p3 is not None:\n    df1 = k4 - k3\n    df2 = n_obs - k4\n    if df2 > 0 and sse3 > sse4:\n        F = ((sse3 - sse4)/df1) / (sse4/df2)\n        rng = np.random.default_rng(42)\n        Fsim = (rng.chisquare(df1, 20000)/df1) / (rng.chisquare(df2, 20000)/df2)\n        pval = float((Fsim > F).mean())\n        print(\"\\n=== F 检验 (4PL vs 3PL) ===\")\n        print(\"F=%.4f, df1=%d, df2=%d, p=%.4f (Monte Carlo 近似)\" % (F, df1, df2, pval))\n        print(\"α=0.05, 结论: %s\" % (\"拒绝 3PL，采用 4PL\" if pval < 0.05 else \"不拒绝 3PL，采用更简模型\"))\n    else:\n        print(\"\\n[F检验] SSE3 <= SSE4 或 df2<=0，跳过\")\n\n# 最终模型\nif p3 is not None and sse3 <= sse4:\n    final_fn = pl3_bottom0 if use3pl == 'bottom0' else pl3_top100\n    final_p, final_name = p3, '3PL'\n    logIC50_hat = p3[1]; hill_hat = p3[2]\nelse:\n    final_fn, final_p, final_name = pl4, p4, '4PL'\n    logIC50_hat = p4[2]; hill_hat = p4[3]\nprint(\"\\n最终模型: %s, logIC50=%.4f, HillSlope=%.4f\" % (final_name, logIC50_hat, hill_hat))\n\n# ---------- Bootstrap IC50 区间（分层按 group） ----------\ndef fit_ic50(xb, yb, init):\n    if final_name == '4PL':\n        pb, _ = nelder_mead(pl4, init, xb, yb, maxiter=500)\n        return 10**pb[2]\n    elif use3pl == 'bottom0':\n        pb, _ = nelder_mead(pl3_bottom0, init, xb, yb, maxiter=500)\n        return 10**pb[1]\n    else:\n        pb, _ = nelder_mead(pl3_top100, init, xb, yb, maxiter=500)\n        return 10**pb[1]\n\ndef bootstrap_ic50(seed, B):\n    rng = np.random.default_rng(seed)\n    groups = np.unique(grp)\n    out = []\n    for _ in range(B):\n        idx = []\n        for g in groups:\n            gi = np.where(grp == g)[0]\n            idx.extend(rng.choice(gi, size=len(gi), replace=True))\n        idx = np.array(idx)\n        try:\n            out.append(fit_ic50(logd[idx], resp[idx], final_p))\n        except Exception:\n            pass\n    return np.array(out)\n\nB = 10000\nboot_ic50 = bootstrap_ic50(20240607, B)\nif len(boot_ic50) == 0:\n    raise RuntimeError(\"Bootstrap 全部失败\")\nci_lo, ci_hi = np.percentile(boot_ic50, [2.5, 97.5])\nprint(\"\\n=== Bootstrap IC50 (B=%d, 分层按 group) ===\" % B)\nprint(\"有效 bootstrap 样本: %d\" % len(boot_ic50))\nprint(\"IC50 点估计 = %.4f μM\" % (10**logIC50_hat))\nprint(\"95%% CI = [%.4f, %.4f] μM\" % (ci_lo, ci_hi))\n\nprint(\"\\n=== Bootstrap 收敛检查 (n 梯度) ===\")\nfor nb in [10, 100, 1000, 10000]:\n    sub = boot_ic50[:min(nb, len(boot_ic50))]\n    if len(sub) > 1:\n        print(\"n=%5d: IC50 均值=%.4f, SD=%.4f\" % (nb, sub.mean(), sub.std()))\n\nboot2 = bootstrap_ic50(999, 2000)\nci2 = np.percentile(boot2, [2.5, 97.5])\nprint(\"\\n=== 换种子稳健性 (seed=999, B=2000) ===\")\nprint(\"95%% CI = [%.4f, %.4f] μM, 方向一致: %s\" % (ci2[0], ci2[1], (ci2[0] < 10**logIC50_hat < ci2[1])))\n\nprint(\"\\n=== HillSlope 敏感性 ===\")\nprint(\"HillSlope=%.4f, |Hill| 接近0: %s, |Hill|>10: %s\" % (hill_hat, abs(hill_hat) < 0.1, abs(hill_hat) > 10))\n\n# 残差诊断\nresid = resp - final_fn(logd, *final_p)\nprint(\"\\n=== 残差诊断 ===\")\nprint(\"残差均值=%.5f, SD=%.5f, 最大|残差|=%.5f\" % (resid.mean(), resid.std(), np.abs(resid).max()))\nif resid.std() > 0:\n    corr = np.corrcoef(logd, resid)[0, 1]\n    print(\"残差 vs log10(dose) 相关系数 = %.4f (系统趋势: %s)\" % (corr, abs(corr) > 0.3))\n\n# 含/不含异常点敏感性\nmask = ~outlier\nif mask.sum() > 5:\n    ic50_s = fit_ic50(logd[mask], resp[mask], final_p)\n    print(\"\\n=== 含/不含异常点敏感性 ===\")\n    print(\"含异常点 IC50=%.4f, 不含异常点 IC50=%.4f, 相对偏差=%.2f%%\"\n          % (10**logIC50_hat, ic50_s, abs(ic50_s-10**logIC50_hat)/(10**logIC50_hat)*100))\n\n# ---------- 绘图 ----------\nfig, axes = plt.subplots(1, 2, figsize=(13, 5.5))\nokabe = ['#0072B2', '#D55E00', '#009E73', '#CC79A7', '#F0E442']\n\nax = axes[0]\nax.errorbar(udoses, means, yerr=sds, fmt='o', color=okabe[0], ecolor=okabe[0],\n            capsize=3, markersize=6, label='均值±SD', zorder=3)\nxs = np.linspace(logd.min()-0.3, logd.max()+0.3, 300)\nys = final_fn(xs, *final_p)\nax.plot(10**xs, ys, '-', color=okabe[1], lw=2, label='%s 拟合' % final_name)\nax.axvline(10**logIC50_hat, color=okabe[2], ls='--', lw=1.2,\n           label='IC50=%.3f μM\\n95%%CI [%.3f, %.3f]' % (10**logIC50_hat, ci_lo, ci_hi))\nax.set_xscale('log')\nax.set_xlabel('剂量 (μM, log scale)', fontsize=9)\nax.set_ylabel('抑制率', fontsize=9)\nax.set_title('剂量-响应曲线 (%s, HillSlope=%.2f, n=%d)' % (final_name, hill_hat, n_obs), fontsize=10)\nax.legend(fontsize=7, loc='best')\nax.grid(alpha=0.3)\nax.tick_params(labelsize=8)\n\nax2 = axes[1]\nax2.scatter(logd, resid, c=okabe[0], s=25, alpha=0.7, label='残差')\nax2.axhline(0, color='gray', ls='--', lw=1)\nax2.set_xlabel('log10(剂量 μM)', fontsize=9)\nax2.set_ylabel('残差', fontsize=9)\nax2.set_title('残差诊断 (均值=%.4f, SD=%.4f)' % (resid.mean(), resid.std()), fontsize=10)\nax2.legend(fontsize=7)\nax2.grid(alpha=0.3)\nax2.tick_params(labelsize=8)\n\nplt.tight_layout()\nplt.savefig('figure.png', dpi=150, bbox_inches='tight')\nplt.savefig('figure.pdf', bbox_inches='tight')\nprint(\"\\n[输出] figure.png / figure.pdf 已保存\")\n\n# ---------- 落盘 ----------\nwith open('step3_ic50_estimates.csv', 'w', newline='', encoding='utf-8-sig') as f:\n    w = csv.writer(f)\n    w.writerow(['model', 'Bottom', 'Top', 'logIC50', 'IC50_uM', 'IC50_CI_low', 'IC50_CI_high', 'HillSlope', 'SSE', 'n_obs'])\n    if final_name == '4PL':\n        w.writerow(['4PL', p4[0], p4[1], p4[2], 10**p4[2], ci_lo, ci_hi, p4[3], sse4, n_obs])\n    elif use3pl == 'bottom0':\n        w.writerow(['3PL_Bottom0', 0.0, p3[0], p3[1], 10**p3[1], ci_lo, ci_hi, p3[2], sse3, n_obs])\n    else:\n        w.writerow(['3PL_Top100', p3[0], 1.0, p3[1], 10**p3[1], ci_lo, ci_hi, p3[2], sse3, n_obs])\n\nwith open('step3_bootstrap_audit.csv', 'w', newline='', encoding='utf-8-sig') as f:\n    w = csv.writer(f)\n    w.writerow(['item', 'value'])\n    w.writerow(['bootstrap_B', B])\n    w.writerow(['resample_unit', 'group (独立实验批次)'])\n    w.writerow(['seed', 20240607])\n    w.writerow(['IC50_point', 10**logIC50_hat])\n    w.writerow(['IC50_CI_low', ci_lo])\n    w.writerow(['IC50_CI_high', ci_hi])\n    w.writerow(['seed2_CI_low', ci2[0]])\n    w.writerow(['seed2_CI_high', ci2[1]])\n    w.writerow(['n_outliers', int(outlier.sum())])\n    w.writerow(['n_obs', n_obs])\n\nwith open('step3_clean_with_flags.csv', 'w', newline='', encoding='utf-8-sig') as f:\n    w = csv.writer(f)\n    w.writerow(['dose_uM', 'response', 'replicate', 'group', 'outlier_flag'])\n    for i in range(len(dose)):\n        w.writerow([dose[i], resp[i], rep[i], grp[i], int(outlier[i])])\n\nprint(\"\\n[输出] step3_ic50_estimates.csv / step3_bootstrap_audit.csv / step3_clean_with_flags.csv 已保存\")\nprint(\"\\n=== 完成 ===\")",
+   "n_attempts": 3,
+   "fixed": true,
+   "exhausted": false,
+   "attempts": [
+    {
+     "n": 1,
+     "ok": false,
+     "stdout": "",
+     "stderr": "Traceback (most recent call last):\n  File \"D:\\qing_zhuomian_\\������\\skillnet\\skillnet-demo\\out\\runs\\6071265d-20261002-104057-6cf2\\step3\\try1\\main.py\", line 15, in <module>\n    clean = read_csv('step1_clean_data.csv')\n  File \"D:\\qing_zhuomian_\\������\\skillnet\\skillnet-demo\\out\\runs\\6071265d-20261002-104057-6cf2\\step3\\try1\\main.py\", line 12, in read_csv\n    with open(path, newline='', encoding='utf-8-sig') as f:\n         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: 'step1_clean_data.csv'\n",
+     "error_kind": "exception",
+     "duration_ms": 1330,
+     "truncated": false
+    },
+    {
+     "n": 2,
+     "ok": false,
+     "stdout": "[��λ] step1_clean_data.csv -> ..\\step1_clean_data.csv\n[��λ] step1_audit_log.csv -> ..\\step1_audit_log.csv\n[��λ] step1_data_dictionary.csv -> ..\\step1_data_dictionary.csv\n[��λ] step2_step2_group_stats.csv -> ..\\step2_step2_group_stats.csv\n=== �����ļ���ȡ ===\nclean_data ����: 47 ��: ['group', 'replicate', 'dose_raw', 'dose_unit', 'dose_uM', 'log10_dose_uM', 'response_raw', 'response_metric', 'inhibition', 'is_missing', 'missing_fields', 'is_outlier', 'outlier_flag']\naudit_log ����: 1\ndata_dictionary ����: 13\ngroup_stats ����: 12\nʶ���� -> dose: dose_raw response: response_raw replicate: replicate group: group\n",
+     "stderr": "Traceback (most recent call last):\n  File \"D:\\qing_zhuomian_\\������\\skillnet\\skillnet-demo\\out\\runs\\6071265d-20261002-104057-6cf2\\step3\\try2\\main.py\", line 66, in <module>\n    dose = np.array([float(r[dose_col]) for r in clean])\n                     ~~~~~^^^^^^^^^^^^^\nValueError: could not convert string to float: ''\n",
+     "error_kind": "exception",
+     "duration_ms": 1240,
+     "truncated": false
+    },
+    {
+     "n": 3,
+     "ok": true,
+     "stdout": "[��λ] step1_clean_data.csv -> ..\\step1_clean_data.csv\n[��λ] step1_audit_log.csv -> ..\\step1_audit_log.csv\n[��λ] step1_data_dictionary.csv -> ..\\step1_data_dictionary.csv\n[��λ] step2_step2_group_stats.csv -> ..\\step2_step2_group_stats.csv\n=== �����ļ���ȡ ===\nclean_data ����: 47 ��: ['group', 'replicate', 'dose_raw', 'dose_unit', 'dose_uM', 'log10_dose_uM', 'response_raw', 'response_metric', 'inhibition', 'is_missing', 'missing_fields', 'is_outlier', 'outlier_flag']\naudit_log ����: 1\ndata_dictionary ����: 13\ngroup_stats ����: 12\nʶ���� -> dose: dose_raw response: response_raw replicate: replicate group: group\n[������ϴ] �޳� 3 �к���ֵ/�Ƿ���ֵ�ļ�¼\n[��λͳһ] �������ֵ 100000.0 > 1000���ж�Ϊ nM��ת��Ϊ ��M\n[��Ӧͳһ] ��Ӧ���ֵ 150.00 > 1.5���ж�Ϊ�ٷ��������� 100\n[����] ���ڷ����������޳� 10 ����\n[�쳣��] ��� 0 ���쳣�㣨������ɾ����\n[����] �������� 10, n<3 �ĵ����ŵ�: 2\n[ƽ̨��] ��ͼ��������� 0.668 (�ӽ�0: False), ��߼��������� 0.295 (�ӽ�100%: False)\n\n=== 4PL ��� ===\nBottom=0.5964 Top=0.2988 logIC50=-1.5504 HillSlope=43.2951 SSE=5.519239\nIC50 = 0.0282 ��M\n\n����ģ��: 4PL, logIC50=-1.5504, HillSlope=43.2951\n\n=== Bootstrap IC50 (B=10000, �ֲ㰴 group) ===\n��Ч bootstrap ����: 10000\nIC50 ����� = 0.0282 ��M\n95% CI = [0.0194, 0.0716] ��M\n\n=== Bootstrap ������� (n �ݶ�) ===\nn=   10: IC50 ��ֵ=0.0375, SD=0.0102\nn=  100: IC50 ��ֵ=0.0404, SD=0.0130\nn= 1000: IC50 ��ֵ=0.0412, SD=0.0164\nn=10000: IC50 ��ֵ=0.0446, SD=0.1508\n\n=== �������Ƚ��� (seed=999, B=2000) ===\n95% CI = [0.0191, 0.0703] ��M, ����һ��: True\n\n=== HillSlope ������ ===\nHillSlope=43.2951, |Hill| �ӽ�0: False, |Hill|>10: True\n\n=== �в���� ===\n�в��ֵ=-0.00000, SD=0.40290, ���|�в�|=0.90359\n�в� vs log10(dose) ���ϵ�� = 0.1284 (ϵͳ����: False)\n\n=== ��/�����쳣�������� ===\n���쳣�� IC50=0.0282, �����쳣�� IC50=0.0412, ���ƫ��=46.23%\n\n[���] figure.png / figure.pdf �ѱ���\n\n[���] step3_ic50_estimates.csv / step3_bootstrap_audit.csv / step3_clean_with_flags.csv �ѱ���\n\n=== ��� ===\n",
+     "stderr": "D:\\qing_zhuomian_\\������\\skillnet\\skillnet-demo\\out\\runs\\6071265d-20261002-104057-6cf2\\step3\\try3\\main.py:153: RuntimeWarning: overflow encountered in power\n  return bottom + (top-bottom)/(1.0 + 10.0**((logIC50-x)*hill))\n",
+     "error_kind": "",
+     "duration_ms": 46010,
+     "truncated": false
+    }
+   ],
+   "artifacts": [
+    {
+     "name": "step3_figure.pdf",
+     "kind": "真实运行产物",
+     "bytes": 30915,
+     "sha256": "7cc9d52ac9307b83",
+     "from_step": 2,
+     "url": "/api/runs/6071265d-20261002-104057-6cf2/artifacts/step3_figure.pdf"
+    },
+    {
+     "name": "step3_figure.png",
+     "kind": "真实运行产物",
+     "bytes": 81030,
+     "sha256": "5598960acbf5463a",
+     "from_step": 2,
+     "url": "/api/runs/6071265d-20261002-104057-6cf2/artifacts/step3_figure.png"
+    },
+    {
+     "name": "step3_step3_bootstrap_audit.csv",
+     "kind": "真实运行产物",
+     "bytes": 285,
+     "sha256": "9353d89bc0712000",
+     "from_step": 2,
+     "url": "/api/runs/6071265d-20261002-104057-6cf2/artifacts/step3_step3_bootstrap_audit.csv"
+    },
+    {
+     "name": "step3_step3_clean_with_flags.csv",
+     "kind": "真实运行产物",
+     "bytes": 843,
+     "sha256": "0d5dd1740006f69b",
+     "from_step": 2,
+     "url": "/api/runs/6071265d-20261002-104057-6cf2/artifacts/step3_step3_clean_with_flags.csv"
+    },
+    {
+     "name": "step3_step3_ic50_estimates.csv",
+     "kind": "真实运行产物",
+     "bytes": 247,
+     "sha256": "d4da21877935d029",
+     "from_step": 2,
+     "url": "/api/runs/6071265d-20261002-104057-6cf2/artifacts/step3_step3_ic50_estimates.csv"
+    }
+   ],
+   "checks": [
+    {
+     "name": "执行退出码为 0",
+     "passed": true,
+     "detail": "returncode=0"
+    },
+    {
+     "name": "运行有实质输出",
+     "passed": true,
+     "detail": "1892 字符 / 42 行"
+    },
+    {
+     "name": "产生至少一个文件产物",
+     "passed": true,
+     "detail": "5 个"
+    },
+    {
+     "name": "step3_figure.pdf 存在",
+     "passed": true,
+     "detail": "30915 字节"
+    },
+    {
+     "name": "step3_figure.pdf 非空",
+     "passed": true,
+     "detail": "30915 字节"
+    },
+    {
+     "name": "step3_figure.png 存在",
+     "passed": true,
+     "detail": "81030 字节"
+    },
+    {
+     "name": "step3_figure.png 非空",
+     "passed": true,
+     "detail": "81030 字节"
+    },
+    {
+     "name": "step3_figure.png 是有效 PNG",
+     "passed": true,
+     "detail": "1935×809"
+    },
+    {
+     "name": "step3_figure.png 尺寸合理",
+     "passed": true,
+     "detail": "1935×809（过小可能是空图）"
+    },
+    {
+     "name": "step3_step3_bootstrap_audit.csv 存在",
+     "passed": true,
+     "detail": "285 字节"
+    },
+    {
+     "name": "step3_step3_bootstrap_audit.csv 非空",
+     "passed": true,
+     "detail": "285 字节"
+    },
+    {
+     "name": "step3_step3_bootstrap_audit.csv 是可解析 CSV",
+     "passed": true,
+     "detail": "11 行（含表头）"
+    },
+    {
+     "name": "step3_step3_bootstrap_audit.csv 含表头且列数 > 0",
+     "passed": true,
+     "detail": "列：﻿item, value"
+    },
+    {
+     "name": "step3_step3_bootstrap_audit.csv 含数据行",
+     "passed": true,
+     "detail": "10 行数据"
+    },
+    {
+     "name": "step3_step3_bootstrap_audit.csv 各行列数一致",
+     "passed": true,
+     "detail": "列数集合 [2]"
+    },
+    {
+     "name": "step3_step3_clean_with_flags.csv 存在",
+     "passed": true,
+     "detail": "843 字节"
+    },
+    {
+     "name": "step3_step3_clean_with_flags.csv 非空",
+     "passed": true,
+     "detail": "843 字节"
+    },
+    {
+     "name": "step3_step3_clean_with_flags.csv 是可解析 CSV",
+     "passed": true,
+     "detail": "35 行（含表头）"
+    },
+    {
+     "name": "step3_step3_clean_with_flags.csv 含表头且列数 > 0",
+     "passed": true,
+     "detail": "列：﻿dose_uM, response, replicate, group, outlier_flag"
+    },
+    {
+     "name": "step3_step3_clean_with_flags.csv 含数据行",
+     "passed": true,
+     "detail": "34 行数据"
+    },
+    {
+     "name": "step3_step3_clean_with_flags.csv 各行列数一致",
+     "passed": true,
+     "detail": "列数集合 [5]"
+    },
+    {
+     "name": "step3_step3_ic50_estimates.csv 存在",
+     "passed": true,
+     "detail": "247 字节"
+    },
+    {
+     "name": "step3_step3_ic50_estimates.csv 非空",
+     "passed": true,
+     "detail": "247 字节"
+    },
+    {
+     "name": "step3_step3_ic50_estimates.csv 是可解析 CSV",
+     "passed": true,
+     "detail": "2 行（含表头）"
+    },
+    {
+     "name": "step3_step3_ic50_estimates.csv 含表头且列数 > 0",
+     "passed": true,
+     "detail": "列：﻿model, Bottom, Top, logIC50, IC50_uM, IC50_CI_low"
+    },
+    {
+     "name": "step3_step3_ic50_estimates.csv 含数据行",
+     "passed": true,
+     "detail": "1 行数据"
+    },
+    {
+     "name": "step3_step3_ic50_estimates.csv 各行列数一致",
+     "passed": true,
+     "detail": "列数集合 [10]"
+    }
+   ],
+   "checks_passed": 27,
+   "checks_total": 27,
+   "verifications": [
+    {
+     "item": "清洗后主键唯一；审计日志可复现每一步；关键字段分布变化有解释；剂量-响应散点无系统性单位错位。",
+     "passed": false,
+     "evidence": "审计日志仅1行，未见主键唯一性验证",
+     "layer": "llm"
+    },
+    {
+     "item": "分布图覆盖全部剂量点；组间样本量差异已标注；曲线形态支持所选模型形式。",
+     "passed": false,
+     "evidence": "输出仅提及figure.png/pdf，未见分布图细节",
+     "layer": "llm"
+    },
+    {
+     "item": "参数收敛且标准误有限；残差无系统趋势；嵌套模型比较 p 值经校正后报告。",
+     "passed": false,
+     "evidence": "未报告标准误，未见嵌套模型比较p值",
+     "layer": "llm"
+    },
+    {
+     "item": "bootstrap 收敛曲线斜率与理论 O(n^{-1/2}) 在置信带内一致；更换种子后结论方向不变；样本流与命题一一对应无重叠。",
+     "passed": false,
+     "evidence": "仅报告不同n的SD，未验证斜率O(n^{-1/2})",
+     "layer": "llm"
+    },
+    {
+     "item": "坐标轴与单位标注完整；误差条与样本量齐备；图为矢量且字号达标；IC50 标注与统计结果一致。",
+     "passed": false,
+     "evidence": "输出仅提及figure.png/pdf，未见坐标轴等细节",
+     "layer": "llm"
+    }
+   ],
+   "verification_passed": 0,
+   "verification_total": 5,
+   "verify_skip_reason": "",
+   "error": "",
+   "duration_ms": 96286,
+   "stages": {
+    "code_gen_ms": 17292,
+    "llm_calls": 5,
+    "llm_cost_yuan": 0.2,
+    "syntax_check_ms": 48619,
+    "sandbox_try1_ms": 1330,
+    "repair1_llm_ms": 13938,
+    "sandbox_try2_ms": 1240,
+    "repair2_llm_ms": 14523,
+    "sandbox_try3_ms": 46010,
+    "verify_det_ms": 1,
+    "verify_sem_ms": 1756
+   }
+  }
+ ],
+ "step_stats": {
+  "total": 3,
+  "done": 3,
+  "failed": 0,
+  "skipped": 0,
+  "retried": 3
+ },
+ "artifacts": [
+  {
+   "name": "step1_audit_log.csv",
+   "kind": "真实运行产物",
+   "bytes": 127,
+   "sha256": "f860093d618d29c9",
+   "from_step": 0,
+   "url": "/api/runs/6071265d-20261002-104057-6cf2/artifacts/step1_audit_log.csv"
+  },
+  {
+   "name": "step1_clean_data.csv",
+   "kind": "真实运行产物",
+   "bytes": 3406,
+   "sha256": "2b99b6e256a97968",
+   "from_step": 0,
+   "url": "/api/runs/6071265d-20261002-104057-6cf2/artifacts/step1_clean_data.csv"
+  },
+  {
+   "name": "step1_data_dictionary.csv",
+   "kind": "真实运行产物",
+   "bytes": 572,
+   "sha256": "9d01c17ade91e572",
+   "from_step": 0,
+   "url": "/api/runs/6071265d-20261002-104057-6cf2/artifacts/step1_data_dictionary.csv"
+  },
+  {
+   "name": "step1_figure.png",
+   "kind": "真实运行产物",
+   "bytes": 56787,
+   "sha256": "920d3a9d9c77bf7c",
+   "from_step": 0,
+   "url": "/api/runs/6071265d-20261002-104057-6cf2/artifacts/step1_figure.png"
+  },
+  {
+   "name": "step2_figure.png",
+   "kind": "真实运行产物",
+   "bytes": 68373,
+   "sha256": "05bfb2e25462474a",
+   "from_step": 1,
+   "url": "/api/runs/6071265d-20261002-104057-6cf2/artifacts/step2_figure.png"
+  },
+  {
+   "name": "step2_step2_group_stats.csv",
+   "kind": "真实运行产物",
+   "bytes": 527,
+   "sha256": "59f648d17e1b3482",
+   "from_step": 1,
+   "url": "/api/runs/6071265d-20261002-104057-6cf2/artifacts/step2_step2_group_stats.csv"
+  },
+  {
+   "name": "step3_figure.pdf",
+   "kind": "真实运行产物",
+   "bytes": 30915,
+   "sha256": "7cc9d52ac9307b83",
+   "from_step": 2,
+   "url": "/api/runs/6071265d-20261002-104057-6cf2/artifacts/step3_figure.pdf"
+  },
+  {
+   "name": "step3_figure.png",
+   "kind": "真实运行产物",
+   "bytes": 81030,
+   "sha256": "5598960acbf5463a",
+   "from_step": 2,
+   "url": "/api/runs/6071265d-20261002-104057-6cf2/artifacts/step3_figure.png"
+  },
+  {
+   "name": "step3_step3_bootstrap_audit.csv",
+   "kind": "真实运行产物",
+   "bytes": 285,
+   "sha256": "9353d89bc0712000",
+   "from_step": 2,
+   "url": "/api/runs/6071265d-20261002-104057-6cf2/artifacts/step3_step3_bootstrap_audit.csv"
+  },
+  {
+   "name": "step3_step3_clean_with_flags.csv",
+   "kind": "真实运行产物",
+   "bytes": 843,
+   "sha256": "0d5dd1740006f69b",
+   "from_step": 2,
+   "url": "/api/runs/6071265d-20261002-104057-6cf2/artifacts/step3_step3_clean_with_flags.csv"
+  },
+  {
+   "name": "step3_step3_ic50_estimates.csv",
+   "kind": "真实运行产物",
+   "bytes": 247,
+   "sha256": "d4da21877935d029",
+   "from_step": 2,
+   "url": "/api/runs/6071265d-20261002-104057-6cf2/artifacts/step3_step3_ic50_estimates.csv"
+  }
+ ],
+ "feedback": [
+  {
+   "name": "data-cleaning",
+   "exploit_before": 0.0,
+   "exploit_after": 0.8278819791123238,
+   "delta": 0.8279,
+   "nudged": true
+  },
+  {
+   "name": "eda-profiling",
+   "exploit_before": 0.0,
+   "exploit_after": 0.8391099578478481,
+   "delta": 0.8391,
+   "nudged": true
+  },
+  {
+   "name": "dose-response-ic50-estimation",
+   "exploit_before": 0.0,
+   "exploit_after": 0.8404451745642134,
+   "delta": 0.8404,
+   "nudged": true
+  },
+  {
+   "name": "estimator-robustness-audit",
+   "exploit_before": 0.0,
+   "exploit_after": 0.8621601240422634,
+   "delta": 0.8622,
+   "nudged": true
+  },
+  {
+   "name": "scientific-visualization",
+   "exploit_before": 0.0,
+   "exploit_after": 0.8097573857099999,
+   "delta": 0.8098,
+   "nudged": true
+  }
+ ],
+ "evolution": {
+  "accepted": false,
+  "name": null,
+  "generation": 0,
+  "capability": "",
+  "library_size": 95,
+  "records": [
+   {
+    "op": "distill",
+    "name": "dose-response-ic50-pipeline",
+    "accepted": false,
+    "reason": "与已有技能重名",
+    "parent": []
+   }
+  ]
+ },
+ "staged": {
+  "retrieval_ms": 1176,
+  "ranking_ms": 53,
+  "orchestration_ms": 1757,
+  "planning_ms": 6278,
+  "picked_steps": [
+   0,
+   1,
+   2
+  ],
+  "execution_ms": 146479,
+  "judge_evolve_ms": 7270
+ },
+ "budget": {
+  "max_cost_yuan": 1.0,
+  "max_llm_calls": 40,
+  "max_seconds": 300,
+  "max_attempts_per_step": 3
+ },
+ "cost_yuan": 0.3675,
+ "tokens": 81520,
+ "llm_calls": 16,
+ "duration_ms": 163070,
+ "started_at_ms": 1790908857612,
+ "ended_at_ms": 1790909020682,
+ "error": "",
+ "events": [
+  {
+   "ts_ms": 1790908857666,
+   "type": "run.started",
+   "step": null,
+   "data": {
+    "task": "分析一批不同剂量下的细胞存活率数据，做清洗、剂量-反应建模与可视化"
+   }
+  },
+  {
+   "ts_ms": 1790908858843,
+   "type": "retrieval.completed",
+   "step": null,
+   "data": {
+    "selected": [
+     "dose-response-cleaning-ic50-pipeline",
+     "dose-response-ic50-pipeline",
+     "dose-response-ic50-estimation",
+     "dose-response-ic50-robust-estimation",
+     "data-cleaning"
+    ],
+    "decision": "auto",
+    "confidence": 1.0,
+    "raw_bm25_top": 46.6018,
+    "duration_ms": 1176
+   }
+  },
+  {
+   "ts_ms": 1790908858896,
+   "type": "ranking.completed",
+   "step": null,
+   "data": {
+    "rows": 5,
+    "top": "dose-response-cleaning-ic50-pipeline"
+   }
+  },
+  {
+   "ts_ms": 1790908860654,
+   "type": "orchestration.completed",
+   "step": null,
+   "data": {
+    "skills": [
+     "data-cleaning",
+     "eda-profiling",
+     "dose-response-ic50-estimation",
+     "estimator-robustness-audit",
+     "scientific-visualization"
+    ],
+    "order": [
+     "data-cleaning",
+     "dose-response-ic50-estimation",
+     "eda-profiling",
+     "estimator-robustness-audit",
+     "scientific-visualization"
+    ],
+    "workflow": 7,
+    "duration_ms": 1757
+   }
+  },
+  {
+   "ts_ms": 1790908866932,
+   "type": "plan.created",
+   "step": null,
+   "data": {
+    "steps": 5,
+    "approach": "以剂量-响应数据为对象，先做带审计轨迹的清洗与单位统一，再做 EDA 判断平台期覆盖与模型可识别性，随后用 4PL/3PL 非线性最小二乘拟合 IC50 并做 bootstrap 与残差诊断，最后产出出版级矢量图与可复现报告；全程以预注册参数、固定种子和敏感性对比保证结论可复现。",
+    "duration_ms": 6278
+   }
+  },
+  {
+   "ts_ms": 1790908866933,
+   "type": "run.executing",
+   "step": null,
+   "data": {
+    "steps": 3,
+    "picked": [
+     0,
+     1,
+     2
+    ]
+   }
+  },
+  {
+   "ts_ms": 1790908866934,
+   "type": "step.started",
+   "step": 0,
+   "data": {
+    "action": "读取原始剂量-响应数据，统一剂量单位为 μM（或 log10(μM)）与抑制率口径为 0-1 小数；检查主键（dose×replicate×group）唯一性、缺失模式与重复孔；异常点标记而非删除，输出干净数据表与审计日志。",
+    "skill": "data-cleaning"
+   }
+  },
+  {
+   "ts_ms": 1790908867140,
+   "type": "code.generating",
+   "step": 0,
+   "data": {
+    "attempt": 1
+   }
+  },
+  {
+   "ts_ms": 1790908879800,
+   "type": "step.attempt",
+   "step": 0,
+   "data": {
+    "attempt": 1,
+    "ok": false,
+    "error_kind": "exception",
+    "duration_ms": 1560
+   }
+  },
+  {
+   "ts_ms": 1790908879800,
+   "type": "step.retry",
+   "step": 0,
+   "data": {
+    "attempt": 1,
+    "reason": "exception",
+    "hint": "ddy\\binaries\\python\\versions\\3.13.12\\Lib\\site-packages\\matplotlib\\axes\\_axes.py\", line 5329, in scatter\n    raise ValueError(\"x and y must be the same size\")\nValueError: x and y must be the same size\n"
+   }
+  },
+  {
+   "ts_ms": 1790908879800,
+   "type": "code.generating",
+   "step": 0,
+   "data": {
+    "attempt": 2
+   }
+  },
+  {
+   "ts_ms": 1790908889842,
+   "type": "step.attempt",
+   "step": 0,
+   "data": {
+    "attempt": 2,
+    "ok": true,
+    "error_kind": "",
+    "duration_ms": 1600
+   }
+  },
+  {
+   "ts_ms": 1790908889883,
+   "type": "artifact.created",
+   "step": 0,
+   "data": {
+    "name": "step1_audit_log.csv",
+    "bytes": 127
+   }
+  },
+  {
+   "ts_ms": 1790908889910,
+   "type": "artifact.created",
+   "step": 0,
+   "data": {
+    "name": "step1_clean_data.csv",
+    "bytes": 3406
+   }
+  },
+  {
+   "ts_ms": 1790908889939,
+   "type": "artifact.created",
+   "step": 0,
+   "data": {
+    "name": "step1_data_dictionary.csv",
+    "bytes": 572
+   }
+  },
+  {
+   "ts_ms": 1790908889968,
+   "type": "artifact.created",
+   "step": 0,
+   "data": {
+    "name": "step1_figure.png",
+    "bytes": 56787
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "执行退出码为 0",
+    "passed": true,
+    "detail": "returncode=0"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "运行有实质输出",
+    "passed": true,
+    "detail": "1173 字符 / 26 行"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "产生至少一个文件产物",
+    "passed": true,
+    "detail": "4 个"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_audit_log.csv 存在",
+    "passed": true,
+    "detail": "127 字节"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_audit_log.csv 非空",
+    "passed": true,
+    "detail": "127 字节"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_audit_log.csv 是可解析 CSV",
+    "passed": true,
+    "detail": "2 行（含表头）"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_audit_log.csv 含表头且列数 > 0",
+    "passed": true,
+    "detail": "列：﻿step, reason, rows_before, rows_after, note"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_audit_log.csv 含数据行",
+    "passed": true,
+    "detail": "1 行数据"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_audit_log.csv 各行列数一致",
+    "passed": true,
+    "detail": "列数集合 [5]"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_clean_data.csv 存在",
+    "passed": true,
+    "detail": "3406 字节"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_clean_data.csv 非空",
+    "passed": true,
+    "detail": "3406 字节"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_clean_data.csv 是可解析 CSV",
+    "passed": true,
+    "detail": "48 行（含表头）"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_clean_data.csv 含表头且列数 > 0",
+    "passed": true,
+    "detail": "列：﻿group, replicate, dose_raw, dose_unit, dose_uM, log10_dose_uM"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_clean_data.csv 含数据行",
+    "passed": true,
+    "detail": "47 行数据"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_clean_data.csv 各行列数一致",
+    "passed": true,
+    "detail": "列数集合 [13]"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_data_dictionary.csv 存在",
+    "passed": true,
+    "detail": "572 字节"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_data_dictionary.csv 非空",
+    "passed": true,
+    "detail": "572 字节"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_data_dictionary.csv 是可解析 CSV",
+    "passed": true,
+    "detail": "14 行（含表头）"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_data_dictionary.csv 含表头且列数 > 0",
+    "passed": true,
+    "detail": "列：﻿字段, 口径/单位, 说明"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_data_dictionary.csv 含数据行",
+    "passed": true,
+    "detail": "13 行数据"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_data_dictionary.csv 各行列数一致",
+    "passed": true,
+    "detail": "列数集合 [3]"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_figure.png 存在",
+    "passed": true,
+    "detail": "56787 字节"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_figure.png 非空",
+    "passed": true,
+    "detail": "56787 字节"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_figure.png 是有效 PNG",
+    "passed": true,
+    "detail": "1440×600"
+   }
+  },
+  {
+   "ts_ms": 1790908890849,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_figure.png 尺寸合理",
+    "passed": true,
+    "detail": "1440×600（过小可能是空图）"
+   }
+  },
+  {
+   "ts_ms": 1790908890853,
+   "type": "step.completed",
+   "step": 0,
+   "data": {
+    "status": "done",
+    "duration_ms": 23915,
+    "n_attempts": 2,
+    "artifacts": 4,
+    "checks": "25/25"
+   }
+  },
+  {
+   "ts_ms": 1790908890986,
+   "type": "step.inputs",
+   "step": 1,
+   "data": {
+    "files": [
+     "step1_audit_log.csv",
+     "step1_clean_data.csv",
+     "step1_data_dictionary.csv",
+     "step1_figure.png"
+    ]
+   }
+  },
+  {
+   "ts_ms": 1790908890986,
+   "type": "step.started",
+   "step": 1,
+   "data": {
+    "action": "按剂量分组计算均值、SD、n，绘制剂量-响应散点与分布图；检查最低剂量抑制率是否接近 0、最高剂量是否接近 100%，判断 Bottom/Top 是否需固定；标注 n<3 的低置信剂量点与组间样本量差异。",
+    "skill": "eda-profiling"
+   }
+  },
+  {
+   "ts_ms": 1790908890988,
+   "type": "code.generating",
+   "step": 1,
+   "data": {
+    "attempt": 1
+   }
+  },
+  {
+   "ts_ms": 1790908899754,
+   "type": "step.attempt",
+   "step": 1,
+   "data": {
+    "attempt": 1,
+    "ok": false,
+    "error_kind": "exception",
+    "duration_ms": 1210
+   }
+  },
+  {
+   "ts_ms": 1790908899754,
+   "type": "step.retry",
+   "step": 1,
+   "data": {
+    "attempt": 1,
+    "reason": "exception",
+    "hint": " with open(path, 'r', encoding='utf-8-sig', newline='') as f:\n         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: 'step1_clean_data.csv'\n"
+   }
+  },
+  {
+   "ts_ms": 1790908899754,
+   "type": "code.generating",
+   "step": 1,
+   "data": {
+    "attempt": 2
+   }
+  },
+  {
+   "ts_ms": 1790908908021,
+   "type": "step.attempt",
+   "step": 1,
+   "data": {
+    "attempt": 2,
+    "ok": false,
+    "error_kind": "exception",
+    "duration_ms": 1250
+   }
+  },
+  {
+   "ts_ms": 1790908908021,
+   "type": "step.retry",
+   "step": 1,
+   "data": {
+    "attempt": 2,
+    "reason": "exception",
+    "hint": "*map(cbook.sanitize_sequence, args),\n        **{k: cbook.sanitize_sequence(v) for k, v in kwargs.items()})\nTypeError: Axes.boxplot() got an unexpected keyword argument 'labels'. Did you mean 'label'?\n"
+   }
+  },
+  {
+   "ts_ms": 1790908908021,
+   "type": "code.generating",
+   "step": 1,
+   "data": {
+    "attempt": 3
+   }
+  },
+  {
+   "ts_ms": 1790908916147,
+   "type": "step.attempt",
+   "step": 1,
+   "data": {
+    "attempt": 3,
+    "ok": true,
+    "error_kind": "",
+    "duration_ms": 1650
+   }
+  },
+  {
+   "ts_ms": 1790908916189,
+   "type": "artifact.created",
+   "step": 1,
+   "data": {
+    "name": "step2_figure.png",
+    "bytes": 68373
+   }
+  },
+  {
+   "ts_ms": 1790908916225,
+   "type": "artifact.created",
+   "step": 1,
+   "data": {
+    "name": "step2_step2_group_stats.csv",
+    "bytes": 527
+   }
+  },
+  {
+   "ts_ms": 1790908916971,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "执行退出码为 0",
+    "passed": true,
+    "detail": "returncode=0"
+   }
+  },
+  {
+   "ts_ms": 1790908916971,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "运行有实质输出",
+    "passed": true,
+    "detail": "2361 字符 / 64 行"
+   }
+  },
+  {
+   "ts_ms": 1790908916971,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "产生至少一个文件产物",
+    "passed": true,
+    "detail": "2 个"
+   }
+  },
+  {
+   "ts_ms": 1790908916971,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "step2_figure.png 存在",
+    "passed": true,
+    "detail": "68373 字节"
+   }
+  },
+  {
+   "ts_ms": 1790908916971,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "step2_figure.png 非空",
+    "passed": true,
+    "detail": "68373 字节"
+   }
+  },
+  {
+   "ts_ms": 1790908916971,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "step2_figure.png 是有效 PNG",
+    "passed": true,
+    "detail": "1560×600"
+   }
+  },
+  {
+   "ts_ms": 1790908916971,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "step2_figure.png 尺寸合理",
+    "passed": true,
+    "detail": "1560×600（过小可能是空图）"
+   }
+  },
+  {
+   "ts_ms": 1790908916971,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "step2_step2_group_stats.csv 存在",
+    "passed": true,
+    "detail": "527 字节"
+   }
+  },
+  {
+   "ts_ms": 1790908916971,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "step2_step2_group_stats.csv 非空",
+    "passed": true,
+    "detail": "527 字节"
+   }
+  },
+  {
+   "ts_ms": 1790908916971,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "step2_step2_group_stats.csv 是可解析 CSV",
+    "passed": true,
+    "detail": "13 行（含表头）"
+   }
+  },
+  {
+   "ts_ms": 1790908916971,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "step2_step2_group_stats.csv 含表头且列数 > 0",
+    "passed": true,
+    "detail": "列：﻿dose, mean, sd, n, low_confidence"
+   }
+  },
+  {
+   "ts_ms": 1790908916971,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "step2_step2_group_stats.csv 含数据行",
+    "passed": true,
+    "detail": "12 行数据"
+   }
+  },
+  {
+   "ts_ms": 1790908916971,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "step2_step2_group_stats.csv 各行列数一致",
+    "passed": true,
+    "detail": "列数集合 [5]"
+   }
+  },
+  {
+   "ts_ms": 1790908916972,
+   "type": "step.completed",
+   "step": 1,
+   "data": {
+    "status": "done",
+    "duration_ms": 25985,
+    "n_attempts": 3,
+    "artifacts": 2,
+    "checks": "13/13"
+   }
+  },
+  {
+   "ts_ms": 1790908917124,
+   "type": "step.inputs",
+   "step": 2,
+   "data": {
+    "files": [
+     "step1_audit_log.csv",
+     "step1_clean_data.csv",
+     "step1_data_dictionary.csv",
+     "step1_figure.png",
+     "step2_figure.png",
+     "step2_step2_group_stats.csv"
+    ]
+   }
+  },
+  {
+   "ts_ms": 1790908917124,
+   "type": "step.started",
+   "step": 2,
+   "data": {
+    "action": "用非线性最小二乘拟合 4PL：y = Bottom + (Top-Bottom)/(1+10^((logIC50-x)*HillSlope))；若平台期覆盖则固定 Bottom=0 或 Top=100 改用 3PL，并用 F 检验比较嵌套模型；对 IC50 做 bootstrap 区间估计与残差诊断。",
+    "skill": "dose-response-ic50-estimation"
+   }
+  },
+  {
+   "ts_ms": 1790908917126,
+   "type": "code.generating",
+   "step": 2,
+   "data": {
+    "attempt": 1
+   }
+  },
+  {
+   "ts_ms": 1790908935760,
+   "type": "step.attempt",
+   "step": 2,
+   "data": {
+    "attempt": 1,
+    "ok": false,
+    "error_kind": "exception",
+    "duration_ms": 1330
+   }
+  },
+  {
+   "ts_ms": 1790908935760,
+   "type": "step.retry",
+   "step": 2,
+   "data": {
+    "attempt": 1,
+    "reason": "exception",
+    "hint": "ad_csv\n    with open(path, newline='', encoding='utf-8-sig') as f:\n         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: 'step1_clean_data.csv'\n"
+   }
+  },
+  {
+   "ts_ms": 1790908935760,
+   "type": "code.generating",
+   "step": 2,
+   "data": {
+    "attempt": 2
+   }
+  },
+  {
+   "ts_ms": 1790908950950,
+   "type": "step.attempt",
+   "step": 2,
+   "data": {
+    "attempt": 2,
+    "ok": false,
+    "error_kind": "exception",
+    "duration_ms": 1240
+   }
+  },
+  {
+   "ts_ms": 1790908950950,
+   "type": "step.retry",
+   "step": 2,
+   "data": {
+    "attempt": 2,
+    "reason": "exception",
+    "hint": "04057-6cf2\\step3\\try2\\main.py\", line 66, in <module>\n    dose = np.array([float(r[dose_col]) for r in clean])\n                     ~~~~~^^^^^^^^^^^^^\nValueError: could not convert string to float: ''\n"
+   }
+  },
+  {
+   "ts_ms": 1790908950950,
+   "type": "code.generating",
+   "step": 2,
+   "data": {
+    "attempt": 3
+   }
+  },
+  {
+   "ts_ms": 1790909011498,
+   "type": "step.attempt",
+   "step": 2,
+   "data": {
+    "attempt": 3,
+    "ok": true,
+    "error_kind": "",
+    "duration_ms": 46010
+   }
+  },
+  {
+   "ts_ms": 1790909011537,
+   "type": "artifact.created",
+   "step": 2,
+   "data": {
+    "name": "step3_figure.pdf",
+    "bytes": 30915
+   }
+  },
+  {
+   "ts_ms": 1790909011564,
+   "type": "artifact.created",
+   "step": 2,
+   "data": {
+    "name": "step3_figure.png",
+    "bytes": 81030
+   }
+  },
+  {
+   "ts_ms": 1790909011597,
+   "type": "artifact.created",
+   "step": 2,
+   "data": {
+    "name": "step3_step3_bootstrap_audit.csv",
+    "bytes": 285
+   }
+  },
+  {
+   "ts_ms": 1790909011626,
+   "type": "artifact.created",
+   "step": 2,
+   "data": {
+    "name": "step3_step3_clean_with_flags.csv",
+    "bytes": 843
+   }
+  },
+  {
+   "ts_ms": 1790909011653,
+   "type": "artifact.created",
+   "step": 2,
+   "data": {
+    "name": "step3_step3_ic50_estimates.csv",
+    "bytes": 247
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "执行退出码为 0",
+    "passed": true,
+    "detail": "returncode=0"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "运行有实质输出",
+    "passed": true,
+    "detail": "1892 字符 / 42 行"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "产生至少一个文件产物",
+    "passed": true,
+    "detail": "5 个"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_figure.pdf 存在",
+    "passed": true,
+    "detail": "30915 字节"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_figure.pdf 非空",
+    "passed": true,
+    "detail": "30915 字节"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_figure.png 存在",
+    "passed": true,
+    "detail": "81030 字节"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_figure.png 非空",
+    "passed": true,
+    "detail": "81030 字节"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_figure.png 是有效 PNG",
+    "passed": true,
+    "detail": "1935×809"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_figure.png 尺寸合理",
+    "passed": true,
+    "detail": "1935×809（过小可能是空图）"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_step3_bootstrap_audit.csv 存在",
+    "passed": true,
+    "detail": "285 字节"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_step3_bootstrap_audit.csv 非空",
+    "passed": true,
+    "detail": "285 字节"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_step3_bootstrap_audit.csv 是可解析 CSV",
+    "passed": true,
+    "detail": "11 行（含表头）"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_step3_bootstrap_audit.csv 含表头且列数 > 0",
+    "passed": true,
+    "detail": "列：﻿item, value"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_step3_bootstrap_audit.csv 含数据行",
+    "passed": true,
+    "detail": "10 行数据"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_step3_bootstrap_audit.csv 各行列数一致",
+    "passed": true,
+    "detail": "列数集合 [2]"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_step3_clean_with_flags.csv 存在",
+    "passed": true,
+    "detail": "843 字节"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_step3_clean_with_flags.csv 非空",
+    "passed": true,
+    "detail": "843 字节"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_step3_clean_with_flags.csv 是可解析 CSV",
+    "passed": true,
+    "detail": "35 行（含表头）"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_step3_clean_with_flags.csv 含表头且列数 > 0",
+    "passed": true,
+    "detail": "列：﻿dose_uM, response, replicate, group, outlier_flag"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_step3_clean_with_flags.csv 含数据行",
+    "passed": true,
+    "detail": "34 行数据"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_step3_clean_with_flags.csv 各行列数一致",
+    "passed": true,
+    "detail": "列数集合 [5]"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_step3_ic50_estimates.csv 存在",
+    "passed": true,
+    "detail": "247 字节"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_step3_ic50_estimates.csv 非空",
+    "passed": true,
+    "detail": "247 字节"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_step3_ic50_estimates.csv 是可解析 CSV",
+    "passed": true,
+    "detail": "2 行（含表头）"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_step3_ic50_estimates.csv 含表头且列数 > 0",
+    "passed": true,
+    "detail": "列：﻿model, Bottom, Top, logIC50, IC50_uM, IC50_CI_low"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_step3_ic50_estimates.csv 含数据行",
+    "passed": true,
+    "detail": "1 行数据"
+   }
+  },
+  {
+   "ts_ms": 1790909013410,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "step3_step3_ic50_estimates.csv 各行列数一致",
+    "passed": true,
+    "detail": "列数集合 [10]"
+   }
+  },
+  {
+   "ts_ms": 1790909013411,
+   "type": "step.completed",
+   "step": 2,
+   "data": {
+    "status": "done",
+    "duration_ms": 96286,
+    "n_attempts": 3,
+    "artifacts": 5,
+    "checks": "27/27"
+   }
+  },
+  {
+   "ts_ms": 1790909013412,
+   "type": "execution.finished",
+   "step": null,
+   "data": {
+    "done": 3,
+    "failed": 0,
+    "duration_ms": 155800,
+    "artifacts": 11
+   }
+  },
+  {
+   "ts_ms": 1790909014580,
+   "type": "judge.completed",
+   "step": null,
+   "data": {
+    "weighted": 8.75,
+    "coverage": null,
+    "reward": 0.875
+   }
+  },
+  {
+   "ts_ms": 1790909020682,
+   "type": "evolution.proposed",
+   "step": null,
+   "data": {
+    "accepted": false,
+    "name": null,
+    "library_size": 95
+   }
+  }
+ ]
+}

@@ -19,7 +19,7 @@ from urllib.parse import quote
 from pathlib import Path
 from typing import Any
 
-from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi import Body, Depends, FastAPI, Header, HTTPException
 from fastapi.responses import (FileResponse, JSONResponse, Response,
                                StreamingResponse)
 from fastapi.staticfiles import StaticFiles
@@ -173,6 +173,17 @@ def _ui_version() -> str:
         return m.group(1) if m else "0"
     except OSError:
         return "0"
+
+
+@app.on_event("startup")
+def _startup_sweep() -> None:
+    """服务启动即清扫非终态 Run（进程重启留下的），避免"永远在跑"的假象。"""
+    try:
+        n = run_store().sweep_interrupted()
+        if n:
+            log.info("启动清扫：%d 个中断 Run 标记为 INTERRUPTED", n)
+    except Exception as exc:      # 清扫失败不影响服务启动
+        log.error("启动清扫失败：%s", exc)
 
 
 @app.get("/api/health")
@@ -730,17 +741,45 @@ if WEB_DIR.exists():
 
 @app.get("/")
 def index() -> Any:
-    """首页即汇报演示页；完整 Dashboard 移至 /dashboard。
+    """首页 = 产品主页（六幕叙事 + 对话式演示 + 运行中心入口）。
 
-    演示与日常使用共用一个入口，避免「两个前端地址」造成困惑：
-    briefing.html 右上角可进 /dashboard，dashboard 顶栏可返回 /。
+    页面地图（v0.7 融合后）：
+      /           → briefing.html  产品主页（叙事 + 演示 + 运行中心入口）
+      /runs       → app.html       运行中心（Run 历史列表，中文）
+      /run?id=    → run.html       Live Run（SSE 实时三栏）
+      /graph      → graph.html     交互式技能星图
+      /dashboard  → index.html     完整面板（技能库/检索/实验/导出）
+      /briefing   → briefing.html  （/ 的别名）
     """
     f = WEB_DIR / "briefing.html"
     if not f.exists():
-        legacy = WEB_DIR / "index.html"
-        if legacy.exists():
-            return FileResponse(str(legacy))
         return JSONResponse({"error": "web/briefing.html 不存在"}, status_code=404)
+    return FileResponse(str(f))
+
+
+@app.get("/briefing")
+def briefing_page() -> Any:
+    f = WEB_DIR / "briefing.html"
+    if not f.exists():
+        raise HTTPException(404, "web/briefing.html 不存在")
+    return FileResponse(str(f))
+
+
+@app.get("/runs")
+def runs_page() -> Any:
+    """运行中心（Run 历史列表，中文）。"""
+    f = WEB_DIR / "app.html"
+    if not f.exists():
+        raise HTTPException(404, "web/app.html 不存在")
+    return FileResponse(str(f))
+
+
+@app.get("/run")
+def run_page() -> Any:
+    """Live Run 页面（SSE 驱动，实时展示 DAG/时间线/Inspector）。"""
+    f = WEB_DIR / "run.html"
+    if not f.exists():
+        raise HTTPException(404, "web/run.html 不存在")
     return FileResponse(str(f))
 
 
@@ -798,6 +837,20 @@ def execute_one(req: CompareReq) -> Any:
             result["artifacts_manifest"] = []
     result["cost_yuan"] = round(led.cost_yuan, 5)
     return result
+
+
+@app.post("/api/runs/{run_id}/perf")
+def run_perf(run_id: str, ev: dict[str, Any] = Body(default={})) -> Any:
+    """记录前端性能指标（TTFE/TTFM/TTFV），存入 Run.events 供审计。"""
+    run = run_store().get(run_id)
+    if run is None:
+        raise HTTPException(404, "Run 不存在")
+    ev = dict(ev or {})
+    ev["type"] = "perf.frontend"
+    ev["ts_ms"] = int(time.time() * 1000)
+    run.events.append(runtime.TraceEvent(**{k: ev.get(k) for k in ("ts_ms", "type", "step", "data")}))
+    run_store().save(run)
+    return {"ok": True}
 
 
 @app.get("/api/skill/{name}/raw")

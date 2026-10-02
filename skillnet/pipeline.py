@@ -25,6 +25,7 @@ Orchestrator 会输出一个 DAG，但 Runtime **只执行其中一步**——DA
 from __future__ import annotations
 
 import pathlib
+import re
 import shutil
 import time
 from typing import Any, Callable
@@ -120,12 +121,16 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
     carried: list[str] = []
     for name in up_artifacts:
         src = workspace / "artifacts" / name
-        if src.is_file():
-            try:
-                shutil.copy2(src, step_dir / name)
-                carried.append(name)
-            except OSError:
-                pass
+        if not src.is_file():
+            continue
+        # 关键：恢复原始文件名（workspace 里的展示名带 stepN_ 前缀，但上游代码
+        # 是按原名写的——下游沙箱里必须叫原名，否则 "clean.csv" 读不到）
+        orig = re.sub(r"^step\d+_", "", name)
+        try:
+            shutil.copy2(src, step_dir / orig)
+            carried.append(orig)
+        except OSError:
+            pass
     step.inputs = carried
     if carried:
         _emit(run, "step.inputs", step=step.idx, files=carried)
@@ -140,8 +145,19 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
     from .executor import (_extract_code, _fix_prompt, _gen_code_prompt,
                            _looks_truncated, _record_execution, _verify_with_skill)
 
+    def _llm_snapshot() -> tuple[int, float]:
+        """当前请求账本的（调用数, 成本）——用于算本阶段的增量。"""
+        try:
+            snap = (llm.current_ledger().snapshot() or {}).get("by_role") or {}
+            calls = sum(int((v or {}).get("calls") or 0) for v in snap.values())
+            cost = float(llm.current_ledger().cost_yuan)
+            return calls, cost
+        except Exception:
+            return 0, 0.0
+
     for attempt in range(1, max_attempts + 1):
         check_budget(run)
+        phase = "code_gen" if attempt == 1 else f"repair{attempt - 1}_llm"
         if attempt == 1:
             prompt = _gen_code_prompt(run.task, {"action": step.action, "key_params": [],
                                                  "expected_output": ""}, skill, stack,
@@ -149,28 +165,47 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         else:
             prompt = _fix_prompt(code, step.attempts[-1].stderr, skill, attempt, mode="contract")
         _emit(run, "code.generating", step=step.idx, attempt=attempt)
+        c0, y0 = _llm_snapshot()
+        _t = now_ms()
         raw = llm.chat(
             [{"role": "system", "content": "你是严谨的科研工程师，只输出可运行代码。"},
              {"role": "user", "content": prompt}],
             role="executor", temperature=0.2 if attempt == 1 else 0.1,
             max_tokens=executor.CODE_MAX_TOKENS)
         code = _extract_code(raw)
+        c1, y1 = _llm_snapshot()
+        step.stages[phase + "_ms"] = step.stages.get(phase + "_ms", 0) + (now_ms() - _t)
+        step.stages["llm_calls"] = step.stages.get("llm_calls", 0) + (c1 - c0)
+        step.stages["llm_cost_yuan"] = round(
+            float(step.stages.get("llm_cost_yuan", 0)) + (y1 - y0), 5)
         sync_usage(run, llm.current_ledger())
 
         # 本地语法预检
         import ast as _ast
+        _t = now_ms()
+        _syntax_err = None
         try:
             _ast.parse(code)
-            result = sandbox.run_python(code, timeout=budget.max_seconds and 90 or 90,
-                                        keep_dir=True, workdir=step_dir / f"try{attempt}")
-        except SyntaxError as se:
+        except SyntaxError as _se:
+            _syntax_err = _se
+        # 语法检查与沙箱运行必须**分开计时**：早先合成一段，导致 syntax_check_ms
+        # 把沙箱耗时也算了进去（实测出现 48.6s 的"语法检查"，严重误导性能分析）
+        step.stages["syntax_check_ms"] = step.stages.get("syntax_check_ms", 0) + (now_ms() - _t)
+        if _syntax_err is None:
+            _t = now_ms()
+            result = sandbox.run_python(code, timeout=90, keep_dir=True,
+                                        workdir=step_dir / f"try{attempt}")
+            step.stages[f"sandbox_try{attempt}_ms"] = now_ms() - _t
+        else:
+            _se = _syntax_err
             lines = code.splitlines()
             ctx = "\n".join(f"{n}: {lines[n-1]}" for n in
-                            range(max(1, (se.lineno or 1) - 1), min(len(lines), (se.lineno or 1) + 1) + 1))
+                            range(max(1, (_se.lineno or 1) - 1), min(len(lines), (_se.lineno or 1) + 1) + 1))
             result = {"ok": False, "stdout": "", "returncode": -1, "duration": 0.0, "artifacts": [],
                       "error_kind": "syntax",
-                      "stderr": f"SyntaxError: {se.msg} (line {se.lineno})\n{ctx}",
+                      "stderr": f"SyntaxError: {_se.msg} (line {_se.lineno})\n{ctx}",
                       "workdir": str(step_dir)}
+            step.stages[f"sandbox_try{attempt}_ms"] = 0
 
         at = ExecutionAttempt(
             n=attempt, ok=bool(result.get("ok")), stdout=result.get("stdout") or "",
@@ -212,9 +247,11 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         _emit(run, "artifact.created", step=step.idx, name=name, bytes=art.bytes)
 
     # ---- L1 确定性检查 + L2 技能断言 ----
+    _t = now_ms()
     l1 = checks_mod.run_checks(paths, result)
     l2 = checks_mod.checks_from_skill(getattr(skill, "verification", []) or [], paths) if skill else []
     step.checks = [ProgrammaticCheck(**c) for c in (l1 + l2)]
+    step.stages["verify_det_ms"] = now_ms() - _t
 
     # ---- L3 技能验收（LLM，仅对非 machine-readable 条目）----
     if not result.get("ok"):
@@ -223,13 +260,19 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         step.verify_skip_reason = "执行未成功，无法进行产物验收"
     elif skill is None:
         step.verify_skip_reason = "该步骤未关联技能，无验收标准"
+        step.status = STEP_DONE
     else:
         items = [v for v in (skill.verification or [])
                  if not checks_mod.parse_assertions([v])]
         if items:
+            _t = now_ms()
             raw_v = _verify_with_skill(skill, run.task, step.action, code,
                                        result.get("stdout") or "",
                                        [p.name for p in paths])
+            step.stages["verify_sem_ms"] = now_ms() - _t
+            c1, y1 = _llm_snapshot()
+            step.stages["llm_calls"] = step.stages.get("llm_calls", 0) + (c1 - c0)
+            step.stages["llm_cost_yuan"] = round(float(step.stages.get("llm_cost_yuan", 0)) + (y1 - y0), 5)
             step.verifications = [VerificationResult(layer="llm", **v) for v in raw_v]
         else:
             step.verify_skip_reason = "该技能的验收条目已全部由程序化断言覆盖（L1/L2）"
@@ -300,6 +343,9 @@ def execute_run(run: Run, lib: Any, workspace: pathlib.Path,
     _emit(run, "run.executing", steps=len(run.steps), picked=picked)
 
     for st in run.steps:
+        if st.status == STEP_SKIPPED:                 # 依赖链阻断：跳过执行
+            _emit(run, "step.skipped", step=st.idx, reason=st.verify_skip_reason)
+            continue
         try:
             check_budget(run)
         except BudgetExceeded as exc:
