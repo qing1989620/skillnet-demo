@@ -52,7 +52,9 @@ STATUS_FAILED = "FAILED"
 STATUS_PARTIAL = "PARTIAL"
 STATUS_CANCELLED = "CANCELLED"
 STATUS_BUDGET_EXCEEDED = "BUDGET_EXCEEDED"
-TERMINAL = {STATUS_COMPLETED, STATUS_FAILED, STATUS_PARTIAL, STATUS_CANCELLED, STATUS_BUDGET_EXCEEDED}
+STATUS_INTERRUPTED = "INTERRUPTED"
+TERMINAL = {STATUS_COMPLETED, STATUS_FAILED, STATUS_PARTIAL, STATUS_CANCELLED,
+            STATUS_BUDGET_EXCEEDED, STATUS_INTERRUPTED}
 
 STEP_PENDING = "pending"
 STEP_RUNNING = "running"
@@ -337,6 +339,29 @@ class RunStore:
             if run_id in self._mem:
                 return self._mem[run_id]
         return self.load(run_id)
+
+    def sweep_interrupted(self) -> int:
+        """启动时清理僵尸 Run：非终态（进程被杀留下的）标记为 INTERRUPTED。
+
+        为什么需要：worker 抛异常或进程被杀时，Run 会永久停在 CREATED/EXECUTING，
+        列表里出现"永远在跑"的假象（实测踩过）。
+        """
+        n = 0
+        for f in self.root.glob("*.json"):
+            try:
+                d = json.loads(f.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                continue
+            if d.get("status") in TERMINAL:
+                continue
+            d["status"] = "INTERRUPTED"
+            d["error"] = d.get("error") or "进程中断（启动时清扫）"
+            try:
+                f.write_text(json.dumps(d, ensure_ascii=False, indent=1), encoding="utf-8")
+                n += 1
+            except OSError:
+                pass
+        return n
 
     def list_recent(self, limit: int = 50, task_fp: str | None = None) -> list[dict[str, Any]]:
         """按开始时间倒序列出 Run 摘要（内存 + 磁盘合并，磁盘优先保证不丢历史）。"""

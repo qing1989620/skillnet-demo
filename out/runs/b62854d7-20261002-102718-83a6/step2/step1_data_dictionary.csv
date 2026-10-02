@@ -1,0 +1,7 @@
+field,meaning,unit,rule
+dose_uM,统一后的剂量,μM,nM×1e-3; ug/mL×3.333
+log10_dose,剂量对数,log10(μM),dose_uM<=0 时为 NaN
+inhib_frac,抑制率,0-1 小数,>1 且<=100 视为百分数已转小数
+replicate,重复孔编号,整数,主键组成
+group,实验分组,字符串,主键组成
+flag,清洗标记,枚举,ok/missing_inhib/dose_negative/inhib_out_of_range

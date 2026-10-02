@@ -84,7 +84,77 @@ Run 落盘成功（同任务重跑不会覆盖）
 
 ---
 
-## Round 1 计划（下一步）
+## Round 1 · Run Runtime 可访问化 + 实时事件流（已完成）
+
+**Implement**
+
+| 新增/修改 | 内容 |
+|---|---|
+| `POST /api/runs` | 创建并**后台执行**（65–72ms 返回 run_id，不阻塞请求） |
+| `GET /api/runs` | Run 列表（独立 run_id，同任务用 task_fp 分组，**不覆盖历史**） |
+| `GET /api/runs/{id}` | Run 详情（含每步 attempts/checks/verifications/artifacts/事件） |
+| `GET /api/runs/{id}/stream` | **SSE 实时事件流**（先回放已落盘事件以支持断线重连，含心跳） |
+| `POST /api/runs/{id}/cancel` | 取消（在检查点退出，不硬杀，保证状态与产物一致） |
+| `GET /api/runs/{id}/artifacts/{name}` | Run 产物访问（含二进制图片与中文名 RFC 5987 下载头） |
+| `pipeline.finalize_status()` | **终态判定的唯一权威处**（此前在 execute 结束时就定终态，被后续 EVOLVING 阶段覆盖，落盘被误判 PARTIAL） |
+| `RunStore.sweep_interrupted()` | 启动时清扫僵尸 Run（非终态 → INTERRUPTED），避免列表出现"永远在跑"的假象 |
+| `_run_worker` 兜底加固 | finally 内每段独立 try——任一行抛错都会让 Run 永久停在非终态（实测因缺 `import time` 踩过） |
+
+**Measure（真实运行数据）**
+
+```
+创建 Run 返回耗时        72ms（后台执行，不阻塞）
+★ TTFE（首个事件到达）    77ms      ← 对比重构前"47s 白等"
+事件总数                 73–75 条/run
+阶段耗时分解             retrieval 1.2s / ranking 0.04s / orchestration 1.4s
+                        / planning 7.9s / execution 39.7s / judge+evolve 7.0s
+Run 终态                 COMPLETED（2 步全成功；57.2s · ¥0.180）
+每步验收                 step0 检查 19/19；step1 检查 25/25（3 次尝试，触发修复循环）
+前序产物进后序            step2 产物中出现 step2_step1_clean_data.csv ← 文件系统级证据
+Run 历史                 3 条并存：COMPLETED / PARTIAL / INTERRUPTED（后者由启动清扫产生）
+```
+
+**Reviewer attack（本轮自查发现并修掉的三个真实缺陷）**
+
+1. **状态被覆盖**：蒸馏阶段把 COMPLETED 改成 EVOLVING，而终态判定发生在其之前 →
+   落盘成 PARTIAL。修法：终态判定抽出为唯一权威函数，在整条 Run 结束时调用。
+2. **僵尸 Run**：worker 崩溃留下永久 CREATED 记录。修法：启动清扫 → INTERRUPTED。
+3. **兜底自身不安全**：`finally` 里依赖缺失的 `import time`，异常链逃逸导致
+   Run 状态悬空。修法：finally 内每段独立 try + 补齐导入。
+
+**Compare**
+
+| 指标 | Round 0 前 | Round 1 后 |
+|---|---|---|
+| 用户看到首个反馈 | 47s（跑完才有） | **77ms** |
+| 运行进度可见性 | 无 | **73+ 事件流（step/attempt/artifact/check）** |
+| 耗时归因 | 无 | **六阶段分解（可回答"为什么 57 秒"）** |
+| 运行历史 | 覆盖同目录 | **独立 run_id + 状态机 + 不覆盖** |
+| 取消能力 | 无 | 有（检查点退出） |
+| 崩溃残留 | 永久 CREATED | 启动清扫为 INTERRUPTED |
+
+**Decision**：KEEP
+
+---
+
+## Round 2 计划（下一步）
+
+**P0 剩余**
+1. **前端 Run 视图**：Live Run（SSE 事件驱动，替换现有假 `tick()` 动画）+ Run 历史 + Run 对比
+2. 首屏重做（Mission Control）：实时运行状态（总运行数/成功率/预算）+ 主 CTA
+3. 响应式修复（390px 顶栏崩溃与卡片裁切）
+4. 预算与取消接入 UI（Spent / Budget 显示）
+
+**P1**
+5. 步骤级 Artifact lineage 视图（每步产物 → 下游输入的可视链路）
+6. eval 维度对比（contract / prompt / none；seed vs evolved）
+7. 星图降级为探索视图 + 任务相关子图
+8. 进化治理状态机
+
+---
+
+## Round 1 计划（历史记录，已完成）
+
 
 **P0 剩余**
 1. API：`/api/runs`（列表）· `/api/runs/{id}`（详情）· `/api/runs/{id}/stream`（**SSE 实时事件**）· `/api/runs/{id}/cancel`（取消）

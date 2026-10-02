@@ -327,15 +327,35 @@ def execute_run(run: Run, lib: Any, workspace: pathlib.Path,
 
     done = sum(1 for s in run.steps if s.status == STEP_DONE)
     failed = sum(1 for s in run.steps if s.status == STEP_FAILED)
-    if run.status == runtime.STATUS_BUDGET_EXCEEDED:
-        pass
-    elif failed == 0:
-        run.status = runtime.STATUS_COMPLETED
-    elif done > 0:
-        run.status = runtime.STATUS_PARTIAL
-    else:
-        run.status = runtime.STATUS_FAILED
-    run.ended_at_ms = now_ms()
-    _emit(run, "run.completed", status=run.status, done=done, failed=failed,
-          duration_ms=run.duration_ms, cost=run.cost_yuan, artifacts=len(run.artifacts))
+    # 注意：这里**不设终态**。整条 Run 还包含后续阶段（盲评/反馈/蒸馏），
+    # 终态必须由 pipeline.finalize_status() 在最后统一判定——早先在这里定终态，
+    # 会被后续阶段（EVOLVING）覆盖成非终态，落盘时被误判为 PARTIAL（实测踩过）。
+    run.status = runtime.STATUS_VERIFYING if failed == 0 else runtime.STATUS_PARTIAL
+    _emit(run, "execution.finished", done=done, failed=failed,
+          duration_ms=run.duration_ms, artifacts=len(run.artifacts))
     return run
+
+
+def finalize_status(run: Run) -> str:
+    """在整条 Run 的所有阶段结束后调用，统一判定终态（唯一权威）。
+
+    判定规则：
+      - 预算超限 / 已取消 → 保持原状态
+      - 无失败步骤 → COMPLETED
+      - 有成功步骤 → PARTIAL
+      - 全失败 → FAILED
+    """
+    if run.status in (runtime.STATUS_BUDGET_EXCEEDED, runtime.STATUS_CANCELLED):
+        final = run.status
+    else:
+        done = sum(1 for s in run.steps if s.status == STEP_DONE)
+        failed = sum(1 for s in run.steps if s.status == STEP_FAILED)
+        if failed == 0 and done > 0:
+            final = runtime.STATUS_COMPLETED
+        elif done > 0:
+            final = runtime.STATUS_PARTIAL
+        else:
+            final = runtime.STATUS_FAILED
+    run.status = final
+    run.ended_at_ms = run.ended_at_ms or now_ms()
+    return final
