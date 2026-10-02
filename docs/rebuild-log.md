@@ -195,6 +195,41 @@ Run 历史：                  6 条并存不覆盖（含 INTERRUPTED 清扫结�
 
 ---
 
+## Round 3 · Track A Hero + Track D 测试根治（2026-10-02 续）
+
+**Problem**：① 首页无 Hero/星图，不符「产品舞台」要求；② pytest 4 failed（被标"flaky"）；
+③ 上一轮写的 briefing 改造未落盘，且文件里有重复 id=s5、重复 next 块。
+
+**Change**（两条轨道并行）
+
+| 轨道 | 修改 | 文件 |
+|---|---|---|
+| A | Hero 产品舞台：强中文排版 + editorial 指标（98/200/23/41 滚动）+ Canvas 力导向星图（真实 98 节点/200 边，悬停/拖拽/聚焦/LOD/进化环/DPR/离屏暂停）+ HeroNet.highlight() 钩子 | `web/briefing.html` |
+| A | 移动端 topbar 单行收敛；修重复 id 与重复块 | 同上 |
+| D | **生产 bug**：产物传播落点 ≠ 沙箱 cwd（复制到 step_dir/，沙箱在 step_dir/tryN）→ 每 attempt 在 try 目录内落位 | `skillnet/pipeline.py` |
+| D | **生产 bug**：Windows AV 文件锁致 copy2 静默失败 → `_copy_retry` 退避重试 | `skillnet/pipeline.py` |
+| D | 测试契约对齐：execute_run 后补 finalize_status（终态唯一权威） | `tests/test_runtime_pipeline.py` |
+| D | **测试毒化根治**：retrieval 策略测试 fabric 重排打真实 LLM（≈43 次真钱调用/25s），撑爆进程级默认账本（BudgetExceeded 41>40）毒死 4 个 pipeline 测试 → mock rerank（官方降级路径）+ 测试前后重置 LEDGER | `tests/test_retrieval_policy.py` 等 |
+
+**Evidence / Before → After**
+
+```
+pytest：27/31（4 failed，且全套件与单文件结果不一致）→ 31/31 ×4 轮稳定
+套件耗时：28s → 2.5s（8×，零真实 API 依赖）
+verify 31/31 · selfcheck 18/18
+截图：out/r2/AFTER_hero_desktop_v3.png / AFTER_hero_mobile_v2.png
+```
+
+**Reviewer attack**：Eng——"running/pending 冻结"假象曾误导为并发缺陷，
+追踪后发现是 BudgetExceeded 中断 + 状态未复位，已用最小复现对
+（retrieval 单测 + two_step）锁定；Art Director——H1 首版 450px 栏内折 4 行，
+缩字号+加宽栏后两行干净；右缘标签裁切已修（>W-130 反向对齐）。
+
+**Decision**：KEEP。教训入库：① 同文件多个 Edit 严禁并行（后写覆盖先写）；
+② flaky 必须追到根因——本案三层叠加（cwd 断链 + AV 锁 + 账本毒化）。
+
+---
+
 ## Round 3 计划（下一步）
 
 **P0 剩余**
