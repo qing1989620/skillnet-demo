@@ -539,7 +539,7 @@
 </section>
 
 <script>
-const PAGE_VER = "2026-10-02f";   // 改版递增：与服务端不一致时自动强制刷新
+const PAGE_VER = "2026-10-02g";   // 改版递增：与服务端不一致时自动强制刷新
 const API = location.port ? location.origin : "http://127.0.0.1:8848";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1042,6 +1042,17 @@ function handleRunEvent(ev, runId) {
   } else if (t === "execution.finished") {
     setPhase("exec", d.failed > 0 ? "fail" : "done");
     setPhase("final", "run");
+  } else if (t === "evolution.proposed") {
+    // Moment 5：反馈真实回流 —— 蒸馏候选是否被质量准入
+    const sum = $("livesum"); if (!sum) return;
+    const card = document.getElementById("evo-card") || document.createElement("div");
+    card.id = "evo-card";
+    card.style.cssText = "margin-top:10px";
+    card.innerHTML = `<div style="background:var(--card);border:1px solid ${d.accepted ? "#cfe6d6" : "var(--line)"};border-left:3px solid ${d.accepted ? "var(--ok)" : "#9aa7b3"};border-radius:6px;padding:11px 15px;font-size:12.5px;color:var(--ink2)">` +
+      `<b style="color:var(--brand)">反馈回流 · 技能蒸馏</b> —— 本次任务的轨迹${d.accepted ? "已蒸馏为候选技能并通过质量准入" : "未达到准入标准（相似度/质量闸）"}：` +
+      `${d.accepted ? `<b style="color:var(--ok)">${esc(d.name || "新技能")}</b>` : "未准入"} · 库规模 ${d.library_size} · ` +
+      `<a href="/graph" target="_blank" style="color:var(--brand2)">在星图查看进化技能 →</a></div>`;
+    sum.appendChild(card);
   } else if (t === "run.failed" || t === "run.budget_exceeded") {
     ["retrieval","ranking","orchestration","dag","plan","exec"].forEach(k => {
       const el = document.getElementById("ph-" + k);
