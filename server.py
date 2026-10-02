@@ -945,18 +945,21 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
             res = run.retrieval[MODE_FABRIC]
             res.setdefault("trace", []).append(f"三档对照完成：bm25 {len(run.retrieval['bm25']['selected'])} / hybrid {len(run.retrieval['hybrid']['selected'])} / fabric {len(res['selected'])}")
             run.staged["retrieval_ms"] = int((time.time() - t0) * 1000)
+            # 注意：retrieval 存的是 to_dict()，必须用键访问——
+            # 此前的属性访问让 /api/runs 在检索完成瞬间必崩（被误诊为"LLM 瞬时问题"）
             BUS.publish(run, "retrieval.completed",
-                        selected=res.selected, decision=res.decision,
-                        confidence=res.confidence, raw_bm25_top=res.raw_bm25_top,
+                        selected=res.get("selected") or [], decision=res.get("decision"),
+                        confidence=res.get("confidence"), raw_bm25_top=res.get("raw_bm25_top"),
                         duration_ms=run.staged["retrieval_ms"])
             pipeline.sync_usage(run, led)
 
             # 2) 策略排序
             t0 = time.time()
             b = _bandit()
+            fabric_selected = res.get("selected") or []
             run.ranking = [
                 {"name": n, "priority": round(p, 4), "exploit": round(e, 4), "explore": round(x, 4)}
-                for n, p, e, x in b.rank(run.task, res.selected)
+                for n, p, e, x in b.rank(run.task, fabric_selected)
             ]
             run.staged["ranking_ms"] = int((time.time() - t0) * 1000)
             BUS.publish(run, "ranking.completed", rows=len(run.ranking),
@@ -967,7 +970,7 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
             wiki = r.route_with_wiki(run.task, k=req.k)
             orch = STATE["orchestrator"].build_from_relations(wiki["skills"])
             run.status = "ORCHESTRATING"
-            run.skills = wiki["skills"] or res.selected
+            run.skills = wiki["skills"] or fabric_selected
             run.staged["orchestration_ms"] = int((time.time() - t0) * 1000)
             BUS.publish(run, "orchestration.completed",
                         skills=run.skills, order=orch.get("skills") or [],
@@ -986,10 +989,12 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                         approach=(run.plan.get("approach") or "")[:200],
                         duration_ms=run.staged["planning_ms"])
 
-            # 5) 多步真实执行
+            # 5) 多步真实执行（编排 workflow = 权威执行图，DAG = Runtime）
             t0 = time.time()
             workspace = config.OUT_DIR / "runs" / run.run_id
-            pipeline.execute_run(run, lib(), workspace, run.plan, max_steps=req.max_steps)
+            pipeline.execute_run(run, lib(), workspace, run.plan,
+                                 max_steps=req.max_steps,
+                                 workflow=orch.get("workflow") or None)
             run.staged["execution_ms"] = int((time.time() - t0) * 1000)
 
             # 6) 盲评 + 反馈回流 + 蒸馏

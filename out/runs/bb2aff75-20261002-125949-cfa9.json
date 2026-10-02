@@ -1,0 +1,829 @@
+{
+ "run_id": "bb2aff75-20261002-125949-cfa9",
+ "task": "对一批剂量-存活率实验数据做清洗与剂量-反应分析，并输出可视化",
+ "task_fp": "bb2aff75",
+ "status": "FAILED",
+ "model": "deepseek-chat",
+ "skills": [],
+ "retrieval": {
+  "bm25": {
+   "query": "对一批剂量-存活率实验数据做清洗与剂量-反应分析，并输出可视化",
+   "mode": "bm25",
+   "selected": [
+    "dose-response-curve-analysis",
+    "dose-response-curve-cleaning-and-ic50-fitting",
+    "dose-response-cleaning-ic50-pipeline",
+    "dose-response-ic50-pipeline",
+    "dose-response-ic50-robust-estimation"
+   ],
+   "candidates": [
+    {
+     "name": "dose-response-curve-analysis",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 50.33584,
+     "rank": 1,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "dose-response-curve-cleaning-and-ic50-fitting",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 47.55146,
+     "rank": 2,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "dose-response-cleaning-ic50-pipeline",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 43.9124,
+     "rank": 3,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "dose-response-ic50-pipeline",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 41.72809,
+     "rank": 4,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "dose-response-ic50-robust-estimation",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 35.7903,
+     "rank": 5,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "dose-response-ic50-estimation",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 31.86328,
+     "rank": 6,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "two-group-statistical-testing-with-effect-size",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 23.27347,
+     "rank": 7,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "competition-data-science-pipeline",
+     "channels": [
+      "bm25",
+      "structural"
+     ],
+     "score": 11.21112,
+     "rank": 8,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "data-structure-impl-verify",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 11.17489,
+     "rank": 9,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "broad-topic-to-evidence-pipeline",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 9.96371,
+     "rank": 10,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "algotrace",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 9.16063,
+     "rank": 11,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "competition-reproducible-ml-pipeline",
+     "channels": [
+      "bm25"
+     ],
+     "score": 8.27977,
+     "rank": 12,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "scientific-visualization",
+     "channels": [
+      "bm25",
+      "structural"
+     ],
+     "score": 8.12127,
+     "rank": 13,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "data-cleaning",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 8.04336,
+     "rank": 14,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "variant-calling",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 7.42102,
+     "rank": 15,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "differential-expression",
+     "channels": [
+      "bm25"
+     ],
+     "score": 7.29535,
+     "rank": 16,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "math-modeling-pipeline",
+     "channels": [
+      "bm25"
+     ],
+     "score": 6.88033,
+     "rank": 17,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "missing-data-baseline-modeling",
+     "channels": [
+      "bm25"
+     ],
+     "score": 6.72865,
+     "rank": 18,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "peer-review-response",
+     "channels": [
+      "bm25",
+      "structural"
+     ],
+     "score": 6.6184,
+     "rank": 19,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "scientific-writing",
+     "channels": [
+      "bm25",
+      "structural"
+     ],
+     "score": 6.4611,
+     "rank": 20,
+     "rerank_score": null,
+     "note": ""
+    }
+   ],
+   "trace": [
+    "BM25 召回 20 条"
+   ],
+   "confidence": 1.0,
+   "raw_bm25_top": 43.7703,
+   "fusion_score": 50.3358,
+   "decision": "auto",
+   "decision_reason": "BM25 原始分 43.77 ≥ 15.0：技能匹配明确，可直接执行",
+   "degraded": false,
+   "components": {
+    "bm25": true,
+    "vector": false,
+    "structural": false,
+    "graph_expansion": false,
+    "llm_rerank": false
+   },
+   "degraded_reason": ""
+  },
+  "hybrid": {
+   "query": "对一批剂量-存活率实验数据做清洗与剂量-反应分析，并输出可视化",
+   "mode": "hybrid",
+   "selected": [
+    "dose-response-curve-analysis",
+    "dose-response-curve-cleaning-and-ic50-fitting",
+    "dose-response-cleaning-ic50-pipeline",
+    "dose-response-ic50-pipeline",
+    "dose-response-ic50-robust-estimation"
+   ],
+   "candidates": [
+    {
+     "name": "dose-response-curve-analysis",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 1.15,
+     "rank": 1,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "dose-response-curve-cleaning-and-ic50-fitting",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 1.07754,
+     "rank": 2,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "dose-response-cleaning-ic50-pipeline",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 0.97565,
+     "rank": 3,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "dose-response-ic50-pipeline",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.91043,
+     "rank": 4,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "dose-response-ic50-robust-estimation",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.7669,
+     "rank": 5,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "dose-response-ic50-estimation",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.64977,
+     "rank": 6,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "two-group-statistical-testing-with-effect-size",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.44184,
+     "rank": 7,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "data-cleaning",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 0.21212,
+     "rank": 8,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "scientific-visualization",
+     "channels": [
+      "bm25",
+      "structural"
+     ],
+     "score": 0.19946,
+     "rank": 9,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "data-structure-impl-verify",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.1921,
+     "rank": 10,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "broad-topic-to-evidence-pipeline",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.17898,
+     "rank": 11,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "statistical-testing",
+     "channels": [
+      "vector",
+      "structural"
+     ],
+     "score": 0.16196,
+     "rank": 12,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "competition-data-science-pipeline",
+     "channels": [
+      "bm25",
+      "structural"
+     ],
+     "score": 0.14239,
+     "rank": 13,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "peer-review-response",
+     "channels": [
+      "bm25",
+      "structural"
+     ],
+     "score": 0.12354,
+     "rank": 14,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "scientific-writing",
+     "channels": [
+      "bm25",
+      "structural"
+     ],
+     "score": 0.12064,
+     "rank": 15,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "variant-calling",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.11193,
+     "rank": 16,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "algotrace",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.10866,
+     "rank": 17,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "venue-template",
+     "channels": [
+      "structural"
+     ],
+     "score": 0.06434,
+     "rank": 18,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "poster-slides",
+     "channels": [
+      "structural"
+     ],
+     "score": 0.06434,
+     "rank": 19,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "eda-profiling",
+     "channels": [
+      "structural"
+     ],
+     "score": 0.06434,
+     "rank": 20,
+     "rerank_score": null,
+     "note": ""
+    }
+   ],
+   "trace": [
+    "BM25 召回 20 条",
+    "语义向量召回 20 条",
+    "结构信号召回 13 条",
+    "加权融合后候选池 32 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
+   ],
+   "confidence": 1.0,
+   "raw_bm25_top": 43.7703,
+   "fusion_score": 1.15,
+   "decision": "auto",
+   "decision_reason": "BM25 原始分 43.77 ≥ 15.0：技能匹配明确，可直接执行",
+   "degraded": false,
+   "components": {
+    "bm25": true,
+    "vector": true,
+    "structural": true,
+    "graph_expansion": false,
+    "llm_rerank": false
+   },
+   "degraded_reason": ""
+  },
+  "fabric": {
+   "query": "对一批剂量-存活率实验数据做清洗与剂量-反应分析，并输出可视化",
+   "mode": "fabric",
+   "selected": [
+    "dose-response-curve-analysis",
+    "dose-response-ic50-pipeline",
+    "dose-response-ic50-estimation",
+    "dose-response-ic50-robust-estimation",
+    "dose-response-curve-cleaning-and-ic50-fitting"
+   ],
+   "candidates": [
+    {
+     "name": "dose-response-curve-analysis",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 1.15,
+     "rank": 1,
+     "rerank_score": 1.0,
+     "note": ""
+    },
+    {
+     "name": "dose-response-ic50-pipeline",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.91043,
+     "rank": 2,
+     "rerank_score": 0.875,
+     "note": ""
+    },
+    {
+     "name": "dose-response-ic50-estimation",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.75326,
+     "rank": 3,
+     "rerank_score": 0.75,
+     "note": ""
+    },
+    {
+     "name": "dose-response-ic50-robust-estimation",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.7669,
+     "rank": 4,
+     "rerank_score": 0.625,
+     "note": ""
+    },
+    {
+     "name": "dose-response-curve-cleaning-and-ic50-fitting",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 1.07754,
+     "rank": 5,
+     "rerank_score": 0.5,
+     "note": ""
+    },
+    {
+     "name": "dose-response-cleaning-ic50-pipeline",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 0.97565,
+     "rank": 6,
+     "rerank_score": 0.375,
+     "note": ""
+    },
+    {
+     "name": "data-cleaning",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 0.24591,
+     "rank": 7,
+     "rerank_score": 0.25,
+     "note": ""
+    },
+    {
+     "name": "scientific-visualization",
+     "channels": [
+      "bm25",
+      "structural"
+     ],
+     "score": 0.23122,
+     "rank": 8,
+     "rerank_score": 0.125,
+     "note": ""
+    },
+    {
+     "name": "estimator-robustness-audit",
+     "channels": [
+      "fused"
+     ],
+     "score": 1.13901,
+     "rank": 9,
+     "rerank_score": -11.375,
+     "note": ""
+    },
+    {
+     "name": "two-group-statistical-testing-with-effect-size",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.44184,
+     "rank": 10,
+     "rerank_score": -11.375,
+     "note": ""
+    },
+    {
+     "name": "data-structure-impl-verify",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.1921,
+     "rank": 11,
+     "rerank_score": -11.375,
+     "note": ""
+    },
+    {
+     "name": "broad-topic-to-evidence-pipeline",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.17898,
+     "rank": 12,
+     "rerank_score": -11.375,
+     "note": ""
+    },
+    {
+     "name": "statistical-testing",
+     "channels": [
+      "vector",
+      "structural"
+     ],
+     "score": 0.16196,
+     "rank": 13,
+     "rerank_score": -11.375,
+     "note": ""
+    },
+    {
+     "name": "competition-data-science-pipeline",
+     "channels": [
+      "bm25",
+      "structural"
+     ],
+     "score": 0.14239,
+     "rank": 14,
+     "rerank_score": -11.375,
+     "note": ""
+    },
+    {
+     "name": "peer-review-response",
+     "channels": [
+      "bm25",
+      "structural"
+     ],
+     "score": 0.12354,
+     "rank": 15,
+     "rerank_score": -11.375,
+     "note": ""
+    },
+    {
+     "name": "scientific-writing",
+     "channels": [
+      "bm25",
+      "structural"
+     ],
+     "score": 0.12064,
+     "rank": 16,
+     "rerank_score": -11.375,
+     "note": ""
+    },
+    {
+     "name": "variant-calling",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.11193,
+     "rank": 17,
+     "rerank_score": -11.375,
+     "note": ""
+    },
+    {
+     "name": "algotrace",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.10866,
+     "rank": 18,
+     "rerank_score": -11.375,
+     "note": ""
+    },
+    {
+     "name": "eda-profiling",
+     "channels": [
+      "structural"
+     ],
+     "score": 0.07459,
+     "rank": 19,
+     "rerank_score": -11.375,
+     "note": ""
+    },
+    {
+     "name": "venue-template",
+     "channels": [
+      "structural"
+     ],
+     "score": 0.06434,
+     "rank": 20,
+     "rerank_score": -11.375,
+     "note": ""
+    },
+    {
+     "name": "poster-slides",
+     "channels": [
+      "structural"
+     ],
+     "score": 0.06434,
+     "rank": 21,
+     "rerank_score": -11.375,
+     "note": ""
+    }
+   ],
+   "trace": [
+    "BM25 召回 20 条",
+    "语义向量召回 20 条",
+    "结构信号召回 13 条",
+    "加权融合后候选池 32 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+    "关系图扩展补入 1 条：estimator-robustness-audit",
+    "LLM 重排 8 条候选",
+    "三档对照完成：bm25 5 / hybrid 5 / fabric 5"
+   ],
+   "confidence": 1.0,
+   "raw_bm25_top": 43.7703,
+   "fusion_score": 1.15,
+   "decision": "auto",
+   "decision_reason": "BM25 原始分 43.77 ≥ 15.0：技能匹配明确，可直接执行",
+   "degraded": false,
+   "components": {
+    "bm25": true,
+    "vector": true,
+    "structural": true,
+    "graph_expansion": true,
+    "llm_rerank": true
+   },
+   "degraded_reason": ""
+  }
+ },
+ "ranking": [],
+ "plan": {},
+ "judge": {},
+ "steps": [],
+ "step_stats": {
+  "total": 0,
+  "done": 0,
+  "failed": 0,
+  "skipped": 0,
+  "retried": 0
+ },
+ "artifacts": [],
+ "feedback": [],
+ "evolution": {},
+ "staged": {
+  "retrieval_ms": 834
+ },
+ "budget": {
+  "max_cost_yuan": 1.0,
+  "max_llm_calls": 40,
+  "max_seconds": 300,
+  "max_attempts_per_step": 3
+ },
+ "cost_yuan": 0.004,
+ "tokens": 1786,
+ "llm_calls": 1,
+ "duration_ms": 883,
+ "started_at_ms": 1790917189488,
+ "ended_at_ms": 1790917190371,
+ "error": "AttributeError: 'dict' object has no attribute 'selected'",
+ "events": [
+  {
+   "ts_ms": 1790917189536,
+   "type": "run.started",
+   "step": null,
+   "data": {
+    "task": "对一批剂量-存活率实验数据做清洗与剂量-反应分析，并输出可视化"
+   }
+  },
+  {
+   "ts_ms": 1790917190371,
+   "type": "run.error",
+   "step": null,
+   "data": {
+    "error": "AttributeError: 'dict' object has no attribute 'selected'"
+   }
+  }
+ ]
+}

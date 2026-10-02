@@ -24,10 +24,13 @@ Orchestrator 会输出一个 DAG，但 Runtime **只执行其中一步**——DA
 """
 from __future__ import annotations
 
+import contextvars
 import pathlib
 import re
 import shutil
+import threading
 import time
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from typing import Any, Callable
 
 from . import checks as checks_mod
@@ -78,10 +81,14 @@ def sync_usage(run: Run, ledger: Any) -> None:
 def build_steps(plan: dict[str, Any], workflow: list[list[str]] | None = None) -> list[RunStep]:
     """把方案步骤转成 RunStep，并推断依赖。
 
-    依赖推断规则（保守、可解释）：
-    1. 默认**顺序依赖**：第 i 步依赖第 i-1 步（方案本身就是按序给出的）；
-    2. 若两步之间**没有任何技能耦合**（分属无关领域且无关系边），则不建立依赖，
-       允许它们被识别为可并行（当前实现仍顺序执行，但标记出来供前端展示与后续并发化）。
+    依赖推断规则（可解释、保守）：
+    1. **编排器 workflow 是权威**（若提供）：边 [A, B] 表示技能 A 先于 B。
+       步骤 i 的依赖 = 所有「skill_j --edge--> skill_i」的步骤 j。
+       这让无相互依赖的兄弟步骤（A→B、A→C）真正并行。
+    2. 某步骤的技能**没有任何入边**时，保守保留方案顺序前驱作为依赖
+       （方案作者按序写出必有原因——通常是数据流；编排图没覆盖到就别擅自并行）。
+    3. workflow 缺省 → 线性链（旧行为）。
+    4. 映射后若意外成环（防御），整体回退线性链并记录。
     """
     steps_plan = plan.get("steps") or []
     out: list[RunStep] = []
@@ -90,6 +97,40 @@ def build_steps(plan: dict[str, Any], workflow: list[list[str]] | None = None) -
         step = RunStep(idx=i, action=str(s.get("action") or ""), skill=s.get("skill") or None)
         step.depends_on = [i - 1] if i > 0 else []
         out.append(step)
+
+    if not workflow:
+        return out
+
+    skill_edges = {(a, b) for a, b in workflow if a != b}
+    has_incoming = {b for _, b in skill_edges}
+    for i, st in enumerate(out):
+        if not st.skill:
+            continue                              # 无技能映射 → 维持线性兜底
+        graph_deps = [j for j, o in enumerate(out)
+                      if j != i and o.skill and (o.skill, st.skill) in skill_edges]
+        if graph_deps:
+            st.depends_on = sorted(set(graph_deps))
+        elif st.skill not in has_incoming and i > 0:
+            st.depends_on = [i - 1]               # 无入边：保守串行
+        else:
+            st.depends_on = []                    # 有入边但映射不到库内步骤 → 图根
+
+    # 防御：检查环；有环则整体回退线性（编排器已打断环，这里是最后一道闸）
+    def _has_cycle() -> bool:
+        state: dict[int, int] = {}
+        def dfs(u: int) -> bool:
+            state[u] = 1
+            for v in out[u].depends_on:
+                s = state.get(v, 0)
+                if s == 1 or (s == 0 and dfs(v)):
+                    return True
+            state[u] = 2
+            return False
+        return any(state.get(i, 0) == 0 and dfs(i) for i in range(len(out)))
+
+    if _has_cycle():
+        for i, st in enumerate(out):
+            st.depends_on = [i - 1] if i > 0 else []
     return out
 
 
@@ -128,7 +169,7 @@ def _mark_downstream_skipped(run: Run, failed_idx: int, reason: str) -> list[int
 # ----------------------------------------------------------------------
 def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
              budget: Any, up_artifacts: list[str], max_attempts: int = MAX_ATTEMPTS) -> None:
-    skill = lib.get(step.skill) if step.skill else None
+    skill = lib.get(step.skill) if (step.skill and lib is not None) else None
     step_dir = workspace / f"step{step.idx + 1}"
     step_dir.mkdir(parents=True, exist_ok=True)
 
@@ -319,15 +360,135 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
 # ----------------------------------------------------------------------
 # 主入口：执行整条 DAG
 # ----------------------------------------------------------------------
+# ----------------------------------------------------------------------
+# 图调度器：DAG = Runtime 的执行核心
+# ----------------------------------------------------------------------
+def _run_steps_graph(run: Run, workspace: pathlib.Path, lib: Any,
+                     budget: Any) -> None:
+    """按依赖图真实调度：就绪即派发，无依赖的步骤并行执行。
+
+    - 线程池并发（Demo 规模下正确性优先，不引入分布式）；
+    - contextvars 在派发时快照，账本随线程正确传播（成本不串账）；
+    - BudgetExceeded：停止派发新步骤，等在跑的收尾，run 标记预算超限；
+    - 单步普通异常：标记该步失败、阻断其下游，不影响兄弟分支；
+    - max_concurrency：真实并发度记录（前端画甘特/并行走廊用）。
+    """
+    lock = threading.Lock()
+    conc = {"cur": 0, "max": 0}
+    by_idx = {st.idx: st for st in run.steps}
+    remaining = {st.idx: set(st.depends_on) for st in run.steps}
+    budget_hit: BudgetExceeded | None = None
+    max_workers = max(1, min(3, len(run.steps)))
+
+    def _in_ctx(fn: Any, st: RunStep) -> Any:
+        # 每个任务独立 copy_context()：Context 对象不可被多线程同时进入，
+        # 但拷贝出的新 Context 携带同一份账本引用（成本随线程正确记账）
+        return contextvars.copy_context().run(fn, st)
+
+    def _dispatchable() -> list[int]:
+        return [i for i in sorted(remaining) if not remaining[i]]
+
+    def _worker(st: RunStep) -> str:
+        with lock:
+            conc["cur"] += 1
+            conc["max"] = max(conc["max"], conc["cur"])
+        try:
+            up = [a.name for a in run.artifacts]
+            run_step(run, st, lib, workspace, budget, up,
+                     max_attempts=budget.max_attempts_per_step)
+            return "done"
+        except BudgetExceeded as exc:
+            return f"budget:{exc}"
+        except Exception as exc:                  # 单步异常不应终止整个 run
+            st.status = STEP_FAILED
+            st.error = f"{type(exc).__name__}: {exc}"
+            st.ended_at_ms = now_ms()
+            _emit(run, "step.error", step=st.idx, error=st.error[:300])
+            return "error"
+        finally:
+            with lock:
+                conc["cur"] -= 1
+
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        inflight: dict[Any, RunStep] = {}
+        while True:
+            if budget_hit is None:
+                for idx in _dispatchable():
+                    remaining.pop(idx)
+                    st = by_idx[idx]
+                    inflight[ex.submit(_in_ctx, _worker, st)] = st
+            if not inflight:
+                break
+            done, _ = wait(set(inflight), return_when=FIRST_COMPLETED)
+            for fut in done:
+                st = inflight.pop(fut)
+                outcome = fut.result()
+                if outcome.startswith("budget:"):
+                    budget_hit = BudgetExceeded(outcome.split(":", 1)[1])
+                    continue
+                if st.status == STEP_FAILED:
+                    skipped = _mark_downstream_skipped(run, st.idx, st.error)
+                    for i in skipped:
+                        remaining.pop(i, None)
+                    if skipped:
+                        _emit(run, "steps.skipped", steps=skipped,
+                              reason="上游失败，依赖链阻断")
+                else:
+                    # 成功收尾：从所有未派发步骤的依赖里移除自己（放行下游）
+                    for ds in remaining.values():
+                        ds.discard(st.idx)
+
+    if budget_hit is not None:
+        run.status = runtime.STATUS_BUDGET_EXCEEDED
+        run.error = str(budget_hit)
+        _emit(run, "run.budget_exceeded", reason=run.error, cost=run.cost_yuan)
+    if conc["max"] > 1:
+        run.staged["max_concurrency"] = conc["max"]
+    run.staged["scheduler"] = "dag-parallel" if conc["max"] > 1 else "dag-serial"
+
+
+def _critical_path(run: Run) -> dict[str, Any]:
+    """DAG 上的最长路（按真实 duration_ms）——「时间到底花在哪条链上」。
+
+    失败步骤同样占真实耗时，一并计入（失败+修复往往是关键路径的大头）。"""
+    dur = {st.idx: st.duration_ms for st in run.steps
+           if st.status in (STEP_DONE, STEP_FAILED) and st.duration_ms > 0}
+    best: dict[int, tuple[int, list[int]]] = {}
+    order = []                                    # 拓扑序（deps 均指向更小 idx 的重排图）
+    visited: set[int] = set()
+    def topo(i: int) -> None:
+        if i in visited:
+            return
+        visited.add(i)
+        for d in run.steps[i].depends_on:
+            topo(d)
+        order.append(i)
+    for st in run.steps:
+        topo(st.idx)
+    for i in order:
+        if i not in dur:
+            continue
+        preds = [best[d] for d in run.steps[i].depends_on if d in best]
+        total, path = max(preds, key=lambda t: t[0]) if preds else (0, [])
+        best[i] = (total + dur[i], path + [i])
+    if not best:
+        return {}
+    total, path = max(best.values(), key=lambda t: t[0])
+    return {"steps": path, "ms": total}
+
+
 def execute_run(run: Run, lib: Any, workspace: pathlib.Path,
                 plan: dict[str, Any], *, max_steps: int = 4,
                 budget: Any | None = None,
+                workflow: list[list[str]] | None = None,
                 step_filter: Callable[[int, dict[str, Any]], bool] | None = None) -> Run:
     """按 DAG 顺序真实执行方案步骤。
 
+    - `workflow`：编排器输出的技能依赖边 [A, B]（A 先于 B）——**权威执行图**。
+      不传则回退线性链。DAG = Runtime 要求调用方必须传编排结果。
     - `max_steps`：最多执行几步（控制成本与时长；默认 4，选前 N 个可执行步骤）
     - `step_filter`：自定义筛选（默认用 executor 的可执行性启发式）
-    - 依赖失败会阻断下游（标记 skipped），run 最终状态为 PARTIAL
+    - 依赖失败会阻断下游（标记 skipped），run 最终状态由 finalize_status 统一判定
     """
     budget = budget or run.budget
     steps_plan = plan.get("steps") or []
@@ -352,50 +513,36 @@ def execute_run(run: Run, lib: Any, workspace: pathlib.Path,
         picked = list(range(min(max_steps, len(steps_plan))))
     run.staged["picked_steps"] = picked
 
-    all_steps = build_steps(plan)
+    all_steps = build_steps(plan, workflow)
     run.steps = [all_steps[i] for i in picked]
-    for new_idx, st in enumerate(run.steps):      # 重排索引，保持依赖指向本 run 内步骤
+    for new_idx, st in enumerate(run.steps):      # 重排索引，依赖经 picked 映射到新下标
         st.idx = new_idx
-        st.depends_on = [new_idx - 1] if new_idx > 0 else []
+    pos = {old: new for new, old in enumerate(picked)}
+    for st in run.steps:
+        st.depends_on = sorted({pos[d] for d in st.depends_on if d in pos})
 
     run.status = runtime.STATUS_EXECUTING
+    # DAG = Runtime：把解析后的权威执行图广播给前端（WOW-1 的收束目标就是这张图）
+    _emit(run, "dag.ready",
+          nodes=[{"idx": st.idx, "skill": st.skill, "action": st.action[:80],
+                  "depends_on": st.depends_on} for st in run.steps],
+          workflow_source="orchestrator" if workflow else "linear-fallback")
     _emit(run, "run.executing", steps=len(run.steps), picked=picked)
 
-    for st in run.steps:
-        if st.status == STEP_SKIPPED:                 # 依赖链阻断：跳过执行
-            _emit(run, "step.skipped", step=st.idx, reason=st.verify_skip_reason)
-            continue
-        try:
-            check_budget(run)
-        except BudgetExceeded as exc:
-            run.status = runtime.STATUS_BUDGET_EXCEEDED
-            run.error = str(exc)
-            _emit(run, "run.budget_exceeded", reason=str(exc), cost=run.cost_yuan)
-            break
-        up = [a.name for a in run.artifacts]          # 目前所有已产出物均可被下游读取
-        try:
-            run_step(run, st, lib, workspace, budget, up, max_attempts=budget.max_attempts_per_step)
-        except BudgetExceeded as exc:
-            run.status = runtime.STATUS_BUDGET_EXCEEDED
-            run.error = str(exc)
-            _emit(run, "run.budget_exceeded", reason=str(exc), cost=run.cost_yuan)
-            break
-        except Exception as exc:                      # 单步异常不应终止整个 run
-            st.status = STEP_FAILED
-            st.error = f"{type(exc).__name__}: {exc}"
-            st.ended_at_ms = now_ms()
-            _emit(run, "step.error", step=st.idx, error=st.error[:300])
-        if st.status == STEP_FAILED:
-            skipped = _mark_downstream_skipped(run, st.idx, st.error)
-            if skipped:
-                _emit(run, "steps.skipped", steps=skipped, reason="上游失败，依赖链阻断")
+    _run_steps_graph(run, workspace, lib, budget)
+
+    if run.status != runtime.STATUS_BUDGET_EXCEEDED:
+        cp = _critical_path(run)
+        if cp:
+            run.staged["critical_path"] = cp
 
     done = sum(1 for s in run.steps if s.status == STEP_DONE)
     failed = sum(1 for s in run.steps if s.status == STEP_FAILED)
     # 注意：这里**不设终态**。整条 Run 还包含后续阶段（盲评/反馈/蒸馏），
     # 终态必须由 pipeline.finalize_status() 在最后统一判定——早先在这里定终态，
     # 会被后续阶段（EVOLVING）覆盖成非终态，落盘时被误判为 PARTIAL（实测踩过）。
-    run.status = runtime.STATUS_VERIFYING if failed == 0 else runtime.STATUS_PARTIAL
+    if run.status != runtime.STATUS_BUDGET_EXCEEDED:   # 预算状态不被覆盖
+        run.status = runtime.STATUS_VERIFYING if failed == 0 else runtime.STATUS_PARTIAL
     _emit(run, "execution.finished", done=done, failed=failed,
           duration_ms=run.duration_ms, artifacts=len(run.artifacts))
     return run
@@ -415,9 +562,10 @@ def finalize_status(run: Run) -> str:
     else:
         done = sum(1 for s in run.steps if s.status == STEP_DONE)
         failed = sum(1 for s in run.steps if s.status == STEP_FAILED)
-        if failed == 0 and done > 0:
-            final = runtime.STATUS_COMPLETED
-        elif done > 0:
+        skipped = sum(1 for s in run.steps if s.status == STEP_SKIPPED)
+        if failed == 0 and skipped == 0 and done > 0:
+            final = runtime.STATUS_COMPLETED      # 全部到位才算 COMPLETED（有跳过=部分完成）
+        elif done > 0 or skipped > 0:
             final = runtime.STATUS_PARTIAL
         else:
             final = runtime.STATUS_FAILED

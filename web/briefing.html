@@ -389,6 +389,7 @@
     </div>
     <div class="runhint" id="hint" style="margin-top:8px">每次真实调用 DeepSeek，约 20–60 秒；成本与 Token 实时记账</div>
     <div class="errmsg" id="err"></div>
+    <div id="livebar" style="display:none;margin-top:14px"></div>
 
     <div class="chat" id="chat"></div>
   </div>
@@ -538,7 +539,7 @@
 </section>
 
 <script>
-const PAGE_VER = "2026-10-02e";   // 改版递增：与服务端不一致时自动强制刷新
+const PAGE_VER = "2026-10-02f";   // 改版递增：与服务端不一致时自动强制刷新
 const API = location.port ? location.origin : "http://127.0.0.1:8848";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -929,20 +930,151 @@ async function startRealRun() {
   if (!task){ $("task").focus(); return; }
   const btn = $("run"); btn.disabled = true; const oldTxt = btn.textContent;
   btn.textContent = "创建运行中…";
+  $("err").style.display = "none";
   try {
-    let gold = CUR_GOLD || [];
     const r = await fetch(API + "/api/runs", {
       method: "POST", headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({task, gold, k: 5, max_steps: 3, max_cost_yuan: 1.0, max_seconds: 300})
+      body: JSON.stringify({task, gold: CUR_GOLD || [], k: 5, max_steps: 3, max_cost_yuan: 1.0, max_seconds: 300})
     });
     if (!r.ok){ const d = await r.json().catch(()=>({})); throw new Error(typeof d.detail === "string" ? d.detail : r.status); }
     const d = await r.json();
-    location.href = `/run?id=${encodeURIComponent(d.run_id)}`;
+    runLive(d.run_id, task);          // 留在本页：Skill Universe 直接响应真实 Run
   } catch (e) {
     $("err").style.display = "block";
     $("err").textContent = "创建运行失败：" + (e.message || e);
     btn.disabled = false; btn.textContent = oldTxt;
   }
+}
+
+/* ---------- WOW-1：本页 Live Run —— 星图 + 阶段条全部由真实 SSE 驱动 ---------- */
+const PHASES = [
+  ["retrieval", "检索对比"], ["ranking", "策略选择"], ["orchestration", "任务编排"],
+  ["dag", "DAG 收束"], ["plan", "研究方案"], ["exec", "真实执行"], ["final", "验收与进化"],
+];
+let LIVE_RUN = null;   // 当前本页展示的 run_id
+
+function livebarHTML() {
+  return "<div style='display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:10px 14px'>" +
+    "<span style='font-size:11px;letter-spacing:2px;color:#8a97a4'>LIVE RUN</span>" +
+    PHASES.map(([k, label]) =>
+      `<span id="ph-${k}" style="font-size:12px;color:#8a97a4;display:inline-flex;align-items:center;gap:5px">` +
+      `<i id="phd-${k}" style="width:8px;height:8px;border-radius:50%;background:#d5dde4;display:inline-block"></i>${label}<b id="pht-${k}" style="font-weight:400;color:#aab6c1"></b></span>`
+    ).join("") +
+    `<span style="flex:1"></span><a id="live-link" href="/run?id=${LIVE_RUN}" target="_blank" style="font-size:11.5px;color:var(--brand2)">完整面板 →</a></div>` +
+    `<div id="livesum" style="display:none;margin-top:10px"></div>`;
+}
+
+function setPhase(k, state, ms) {
+  const dot = document.getElementById("phd-" + k), t = document.getElementById("pht-" + k);
+  const wrap = document.getElementById("ph-" + k);
+  if (!dot) return;
+  if (state === "run") { dot.style.background = "#24557a"; dot.style.animation = "sp 1s linear infinite"; wrap.style.color = "var(--brand2)"; }
+  else { dot.style.animation = "";
+    dot.style.background = state === "done" ? "#2e7d4f" : state === "fail" ? "#a8433a" : "#d5dde4";
+    wrap.style.color = state === "done" ? "var(--ink)" : "#8a97a4"; }
+  if (ms != null && t) t.textContent = (ms / 1000).toFixed(1) + "s";
+}
+
+async function runLive(runId, task) {
+  LIVE_RUN = runId;
+  const bar = $("livebar");
+  bar.style.display = "block";
+  bar.innerHTML = livebarHTML();
+  document.getElementById("live-link").href = "/run?id=" + encodeURIComponent(runId);
+  if (window.HeroNet) HeroNet.exitDag();
+  setPhase("retrieval", "run");
+  let ended = false;
+  try {
+    const resp = await fetch(`${API}/api/runs/${encodeURIComponent(runId)}/stream`);
+    const reader = resp.body.getReader();
+    const dec = new TextDecoder();
+    let buf = "";
+    while (!ended) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split("\n");
+      buf = lines.pop();
+      for (const line of lines) {
+        const s = line.trim();
+        if (s === "event: end") { ended = true; break; }
+        if (!s.startsWith("data: ")) continue;
+        let ev; try { ev = JSON.parse(s.slice(6)); } catch { continue; }
+        handleRunEvent(ev, runId);
+        if (ev.type === "end") { ended = true; break; }
+      }
+    }
+  } catch (e) { /* 流断开：以最终状态接口为准 */ }
+  // 兜底：拉最终状态（无论流是否正常结束）
+  try {
+    const fin = await (await fetch(API + "/api/runs/" + encodeURIComponent(runId))).json();
+    renderLiveFinal(fin);
+  } catch {}
+}
+
+function handleRunEvent(ev, runId) {
+  const t = ev.type || "";
+  const d = ev.data || ev;                     // BUS 事件负载嵌套在 data 里
+  if (t === "retrieval.completed") {
+    setPhase("retrieval", "done", d.duration_ms);
+    setPhase("ranking", "run");
+    if (window.HeroNet && Array.isArray(d.selected)) HeroNet.highlight(d.selected);
+  } else if (t === "ranking.completed") {
+    setPhase("ranking", "done");
+    setPhase("orchestration", "run");
+  } else if (t === "orchestration.completed") {
+    setPhase("orchestration", "done");
+    setPhase("dag", "run");
+    if (window.HeroNet) HeroNet.select(d.order || d.skills || []);
+  } else if (t === "dag.ready") {
+    setPhase("dag", "done");
+    setPhase("plan", "run");
+    if (window.HeroNet && Array.isArray(d.nodes)) HeroNet.dagify(d.nodes);
+  } else if (t === "plan.created") {
+    setPhase("plan", "done", d.duration_ms);
+    setPhase("exec", "run");
+  } else if (t === "step.started") {
+    if (window.HeroNet) HeroNet.stepState(d.step, "running");
+  } else if (t === "step.completed") {
+    if (window.HeroNet) HeroNet.stepState(d.step, d.status === "done" ? "done" : "failed");
+  } else if (t === "steps.skipped") {
+    if (window.HeroNet) (d.steps || []).forEach(i => HeroNet.stepState(i, "skipped"));
+  } else if (t === "execution.finished") {
+    setPhase("exec", d.failed > 0 ? "fail" : "done");
+    setPhase("final", "run");
+  } else if (t === "run.failed" || t === "run.budget_exceeded") {
+    ["retrieval","ranking","orchestration","dag","plan","exec"].forEach(k => {
+      const el = document.getElementById("ph-" + k);
+      if (el && el.style.color !== "var(--ink)") setPhase(k, "fail");
+    });
+    setPhase("final", "fail");
+    const sum = $("livesum");
+    if (sum) { sum.style.display = "block";
+      sum.innerHTML = `<div class="next" style="border-left:3px solid var(--bad)">运行失败：${esc(String(d.reason || t))}。<a href="/run?id=${encodeURIComponent(runId)}" target="_blank">查看详情</a></div>`; }
+    $("run").disabled = false; $("run").textContent = "发送";
+  }
+}
+
+function renderLiveFinal(fin) {
+  setPhase("final", fin.status === "COMPLETED" || fin.status === "PARTIAL" ? "done" : "fail");
+  const sum = $("livesum"); if (!sum) return;
+  const steps = fin.steps || [];
+  const nDone = steps.filter(s => s.status === "done").length;
+  const nFix = steps.filter(s => s.status === "done" && (s.n_attempts || 1) > 1).length;
+  const nFail = steps.filter(s => s.status === "failed").length;
+  const nSkip = steps.filter(s => s.status === "skipped").length;
+  const cp = ((fin.staged || {}).critical_path) || null;
+  const conc = (fin.staged || {}).max_concurrency;
+  const cpTxt = cp ? `关键路径 ${cp.steps.map(i => "Step " + (i + 1)).join(" → ")}（${(cp.ms / 1000).toFixed(1)}s / 总 ${(fin.duration_ms / 1000).toFixed(1)}s）` : "";
+  const ccTxt = conc > 1 ? `最大并行 ${conc} 步` : "";
+  sum.style.display = "block";
+  sum.innerHTML = "<div style='background:var(--card);border:1px solid var(--line);border-radius:6px;padding:12px 16px;font-size:12.5px;color:var(--ink2)'>" +
+    `<b style="color:var(--brand)">Run Summary</b> · ${fin.status === "COMPLETED" ? "已完成" : fin.status === "PARTIAL" ? "部分完成" : "失败"} · ¥${Number(fin.cost_yuan || 0).toFixed(3)} · ${(fin.duration_ms / 1000).toFixed(1)}s<br>` +
+    `步骤 ${steps.length}：一次通过 <b style="color:var(--ok)">${nDone - nFix}</b> · 修复后成功 <b style="color:#b0781a">${nFix}</b> · 失败 <b style="color:var(--bad)">${nFail}</b> · 跳过 <b>${nSkip}</b>` +
+    (ccTxt ? ` · <b style="color:var(--brand2)">${ccTxt}</b>` : "") +
+    (cpTxt ? `<br><span style="color:#8a97a4">${cpTxt}</span>` : "") +
+    ` · <a href="/run?id=${encodeURIComponent(fin.run_id)}" target="_blank" style="color:var(--brand2)">产物与验收证据 →</a></div>`;
+  $("run").disabled = false; $("run").textContent = "发送";
 }
 
 async function loadRunCenter(){
@@ -1150,6 +1282,7 @@ fillLiveNumbers();
   }
 
   function step(dt) {
+    if (dagMode) { alpha = 0; return; }       // DAG 形态下物理停用，坐标交给形态迁移
     const a = Math.max(alpha, 0.02);
     for (let i = 0; i < nodes.length; i++) {
       const n = nodes[i];
@@ -1192,7 +1325,7 @@ fillLiveNumbers();
     ctx.clearRect(0, 0, W, H);
     const dimAll = focusSet !== null;
     // 边
-    for (const e of edges) {
+    if (dagMode) { drawDagEdges(); } else for (const e of edges) {
       const s = byId(e.s), t = byId(e.t); if (!s || !t) continue;
       const hot = hover && (e.s === hover.id || e.t === hover.id);
       const inF = dimAll && (focusSet.has(e.s) && focusSet.has(e.t));
@@ -1212,6 +1345,20 @@ fillLiveNumbers();
       ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, 6.2832); ctx.fill();
       if (n.ev) { ctx.strokeStyle = "rgba(201,138,45,.85)"; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(n.x, n.y, r + 2.4, 0, 6.2832); ctx.stroke(); }
       if (isH) { ctx.strokeStyle = "rgba(36,85,122,.9)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(n.x, n.y, r + 5, 0, 6.2832); ctx.stroke(); }
+      if (dagMode && dagMode.byNode.has(n)) {   // DAG 节点状态环（真实 Runtime 状态）
+        const di = dagMode.byNode.get(n);
+        const stt = dagMode.state.get(di) || "pending";
+        const col = stt === "running" ? "#24557a" : stt === "done" ? "#2e7d4f"
+          : stt === "failed" ? "#a8433a" : stt === "skipped" ? "#9aa7b3" : "#c98a2d";
+        ctx.strokeStyle = col; ctx.lineWidth = 2.2;
+        ctx.beginPath(); ctx.arc(n.x, n.y, r + 5.5, 0, 6.2832); ctx.stroke();
+        if (stt === "running") {                // 执行中脉冲
+          const p = (performance.now() / 600) % 1;
+          ctx.globalAlpha = (dim ? 0.13 : 1) * (1 - p) * 0.55;
+          ctx.beginPath(); ctx.arc(n.x, n.y, r + 5.5 + p * 7, 0, 6.2832); ctx.stroke();
+          ctx.globalAlpha = dim ? 0.13 : 1;
+        }
+      }
       ctx.globalAlpha = 1;
     }
     // 标签（LOD：常显前 14 + 悬停邻域）
@@ -1231,6 +1378,7 @@ fillLiveNumbers();
   function tick() {
     tick.raf = 0;
     if (!visible || !inited) return;              // 恢复时由 IntersectionObserver 重新拉起
+    if (dagMode) { tickDag(); draw(); tick.raf = requestAnimationFrame(tick); return; }  // artifact flow 需连续帧
     if (alpha > 0.003) { step(1); draw(); tick.drawn = false; }
     else if (!tick.drawn) { draw(); tick.drawn = true; }
     tick.raf = requestAnimationFrame(tick);
@@ -1274,12 +1422,126 @@ fillLiveNumbers();
     if (visible && inited && !REDUCED && !tick.raf) tick.raf = requestAnimationFrame(tick);
   }, { threshold: 0.02 }).observe(box);
 
-  // 对外 API：Run 事件驱动「候选技能点亮」（WOW-1 钩子）
+  // ============ WOW-1：Run 事件驱动星图（真实 SSE 事件，非预制动画） ============
+  // dagMode：选中的技能从 force 布局位置平滑迁移到 DAG 列布局（同一批对象，
+  // 同一 id 空间：Skill ID → Graph Node → Candidate → RunStep）。
+  let dagMode = null;      // null | {nodes:[{idx,skill,depends_on}], map:Map(idx->node), depth, state:Map(idx->status)}
+  let dagT = 0, dagTarget = 0;   // 形态迁移进度 0→1
+
+  function skillNode(name) { return name ? nodes.find(n => n.id === name) : null; }
+
+  function dagDepth(nodesDag) {
+    const dep = new Map();
+    function d(i) {
+      if (dep.has(i)) return dep.get(i);
+      const n = nodesDag[i] || nodesDag[nodesDag.findIndex(x => x.idx === i)];
+      const ds = (n && n.depends_on || []).map(d);
+      const v = ds.length ? Math.max(...ds) + 1 : 0;
+      dep.set(i, v); return v;
+    }
+    nodesDag.forEach(n => d(n.idx));
+    return dep;
+  }
+
+  function tickDag() {
+    if (dagT < dagTarget) {
+      dagT = Math.min(dagTarget, dagT + 1 / 42);   // ~42 帧完成形态迁移
+      const e = 1 - Math.pow(1 - dagT, 3);
+      dagMode.map.forEach((node, idx) => {
+        const tgt = dagMode.targets.get(idx);
+        if (!tgt) return;
+        node.x += (tgt.x - node.x) * 0.16 * (0.4 + e);
+        node.y += (tgt.y - node.y) * 0.16 * (0.4 + e);
+      });
+      tick.drawn = false;
+    }
+  }
+
+  function drawDagEdges() {
+    const d = dagMode, map = d.map;
+    for (const n of d.nodes) {
+      const t = map.get(n.idx); if (!t) continue;
+      for (const di of (n.depends_on || [])) {
+        const s = map.get(di); if (!s) continue;
+        const stt = d.state.get(di) || "pending";
+        const sts = d.state.get(n.idx) || "pending";
+        const active = (stt === "done" || stt === "failed") && sts !== "skipped";
+        ctx.strokeStyle = stt === "failed" ? "rgba(168,67,58,.75)"
+          : active ? "rgba(36,85,122,.8)" : "rgba(34,48,62,.18)";
+        ctx.lineWidth = active ? 1.6 : 1;
+        // 箭头
+        const dx = t.x - s.x, dy = t.y - s.y, len = Math.max(1, Math.hypot(dx, dy));
+        const pad = 9, ex = t.x - dx / len * pad, ey = t.y - dy / len * pad;
+        const sx = s.x + dx / len * pad, sy = s.y + dy / len * pad;
+        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+        if (active) {
+          const a = Math.atan2(dy, dx);
+          ctx.fillStyle = stt === "failed" ? "rgba(168,67,58,.9)" : "rgba(36,85,122,.9)";
+          ctx.beginPath();
+          ctx.moveTo(ex, ey);
+          ctx.lineTo(ex - 7 * Math.cos(a - .42), ey - 7 * Math.sin(a - .42));
+          ctx.lineTo(ex - 7 * Math.cos(a + .42), ey - 7 * Math.sin(a + .42));
+          ctx.closePath(); ctx.fill();
+          if (sts === "running") {           // artifact flow：流动的小点
+            const tt = (performance.now() / 700) % 1;
+            ctx.beginPath(); ctx.arc(sx + dx * tt, sy + dy * tt, 2.4, 0, 6.2832);
+            ctx.fillStyle = "rgba(36,85,122,.95)"; ctx.fill();
+          }
+        }
+      }
+    }
+  }
+
   window.HeroNet = {
     highlight(ids) {
       if (!inited || !ids || !ids.length) return;
-      focusSet = new Set(ids.filter(id => idx.has(id) || nodes.some(n => n.id === id)));
+      focusSet = new Set(ids.filter(id => nodes.some(n => n.id === id)));
       alpha = Math.max(alpha, 0.35); tick.drawn = false; if (REDUCED) draw();
+    },
+    select(names) {                          // 排序/选择完成：被选中的进一步提高权重
+      if (!inited || !names || !names.length) return;
+      focusSet = new Set(names.filter(id => nodes.some(n => n.id === id)));
+      alpha = Math.max(alpha, 0.3); tick.drawn = false; if (REDUCED) draw();
+    },
+    dagify(nodesDag) {                       // dag.ready：收束成执行 DAG
+      if (!inited || !nodesDag || !nodesDag.length) return;
+      const map = new Map(), idOf = new Map();
+      nodesDag.forEach(n => {
+        const node = skillNode(n.skill);
+        if (node) { map.set(n.idx, node); idOf.set(n.idx, node.id); }
+      });
+      if (map.size < 2) return;
+      dagMode = { nodes: nodesDag, map, idOf, state: new Map() };
+      dagMode.byNode = new Map();
+      map.forEach((node, i) => dagMode.byNode.set(node, i));
+      dagMode.targets = null;
+      // 目标坐标
+      const dep = dagDepth(nodesDag);
+      const maxD = Math.max(...dep.values(), 0);
+      const cols = {};
+      nodesDag.forEach(n => { const dd = dep.get(n.idx) || 0; (cols[dd] = cols[dd] || []).push(n); });
+      const mL = 76, mR = 46, mT = 50, mB = 44;
+      dagMode.targets = new Map();
+      nodesDag.forEach(n => {
+        const dd = dep.get(n.idx) || 0, col = cols[dd] || [], k = col.indexOf(n);
+        const x = mL + (maxD ? dd * (W - mL - mR) / maxD : (W - mL - mR) / 2);
+        const y = col.length === 1 ? H / 2 : mT + k * (H - mT - mB) / Math.max(1, col.length - 1);
+        dagMode.targets.set(n.idx, { x, y });
+      });
+      dagT = 0; dagTarget = 1;
+      focusSet = new Set([...idOf.values()]);
+      alpha = 0.05;                          // 力布局停用，交给形态迁移
+      tick.drawn = false; if (REDUCED) { dagT = dagTarget = 1; draw(); }
+    },
+    stepState(idx, status) {                 // running/done/failed/skipped/repair
+      if (!dagMode) return;
+      dagMode.state.set(idx, status);
+      tick.drawn = false; if (REDUCED) draw();
+    },
+    exitDag() {
+      if (!dagMode) return;
+      dagMode = null; focusSet = null;
+      alpha = 0.6; tick.drawn = false; if (REDUCED) draw();
     },
     clear() { focusSet = null; tick.drawn = false; if (REDUCED) draw(); }
   };

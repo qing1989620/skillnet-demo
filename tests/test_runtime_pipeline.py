@@ -290,3 +290,138 @@ def test_deterministic_checks_appear_in_step(tmp_path, monkeypatch):
     names = [c.name for c in r.steps[0].checks]
     assert any("存在" in n for n in names)
     assert any("CSV" in n for n in names)
+
+
+# ======================================================================
+
+# ======================================================================
+# DAG = Runtime 集成测试（Round 4：编排 workflow 必须成为权威执行图）
+# ======================================================================
+DAG_WORKFLOW = [["s-a", "s-b"], ["s-a", "s-c"], ["s-b", "s-d"], ["s-c", "s-d"]]
+
+GOOD_A = ("```python" + NL + 'open("shared.csv","w",encoding="utf-8").write("v")' + NL + "print('A ok')" + "```")
+GOOD_B = ("```python" + NL + "import time" + NL + 'rows = open("shared.csv",encoding="utf-8").read()' + NL
+          + "time.sleep(0.5)" + NL + 'open("out_b.csv","w",encoding="utf-8").write("b:"+rows)' + NL + "print('B ok')" + "```")
+GOOD_C = ("```python" + NL + "import time" + NL + 'rows = open("shared.csv",encoding="utf-8").read()' + NL
+          + "time.sleep(0.5)" + NL + 'open("out_c.csv","w",encoding="utf-8").write("c:"+rows)' + NL + "print('C ok')" + "```")
+GOOD_D = ("```python" + NL + "import json" + NL + 'b = open("out_b.csv",encoding="utf-8").read()' + NL
+          + 'c = open("out_c.csv",encoding="utf-8").read()' + NL
+          + 'json.dump({"b": b, "c": c}, open("final.json","w",encoding="utf-8"))' + NL + "print('D ok')" + "```")
+
+
+def _dag_plan():
+    return {"steps": [
+        {"action": "产共享数据", "skill": "s-a"},
+        {"action": "分支B加工", "skill": "s-b"},
+        {"action": "分支C加工", "skill": "s-c"},
+        {"action": "汇总D", "skill": "s-d"},
+    ]}
+
+
+def test_dag_parallel_branch_and_artifact_flow(tmp_path, monkeypatch):
+    """A→(B,C)→D：B/C 等 A、可并行、D 等全部上游、产物真实跨步传递。"""
+    _mock_llm(monkeypatch, [GOOD_A, GOOD_B, GOOD_C, GOOD_D])
+    r = _mkrun("dag")
+    pipeline.execute_run(r, None, tmp_path / "ws", _dag_plan(),
+                         max_steps=4, workflow=DAG_WORKFLOW)
+    pipeline.finalize_status(r)
+    s = r.steps
+    assert r.status == "COMPLETED", r.error
+    assert all(x.status == "done" for x in s)
+    assert s[0].started_at_ms < s[1].started_at_ms      # A 先于 B/C
+    assert s[0].started_at_ms < s[2].started_at_ms
+    assert s[3].started_at_ms >= s[1].ended_at_ms       # D 等全部上游
+    assert s[3].started_at_ms >= s[2].ended_at_ms
+    assert (r.staged.get("max_concurrency") or 0) >= 2  # B/C 真并行
+    assert r.staged.get("scheduler") == "dag-parallel"
+    assert "shared.csv" in s[1].inputs and "shared.csv" in s[2].inputs
+    assert "out_b.csv" in s[3].inputs and "out_c.csv" in s[3].inputs
+    cp = r.staged.get("critical_path") or {}
+    assert cp.get("ms", 0) > 600            # A(~100ms) + max(B,C)(≈0.5s) + D，跨 3 步
+    assert len(cp.get("steps") or []) >= 3
+
+
+def test_dag_critical_failure_blocks_all_downstream(tmp_path, monkeypatch):
+    """DAG 中 A 失败 → B/C/D 全部 skipped（依赖链阻断），run 不谎报 COMPLETED。"""
+    _mock_llm(monkeypatch, [BAD_STEP, BAD_STEP, BAD_STEP])
+    r = _mkrun("dagf")
+    pipeline.execute_run(r, None, tmp_path / "ws", _dag_plan(),
+                         max_steps=4, workflow=DAG_WORKFLOW)
+    pipeline.finalize_status(r)
+    assert r.steps[0].status == "failed"
+    assert all(x.status == "skipped" for x in r.steps[1:])
+    assert r.status in ("FAILED", "PARTIAL")
+
+
+def test_build_steps_workflow_mapping():
+    """build_steps 直接消费编排边：A→(B,C)→D 的依赖映射正确、无环。"""
+    steps = pipeline.build_steps(_dag_plan(), DAG_WORKFLOW)
+    assert [st.depends_on for st in steps] == [[], [0], [0], [1, 2]]
+    steps2 = pipeline.build_steps(_dag_plan(), None)     # 线性兜底不回归
+    assert [st.depends_on for st in steps2] == [[], [0], [1], [2]]
+
+# ======================================================================
+# DAG = Runtime 集成测试（Round 4：编排 workflow 必须成为权威执行图）
+# ======================================================================
+DAG_WORKFLOW = [["s-a", "s-b"], ["s-a", "s-c"], ["s-b", "s-d"], ["s-c", "s-d"]]
+
+GOOD_A = ("```python" + NL + 'open("shared.csv","w",encoding="utf-8").write("v")' + NL + "print('A ok')" + "```")
+GOOD_B = ("```python" + NL + "import time" + NL + 'rows = open("shared.csv",encoding="utf-8").read()' + NL
+          + "time.sleep(0.5)" + NL + 'open("out_b.csv","w",encoding="utf-8").write("b:"+rows)' + NL + "print('B ok')" + "```")
+GOOD_C = ("```python" + NL + "import time" + NL + 'rows = open("shared.csv",encoding="utf-8").read()' + NL
+          + "time.sleep(0.5)" + NL + 'open("out_c.csv","w",encoding="utf-8").write("c:"+rows)' + NL + "print('C ok')" + "```")
+GOOD_D = ("```python" + NL + "import json" + NL + 'b = open("out_b.csv",encoding="utf-8").read()' + NL
+          + 'c = open("out_c.csv",encoding="utf-8").read()' + NL
+          + 'json.dump({"b": b, "c": c}, open("final.json","w",encoding="utf-8"))' + NL + "print('D ok')" + "```")
+
+
+def _dag_plan():
+    return {"steps": [
+        {"action": "产共享数据", "skill": "s-a"},
+        {"action": "分支B加工", "skill": "s-b"},
+        {"action": "分支C加工", "skill": "s-c"},
+        {"action": "汇总D", "skill": "s-d"},
+    ]}
+
+
+def test_dag_parallel_branch_and_artifact_flow(tmp_path, monkeypatch):
+    """A→(B,C)→D：B/C 等 A、可并行、D 等全部上游、产物真实跨步传递。"""
+    _mock_llm(monkeypatch, [GOOD_A, GOOD_B, GOOD_C, GOOD_D])
+    r = _mkrun("dag")
+    pipeline.execute_run(r, None, tmp_path / "ws", _dag_plan(),
+                         max_steps=4, workflow=DAG_WORKFLOW)
+    pipeline.finalize_status(r)
+    s = r.steps
+    assert r.status == "COMPLETED", r.error
+    assert all(x.status == "done" for x in s)
+    assert s[0].started_at_ms < s[1].started_at_ms      # A 先于 B/C
+    assert s[0].started_at_ms < s[2].started_at_ms
+    assert s[3].started_at_ms >= s[1].ended_at_ms       # D 等全部上游
+    assert s[3].started_at_ms >= s[2].ended_at_ms
+    assert (r.staged.get("max_concurrency") or 0) >= 2  # B/C 真并行
+    assert r.staged.get("scheduler") == "dag-parallel"
+    assert "shared.csv" in s[1].inputs and "shared.csv" in s[2].inputs
+    assert "out_b.csv" in s[3].inputs and "out_c.csv" in s[3].inputs
+    cp = r.staged.get("critical_path") or {}
+    assert cp.get("ms", 0) > 600            # A(~100ms) + max(B,C)(≈0.5s) + D，跨 3 步
+    assert len(cp.get("steps") or []) >= 3
+
+
+def test_dag_critical_failure_blocks_all_downstream(tmp_path, monkeypatch):
+    """DAG 中 A 失败 → B/C/D 全部 skipped（依赖链阻断），run 不谎报 COMPLETED。"""
+    _mock_llm(monkeypatch, [BAD_STEP, BAD_STEP, BAD_STEP])
+    r = _mkrun("dagf")
+    pipeline.execute_run(r, None, tmp_path / "ws", _dag_plan(),
+                         max_steps=4, workflow=DAG_WORKFLOW)
+    pipeline.finalize_status(r)
+    assert r.steps[0].status == "failed"
+    assert all(x.status == "skipped" for x in r.steps[1:])
+    assert r.status in ("FAILED", "PARTIAL")
+
+
+def test_build_steps_workflow_mapping():
+    """build_steps 直接消费编排边：A→(B,C)→D 的依赖映射正确、无环。"""
+    steps = pipeline.build_steps(_dag_plan(), DAG_WORKFLOW)
+    assert [st.depends_on for st in steps] == [[], [0], [0], [1, 2]]
+    steps2 = pipeline.build_steps(_dag_plan(), None)     # 线性兜底不回归
+    assert [st.depends_on for st in steps2] == [[], [0], [1], [2]]
