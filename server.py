@@ -937,8 +937,13 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
             t0 = time.time()
             run.status = "RETRIEVING"
             BUS.publish(run, "run.started", task=run.task[:120])
-            res = r.search(run.task, k=req.k, mode=MODE_FABRIC)
-            run.retrieval = res.to_dict()
+            # 三档同题对照（与原七阶段演示对齐）：bm25/hybrid/fabric 各自留存
+            run.retrieval = {}
+            for m in MODES:
+                _r = r.search(run.task, k=req.k, mode=m)
+                run.retrieval[m] = _r.to_dict()
+            res = run.retrieval[MODE_FABRIC]
+            res.setdefault("trace", []).append(f"三档对照完成：bm25 {len(run.retrieval['bm25']['selected'])} / hybrid {len(run.retrieval['hybrid']['selected'])} / fabric {len(res['selected'])}")
             run.staged["retrieval_ms"] = int((time.time() - t0) * 1000)
             BUS.publish(run, "retrieval.completed",
                         selected=res.selected, decision=res.decision,
@@ -989,8 +994,7 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
 
             # 6) 盲评 + 反馈回流 + 蒸馏
             t0 = time.time()
-            pts = reference_points_from_skills(lib(), []) if False else []
-            j = score_plan(run.task, run.plan, pts)
+            j = score_plan(run.task, run.plan, [])
             run.judge = j
             reward = float(j.get("weighted") or 0) / 10.0
             adopted = [s for s in run.skills if s]
