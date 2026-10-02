@@ -1,0 +1,9 @@
+timestamp,step,operation,affected_rows,reason,output_file
+2025-01-01T10:00:00Z,S1,unit_conversion_nM_to_uM,120,原始剂量单位为nM,clean_dose_response.csv
+2025-01-01T10:00:01Z,S1,response_percent_to_fraction,120,原始响应为0-100%,clean_dose_response.csv
+2025-01-01T10:00:02Z,S1,missing_dose_removed,3,dose缺失,clean_dose_response.csv
+2025-01-01T10:00:03Z,S1,missing_response_flagged,2,response缺失标记为missing,clean_dose_response.csv
+2025-01-01T10:00:04Z,S1,duplicate_replicate_flagged,1,同剂量同重复孔重复,clean_dose_response.csv
+2025-01-01T10:00:05Z,S1,outlier_mad_flagged,4,MAD>3倍判定为异常点,clean_dose_response.csv
+2025-01-01T10:00:06Z,S1,low_n_flagged,2,n<3标记为low_n,clean_dose_response.csv
+2025-01-01T10:00:07Z,S1,log10_dose_computed,120,计算log10(dose),clean_dose_response.csv

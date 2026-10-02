@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<title>研究执行方案 · 分析一份含缺失值的表格数据，建立基线预测模型并做误差分析</title>
+<style>
+ :root { --ink:#22303e; --dim:#64748a; --line:#dfe6ec; --brand:#1a3a5c; --ok:#2e7d4f; }
+ * { box-sizing:border-box; margin:0; padding:0; }
+ body { font-family:"Microsoft YaHei","PingFang SC",sans-serif; color:var(--ink);
+        background:#fbfaf8; line-height:1.75; padding:34px 22px; }
+ .wrap { max-width:820px; margin:0 auto; background:#fff; border:1px solid var(--line); padding:32px 36px; }
+ h1 { font-size:21px; color:var(--brand); margin-bottom:6px; line-height:1.4; }
+ .lead { color:var(--dim); font-size:12.5px; padding-bottom:14px; border-bottom:2px solid var(--brand); margin-bottom:20px; }
+ h2 { font-size:15px; color:var(--brand); margin:24px 0 10px; padding-bottom:5px; border-bottom:1px solid var(--line); }
+ .approach { background:#f2f6fa; border-left:3px solid var(--brand); padding:12px 15px; font-size:13.5px; }
+ .step { border:1px solid var(--line); border-left:3px solid #24557a; padding:12px 15px; margin-bottom:10px; }
+ .sh { display:flex; gap:9px; align-items:baseline; }
+ .sn { color:#24557a; font-weight:800; }
+ .sa { font-weight:700; font-size:13.5px; }
+ .k { color:var(--dim); font-size:11.5px; margin-top:6px; }
+ .v { font-size:12.5px; }
+ .chk { color:var(--ok); font-size:12px; margin-top:4px; }
+ ul { margin-left:18px; font-size:12.5px; }
+ code { background:#eef1f4; padding:1px 5px; border-radius:3px; font-size:12px; }
+ .row { display:grid; grid-template-columns:150px 1fr 46px; gap:10px; align-items:center; font-size:12.5px; margin:3px 0; }
+ .bar { height:8px; background:#edf1f4; } .bar i { display:block; height:100%; background:#24557a; } .bar.obj i { background:var(--ok); }
+ .meta { color:var(--dim); font-size:12px; }
+ .box { border:1px solid var(--line); background:#f7f9fb; padding:11px 15px; font-size:12.5px; margin-top:10px; }
+ footer { margin-top:26px; padding-top:12px; border-top:1px solid var(--line); color:var(--dim); font-size:11.5px; }
+</style></head><body><div class="wrap">
+ <h1>研究执行方案</h1>
+ <div class="lead">
+   任务：分析一份含缺失值的表格数据，建立基线预测模型并做误差分析<br>
+   生成方式：SkillNet-S1 技能运维层（技能驱动执行）　|　任务指纹 <code>035f89ea</code><br>
+   加载技能：<code>data-cleaning</code>、<code>eda-profiling</code>、<code>cross-validation-protocol</code>、<code>tabular-ml-baseline</code>、<code>model-interpretability</code>
+   ｜技能采纳率 100%
+ </div>
+ <h2>研究思路</h2>
+ <div class="approach">以「清洗→画像→验证协议→基线建模→误差归因」为主线：先用 data-cleaning 产出带审计轨迹的干净数据集并显式保留缺失指示变量，再用 eda-profiling 刻画分布与缺失机制，随后用 cross-validation-protocol 按数据结构确定折法，用 tabular-ml-baseline 建立可解释强基线并做误差分析，最后用 model-interpretability 交叉印证归因结论，全程固定随机种子与划分以保证可复现。</div>
+ <h2>执行步骤（5 步）</h2>
+ 
+    <div class="step">
+      <div class="sh"><span class="sn">S1</span><span class="sa">结构探查与缺失处理：确认主键唯一性，统计各字段缺失率与缺失模式，按业务规则判定异常值；对缺失率&lt;5%的数值字段用中位数填补并加缺失指示变量，缺失率&gt;40%的字段标记为候选剔除，其余用树模型原生缺失处理，全程记录审计日志。</span></div>
+      <div class="k">调用技能 <code>data-cleaning</code></div>
+      <div class="k">关键参数</div><ul><li>缺失率阈值 5% / 40%：低于5%填补偏差可控，高于40%填补信息量不足</li><li>缺失指示变量：保留非随机缺失(MNAR)信号，避免均值填补引入偏差</li><li>异常值判定用业务规则（如年龄&lt;0或&gt;120）而非3σ：避免分布偏态下误删真实极值</li></ul>
+      <div class="k">预期产出</div><div class="v">干净数据集、清洗审计日志（每步原因/影响行数/前后分布）、数据字典</div>
+      <div class="chk">校验：清洗后主键唯一；审计日志可逐步复现；关键字段填补前后分布差异有量化解释（如均值偏移&lt;5%）；缺失指示变量与目标的相关性已记录</div>
+    </div>
+    <div class="step">
+      <div class="sh"><span class="sn">S2</span><span class="sa">单变量分布与缺失率排行、分组基线可比性检查、相关矩阵与共线性标注、目标变量分布与不平衡程度评估，输出候选特征清单与风险项。</span></div>
+      <div class="k">调用技能 <code>eda-profiling</code></div>
+      <div class="k">关键参数</div><ul><li>共线性阈值 |r|&gt;0.8：超过则标注为高共线特征对</li><li>分组对比按关键类别变量分层，检查各组样本量差异</li><li>目标变量：连续则看偏度/峰度，类别则看最小类占比</li></ul>
+      <div class="k">预期产出</div><div class="v">EDA 报告、分布与相关性图组、候选特征清单、风险项及处理建议</div>
+      <div class="chk">校验：分布图覆盖全部关键变量；共线性项已标注；每个风险项有具体处理建议；分组样本量差异已量化</div>
+    </div>
+    <div class="step">
+      <div class="sh"><span class="sn">S3</span><span class="sa">判断数据结构（独立同分布/分组/时序），选择对应折法；调参用嵌套交叉验证，重复多次划分报告均值与标准差；若样本量允许保留独立外部验证集。</span></div>
+      <div class="k">调用技能 <code>cross-validation-protocol</code></div>
+      <div class="k">关键参数</div><ul><li>折数 K=5：样本量与偏差-方差折中；样本&lt;200时用K=10或留一</li><li>重复次数 n=5：报告性能波动范围而非单次结果</li><li>若存在分组结构用 GroupKFold，时序数据用 TimeSeriesSplit，类别不平衡用 StratifiedKFold</li></ul>
+      <div class="k">预期产出</div><div class="v">验证协议说明、评估脚本、性能不确定性估计（均值±标准差）</div>
+      <div class="chk">校验：折法匹配数据结构（分组/时序样本不跨折）；调参与评估分离；报告了性能波动范围；外部验证集与训练集无重叠</div>
+    </div>
+    <div class="step">
+      <div class="sh"><span class="sn">S4</span><span class="sa">建立不可再简化的基线：先线性回归/逻辑回归，再梯度提升树；按特征类型编码并保留缺失指示变量；固定划分与随机种子；做误差分布分析定位高误差样本子群。</span></div>
+      <div class="k">调用技能 <code>tabular-ml-baseline</code></div>
+      <div class="k">关键参数</div><ul><li>随机种子固定为 42：保证划分与结果可复现</li><li>标准化仅在训练折内 fit，再 transform 验证折：防止泄漏</li><li>评估指标：回归用 RMSE/MAE 与 R²，分类用 AUC/F1 并报告子群指标</li><li>树模型 n_estimators=300, max_depth=6：控制过拟合的保守基线</li></ul>
+      <div class="k">预期产出</div><div class="v">基线模型与性能表、特征重要性、误差分析报告（含子群性能差异）</div>
+      <div class="chk">校验：划分与随机种子固定；基线可用简单模型复现；子群性能差异已报告；测试集未参与调参；误差最大子群已定位并给出样本特征描述</div>
+    </div>
+    <div class="step">
+      <div class="sh"><span class="sn">S5</span><span class="sa">用置换重要性做全局排序，SHAP 做局部归因并检查加性假设，PDP/ICE 检查非线性与交互，对相关特征做分组归因，显式声明方法假设与失效条件。</span></div>
+      <div class="k">调用技能 <code>model-interpretability</code></div>
+      <div class="k">关键参数</div><ul><li>置换重要性重复 10 次取均值：降低随机性影响</li><li>SHAP 用 TreeExplainer（树模型）或 LinearExplainer（线性模型）</li><li>PDP 网格取特征分位数 5%~95% 的 20 个点：避免外推区域</li></ul>
+      <div class="k">预期产出</div><div class="v">全局重要性排序、局部归因图、部分依赖曲线、方法假设与局限声明</div>
+      <div class="chk">校验：至少两种归因方法互相印证（置换重要性 vs SHAP 排序一致）；交互效应已检查；方法假设已声明；未将 SHAP 值表述为因果效应</div>
+    </div>
+ <h2>风险与应对</h2>
+ <ul><li>缺失机制误判：若为 MNAR 却按 MAR 填补，会引入系统性偏差——应对：对比填补前后目标分布，并做缺失指示变量的预测力检验</li><li>数据泄漏：标准化或特征工程在划分前执行——应对：所有变换封装进 Pipeline，仅在训练折 fit</li><li>验证协议与数据结构不匹配：分组/时序样本跨折导致性能虚高——应对：建模前先确认分组键与时间戳，用 GroupKFold/TimeSeriesSplit</li><li>误差分析只看整体指标掩盖子群差距：应对：按关键类别变量分层报告指标，定位高误差子群并检查样本量是否足够</li></ul>
+ <h2>交付物清单</h2>
+ <ul><li>干净数据集与数据字典</li><li>清洗审计日志</li><li>EDA 报告与图组</li><li>验证协议说明与评估脚本</li><li>基线模型性能表（含子群指标与波动范围）</li><li>误差分析报告</li><li>可解释性归因报告（全局+局部）</li></ul>
+ <h2>落盘代码产物</h2>
+ <ul><li class="meta">本次方案未包含可落盘代码块</li></ul>
+ <h2>评估（主客观分列）</h2>
+ <div class="row"><span>skill_grounding</span><div class="bar"><i style="width:90%"></i></div><b>9.0</b></div><div class="row"><span>executability</span><div class="bar"><i style="width:80%"></i></div><b>8.0</b></div><div class="row"><span>rigor</span><div class="bar"><i style="width:90%"></i></div><b>9.0</b></div><div class="row"><span>scientific_validity</span><div class="bar"><i style="width:90%"></i></div><b>9.0</b></div>
+ <div class="box">盲评均分 <b>8.75/10</b>　|　技能采纳率 <b>100%</b></div>
+ <div class="meta">客观线：无 gold 基准，本次跳过</div>
+ <div class="box">盲评意见：方案完整覆盖清洗、画像、验证协议、基线建模与误差归因全链路，方法选择与任务高度匹配，参数阈值、判据与陷阱应对具体可执行；仅缺失机制检验（如Little&#x27;s MCAR检验）与外部验证集划分细节略欠明确。</div>
+ <footer>
+   本文件由执行器输出渲染，内容为<b>研究方案与要点</b>（非实验结论）；参数取值与判据需在真实数据上验证后采用。<br>
+   SkillNet-S1 · 产物指纹 <code>fdd4b5096d4c</code>
+ </footer>
+</div></body></html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<title>研究执行方案 · 对两组实验数据做统计检验，报告效应量与置信区间</title>
+<style>
+ :root { --ink:#22303e; --dim:#64748a; --line:#dfe6ec; --brand:#1a3a5c; --ok:#2e7d4f; }
+ * { box-sizing:border-box; margin:0; padding:0; }
+ body { font-family:"Microsoft YaHei","PingFang SC",sans-serif; color:var(--ink);
+        background:#fbfaf8; line-height:1.75; padding:34px 22px; }
+ .wrap { max-width:820px; margin:0 auto; background:#fff; border:1px solid var(--line); padding:32px 36px; }
+ h1 { font-size:21px; color:var(--brand); margin-bottom:6px; line-height:1.4; }
+ .lead { color:var(--dim); font-size:12.5px; padding-bottom:14px; border-bottom:2px solid var(--brand); margin-bottom:20px; }
+ h2 { font-size:15px; color:var(--brand); margin:24px 0 10px; padding-bottom:5px; border-bottom:1px solid var(--line); }
+ .approach { background:#f2f6fa; border-left:3px solid var(--brand); padding:12px 15px; font-size:13.5px; }
+ .step { border:1px solid var(--line); border-left:3px solid #24557a; padding:12px 15px; margin-bottom:10px; }
+ .sh { display:flex; gap:9px; align-items:baseline; }
+ .sn { color:#24557a; font-weight:800; }
+ .sa { font-weight:700; font-size:13.5px; }
+ .k { color:var(--dim); font-size:11.5px; margin-top:6px; }
+ .v { font-size:12.5px; }
+ .chk { color:var(--ok); font-size:12px; margin-top:4px; }
+ ul { margin-left:18px; font-size:12.5px; }
+ code { background:#eef1f4; padding:1px 5px; border-radius:3px; font-size:12px; }
+ .row { display:grid; grid-template-columns:150px 1fr 46px; gap:10px; align-items:center; font-size:12.5px; margin:3px 0; }
+ .bar { height:8px; background:#edf1f4; } .bar i { display:block; height:100%; background:#24557a; } .bar.obj i { background:var(--ok); }
+ .meta { color:var(--dim); font-size:12px; }
+ .box { border:1px solid var(--line); background:#f7f9fb; padding:11px 15px; font-size:12.5px; margin-top:10px; }
+ footer { margin-top:26px; padding-top:12px; border-top:1px solid var(--line); color:var(--dim); font-size:11.5px; }
+</style></head><body><div class="wrap">
+ <h1>研究执行方案</h1>
+ <div class="lead">
+   任务：对两组实验数据做统计检验，报告效应量与置信区间<br>
+   生成方式：SkillNet-S1 技能运维层（技能驱动执行）　|　任务指纹 <code>056d9950</code><br>
+   加载技能：<code>data-cleaning</code>、<code>statistical-testing</code>、<code>scientific-visualization</code>
+   ｜技能采纳率 100%
+ </div>
+ <h2>研究思路</h2>
+ <div class="approach">先对两组原始实验数据做结构化清洗与质量审计，确认分组变量、主键唯一性与缺失/异常模式；随后依据设计类型（独立/配对）、正态性与方差齐性选择检验方法，计算效应量与置信区间，并在多重比较时做 FDR 校正；最后用出版级图表呈现分布、效应量与置信区间，并通过假设复核、效应量交叉验证与随机种子复现来保证结果可靠。</div>
+ <h2>执行步骤（5 步）</h2>
+ 
+    <div class="step">
+      <div class="sh"><span class="sn">S1</span><span class="sa">读取两组原始数据，探查字段类型、主键唯一性与分组变量取值；标记缺失模式，按业务规则识别异常值，记录每步清洗的原因、影响行数与前后分布，产出干净数据集与审计日志。</span></div>
+      <div class="k">调用技能 <code>data-cleaning</code></div>
+      <div class="k">关键参数</div><ul><li>缺失判定：先区分随机缺失与非随机缺失，非随机缺失不直接删除，避免选择偏差</li><li>异常判定：优先使用业务规则阈值（如生理/仪器量程），而非纯 3σ 统计阈值</li><li>主键唯一性：清洗后必须唯一，重复行按来源与时间戳去重并留痕</li><li>单位换算：统一到同一单位并在数据字典中注明口径</li></ul>
+      <div class="k">预期产出</div><div class="v">干净数据集（含分组变量）、清洗审计日志、数据字典</div>
+      <div class="chk">校验：清洗后主键唯一；审计日志可逐步复现；关键字段分布变化有解释；缺失比例与异常剔除行数可追溯</div>
+    </div>
+    <div class="step">
+      <div class="sh"><span class="sn">S2</span><span class="sa">判断设计类型（独立/配对、组数），对每组指标做正态性检验与方差齐性检验；不满足正态时改用非参数替代检验；计算效应量（Cohen&#x27;s d / Hedges&#x27; g / r / η²）及其 95% 置信区间。</span></div>
+      <div class="k">调用技能 <code>statistical-testing</code></div>
+      <div class="k">关键参数</div><ul><li>显著性水平 α=0.05，双侧检验（除非有明确方向性假设）</li><li>正态性：Shapiro-Wilk（n&lt;50）或 D&#x27;Agostino-Pearson（n≥50），p&lt;0.05 视为偏离</li><li>方差齐性：Levene 检验，p&lt;0.05 时用 Welch 校正</li><li>效应量：独立两组用 Hedges&#x27; g（小样本校正），配对用 Cohen&#x27;s d_z，非参数用 r=Z/√N</li><li>置信区间：bootstrap 10000 次或解析法，报告 95% CI</li></ul>
+      <div class="k">预期产出</div><div class="v">检验结果表（统计量、自由度、p 值、效应量、95% CI）、统计方法说明段</div>
+      <div class="chk">校验：前提假设已验证并记录；效应量与置信区间齐备；非参数替代路径已给出；结果与原始数据方向一致</div>
+    </div>
+    <div class="step">
+      <div class="sh"><span class="sn">S3</span><span class="sa">若涉及多个指标或多组比较，使用 Benjamini-Hochberg FDR 校正（或 Bonferroni 作为保守对照），报告校正前后 p 值，并标注哪些比较在校正后仍显著。</span></div>
+      <div class="k">调用技能 <code>statistical-testing</code></div>
+      <div class="k">关键参数</div><ul><li>FDR 水平 q=0.05（探索性研究），Bonferroni α/m（验证性研究）</li><li>报告校正前 p、校正后 q、拒绝/不拒绝结论</li><li>校正方法需在方法段中明确写出</li></ul>
+      <div class="k">预期产出</div><div class="v">多重比较校正表，含原始 p、校正后 q 与显著性判定</div>
+      <div class="chk">校验：校正后假阳性率受控；校正方法与比较次数一致；结论不因校正方法切换而反转（稳健性）</div>
+    </div>
+    <div class="step">
+      <div class="sh"><span class="sn">S4</span><span class="sa">绘制两组分布对比图（箱线/小提琴叠加散点）、效应量森林图或置信区间图，显式标注样本量、误差条、显著性水平与检验方法，导出矢量图并保留绘图脚本。</span></div>
+      <div class="k">调用技能 <code>scientific-visualization</code></div>
+      <div class="k">关键参数</div><ul><li>图形选择：分布用箱线/小提琴+散点，效应量用森林图/CI 图</li><li>误差条：95% CI 或 SE，图注中注明</li><li>配色：色觉障碍友好调色板，避免红绿对比</li><li>导出：PDF/SVG 矢量格式，字号≥7pt，单栏宽度可读</li></ul>
+      <div class="k">预期产出</div><div class="v">矢量图（PDF/SVG）、绘图脚本、自解释图注</div>
+      <div class="chk">校验：坐标轴与单位标注完整；误差条与样本量齐备；图为矢量且字号达标；图注含检验方法与显著性说明</div>
+    </div>
+    <div class="step">
+      <div class="sh"><span class="sn">S5</span><span class="sa">对统计结果做稳健性复核：用随机种子复现 bootstrap CI，用参数与非参数两条路径交叉验证结论，检查效应量方向与原始均值差方向是否一致，并核对报告中的自由度与样本量。</span></div>
+      <div class="k">调用技能 <code>manual</code></div>
+      <div class="k">关键参数</div><ul><li>随机种子固定（如 seed=42），bootstrap 重复 10000 次</li><li>参数与非参数结论一致性检查</li><li>效应量方向与均值差方向一致性检查</li><li>样本量、自由度、缺失剔除行数三方对账</li></ul>
+      <div class="k">预期产出</div><div class="v">稳健性复核记录，含复现结果与一致性判定</div>
+      <div class="chk">校验：固定种子下 CI 可复现；两条路径结论一致或差异有合理解释；方向一致；数字对账无矛盾</div>
+    </div>
+ <h2>风险与应对</h2>
+ <ul><li>非正态数据强行使用 t 检验：先做正态性检验，不满足时改用 Mann-Whitney U 或 Wilcoxon 符号秩检验，并报告非参数效应量 r</li><li>只报 p 值不报效应量与置信区间：强制输出 Hedges&#x27; g/d_z 及 95% CI，方法段中明确效应量类型与解释基准</li><li>多重比较未校正导致假阳性：对多指标/多组比较统一做 BH-FDR 校正，并附 Bonferroni 作为保守对照</li><li>缺失值处理引入选择偏差：区分随机与非随机缺失，非随机缺失不直接删除，改用敏感性分析或模型化处理并留痕</li></ul>
+ <h2>交付物清单</h2>
+ <ul><li>干净数据集（含分组变量与数据字典）</li><li>清洗审计日志</li><li>统计检验结果表（统计量、自由度、p 值、效应量、95% CI）</li><li>多重比较校正表</li><li>统计方法说明段</li><li>出版级矢量图（PDF/SVG）与绘图脚本</li><li>稳健性复核记录</li></ul>
+ <h2>落盘代码产物</h2>
+ <ul><li class="meta">本次方案未包含可落盘代码块</li></ul>
+ <h2>评估（主客观分列）</h2>
+ <div class="row"><span>skill_grounding</span><div class="bar"><i style="width:90%"></i></div><b>9.0</b></div><div class="row"><span>executability</span><div class="bar"><i style="width:80%"></i></div><b>8.0</b></div><div class="row"><span>rigor</span><div class="bar"><i style="width:90%"></i></div><b>9.0</b></div><div class="row"><span>scientific_validity</span><div class="bar"><i style="width:90%"></i></div><b>9.0</b></div>
+ <div class="box">盲评均分 <b>8.75/10</b>　|　技能采纳率 <b>100%</b></div>
+ <div class="meta">客观线：无 gold 基准，本次跳过</div>
+ <div class="box">盲评意见：方案完整覆盖数据清洗、检验选择、效应量与置信区间、多重校正、可视化与稳健性复核，参数与判据具体（如 Shapiro-Wilk/Levene、Hedges&#x27; g、bootstrap 10000、BH-FDR），并明确常见陷阱与应对；仅缺少具体工具名与部分效应量置信区间解析公式的细节，但不影响可执行性。</div>
+ <footer>
+   本文件由执行器输出渲染，内容为<b>研究方案与要点</b>（非实验结论）；参数取值与判据需在真实数据上验证后采用。<br>
+   SkillNet-S1 · 产物指纹 <code>ffe8ab9aaef9</code>
+ </footer>
+</div></body></html>

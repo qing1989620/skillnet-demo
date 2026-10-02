@@ -1,0 +1,35 @@
+================================================================
+SkillNet-S1 交付自检（页面 / 数字一致性 / 接口）
+================================================================
+
+[1] 页面可达性
+  [PASS] / 可访问
+  [PASS] /graph 可访问
+  [PASS] /dashboard 可访问
+  [PASS] /static/briefing.html 可访问
+  [PASS] /static/graph.html 可访问
+
+[2] 关键接口
+  [PASS] /api/health 返回合法 JSON
+  [PASS] /api/stats 返回合法 JSON
+  [PASS] /api/graph 返回合法 JSON
+  [PASS] /api/skills 返回合法 JSON
+  [PASS] /api/tasks 返回合法 JSON
+  [PASS] /api/results 返回合法 JSON
+  [PASS] /api/config 返回合法 JSON
+
+  真实数据：技能 91 · 领域 37 · 边 167 · 演化 16（health 报告技能 91）
+  [PASS] health.skills 与图谱节点数一致
+  [PASS] health.evolved 与图谱演化数一致
+
+[3] 页面数字一致性（硬编码 vs 真实值）
+
+[4] 产物接口
+  [PASS] 产物可预览
+  [PASS] 产物目录含图片（可内联展示）
+  [PASS] 路径穿越被拦截（..%2f..%2fserver.py）
+  [PASS] 路径穿越被拦截（%2e%2e%2fdata%2flibrary.json）
+
+================================================================
+自检结果：18 项通过，0 项失败
+================================================================

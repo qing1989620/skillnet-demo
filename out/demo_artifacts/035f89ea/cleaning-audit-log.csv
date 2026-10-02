@@ -1,0 +1,7 @@
+step_id,field,operation,rule,affected_rows,affected_ratio,seed,operator,timestamp,note
+S1-001,record_id,uniqueness_check,主键重复检测,0,0.0000,42,data-cleaning,2024-01-01T10:00:00,示意值，需真实数据验证
+S1-002,age,median_impute,缺失率<5%中位数填补,210,0.0210,42,data-cleaning,2024-01-01T10:01:00,示意值，需真实数据验证
+S1-003,age,add_indicator,新增age_isna,210,0.0210,42,data-cleaning,2024-01-01T10:01:10,示意值，需真实数据验证
+S1-004,income,keep_missing,缺失率5%-40%交树模型,1240,0.1240,42,data-cleaning,2024-01-01T10:02:00,示意值，需真实数据验证
+S1-005,legacy_code,mark_drop,缺失率>40%候选剔除,4720,0.4720,42,data-cleaning,2024-01-01T10:03:00,示意值，需真实数据验证
+S1-006,age,outlier_flag,IQR法打标,35,0.0035,42,data-cleaning,2024-01-01T10:04:00,示意值，需真实数据验证

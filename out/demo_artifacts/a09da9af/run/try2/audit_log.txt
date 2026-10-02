@@ -1,0 +1,28 @@
+[模拟数据] 生成 72 条记录，批次=[1, 2, 3]，剂量点=8
+[清洗] 异常点标记数=0（保留，不删除）
+[EDA] 剂量组统计 (dose, mean, SD, n):
+    0.010 uM  mean=0.060  SD=0.035  n=9
+    0.030 uM  mean=0.058  SD=0.037  n=9
+    0.100 uM  mean=0.066  SD=0.037  n=9
+    0.300 uM  mean=0.073  SD=0.035  n=9
+    1.000 uM  mean=0.156  SD=0.044  n=9
+    3.000 uM  mean=0.383  SD=0.064  n=9
+   10.000 uM  mean=0.703  SD=0.053  n=9
+   30.000 uM  mean=0.877  SD=0.042  n=9
+[平台期检查] 最低剂量抑制率=0.060（接近0? True）
+[平台期检查] 最高剂量抑制率=0.877（接近1? True）
+[陷阱规避] log10(dose) 与 dose 不同时进入模型；重采样单位=独立实验批次
+[4PL] Bottom=0.0562 Top=0.9445 logIC50=0.6661 HillSlope=1.3148
+[4PL] IC50=4.6353 uM  R2=0.9791  RSE=0.0459
+[嵌套F检验] 4PL vs 3PL(Bottom=0): F=36.2615 (df1=1, df2=68)，alpha=0.05 临界≈3.84
+[Bootstrap] 有效重复=10000/10000，重采样单位=批次
+[Bootstrap] logIC50 95%CI=[0.5810, 0.7220] -> IC50 95%CI=[3.8102, 5.2725] uM
+[Bootstrap] 更换种子稳健性: 见下方收敛检查
+[收敛检查] n 与 bootstrap 均值标准误（理论 O(n^-0.5)）:
+   n=    10  mean=0.6600  SE=0.01600
+   n=   100  mean=0.6595  SE=0.00343
+   n=  1000  mean=0.6655  SE=0.00110
+   n= 10000  mean=0.6642  SE=0.00035
+[敏感性] HillSlope=1.3148（接近0或极大时需 profile likelihood CI，此处仅报告 Wald 近似）
+[陷阱规避] 若 HillSlope→0 或极大，应改用 profile likelihood CI（本脚本标注 TODO）
+[绘图] 已保存 figure.png / figure.svg

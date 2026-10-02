@@ -67,11 +67,17 @@ def _skill_brief(skill: Any, mode: str = "contract") -> str:
 
 def _gen_code_prompt(task: str, step: dict[str, Any], skill: Any,
                      stack: dict[str, str], prev_output: str = "",
-                     mode: str = "contract") -> str:
+                     mode: str = "contract", carried: list[str] | None = None) -> str:
     libs = "、".join(f"{k} {v}" for k, v in stack.items()) or "仅标准库"
     action = step.get("action") or step.get("title") or ""
     params = step.get("key_params") or []
     expect = step.get("expected_output") or ""
+    upstream = ""
+    if carried:
+        upstream = ("\n本步骤的输入文件（前序步骤产物，已放在当前工作目录，**请直接读取真实文件**，"
+                    "不要重新造数据）：\n"
+                    + "\n".join(f"  - {n}" for n in carried[:8]) + "\n")
+
     return f"""你是一位严谨的科研工程师。请为下面这一步写出**可直接运行**的 Python 代码。
 
 研究任务：{task}
@@ -79,7 +85,7 @@ def _gen_code_prompt(task: str, step: dict[str, Any], skill: Any,
 当前步骤：{action}
 关键参数：{json.dumps(params, ensure_ascii=False)}
 预期产出：{expect}
-
+{upstream}
 {_skill_brief(skill, mode)}
 
 执行环境（**只能使用这些库**，不要 import 其他第三方包）：
