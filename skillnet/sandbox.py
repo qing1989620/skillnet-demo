@@ -87,7 +87,10 @@ def run_python(code: str, timeout: int = 90, keep_dir: bool = False,
     t0 = time.time()
     try:
         proc = subprocess.run(
-            [sys.executable, "-I", "-B", str(script)],     # -I: 隔离模式，忽略用户 site-packages 配置
+            # -I 隔离模式（蕴含 -E：忽略 PYTHON* 环境变量）——因此 PYTHONIOENCODING
+            # 在这里**不生效**，必须用 -X utf8 强制 UTF-8，否则中文 Windows 下
+            # 子进程 stdout 走 GBK，父进程按 UTF-8 解码就是满屏乱码（实测踩过）
+            [sys.executable, "-I", "-B", "-X", "utf8", str(script)],
             cwd=str(tmp), capture_output=True, text=True,
             timeout=timeout, env=_clean_env(tmp), encoding="utf-8", errors="replace",
         )

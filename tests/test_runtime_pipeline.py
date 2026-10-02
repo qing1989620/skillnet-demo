@@ -515,3 +515,23 @@ def test_two_runs_concurrent_smoke(tmp_path):
         assert all(s.status == "done" for s in results["B"].steps)
     finally:
         pipeline.llm.chat = orig
+
+
+def test_sandbox_chinese_output_and_artifact_names(tmp_path):
+    """沙箱中文回归（用户实测踩过）：
+
+    -I 隔离模式蕴含 -E，会丢弃 PYTHONIOENCODING —— 中文 Windows 下子进程
+    stdout 落回 GBK，父进程按 UTF-8 解码即满屏乱码。修复后必须：
+    ① 中文 print 原样可读；② 中文文件名产物被发现登记。"""
+    from skillnet import sandbox
+    code = ('print("模块: 2 个 (28.6%)")' + NL
+            + 'print("评分算法: 2 项")' + NL
+            + 'open("报告.csv","w",encoding="utf-8").write("章节,错题" + chr(10) + "数列,12")' + NL
+            + 'print("已保存: 报告.csv")')
+    res = sandbox.run_python(code, timeout=60, keep_dir=True,
+                             workdir=tmp_path / "try1")
+    assert res["ok"], res["stderr"]
+    assert "模块: 2 个 (28.6%)" in res["stdout"]
+    assert "评分算法: 2 项" in res["stdout"]
+    assert "\ufffd" not in res["stdout"], "stdout 仍有替换符（编码断裂）"
+    assert "报告.csv" in [a["name"] for a in res["artifacts"]]
