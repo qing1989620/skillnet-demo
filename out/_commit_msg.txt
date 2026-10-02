@@ -1,0 +1,25 @@
+feat(R1): Run API + SSE 实时事件流 + 状态机修复（重构第二轮）
+
+新增端点（旧 /api/demo 保留兼容）：
+- POST /api/runs        创建并后台执行，72ms 返回 run_id（不阻塞请求）
+- GET  /api/runs        列表（独立 run_id，task_fp 分组，不覆盖历史）
+- GET  /api/runs/{id}   详情（每步 attempts/checks/verifications/artifacts/事件）
+- GET  /api/runs/{id}/stream   SSE 事件流（回放已落盘事件支持重连 + 心跳）
+- POST /api/runs/{id}/cancel   取消（检查点退出，不硬杀）
+- GET  /api/runs/{id}/artifacts/{name}  Run 产物访问（含二进制图片）
+
+实测（真实运行）：
+- TTFE（首个事件到达）77ms，对比重构前"47s 白等"
+- 事件 73+ 条/run：run.started → retrieval → ranking → orchestration → plan
+  → step.started → code.generating → step.attempt → artifact.created → check.result
+- 阶段耗时分解：retrieval 1.2s / ranking 0.04s / orchestration 1.4s / planning 7.9s
+  / execution 39.7s / judge+evolve 7.0s —— 可回答"为什么 57 秒"
+- 两步骤任务：step0 检查 19/19；step1 3 次尝试触发修复循环，检查 25/25
+
+本轮自查发现并修掉三个真实缺陷：
+1. 终态被覆盖：蒸馏阶段把 COMPLETED 改 EVOLVING，而终态判定在其之前 →
+   落盘误判 PARTIAL。修法：抽出 pipeline.finalize_status() 作为唯一权威判定。
+2. 僵尸 Run：worker 崩溃留下永久 CREATED 记录。修法：RunStore.sweep_interrupted()
+   启动时清扫为非终态 INTERRUPTED。
+3. 兜底自身不安全：finally 依赖缺失的 import time，异常链逃逸致状态悬空。
+   修法：finally 内每段独立 try + 补齐导入。
