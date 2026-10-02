@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>SkillNet-S1 技术交付报告</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Microsoft YaHei", "PingFang SC", sans-serif; color: #22303e; line-height: 1.75; font-size: 10.5pt; }
+  .cover { height: 245mm; display: flex; flex-direction: column; justify-content: center; page-break-after: always; }
+  .cover .kicker { font-size: 10pt; letter-spacing: 4px; color: #24557a; font-weight: 700; margin-bottom: 18px; }
+  .cover h1 { font-size: 30pt; line-height: 1.3; color: #1a3a5c; }
+  .cover .sub { margin-top: 14px; font-size: 12pt; color: #5b6b7c; }
+  .cover .meta { margin-top: 42px; border-top: 2px solid #1a3a5c; padding-top: 16px; font-size: 9.5pt; color: #5b6b7c; }
+  .cover .meta b { color: #22303e; }
+  .cover .list { margin-top: 26px; font-size: 10pt; }
+  .cover .list li { margin: 5px 0 5px 18px; }
+  h2 { font-size: 15pt; color: #1a3a5c; margin: 22px 0 8px; padding-bottom: 4px; border-bottom: 2px solid #e3e9ee; page-break-after: avoid; }
+  h3 { font-size: 11.5pt; color: #24557a; margin: 14px 0 6px; page-break-after: avoid; }
+  p { margin: 6px 0; }
+  ul, ol { margin: 6px 0 6px 20px; }
+  li { margin: 3px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 9.5pt; page-break-inside: avoid; }
+  th { background: #1a3a5c; color: #fff; text-align: left; padding: 6px 9px; font-weight: 600; }
+  td { border-bottom: 1px solid #dde4ea; padding: 5px 9px; vertical-align: top; }
+  tr:nth-child(even) td { background: #f6f8fa; }
+  .hl { background: #f2f6fa; border: 1px solid #c9d8e6; border-left: 4px solid #24557a; padding: 10px 14px; margin: 10px 0; page-break-inside: avoid; }
+  .warn { background: #faf6f0; border: 1px solid #e8d9c3; border-left: 4px solid #c98a2d; padding: 10px 14px; margin: 10px 0; page-break-inside: avoid; }
+  .ok { color: #2e7d4f; font-weight: 700; }
+  .no { color: #a8433a; font-weight: 700; }
+  .num { font-family: Bahnschrift, "Segoe UI", sans-serif; font-weight: 700; color: #1a3a5c; }
+  .shots { display: flex; gap: 8px; margin: 10px 0; page-break-inside: avoid; }
+  .shots img { width: 49%; border: 1px solid #dde4ea; border-radius: 4px; }
+  .cap { font-size: 8.5pt; color: #8a97a4; margin-top: 2px; }
+  code { font-family: Consolas, monospace; font-size: 9pt; background: #f2f5f8; padding: 1px 4px; border-radius: 3px; }
+  .footer-note { margin-top: 30px; font-size: 8.5pt; color: #9aa7b3; border-top: 1px solid #dde4ea; padding-top: 8px; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="kicker">SKILLNET-S1 · 技术交付报告</div>
+  <h1>让 Agent 的每一项能力，<br>成为真正可运营的资产。</h1>
+  <div class="sub">技能运维层：发现 → 选择 → 关系编排 → 真实执行 → 修复 → 程序化验收 → 产物 → 反馈 → 进化，全过程可追溯。</div>
+  <div class="list">
+    <li>本报告：结论 / 证据 / 落地路径 / 局限（约 6 页）</li>
+    <li>可运行 Demo：解压后双击 <b>start.bat</b>，浏览器自动打开</li>
+    <li>复现材料：requirements.txt · 快速开始.txt · 基准数据 JSON · 截图包 · 测试套件</li>
+  </div>
+  <div class="meta">
+    <b>交付日期</b> 2026-10-02 · <b>版本</b> git <code>1b58b9f</code> ·
+    <b>当前库</b> 98 技能 / 41 领域 / 200 关系边 / 23 演化（实时接口 /api/health）<br>
+    <b>测试</b> pytest 35/35 ×3 全绿（不联网、确定性）· 交付自检 31/31 · 自检 18/18<br>
+    <b>模型</b> deepseek-chat（可配置；未配密钥时浏览/检索/星图/导出功能完整可用）
+  </div>
+</div>
+
+<h2>1 · 结论摘要（一页讲完）</h2>
+<div class="hl">
+  <b>做了什么</b>：把「Agent 技能」从散落的提示词文本，变成一套有检索、有编排、真执行、可验收、能进化的<b>资产体系</b>，
+  并以可运行 Demo 完整呈现。技能库 98 项 / 200 条类型化关系边（其中 23 项由系统自主演化产生）。
+</div>
+<p><b>关键数字</b>（全部来自当前库实测，manifest 锁定 git commit 与库哈希）：</p>
+<ul>
+  <li>检索：dev 集 Recall@5 = BM25 0.725 → Hybrid 0.742 → <b>Fabric（图扩展）0.825</b>；heldout 上 Hybrid 最优 0.708</li>
+  <li>执行：3 步真实任务端到端 <span class="num">153s / ¥0.065</span>，其中一次真实失败经 <b>3 次尝试自动修复成功</b></li>
+  <li>编排：技能依赖关系图驱动执行顺序（DAG = Runtime），无依赖步骤真并行，关键路径自动计算</li>
+  <li>工程：35 项自动化测试连续 3 轮全绿，单元测试零联网、零真实 API 依赖，套件 2.9 秒</li>
+</ul>
+<p><b>三个关键发现（含负面，不包装）</b>：</p>
+<ol>
+  <li>图扩展能补回关键词检索漏掉的技能（dev +10pp），但<b>引入 84–95% 噪声</b>——这正是生产链路配 LLM 重排与置信度分流的原因；heldout 上纯图扩展不敌混合检索。</li>
+  <li>在简单单步任务上，三种技能使用模式（不给技能 / 提示词塞技能 / 契约模式）<b>全部 100% 成功</b>，契约模式成本最高——技能资产的价值要在更难的任务上才会显现，简单任务是天花板。</li>
+  <li>LLM 等待占执行时延 ≈81%：瓶颈在模型而非框架；系统已把每次调用的角色、耗时、成本记账到请求级账本。</li>
+</ol>
+<p><b>建议</b>：以 Phase 1「只读接入」（业务 Agent 调 /api/search 注入技能）起步，1–2 周可出对比数据；随后按第 6 章路径推进。</p>
+
+<h2>2 · 背景与问题</h2>
+<p>SkillNet 论文（浙大/阿里/蚂蚁/腾讯，arXiv 2603.04448）实测：前沿 Agent 在真实社区技能池上检索完整度仅个位数到 30%，按依赖编排硬任务时分数进一步大幅下滑；EvoScientist（华为）指出静态流水线「技能只进不出」。即：<b>模型能力在涨，但「技能怎么被管理」缺一层基础设施</b>。本项目在该论文的方向上补齐其缺失的后半段：技能的选择策略（LinUCB）、产物验收、成本记账与进化治理。</p>
+
+<h2>3 · 系统设计与架构</h2>
+<ul>
+  <li><b>技能资产层</b>：98 技能（科研方法 + 工具交付 + 演化），每项含契约字段（能力/输入输出/陷阱/验收方式），符合 agentskills.io 规范，可一键导出 Claude Code / Cursor / Gemini / AGENTS 四种格式。</li>
+  <li><b>检索层</b>：BM25 / 混合 / Fabric（关系图扩展 + LLM 重排）三档同题对照，图扩展沿类型化关系边补漏。</li>
+  <li><b>编排与执行层</b>：编排器输出技能依赖边作为<b>权威执行图</b>；调度器按 DAG 并行派发、产物跨步传播、上游失败阻断下游；每步真实沙箱执行 Python。</li>
+  <li><b>验收层</b>：L1 确定性检查（文件/表头/JSON/数值范围）→ L2 技能断言 → L3 语义评审，三层证据分开呈现，绝不说谎为"客观验证"。</li>
+  <li><b>进化层</b>：蒸馏/变异/交叉/再生四算子 + 质量准入闸（当前 23 项演化技能即由此产生）。</li>
+</ul>
+<div class="shots">
+  <div><img src="../out/final_shots/02_home_1440.png"><div class="cap">首页：Hero + 真实数据技能星图（浅色产品面）</div></div>
+  <div><img src="../out/final_shots/06_graph_1440.png"><div class="cap">技能星图：深色沉浸模式，红圈为演化技能</div></div>
+</div>
+
+<h2>4 · 实验与结果</h2>
+<h3>4.1 检索（Experiment A，当前库 manifest 锁定）</h3>
+<table>
+  <tr><th>Recall@5</th><th>dev（n=20）</th><th>heldout（n=12）</th></tr>
+  <tr><td>BM25</td><td>0.725</td><td>0.653</td></tr>
+  <tr><td>Hybrid（向量+关键词）</td><td>0.742</td><td class="ok">0.708</td></tr>
+  <tr><td>Fabric（图扩展，纯图无重排）</td><td class="ok">0.825</td><td>0.667</td></tr>
+</table>
+<p>Fabric 相对 BM25 的补回质量：dev 补入 44 个技能位中 7 个相关 / 37 个噪声（精度 16%）；heldout 1 相关 / 18 噪声（5%）。结论：图扩展<b>补真金但噪声大</b>，必须配合重排与置信度分流。</p>
+<h3>4.2 技能使用模式（Experiment B，5 任务 × 3 模式 × 真实执行）</h3>
+<table>
+  <tr><th>模式</th><th>成功率</th><th>平均尝试</th><th>自动修复率</th><th>验收通过均值</th><th>成本/次</th><th>时延</th></tr>
+  <tr><td>none（不给技能）</td><td>100%</td><td>1.4</td><td>40%</td><td>17.8</td><td>¥0.143</td><td>14.7s</td></tr>
+  <tr><td>prompt（文本塞提示词）</td><td>100%</td><td class="ok">1.0</td><td class="ok">0%</td><td class="ok">20.2</td><td>¥0.157</td><td class="ok">14.3s</td></tr>
+  <tr><td>contract（技能契约）</td><td>100%</td><td>1.2</td><td>20%</td><td>17.6</td><td>¥0.200</td><td>17.6s</td></tr>
+</table>
+<div class="warn"><b>诚实结论（天花板效应）</b>：简单单步任务上三种模式全部成功，契约模式反而最贵——本样本<b>不支持</b>「契约模式更好」；其价值（陷阱规避、逐条验收证据）需在更难的多步任务上验证。51 技能时代的历史实验（契约模式信息量 2217 vs 1285/1510 字）已标注 Historical，不冒充当前结论。</p></div>
+<h3>4.3 端到端真实运行样例（证据）</h3>
+<p>任务「剂量-存活率数据清洗与剂量-反应分析」：3 步 DAG（数据清洗 → 剂量反应估计 ∥ EDA），其中剂量反应估计第 1、2 次执行失败（真实数据类型错误），第 3 次自动修复成功；总耗时 153s、成本 ¥0.065、关键路径 138.1s 恰好穿过修复链。运行记录、事件流、产物哈希全部落盘可查（<code>out/runs/</code>）。</p>
+
+<h2>5 · 五个产品 Moment（Demo 演示主线）</h2>
+<ol>
+  <li><b>技能网络激活</b>——输入任务，真实候选技能在星图上点亮，无关节点降权</li>
+  <li><b>网络收束成 DAG</b>——同一批节点平滑迁移为执行流程图，视觉上直接理解"流程从技能网络中组织出来"</li>
+  <li><b>真实执行与修复</b>——节点真实跑代码；失败不隐藏，展示尝试/修复全过程</li>
+  <li><b>证据</b>——L1/L2/L3 三层验收分层呈现，通过率与明细可展开</li>
+  <li><b>反馈与进化</b>——运行结束展示技能蒸馏准入结果，星图中进化技能带标记</li>
+</ol>
+
+<h2>6 · 落地路径（建议）</h2>
+<table>
+  <tr><th style="width:16%">阶段</th><th>内容</th><th style="width:24%">周期 / 风险</th></tr>
+  <tr><td>Phase 1 · 只读接入</td><td>业务 Agent 调 /api/search 获取技能（含降级说明），零写入；建立 10–20 条业务任务对照集，跑「有无技能」对比</td><td>1–2 周 / 低（只读无侵入）</td></tr>
+  <tr><td>Phase 2 · 反馈回流</td><td>业务执行结果回传为奖励，LinUCB 开始按业务分布排序；建立业务 heldout 治理</td><td>2–4 周 / 中（需标注少量 gold）</td></tr>
+  <tr><td>Phase 3 · 进化治理</td><td>候选技能人工审批门 + 回滚；蒸馏业务高频轨迹为新技能</td><td>1–2 月 / 中（治理流程需产品化）</td></tr>
+</table>
+
+<h2>7 · 局限与下一步（诚实声明）</h2>
+<ul>
+  <li>技能使用模式实验样本仅 5 个单步任务（天花板效应），需扩 heldout 与多步任务；Evolution / LinUCB 显著性实验未在当前库完成。</li>
+  <li>L3 语义评审为同模型自评（界面已明示"语义评审"），异模型 judge 未接入。</li>
+  <li>沙箱面向可信代码，不是对抗性隔离环境。</li>
+  <li>运行时延以 LLM 等待为主（≈81%），已按调用记账，优化方向是异步化与缓存而非框架。</li>
+  <li>结构化日志（字段化 run_id/step_id）尚未完成，排障暂靠文本日志 + 事件流。</li>
+</ul>
+
+<h2>附录 A · 复现方式</h2>
+<ol>
+  <li>解压后双击 <code>start.bat</code>（Windows）或执行 <code>./start.sh</code>（macOS/Linux）——自动选解释器、装依赖、起服务、开浏览器</li>
+  <li>无密钥即可体验：技能库 / 三档检索对照 / 技能星图 / 实验面板 / 跨框架导出</li>
+  <li>填密钥（<code>.env</code> 的 DEEPSEEK_API_KEY）后解锁：真实任务执行、修复循环、验收、进化、全链路演示</li>
+  <li>验证测试：<code>python -m pytest tests/ -q</code>（预期 35 passed，约 3 秒，不联网）</li>
+  <li>复现基准：<code>python tools/bench_current_library.py</code>（检索，零 API 成本）、<code>python tools/eval_skill_usage.py 5</code>（技能使用，消耗少量 API 额度）</li>
+</ol>
+<p>基准原始数据见 <code>out/bench/*.json</code>（含 manifest：git commit / 库哈希 / 数据集哈希）；截图见 <code>out/final_shots/</code>；完整迭代过程见 <code>docs/rebuild-log.md</code>。</p>
+<div class="footer-note">SkillNet-S1 · 单一数据源溯源 · 所有运行均为真实 API 调用与真实沙箱执行，无预置结果 · 报告生成于 2026-10-02</div>
+
+</body>
+</html>

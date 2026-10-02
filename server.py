@@ -1158,7 +1158,11 @@ def stream_run(run_id: str) -> Any:
 
 @app.get("/api/runs/{run_id}/artifacts/{name}")
 def run_artifact(run_id: str, name: str, download: int = 0) -> Any:
-    """Run 产物访问（工作区 artifacts 目录）。"""
+    """Run 产物访问（工作区 artifacts 目录）。
+
+    名字解析顺序：① 精确匹配登记名（stepN_前缀）；② 裸名别名——界面与上游
+    代码都按原始文件名引用（figure.png），而登记名带 stepN_ 前缀；
+    ③ 仍找不到 → 404 并列出实际可用的产物名（可诊断，不是黑盒报错）。"""
     if not re.fullmatch(r"[A-Za-z0-9\-]{8,64}", run_id) and not re.fullmatch(r"[0-9a-zA-Z\-]{10,64}", run_id):
         raise HTTPException(400, "非法的 run_id")
     if not name or len(name) > 120 or re.search(r"[/\\\x00-\x1f]", name):
@@ -1166,7 +1170,16 @@ def run_artifact(run_id: str, name: str, download: int = 0) -> Any:
     base = (config.OUT_DIR / "runs" / run_id / "artifacts").resolve()
     target = (base / name).resolve()
     if base not in target.parents or not target.is_file():
-        raise HTTPException(404, "产物不存在")
+        if base.is_dir():
+            stem = re.sub(r"^step\d+_", "", name)
+            for cand in sorted(base.glob(f"*_{stem}")):
+                if cand.is_file() and base in cand.resolve().parents:
+                    target = cand.resolve()
+                    break
+    if base not in target.parents or not target.is_file():
+        avail = sorted(p.name for p in base.glob("*"))[:20] if base.is_dir() else []
+        hint = f"；可用产物：{avail}" if avail else "；该 Run 没有落盘产物"
+        raise HTTPException(404, f"产物不存在（请求名 {name}）{hint}")
     if target.suffix.lower() in (".png", ".jpg", ".jpeg", ".svg"):
         media = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
                  ".svg": "image/svg+xml"}[target.suffix.lower()]

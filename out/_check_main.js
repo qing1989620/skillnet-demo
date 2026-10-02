@@ -1,5 +1,5 @@
 
-const PAGE_VER = "2026-10-02f";   // 改版递增：与服务端不一致时自动强制刷新
+const PAGE_VER = "2026-10-02h";   // 改版递增：与服务端不一致时自动强制刷新
 const API = location.port ? location.origin : "http://127.0.0.1:8848";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -627,6 +627,24 @@ async function runDemo() {
     await tick(420);
     setStage(bot, 7, "running"); await tick(520);
     inject(7, renderArtifacts(stages[6] && stages[6].detail)); setStage(bot, 7, "done");
+    // 直接答复卡：用户问的问题在这里给出可见的回答（方案结论 + 真实执行输出）
+    {
+      const planDet = stages[3] && stages[3].detail;
+      const approach = (planDet && planDet.plan && planDet.plan.approach) || "";
+      const execDet = stages[4] && stages[4].detail;
+      const stdout = (execDet && execDet.stdout) || "";
+      const ans = document.createElement("div");
+      ans.className = "tl-card reveal";
+      ans.style.borderColor = "#cfe6d6";
+      ans.innerHTML = `<h4>直接答复<span class="st" style="color:var(--ok)">来自真实执行</span></h4>` +
+        `<div class="tl-body">` +
+        (approach ? `<div style="margin-bottom:8px"><b style="color:var(--brand)">结论：</b>${esc(String(approach))}</div>` : "") +
+        (stdout ? `<div><b style="color:var(--brand)">执行输出：</b><pre style="white-space:pre-wrap;font:11px/1.6 Consolas,monospace;color:var(--ink2);background:var(--soft);padding:8px 10px;border-radius:4px;margin-top:4px;max-height:260px;overflow:auto">${esc(stdout.slice(-1600))}</pre></div>`
+                : `<div style="color:#8a97a4">本次任务未产生执行输出（方案级任务请看上方交付物）。</div>`) +
+        `</div>`;
+      bot.appendChild(ans);
+      ans.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
     const secs = (performance.now() - t0) / 1000;
     const cb = bot.querySelector(".costbar"); cb.style.display = "flex";
     cb.innerHTML = `<span>真实成本 ¥<b id="cv-${id}">0.00</b></span><span>Token <b id="tk-${id}">0</b></span><span>用时 <b>${secs.toFixed(1)}s</b></span><span>技能库 <b>${r.library_size}</b></span>`;
