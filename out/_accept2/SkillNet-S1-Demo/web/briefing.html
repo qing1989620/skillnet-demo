@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>SkillNet-S1 · 汇报演示</title>
+<style>
+  :root {
+    --ink: #22303e; --ink2: #5b6b7c; --line: #dde4ea;
+    --brand: #1a3a5c; --brand2: #24557a; --bg: #fbfaf8;
+    --ok: #2e7d4f; --warn: #c98a2d; --bad: #a8433a;
+    --card: #ffffff; --soft: #f2f5f8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Microsoft YaHei", "PingFang SC", sans-serif; background: var(--bg); color: var(--ink); line-height: 1.7; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
+
+  /* ---------- 顶部状态条 ---------- */
+  .topbar { position: sticky; top: 0; z-index: 50; background: rgba(251,250,248,.94); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line); }
+  .topbar .wrap { display: flex; align-items: center; gap: 18px; height: 52px; }
+  .brand { font-weight: 700; font-size: 15px; color: var(--brand); letter-spacing: .5px; }
+  .brand small { font-weight: 400; color: var(--ink2); margin-left: 8px; font-size: 12px; }
+  .stat { font-size: 12px; color: var(--ink2); display: flex; align-items: center; gap: 6px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #b9c2cb; display: inline-block; }
+  .dot.on { background: var(--ok); } .dot.off { background: var(--bad); }
+  .topbar .spacer { flex: 1; }
+  .topbar a { font-size: 12px; color: var(--brand2); text-decoration: none; }
+  .topbar a:hover { text-decoration: underline; }
+
+  /* ---------- 幕 ---------- */
+  section { padding: 44px 0 10px; }
+  .kicker { font-size: 12px; letter-spacing: 3px; color: var(--brand2); font-weight: 700; margin-bottom: 6px; }
+  h2 { font-size: 24px; color: var(--brand); margin-bottom: 6px; font-weight: 700; }
+  .sub { color: var(--ink2); font-size: 13.5px; margin-bottom: 20px; }
+
+  /* ---------- 幕1 问题 ---------- */
+  .pain3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .pain { background: var(--card); border: 1px solid var(--line); border-top: 3px solid var(--brand2); padding: 18px 18px 14px; }
+  .pain h4 { font-size: 14.5px; color: var(--brand); margin-bottom: 8px; }
+  .pain p { font-size: 12.5px; color: var(--ink2); }
+  .pain .src { margin-top: 10px; font-size: 11px; color: #8a97a4; border-top: 1px dashed var(--line); padding-top: 8px; }
+  .evibar { margin-top: 16px; background: var(--soft); border: 1px solid var(--line); padding: 12px 18px; font-size: 12.5px; color: var(--ink2); }
+  .evibar b { color: var(--brand); }
+
+  /* ---------- 幕2 架构 ---------- */
+  .arch { background: var(--card); border: 1px solid var(--line); padding: 18px; }
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 11.5px; color: var(--ink2); margin-top: 10px; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+  .map4 { margin-top: 18px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .m4 { border: 1px solid var(--line); background: #fff; padding: 10px 12px; font-size: 11.5px; }
+  .m4 b { display: block; font-size: 12px; color: var(--brand); margin-bottom: 3px; }
+  .m4 span { color: var(--ink2); }
+  .m4 .cov { display: block; margin-top: 6px; font-size: 10.5px; color: var(--warn); }
+
+  /* ---------- 幕3 演示 ---------- */
+  .demo-box { background: var(--card); border: 1px solid var(--line); padding: 20px; }
+  .taskrow { display: flex; gap: 10px; }
+  textarea { flex: 1; min-height: 66px; resize: vertical; border: 1px solid var(--line); padding: 10px 12px; font: inherit; font-size: 13px; color: var(--ink); background: #fff; }
+  textarea:focus { outline: 2px solid var(--brand2); border-color: transparent; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 14px; }
+  .chip { font-size: 12px; border: 1px solid var(--line); background: #fff; color: var(--ink2); padding: 4px 12px; cursor: pointer; border-radius: 999px; }
+  .chip:hover, .chip.sel { border-color: var(--brand2); color: var(--brand); background: var(--soft); }
+  .runbtn { background: var(--brand); color: #fff; border: none; padding: 10px 26px; font-size: 14px; font-weight: 700; cursor: pointer; letter-spacing: 1px; }
+  .runbtn:hover { background: var(--brand2); }
+  .runbtn:disabled { background: #9db0c2; cursor: not-allowed; }
+  .runhint { font-size: 12px; color: var(--ink2); margin-left: 12px; }
+
+  .timeline { margin-top: 20px; display: none; }
+  .tl-item { display: grid; grid-template-columns: 34px 1fr; gap: 12px; margin-bottom: 12px; }
+  .tl-rail { display: flex; flex-direction: column; align-items: center; }
+  .tl-no { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--line); color: #a6b2bd; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; background: #fff; }
+  .tl-item.running .tl-no { border-color: var(--brand2); color: var(--brand2); }
+  .tl-item.done .tl-no { border-color: var(--ok); background: var(--ok); color: #fff; }
+  .tl-item.fail .tl-no { border-color: var(--bad); background: var(--bad); color: #fff; }
+  .tl-line { width: 2px; flex: 1; background: var(--line); margin-top: 4px; }
+  .tl-item:last-child .tl-line { display: none; }
+  .tl-card { border: 1px solid var(--line); background: #fff; padding: 14px 16px; margin-bottom: 14px; min-height: 52px; }
+  .tl-card h4 { font-size: 14px; color: var(--brand); display: flex; align-items: center; gap: 10px; }
+  .tl-card .st { font-size: 11px; font-weight: 400; color: #9aa7b3; }
+  .tl-item.running .st { color: var(--warn); }
+  .tl-item.done .st { color: var(--ok); }
+  .tl-body { margin-top: 10px; font-size: 12.5px; color: var(--ink2); }
+  .spin { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--line); border-top-color: var(--brand2); border-radius: 50%; animation: sp .8s linear infinite; vertical-align: -2px; }
+  @keyframes sp { to { transform: rotate(360deg); } }
+
+  /* ---------- 执行过程动画 ---------- */
+  .tl-item .tl-card { transition: border-color .45s, box-shadow .45s; }
+  .tl-item.running .tl-no { border-color: var(--brand2); color: var(--brand2); animation: pulse 1.15s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(36,85,122,.32);} 55% { box-shadow: 0 0 0 9px rgba(36,85,122,0);} }
+  .tl-item.running .tl-card { border-color: var(--brand2); box-shadow: 0 2px 14px rgba(36,85,122,.10); }
+  .tl-item.done .tl-no { border-color: var(--ok); background: var(--ok); color: #fff; animation: pop .5s cubic-bezier(.2,1.6,.4,1) both; }
+  @keyframes pop { 0% { transform: scale(.3);} 70% { transform: scale(1.22);} 100% { transform: scale(1);} }
+  .tl-item.done .tl-line { background: linear-gradient(180deg, var(--ok), #b9dcc6); }
+  .tl-item.done .tl-card { border-color: #cfe6d6; }
+  .tl-item.fail .tl-card { border-color: #e3c5c2; }
+  .reveal { animation: reveal .6s cubic-bezier(.22,.8,.3,1) both; }
+  @keyframes reveal { from { opacity: 0; transform: translateY(12px);} to { opacity: 1; transform: none; } }
+  .shimmer { height: 4px; border-radius: 2px; overflow: hidden; margin-top: 10px;
+    background: linear-gradient(90deg,#e8edf2 25%,#c2d5e6 50%,#e8edf2 75%); background-size: 200% 100%;
+    animation: sweep 1.05s linear infinite; }
+  @keyframes sweep { to { background-position: -200% 0; } }
+  #prog { position: fixed; top: 52px; left: 0; height: 3px; width: 0;
+    background: linear-gradient(90deg, var(--brand2), var(--ok)); transition: width .55s cubic-bezier(.4,0,.2,1); z-index: 60; }
+
+  table.cmp { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table.cmp th { background: var(--brand); color: #fff; text-align: left; padding: 6px 9px; font-weight: 600; }
+  table.cmp td { border: 1px solid var(--line); padding: 5px 9px; vertical-align: top; }
+  table.cmp tr:nth-child(even) td { background: #f7f9fb; }
+  .skl { display: inline-block; background: var(--soft); border: 1px solid var(--line); border-radius: 3px; padding: 0 6px; margin: 2px 3px 2px 0; font-size: 11px; color: var(--brand); }
+  .skl.hit { color: var(--ok); border-color: #9fd0af; background: #eef7f1; font-weight: 700; }
+  .skl.miss { color: var(--bad); border-color: #e3c5c2; background: #faf1f0; text-decoration: line-through; }
+  .skl.extra { color: var(--ok); border-color: #bcdcc6; background: #f0f7f2; }
+  .trace { margin-top: 8px; font-size: 11.5px; color: #7d8b99; border-left: 2px solid var(--line); padding-left: 10px; }
+  .trace div { margin: 2px 0; }
+
+  .dag { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 6px 0; }
+  .dagn { background: var(--soft); border: 1px solid var(--line); border-top: 2px solid var(--brand2); padding: 6px 12px; font-size: 12px; color: var(--brand); font-weight: 600; }
+  .dagi { color: #9aa7b3; font-size: 14px; }
+  .dagn.end { border-top-color: var(--ok); color: var(--ok); }
+
+  .bars { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 26px; margin-top: 6px; }
+  .brow { display: grid; grid-template-columns: 110px 1fr 46px; align-items: center; gap: 8px; font-size: 11.5px; }
+  .btrack { height: 8px; background: #edf1f4; }
+  .bfill { height: 100%; background: var(--brand2); }
+  .bfill.obj { background: var(--ok); }
+  .bval { text-align: right; color: var(--ink); font-weight: 600; }
+  .split { font-size: 10.5px; color: #8a97a4; letter-spacing: 2px; margin: 8px 0 4px; }
+
+  .nskill { border: 1px dashed var(--brand2); background: #f7fafc; padding: 12px 14px; }
+  .nskill b { color: var(--brand); }
+  .nskill .meta { font-size: 11px; color: #8a97a4; margin-top: 4px; }
+
+  .costbar { display: flex; gap: 26px; background: var(--soft); border: 1px solid var(--line); padding: 9px 16px; font-size: 12px; color: var(--ink2); margin-top: 4px; }
+  .costbar b { color: var(--ink); }
+
+  /* ---------- 产物与弹层 ---------- */
+  .art { display: grid; gap: 8px; margin-top: 10px; }
+  .artcard { display: flex; align-items: center; gap: 12px; border: 1px solid var(--line);
+    border-left: 3px solid var(--ok); background: #fff; padding: 10px 14px; }
+  .artcard .an { font-weight: 700; color: var(--brand); font-size: 13px; }
+  .artcard .ak { color: #8a97a4; font-size: 11.5px; }
+  .artcard .sp { flex: 1; }
+  .abtn { font-size: 12px; border: 1px solid var(--brand2); color: var(--brand2); background: #fff;
+    padding: 3px 12px; border-radius: 999px; cursor: pointer; text-decoration: none; }
+  .abtn:hover { background: var(--soft); }
+  .abtn.solid { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .digest { font-size: 11px; color: #9aa7b3; margin-top: 8px; }
+  .layer { position: fixed; inset: 0; background: rgba(22,32,44,.55); z-index: 200; display: flex;
+    align-items: center; justify-content: center; padding: 3vh 3vw; }
+  .layer .box { background: #fff; width: min(1000px, 94vw); height: min(88vh, 900px); display: flex; flex-direction: column; }
+  .layer .lb { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--line); }
+  .layer .lb b { color: var(--brand); font-size: 14px; flex: 1; }
+  .layer .lbody { flex: 1; overflow: auto; }
+  .layer iframe { width: 100%; height: 100%; border: 0; }
+  .layer pre { padding: 16px; font-family: Consolas, monospace; font-size: 12px; white-space: pre-wrap; word-break: break-word; }
+  .errmsg { display: none; background: #faf1f0; border: 1px solid #e3c5c2; color: var(--bad); padding: 10px 14px; font-size: 12.5px; margin-top: 12px; }
+
+  /* ---------- 对话式演示 ---------- */
+  .chat { margin-top: 14px; display: flex; flex-direction: column; gap: 14px; }
+  .msg-user { align-self: flex-end; max-width: 76%; background: var(--brand); color: #fff; padding: 9px 15px; border-radius: 12px 12px 2px 12px; font-size: 13px; }
+  .msg-bot { align-self: stretch; }
+  .plan-steps { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .pstep { border: 1px solid var(--line); border-left: 3px solid var(--brand2); background: #fff; padding: 9px 12px; font-size: 12px; }
+  .pstep .ph { display: flex; gap: 8px; align-items: baseline; }
+  .pstep .no { color: var(--brand2); font-weight: 800; font-size: 12.5px; }
+  .pstep .act { font-weight: 700; color: var(--ink); }
+  .pstep .klabel { color: #8a97a4; margin: 4px 0 1px; font-size: 11px; }
+  .pstep ul { margin-left: 16px; color: var(--ink2); }
+  .pstep .chk { color: var(--ok); margin-top: 3px; }
+  .risk-box, .art-box { margin-top: 10px; font-size: 12px; padding: 9px 12px; border: 1px solid var(--line); background: var(--soft); color: var(--ink2); }
+  .risk-box b, .art-box b { color: var(--brand); }
+  .risk-box li, .art-box li { margin: 2px 0; }
+  .inputline { display: flex; gap: 10px; align-items: stretch; }
+  .inputline input { flex: 1; border: 1px solid var(--line); padding: 11px 14px; font: inherit; font-size: 13.5px; background: #fff; color: var(--ink); }
+  .inputline input:focus { outline: 2px solid var(--brand2); border-color: transparent; }
+
+  /* ---------- 幕4 对比 ---------- */
+  table.vs { width: 100%; border-collapse: collapse; font-size: 12.5px; background: #fff; }
+  table.vs th { background: var(--brand); color: #fff; text-align: left; padding: 8px 12px; font-weight: 600; }
+  table.vs td { border: 1px solid var(--line); padding: 7px 12px; }
+  table.vs td.yes { color: var(--ok); font-weight: 600; white-space: nowrap; }
+  table.vs td.no { color: #a6b2bd; white-space: nowrap; }
+  table.vs td.ours { background: #f0f6f1; }
+  .uniq { margin-top: 16px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  .uq { border-top: 3px solid var(--ok); background: #fff; border: 1px solid var(--line); border-top: 3px solid var(--ok); padding: 12px 13px; font-size: 11.5px; }
+  .uq b { display: block; color: var(--brand); font-size: 12.5px; margin-bottom: 4px; }
+  .uq span { color: var(--ink2); }
+
+  /* ---------- 幕5 工作量 ---------- */
+  .kpi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .kp { background: var(--card); border: 1px solid var(--line); padding: 16px 16px 12px; }
+  .kp .n { font-size: 26px; font-weight: 800; color: var(--brand); line-height: 1.1; }
+  .kp .t { font-size: 12px; color: var(--ink2); margin-top: 4px; }
+  .next { margin-top: 14px; background: var(--soft); border: 1px solid var(--line); padding: 12px 16px; font-size: 12.5px; color: var(--ink2); }
+  .next b { color: var(--brand); }
+
+  details.script { margin: 26px 0 40px; border: 1px solid var(--line); background: #fff; }
+  details.script summary { cursor: pointer; padding: 11px 16px; font-size: 13px; font-weight: 700; color: var(--brand); }
+  details.script .in { padding: 0 18px 16px; font-size: 12.5px; color: var(--ink2); }
+  details.script li { margin: 5px 0; }
+
+  footer { border-top: 1px solid var(--line); margin-top: 30px; padding: 16px 0 34px; font-size: 11px; color: #9aa7b3; }
+  /* ---------- HERO · 产品舞台 ---------- */
+  .hero { position: relative; overflow: hidden; padding: 58px 0 46px; border-bottom: 1px solid var(--line);
+    background:
+      radial-gradient(1100px 480px at 88% -12%, rgba(36,85,122,.08), transparent 62%),
+      radial-gradient(800px 380px at -8% 112%, rgba(46,125,79,.05), transparent 55%),
+      linear-gradient(180deg, #f5f7fa 0%, var(--bg) 100%); }
+  .hero .hwrap { max-width: 1280px; margin: 0 auto; padding: 0 32px; display: grid; grid-template-columns: 480px 1fr; gap: 48px; align-items: center; }
+  .h-kicker { display: flex; align-items: center; gap: 10px; font-size: 12px; letter-spacing: 3px; color: var(--brand2); font-weight: 700; }
+  .h-kicker::before { content: ""; width: 28px; height: 2px; background: var(--brand2); }
+  h1 { margin: 18px 0 0; font-size: clamp(28px, 2.9vw, 40px); line-height: 1.35; font-weight: 700; color: var(--ink); letter-spacing: .5px; }
+  h1 .em { color: var(--brand2); position: relative; white-space: nowrap; }
+  h1 .em::after { content: ""; position: absolute; left: -2px; right: -2px; bottom: 5px; height: 11px; background: rgba(36,85,122,.13); z-index: -1; }
+  .h-sub { margin-top: 16px; font-size: 14px; color: var(--ink2); max-width: 46ch; }
+  .h-sub b { color: var(--brand); }
+  .h-actions { margin-top: 26px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 46px; padding: 0 26px;
+    font-size: 14.5px; font-weight: 700; letter-spacing: 1px; border-radius: 4px; cursor: pointer;
+    text-decoration: none; border: 1px solid transparent; transition: all .18s ease; }
+  .btn-primary { background: var(--brand); color: #fff; box-shadow: 0 2px 10px rgba(26,58,92,.16); }
+  .btn-primary:hover { background: var(--brand2); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(26,58,92,.22); }
+  .btn-primary:active { transform: none; }
+  .btn-ghost { background: transparent; color: var(--brand2); border-color: #b9c8d6; }
+  .btn-ghost:hover { background: #fff; border-color: var(--brand2); }
+  .btn:focus-visible { outline: 2px solid var(--brand2); outline-offset: 2px; }
+  .h-metrics { margin-top: 36px; display: flex; gap: 34px; align-items: flex-end; }
+  .hm .n { font-family: Bahnschrift, "Segoe UI", "Microsoft YaHei", sans-serif; font-variant-numeric: tabular-nums;
+    font-size: 44px; font-weight: 700; color: var(--brand); line-height: 1; }
+  .hm.first .n { font-size: 82px; letter-spacing: 1px; color: var(--ink); }
+  .hm .t { margin-top: 8px; font-size: 12px; color: var(--ink2); letter-spacing: 1.5px; }
+  .hm-divider { width: 1px; height: 46px; background: var(--line); align-self: center; }
+  .h-net { position: relative; background: #fff; border: 1px solid var(--line); border-radius: 6px; height: 500px;
+    box-shadow: 0 1px 2px rgba(34,48,62,.04), 0 14px 44px -20px rgba(26,58,92,.20); }
+  .h-net canvas { display: block; width: 100%; height: 100%; border-radius: 6px; cursor: crosshair; touch-action: none; }
+  .h-net .tag { position: absolute; top: 12px; left: 14px; font-size: 10.5px; letter-spacing: 2px; color: #8a97a4; pointer-events: none; }
+  .h-tip { position: absolute; pointer-events: none; background: rgba(34,48,62,.95); color: #fff; font-size: 11.5px;
+    line-height: 1.55; padding: 8px 11px; border-radius: 4px; max-width: 250px; opacity: 0; transition: opacity .12s; z-index: 5; }
+  .h-tip b { color: #cfe0ef; }
+  .h-legend { position: absolute; left: 14px; bottom: 12px; display: flex; gap: 12px; flex-wrap: wrap; font-size: 10.5px;
+    color: var(--ink2); pointer-events: none; background: rgba(255,255,255,.88); padding: 5px 10px; border-radius: 4px; border: 1px solid var(--line); }
+  .h-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: -1px; }
+  .h-legend .ev { width: 8px; height: 8px; border-radius: 50%; background: #fff; border: 2px solid var(--warn); margin-right: 4px; vertical-align: -1px; display: inline-block; }
+  @media (max-width: 1020px) { .hero .hwrap { grid-template-columns: 1fr; gap: 30px; } .h-net { height: 380px; } .hm.first .n { font-size: 62px; } .h-metrics { gap: 24px; flex-wrap: wrap; } }
+  @media (max-width: 640px) { .hero { padding: 40px 0 34px; } .hero .hwrap { padding: 0 20px; } .h-net { height: 320px; } .hm.first .n { font-size: 52px; } .hm .n { font-size: 34px; } }
+
+  @media (max-width: 700px) {
+    .topbar .wrap { gap: 8px; height: 46px; padding: 0 14px; }
+    .topbar .stat, .brand small { display: none; }
+    .topbar a { font-size: 11.5px; white-space: nowrap; letter-spacing: 0; }
+  }
+  @media (max-width: 860px) { .pain3, .map4, .uniq, .kpi { grid-template-columns: 1fr 1fr; } .bars { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap">
+    <span class="brand">SkillNet-S1<small>技能运维层 · 汇报演示</small></span>
+    <span class="stat"><span class="dot" id="dot-srv"></span>服务 <span id="srv-txt">检测中</span></span>
+    <span class="stat"><span class="dot" id="dot-key"></span>模型密钥 <span id="key-txt">—</span></span>
+    <span class="stat">技能库 <b id="lib-n" style="color:var(--ink)">—</b></span>
+    <span class="spacer"></span>
+    <a href="/runs" target="_blank">运行中心</a>
+    <a href="/graph" target="_blank">技能星图</a>
+    <a href="/dashboard" target="_blank">完整面板</a>
+  </div>
+</div>
+
+<!-- ==================== HERO · 产品舞台 ==================== -->
+<header class="hero" id="top">
+  <div class="hwrap">
+    <div>
+      <div class="h-kicker">SKILLNET-S1 · AGENT 技能运维层</div>
+      <h1>让 Agent 的每一项能力，<br>成为<span class="em">真正可运营</span>的资产。</h1>
+      <div class="h-sub">技能不是塞进提示词的一次性文本，而是被<b>检索、选择、执行、验收、进化</b>的运营对象。
+        右侧星图就是当前正在运行的真实技能库——不是插画，是数据。</div>
+      <div class="h-actions">
+        <a class="btn btn-primary" href="#s3">运行一个真实任务</a>
+        <a class="btn btn-ghost" href="/graph" target="_blank">进入技能星图</a>
+      </div>
+      <div class="h-metrics">
+        <div class="hm first"><div class="n" id="hm-skills">0</div><div class="t">技能资产</div></div>
+        <div class="hm-divider"></div>
+        <div class="hm"><div class="n" id="hm-edges">0</div><div class="t">类型化关系</div></div>
+        <div class="hm"><div class="n" id="hm-evolved">0</div><div class="t">已进化技能</div></div>
+        <div class="hm"><div class="n" id="hm-domains">0</div><div class="t">能力领域</div></div>
+      </div>
+    </div>
+    <div class="h-net" id="heroNet">
+      <canvas id="netcv" aria-label="真实技能关系星图，可悬停查看技能详情"></canvas>
+      <span class="tag">LIVE SKILL NETWORK · 真实技能库 · 可拖拽 / 悬停</span>
+      <div class="h-tip" id="nettip"></div>
+      <div class="h-legend" id="netlegend"></div>
+    </div>
+  </div>
+</header>
+
+<!-- ==================== 幕 1 · 问题 ==================== -->
+<section class="wrap" id="s1">
+  <div class="kicker">PROBLEM · 为什么需要它</div>
+  <h2>Agent 的能力不会自己变好</h2>
+  <div class="sub">三个所有 Agent 产品都会撞上的问题，来自顶会论文的实证，不是我们的想象。</div>
+  <div class="pain3">
+    <div class="pain">
+      <h4>技能找不准</h4>
+      <p>前沿 Agent 在真实社区技能池上做检索，完整度只有个位数到 30%；关键词检索基本不可用。</p>
+      <div class="src">SkillNet 论文 · SkillNet-Gym 实测（浙大 / 阿里 / 蚂蚁 / 腾讯，arXiv 2603.04448）</div>
+    </div>
+    <div class="pain">
+      <h4>编排会崩塌</h4>
+      <p>即使检索到技能，要求按依赖关系组织成工作流时，硬任务分数进一步大幅下滑。</p>
+      <div class="src">同上 · "Frontier Agents Exhibit Weak Skill Composition Ability"</div>
+    </div>
+    <div class="pain">
+      <h4>能力只进不出</h4>
+      <p>AI 科学家系统是静态流水线，反复走同一条死路；把经验蒸馏成可复用技能，MLE-bench 提升 134.3%。</p>
+      <div class="src">EvoScientist（华为）/ Repo-To-Skill（BAAI 等）实证</div>
+    </div>
+  </div>
+  <div class="evibar">
+    <b>结论：</b>Agent 时代缺的不是更强的模型，而是一层把「技能」管起来的基础设施——
+    找得到、排得对、用得动、评得清、能进化。这就是 SkillNet-S1 要做的事。
+  </div>
+</section>
+
+<!-- ==================== 幕 2 · 方案 ==================== -->
+<section class="wrap" id="s2">
+  <div class="kicker">SOLUTION · 我们的框架</div>
+  <h2>五阶段闭环：把四篇论文的拼图拼完整</h2>
+  <div class="sub">四篇代表性工作各占一块拼图、互相不连通；SkillNet-S1 是第一个把它们串成完整闭环并加上治理层的原型。</div>
+  <div class="arch">
+    <svg width="100%" viewBox="0 0 1000 208" xmlns="http://www.w3.org/2000/svg" font-family="Microsoft YaHei">
+      <defs><marker id="ar" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#24557a"/></marker></defs>
+      <!-- 主流程 -->
+      <g font-size="14" font-weight="bold">
+        <rect x="14"  y="30" width="160" height="74" rx="6" fill="#1a3a5c"/><text x="94"  y="60" text-anchor="middle" fill="#fff">① 检索路由</text><text x="94" y="82" text-anchor="middle" fill="#bcd2e4" font-size="10.5" font-weight="normal">BM25 / Hybrid / Fabric</text>
+        <rect x="218" y="30" width="160" height="74" rx="6" fill="#1a3a5c"/><text x="298" y="60" text-anchor="middle" fill="#fff">② 编排选择</text><text x="298" y="82" text-anchor="middle" fill="#bcd2e4" font-size="10.5" font-weight="normal">依赖 DAG + LinUCB</text>
+        <rect x="422" y="30" width="160" height="74" rx="6" fill="#1a3a5c"/><text x="502" y="60" text-anchor="middle" fill="#fff">③ 契约执行</text><text x="502" y="82" text-anchor="middle" fill="#bcd2e4" font-size="10.5" font-weight="normal">Skill Contract 驱动</text>
+        <rect x="626" y="30" width="160" height="74" rx="6" fill="#1a3a5c"/><text x="706" y="60" text-anchor="middle" fill="#fff">④ 双线评估</text><text x="706" y="82" text-anchor="middle" fill="#bcd2e4" font-size="10.5" font-weight="normal">盲评 + 覆盖率 · 主客分离</text>
+        <rect x="830" y="30" width="160" height="74" rx="6" fill="#2e7d4f"/><text x="910" y="60" text-anchor="middle" fill="#fff">⑤ 进化治理</text><text x="910" y="82" text-anchor="middle" fill="#d3e9da" font-size="10.5" font-weight="normal">轨迹蒸馏 → 候选技能</text>
+      </g>
+      <g stroke="#24557a" stroke-width="2.2">
+        <line x1="174" y1="67" x2="212" y2="67" marker-end="url(#ar)"/>
+        <line x1="378" y1="67" x2="416" y2="67" marker-end="url(#ar)"/>
+        <line x1="582" y1="67" x2="620" y2="67" marker-end="url(#ar)"/>
+        <line x1="786" y1="67" x2="824" y2="67" marker-end="url(#ar)"/>
+      </g>
+      <!-- 反馈回路 -->
+      <path d="M 910 108 L 910 152 L 298 152 L 298 110" fill="none" stroke="#2e7d4f" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arg)"/>
+      <defs><marker id="arg" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#2e7d4f"/></marker></defs>
+      <text x="604" y="146" text-anchor="middle" font-size="11" fill="#2e7d4f">反馈回流：实测奖励更新选择策略 · 新技能回流库（这次演示就会跑一遍）</text>
+      <!-- 治理底座 -->
+      <rect x="14" y="168" width="976" height="32" rx="4" fill="#f2f5f8" stroke="#dde4ea"/>
+      <text x="502" y="188" text-anchor="middle" font-size="11" fill="#5b6b7c">治理底座（四篇论文都没有的）：dev / held-out 数据集隔离 · manifest 单一数据源 · 全链路成本账本 · 降级显式可观测 · 证据分级标注 · 置信度分流（自动 / 确认 / 直答）</text>
+    </svg>
+    <div class="legend">
+      <span><i style="background:#1a3a5c"></i>实现并已验证</span>
+      <span><i style="background:#2e7d4f"></i>本次演示将现场运行</span>
+    </div>
+  </div>
+
+  <div class="map4">
+    <div class="m4"><b>SkillNet（浙大·阿里·蚂蚁·腾讯）</b><span>技能契约 · 关系本体 · Fabric 路由</span><span class="cov">缺：选择策略 / 进化 / 治理</span></div>
+    <div class="m4"><b>COBRA-Skills（港中深等）</b><span>LinUCB 选择 · 进化算子</span><span class="cov">缺：检索 / 本体 / 评估治理</span></div>
+    <div class="m4"><b>Repo-To-Skill（BAAI 等）</b><span>仓库蒸馏成技能 · 验证门槛</span><span class="cov">缺：闭环与度量体系</span></div>
+    <div class="m4"><b>EvoScientist（华为）</b><span>进化管理角色 · 分型记忆</span><span class="cov">缺：技能资产化与检索</span></div>
+  </div>
+</section>
+
+<!-- ==================== 幕 3 · 现场演示（对话式） ==================== -->
+<section class="wrap" id="s3">
+  <div class="kicker">LIVE DEMO · 问什么都能跑</div>
+  <h2>像问同事一样问它</h2>
+  <div class="sub">输入任何科研任务——不限于预设示例。系统自动完成检索、编排、执行、评分、学习五步，并把全过程与最终方案展示出来。</div>
+
+  <div class="demo-box">
+    <div class="chips" id="chips"></div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+    <button class="btn" style="background:var(--brand2);color:#fff;border:none" onclick="location.reload()">快速演示（本页七阶段）</button>
+    <button class="btn" style="background:#fff;color:var(--brand2);border:1px solid var(--brand2)" onclick="startRealRun()">实时运行（Live Run · SSE 事件流）</button>
+  </div>
+  <div class="inputline">
+      <input id="task" placeholder="例如：我有一批肿瘤患者的随访数据，想找出影响预后的因素并构建风险评分" onkeydown="if(event.key==='Enter')startRealRun()">
+      <button class="runbtn" id="run" onclick="runDemo()">发送</button>
+    </div>
+    <div class="runhint" id="hint" style="margin-top:8px">每次真实调用 DeepSeek，约 20–60 秒；成本与 Token 实时记账</div>
+    <div class="errmsg" id="err"></div>
+    <div id="livebar" style="display:none;margin-top:14px"></div>
+
+    <div class="chat" id="chat"></div>
+  </div>
+</section>
+
+<!-- ==================== 运行中心 ==================== -->
+<section class="wrap" id="runcenter">
+  <div class="kicker">RUN CENTER · 运行中心</div>
+  <h2>每次运行都是一条可追溯的记录</h2>
+  <div class="sub">Run ID 独立（同任务重跑不覆盖）· 每步尝试/产物/验收/成本全程留痕 · 点击行查看 Live Run</div>
+  <section class="card" style="border:1px solid var(--line);border-radius:6px;background:var(--card);padding:16px">
+    <div id="runlist"><div class="empty" style="font-size:12.5px;color:#8a97a4;padding:8px 0">加载中…</div></div>
+  </section>
+</section>
+
+<!-- ==================== 幕 4 · 对比论文 ==================== -->
+<section class="wrap" id="s4">
+  <div class="kicker">COMPARISON · 与 SkillNet 论文逐项对照</div>
+  <h2>复现了它的核心，补上了它没有的</h2>
+  <div class="sub">对照对象：SkillNet: Create, Evaluate, and Connect AI Skills（arXiv 2603.04448，浙大 + 阿里 / 蚂蚁 / 腾讯）。</div>
+  <table class="vs">
+    <tr><th style="width:24%">能力</th><th style="width:33%">SkillNet 论文</th><th>SkillNet-S1（本项目）</th></tr>
+    <tr><td>技能契约</td><td class="yes">有（4 字段卡片）</td><td class="ours">有，并扩展：陷阱提示 + 验证方式 + 五维质量分</td></tr>
+    <tr><td>三层本体</td><td class="yes">有（分类 / 关系图 / 打包）</td><td class="ours">有：<span data-live="domains">—</span> 个领域 · <span data-live="edges">—</span> 条类型化关系边，图驱动编排</td></tr>
+    <tr><td>Fabric 式路由</td><td class="yes">有（检索 67.9% @ K=5）</td><td class="ours">有，且降级显式可观测（缺密钥时明示哪些组件未执行）</td></tr>
+    <tr><td>技能选择（RL）</td><td class="no">无</td><td class="ours">Shared LinUCB：任务条件化，实测跨技能泛化（同领域响应 1.24 倍于异领域），配单元测试锁定</td></tr>
+    <tr><td>技能进化</td><td class="no">无</td><td class="ours">四种算子（蒸馏 / 变异 / 交叉 / 再生）+ 质量准入，闭环可现场演示</td></tr>
+    <tr><td>评估体系</td><td class="no">仅库级质量评估</td><td class="ours">主客分离双线评估 + dev/held-out 数据集治理 + 配对 bootstrap 统计检验</td></tr>
+    <tr><td>置信度分流</td><td class="no">无（仅检索排序）</td><td class="ours">Top-1 相关度分三档：自动执行 / 人工确认 / 无匹配直答，阈值按 42 条查询实测标定</td></tr>
+    <tr><td>技能库构成</td><td class="no">单一类型</td><td class="ours"><span data-live="skills">—</span> 个技能 / <span data-live="domains">—</span> 个领域：51 个科研方法技能 + 24 个交付物与工具技能（导入自开发组成员项目）+ 演化技能</td></tr>
+    <tr><td>成本核算</td><td class="no">未核算</td><td class="ours">请求级 Token / 费用账本，汇报页实时可见</td></tr>
+    <tr><td>跨框架互操作</td><td class="no">无</td><td class="ours">一键导出 Claude Code / Cursor / Gemini / AGENTS 四种格式</td></tr>
+    <tr><td>可复现工程</td><td class="no">未开放</td><td class="ours">31 项交付自检 · pytest · manifest 数字溯源（git commit / 模型 / 权重 / 文件哈希）</td></tr>
+  </table>
+
+  <div class="uniq">
+    <div class="uq"><b>唯一完整闭环</b><span>检索 → 选择 → 执行 → 评估 → 进化，五段全部打通且现场可跑。</span></div>
+    <div class="uq"><b>评估治理方法论</b><span>dev 与 held-out 隔离：我们主动暴露了调参集过拟合（编排完整度 92.5% → 25%），而不是只报好数字。</span></div>
+    <div class="uq"><b>任务条件化选择</b><span>一次评估的反馈能泛化影响同领域未评估技能，并有跨进程可复现测试作证。</span></div>
+    <div class="uq"><b>跨框架即插即用</b><span>技能资产可一键进入四种主流 Agent 框架，不锁死在自家产品里。</span></div>
+    <div class="uq"><b>诚实的证据分级</b><span>每条结论标注 Demonstrated / Supported / Preliminary / Not yet validated，直接可审。</span></div>
+  </div>
+</section>
+
+<!-- ==================== 幕 5 · 强在哪 ==================== -->
+<section class="wrap" id="s5">
+  <div class="kicker">DIFFERENTIATION · 凭什么说它更好</div>
+  <h2>四种做法放在一起看</h2>
+  <div class="sub">同一个任务、同一个模型，差别只在「技能怎么被用起来」。右侧三张卡是本项目的独有能力，点击可直接跳到真实产物。</div>
+
+  <table class="vs">
+    <tr><th style="width:20%">能力</th><th>裸模型</th><th>提示词塞技能</th><th>通用向量 RAG</th><th style="width:20%">SkillNet（本项目）</th></tr>
+    <tr><td>技能组织方式</td><td class="no">无</td><td class="no">平铺文本</td><td class="no">向量库</td><td class="ours">类型化关系图（<span data-live="edges">—</span> 条边）</td></tr>
+    <tr><td>检索</td><td class="no">无</td><td class="no">无（全靠上下文）</td><td>单路向量</td><td class="ours">三档：关键词 + 语义 + <b>关系图扩展</b></td></tr>
+    <tr><td>是否真的执行</td><td class="no">只输出文本</td><td class="no">只输出文本</td><td class="no">只输出文本</td><td class="ours"><b>沙箱真实运行</b> + 失败修复循环</td></tr>
+    <tr><td>产物验收</td><td class="no">无</td><td class="no">无</td><td class="no">无</td><td class="ours"><b>技能 verification 逐条验收</b>（带证据）</td></tr>
+    <tr><td>选择策略</td><td class="no">无</td><td class="no">无</td><td class="no">无</td><td class="ours"><b>LinUCB + 反馈回流</b>（下次排序会变）</td></tr>
+    <tr><td>技能进化</td><td class="no">无</td><td class="no">手工维护</td><td class="no">手工维护</td><td class="ours"><b>轨迹蒸馏 + 质量准入</b>（库自己长）</td></tr>
+    <tr><td>效果如何证明</td><td class="no">无</td><td class="no">无</td><td class="no">无</td><td class="ours">有/无技能<b>对照实验</b> + dev/heldout 隔离</td></tr>
+  </table>
+
+  <div class="uniq" style="grid-template-columns:repeat(3,1fr)">
+    <div class="uq">
+      <b>唯一：产物级技能验收</b>
+      <span>别的方案到「执行」就结束了。我们把技能里的 verification 变成<b>逐条验收标准</b>，
+      要求验收员引用产物中的具体证据、不得推测——未满足的如实标 FAIL。</span>
+      <div style="margin-top:8px;font-size:11.5px;color:var(--brand2)">实测证据：<code>corr(dose,log10(dose))=0.7081，标注高度共线</code></div>
+    </div>
+    <div class="uq">
+      <b>唯一：检索会沿关系图补漏</b>
+      <span>关键词检索漏掉的技能，沿 <b><span data-live="edges">—</span> 条类型化关系边</b>补回来。
+      同一份任务实测：BM25 召回 66.7% → Fabric 100%。</span>
+      <div style="margin-top:8px;font-size:11.5px;color:var(--brand2)">演示页第 1 阶段可直接看到「补回了哪几条」</div>
+    </div>
+    <div class="uq">
+      <b>唯一：反馈真的改变下次</b>
+      <span>本次任务的评分写回共享参数 θ，<b>同领域技能的预测随之变化</b>。
+      实测：一次任务后预测值 0 → 0.73，探索奖励同步衰减。</span>
+      <div style="margin-top:8px;font-size:11.5px;color:var(--brand2)">演示页第 6 阶段有「更新前 → 更新后」对比表</div>
+    </div>
+  </div>
+
+  <div class="next" style="border-left:3px solid var(--ok)">
+    <b>实测数字（同任务、同模型、同步骤，只改「技能怎么被用」）：</b>
+    运行输出信息量 裸模型 <b>1285</b> 字 / 提示词塞技能 <b>1510</b> 字 / <b>契约模式 2217 字</b>；
+    产物验收 前两者<b>无标准</b>、契约模式 <b>2/3 条通过且逐条给出证据</b>
+    （如「输出标注剂量与 log10 剂量高度共线」）。失败重试时，前两者只能盲试，
+    契约模式可以对照技能里记录的已知陷阱定位。
+  </div>
+
+  <div class="next" style="border-left:3px solid var(--warn)">
+    <b>哪里不占优（不吹）：</b>产物<b>数量</b>契约模式并非最多（实测 2 个 vs 提示词模式的 3 个）——
+    它的优势在<b>可验证性与约束落地</b>，不在堆数量。另外当前只对方案中的一步做真实执行，
+    全流程分步执行尚未实现；沙箱面向可信代码，不是对抗性隔离。
+  </div>
+
+  <div class="next" style="border-left:3px solid var(--brand)">
+    <b>和 Anthropic 官方 Agent Skills 的关系（诚实说明）：</b>
+    官方标准解决的是「技能怎么打包、怎么被加载」，我们在此基础上补的是
+    <b>技能怎么被选、怎么被执行、产物怎么被验收、库怎么自己变大</b>。
+    我们的技能目录完全遵循 agentskills.io 规范，可直接导出给 Claude Code / Cursor / ADK 使用——
+    <b>不是替代，是补齐技能生命周期的后半段。</b>
+  </div>
+</section>
+
+<!-- ==================== 幕 6 · 工作量 ==================== -->
+<section class="wrap" id="s6">
+  <div class="kicker">EVIDENCE OF WORK · 工作量与工程可信度</div>
+  <h2>数字都是自己长出来的</h2>
+  <div class="kpi">
+    <div class="kp"><div class="n"><span data-live="skills">—</span></div><div class="t">技能 · <span data-live="domains">—</span> 个领域（科研方法 + 工具交付 + 演化）</div></div>
+    <div class="kp"><div class="n"><span data-live="edges">—</span></div><div class="t">类型化关系边 · 图驱动编排</div></div>
+    <div class="kp"><div class="n">152</div><div class="t">维任务-技能联合上下文（LinUCB）</div></div>
+    <div class="kp"><div class="n">31</div><div class="t">项交付自检（verify.py）</div></div>
+    <div class="kp"><div class="n">11</div><div class="t">项 pytest（泛化 / 可复现 / 分流政策）</div></div>
+    <div class="kp"><div class="n">5</div><div class="t">阶段闭环 API（/api/demo 全链路）</div></div>
+    <div class="kp"><div class="n">4</div><div class="t">种跨框架导出格式</div></div>
+    <div class="kp"><div class="n">2</div><div class="t">套数据集（dev / held-out 隔离治理）</div></div>
+  </div>
+  <div class="next" style="border-left:3px solid var(--ok)">
+    <b>技能库已完成一次跨项目扩容：</b>吸收开发组成员项目（Nexus）的 24 个技能——
+    含 Anthropic 官方的 docx / pdf / pptx / xlsx / skill-creator / mcp-builder 等工具技能，
+    以及面试教练、算法可视化等中文自制技能。转换脚本自动提取契约字段并建立跨领域关系边
+    （Word ↔ 科研写作、PDF ↔ 文献综述、Excel ↔ EDA 分析），使技能库从「只会科研方法」
+    变为「科研方法 + 交付物产出」的完整体系。脚本可幂等重跑（tools/import_member_skills.py）。
+  </div>
+  <div class="next">
+    <b>接入公司产品的路径已备好：</b>Phase 1 只读接入（Agent 调 /api/search 注入技能，1–2 周）→
+    Phase 2 业务反馈回传为奖励，建立业务任务集 → Phase 3 候选技能人工审批门 + 回滚。
+    详细方案见《SkillNet-S1-说明文档.pdf》。
+  </div>
+
+  <details class="script">
+    <summary>汇报脚本（3 分钟讲法，内部参考）</summary>
+    <div class="in">
+      <ol>
+        <li><b>30 秒 · 问题：</b>行业证据开场——前沿 Agent 在真实技能池上检索完整度只有个位数到 30%，编排硬任务崩塌（SkillNet-Gym）。这不是模型不够强，是缺一层技能基础设施。</li>
+        <li><b>60 秒 · 方案：</b>指着架构图讲五段闭环；强调四篇论文各占一块，我们是唯一把闭环串起来并加治理层的。重点讲绿色虚线：实测奖励回流、新技能回流库。</li>
+        <li><b>90 秒 · 现场演示：</b>选一个示例任务点「运行闭环」。Stage 1 指着表讲 Fabric 为什么补进了 BM25 漏掉的技能（trace 里有关系扩展证据）；Stage 2 讲 DAG 顺序；Stage 3 强调主客观分离；Stage 4 强调「这次演示本身就在给库加资产」。</li>
+        <li><b>30 秒 · 差异化：</b>对照表扫一遍——选择策略、进化、治理、跨框架导出都是论文没有的；主动讲 held-out 治理（我们主动暴露了过拟合），体现科研诚信。</li>
+        <li><b>收尾：</b>三阶段接入路径 + 「这套东西可以直接接到 S1 的 Agent 编排层上，Phase 1 两周就能出对比数据」。</li>
+      </ol>
+    </div>
+  </details>
+
+  <footer>SkillNet-S1 · 单一数据源 out/manifest.json 溯源 · 所有演示为真实 API 调用，无预置结果</footer>
+</section>
+
+<script>
+const PAGE_VER = "2026-10-02h";   // 改版递增：与服务端不一致时自动强制刷新
+const API = location.port ? location.origin : "http://127.0.0.1:8848";
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+async function jget(url, t = 8000) {
+  const c = new AbortController(); const to = setTimeout(() => c.abort(), t);
+  try { const r = await fetch(url, { signal: c.signal }); if (!r.ok) throw new Error(r.status); return await r.json(); }
+  finally { clearTimeout(to); }
+}
+
+let TASKS = [], CUR_GOLD = [], RUN_ID = 0;
+async function fillLiveNumbers() {
+  try {
+    const g = await jget(API + "/api/graph", 8000);
+    const doms = new Set(g.nodes.map(n => n.domain)).size;
+    const evolved = g.nodes.filter(n => n.source !== "seed").length;
+    const map = { skills: g.nodes.length, domains: doms, edges: g.edges.length, evolved: evolved };
+    document.querySelectorAll("[data-live]").forEach(el => {
+      const v = map[el.dataset.live];
+      if (v != null) el.textContent = v;
+    });
+  } catch (e) { /* 离线时保留占位符，不阻塞页面 */ }
+}
+
+async function boot() {
+  try {
+    const h = await jget(API + "/api/health", 4000);
+    // 缓存自愈：版本不一致时强制刷新一次（带 cache-bust 参数）
+    if (h.ui_version && h.ui_version !== PAGE_VER && !sessionStorage.getItem("verfix_" + h.ui_version)) {
+      sessionStorage.setItem("verfix_" + h.ui_version, "1");
+      const u = new URL(location.href);
+      u.searchParams.set("v", h.ui_version);
+      location.replace(u.toString());
+      return;
+    }
+    $("dot-srv").className = "dot on"; $("srv-txt").textContent = "在线";
+    $("dot-key").className = "dot " + (h.api_key_configured ? "on" : "off");
+    $("key-txt").textContent = h.api_key_configured ? "已配置（全功能）" : "未配置（离线模式）";
+    $("lib-n").textContent = h.skills + " 个技能";
+  } catch (e) {
+    $("dot-srv").className = "dot off"; $("srv-txt").textContent = "未启动（python run.py）";
+  }
+  try {
+    TASKS = await jget(API + "/api/tasks", 4000);
+    const picks = [TASKS[1], TASKS[4], TASKS[5]].filter(Boolean);
+    $("chips").innerHTML = '<span style="font-size:11.5px;color:#9aa7b3;margin-right:2px">试试：</span>' +
+      picks.map(t => `<button class="chip" data-i="${TASKS.indexOf(t)}">${esc(t.query.slice(0, 16))}…</button>`).join("");
+    document.querySelectorAll(".chip").forEach(c => c.onclick = () => {
+      const t = TASKS[+c.dataset.i];
+      $("task").value = t.query; CUR_GOLD = t.gold || [];
+    });
+  } catch (e) { $("chips").innerHTML = ""; }
+}
+
+function addUser(q) {
+  const d = document.createElement("div"); d.className = "msg-user"; d.textContent = q;
+  $("chat").appendChild(d); return d;
+}
+function addBot() {
+  const d = document.createElement("div"); d.className = "msg-bot";
+  d.innerHTML = `<div class="timeline" style="display:block">
+    <div class="tl-item" data-s="1"><div class="tl-rail"><div class="tl-no">1</div><div class="tl-line"></div></div>
+      <div class="tl-card"><h4>检索对比 · 三档同题对照 <span class="st"></span></h4><div class="tl-body"></div></div></div>
+    <div class="tl-item" data-s="2"><div class="tl-rail"><div class="tl-no">2</div><div class="tl-line"></div></div>
+      <div class="tl-card"><h4>策略选择 · LinUCB 历史反馈排序 <span class="st"></span></h4><div class="tl-body"></div></div></div>
+    <div class="tl-item" data-s="3"><div class="tl-rail"><div class="tl-no">3</div><div class="tl-line"></div></div>
+      <div class="tl-card"><h4>任务级路由与编排 <span class="st"></span></h4><div class="tl-body"></div></div></div>
+    <div class="tl-item" data-s="4"><div class="tl-rail"><div class="tl-no">4</div><div class="tl-line"></div></div>
+      <div class="tl-card"><h4>技能驱动执行与盲评 <span class="st"></span></h4><div class="tl-body"></div></div></div>
+    <div class="tl-item" data-s="5"><div class="tl-rail"><div class="tl-no">5</div><div class="tl-line"></div></div>
+      <div class="tl-card"><h4>真实执行 · 代码在沙箱里跑起来 <span class="st"></span></h4><div class="tl-body"></div></div></div>
+    <div class="tl-item" data-s="6"><div class="tl-rail"><div class="tl-no">6</div><div class="tl-line"></div></div>
+      <div class="tl-card"><h4>反馈回流与技能蒸馏 · 留下了什么 <span class="st"></span></h4><div class="tl-body"></div></div></div>
+    <div class="tl-item" data-s="7"><div class="tl-rail"><div class="tl-no">7</div><div class="tl-line"></div></div>
+      <div class="tl-card"><h4>本次产出 · 生成了什么 <span class="st"></span></h4><div class="tl-body"></div></div></div>
+  </div><div class="costbar" style="display:none"></div>`;
+  $("chat").appendChild(d); return d;
+}
+function setStage(bot, n, st) {
+  const it = bot.querySelector(`[data-s="${n}"]`); it.className = "tl-item " + st;
+  const stEl = it.querySelector(".st"), body = it.querySelector(".tl-body");
+  stEl.textContent = st === "running" ? "执行中" : st === "done" ? "完成" : "失败";
+  if (st === "running") body.innerHTML = '<div><span class="spin"></span> 正在调用真实接口…</div><div class="shimmer"></div>';
+  if (st === "done") { body.innerHTML = `<div class="reveal">${body.innerHTML}</div>`; }
+  const pr = document.getElementById("prog");
+  if (pr) {
+    const doneN = bot.querySelectorAll(".tl-item.done").length;
+    pr.style.width = Math.min(100, (doneN / 7) * 100) + "%";
+  }
+}
+function rollNum(el, target, dec) {
+  const t0 = performance.now();
+  (function f(now) {
+    const k = Math.min(1, (now - t0) / 700);
+    const ease = 1 - Math.pow(1 - k, 3);
+    el.textContent = (target * ease).toFixed(dec);
+    if (k < 1) requestAnimationFrame(f);
+  })(t0);
+}
+const tick = ms => new Promise(r => setTimeout(r, ms));
+
+function sklList(sel, gold) {
+  const g = gold || [];
+  return sel.map(s => `<span class="skl${g.includes(s) ? " hit" : ""}">${esc(s)}</span>`).join("");
+}
+
+function renderStage1(d, gold) {
+  const badge = m => {
+    const x = d[m]; if (!x || !x.decision) return "";
+    const map = { auto: ["可自动执行", "var(--ok)", "#eef7f1", "#9fd0af"],
+                  confirm: ["建议人工确认", "var(--warn)", "#fdf6ec", "#ecd9a0"],
+                  direct: ["无匹配 · 直答", "#8a97a4", "#f2f5f8", "#dde4ea"] };
+    const [label, color, bg, bd] = map[x.decision] || map.direct;
+    return `<span title="${esc(x.decision_reason || "")}" style="display:inline-block;margin-left:6px;font-size:10.5px;color:${color};background:${bg};border:1px solid ${bd};border-radius:999px;padding:0 7px">${label} · ${(x.confidence * 100).toFixed(0)}%</span>`;
+  };
+  const rows = ["bm25", "hybrid", "fabric"].map(m => {
+    const x = d[m]; if (!x) return "";
+    const rc = x.recall == null ? '<span style="color:#9aa7b3">无 gold 基准（任意问题按技能相关性检索）</span>'
+                               : `召回 <b style="color:var(--brand)">${(x.recall * 100).toFixed(1)}%</b>`;
+    return `<tr><td style="width:76px;font-weight:700;color:var(--brand)">${m.toUpperCase()}</td>
+      <td>${sklList(x.selected, gold)} <span style="color:#9aa7b3">${rc}</span>${badge(m)}</td></tr>`;
+  }).join("");
+  const tr = (d.fabric?.trace || []).map(t => `<div>· ${esc(t)}</div>`).join("");
+  const miss = (gold || []).filter(g => !(d.bm25?.selected || []).includes(g) && (d.fabric?.selected || []).includes(g));
+  const note = miss.length ? `<div style="margin-top:6px;color:var(--ok)">BM25 漏掉、Fabric 通过<b>关系图扩展</b>补回：${sklList(miss, gold)}</div>` : "";
+  const dec = d.fabric?.decision_reason ? `<div class="trace">决策：${esc(d.fabric.decision_reason)}</div>` : "";
+  return `<table class="cmp">${rows}</table>${tr ? `<div class="trace">${tr}</div>` : ""}${dec}${note}`;
+}
+
+function renderStage2(d) {
+  const nodes = (d.order || d.skills || []).map(n => `<span class="dagn">${esc(n)}</span>`).join('<span class="dagi">→</span>');
+  return `<div class="dag">${nodes || "<i>无</i>"}<span class="dagi">→</span><span class="dagn end">执行产物</span></div>
+    <div>任务级 Wiki：${d.wiki_size ?? "—"} 个候选 · ${esc(d.reason || "")}</div>`;
+}
+
+function renderBandit(d) {
+  if (!d.rows || !d.rows.length) return "<i>候选为空</i>";
+  const rows = d.rows.map((r, i) => `<tr>
+    <td style="color:#9aa7b3">${i + 1}</td>
+    <td>${esc(r.name)}${i === 0 ? ' <span class="skl hit" style="margin-left:4px">top-1</span>' : ""}</td>
+    <td style="font-variant-numeric:tabular-nums">${r.exploit.toFixed(4)}</td>
+    <td style="font-variant-numeric:tabular-nums">${r.explore.toFixed(4)}</td>
+    <td style="font-variant-numeric:tabular-nums;font-weight:700;color:var(--brand)">${r.priority.toFixed(4)}</td>
+  </tr>`).join("");
+  return `<div style="font-size:11.5px;color:#8a97a4;margin-bottom:6px">${esc(d.note || "")}（候选池 ${d.n_candidates} 条）</div>
+    <table class="cmp"><tr><th style="width:30px">#</th><th>技能</th><th style="width:78px">预测收益</th><th style="width:78px">探索奖励</th><th style="width:78px">优先级</th></tr>${rows}</table>
+    <div style="font-size:11.5px;color:#8a97a4;margin-top:4px">预测收益由历史任务反馈训练而来（旧数据驱动）；探索奖励随评估次数衰减——越没试过的技能越有机会被尝试。</div>`;
+}
+
+function renderFeedback(d) {
+  let fb = "";
+  const rows = (d.feedback || []).map(f => {
+    const up = f.delta > 1e-6, dn = f.delta < -1e-6;
+    const arr = up ? '<span style="color:var(--ok)">↑</span>' : dn ? '<span style="color:var(--bad)">↓</span>' : '·';
+    return `<tr><td>${esc(f.name)}${f.nudged ? ' <span class="skl hit">本次采纳</span>' : ""}</td>
+      <td style="font-variant-numeric:tabular-nums">${f.exploit_before.toFixed(4)}</td>
+      <td style="font-variant-numeric:tabular-nums">${f.exploit_after.toFixed(4)}</td>
+      <td>${arr} <b style="color:${up ? "var(--ok)" : dn ? "var(--bad)" : "inherit"}">${(f.delta >= 0 ? "+" : "") + f.delta.toFixed(4)}</b></td></tr>`;
+  }).join("");
+  if (rows) {
+    fb = `<div style="font-size:12.5px;margin:8px 0 4px">本次盲评奖励 <b style="color:var(--brand)">${(d.reward ?? 0).toFixed(2)}/1.0</b>
+      已写回共享参数 θ（采纳 ${esc((d.adopted || []).join("、"))}）——<b>所有</b>技能的预测随之更新，同领域技能变化最大：</div>
+    <table class="cmp"><tr><th>技能</th><th style="width:86px">更新前预测</th><th style="width:86px">更新后预测</th><th style="width:74px">变化</th></tr>${rows}</table>
+    <div style="font-size:11.5px;color:var(--ok);margin:4px 0 10px">这就是「根据旧数据迭代」：下次遇到相似任务，排序将不同——学习可见、可追溯。</div>`;
+  }
+  const distill = d.accepted
+    ? `<div class="nskill"><b>新候选技能：${esc(d.name)}</b>
+        <div style="font-size:12px;color:var(--ink2);margin-top:3px">${esc(d.capability || "")}</div>
+        <div class="meta">第 ${d.generation} 代 · 库规模 → <b style="color:var(--ok)">${d.library_size}</b></div></div>
+       <div style="margin-top:6px;color:var(--ok)">新技能下次将以探索加成的方式获得优先尝试——闭环合拢。</div>`
+    : `<div style="font-size:12.5px;color:var(--ink2)">本次轨迹未通过质量准入（阈值拦截）——治理的一部分：不是所有蒸馏都会入库。当前库规模 ${d.library_size}。</div>`;
+  return fb + distill;
+}
+
+function renderPlan(plan) {
+  if (!plan || !plan.steps || !plan.steps.length) return "";
+  const steps = plan.steps.map((s, i) => {
+    const ps = typeof s === "string" ? { action: s } : s;
+    const params = (ps.key_params || []).map(x => `<li>${esc(x)}</li>`).join("");
+    return `<div class="pstep"><div class="ph"><span class="no">S${i + 1}</span><span class="act">${esc(ps.action)}</span></div>
+      ${ps.skill ? `<div class="klabel">调用技能 <span class="skl">${esc(ps.skill)}</span></div>` : ""}
+      ${params ? `<div class="klabel">关键参数</div><ul>${params}</ul>` : ""}
+      ${ps.expected_output ? `<div class="klabel">产出</div><div>${esc(ps.expected_output)}</div>` : ""}
+      ${ps.check ? `<div class="chk">校验：${esc(ps.check)}</div>` : ""}</div>`;
+  }).join("");
+  const risks = (plan.risks || []).length ? `<div class="risk-box"><b>风险与应对</b><ul>${plan.risks.map(r => `<li>${esc(r)}</li>`).join("")}</ul></div>` : "";
+  const arts = (plan.artifacts || []).length ? `<div class="art-box"><b>交付物</b> ${plan.artifacts.map(a => esc(a)).join(" · ")}</div>` : "";
+  return `<div style="margin-top:10px;font-size:13px">${esc(plan.approach || "")}</div>
+    <div class="plan-steps">${steps}</div>${risks}${arts}`;
+}
+
+function renderStage3(d, gold) {
+  const j = d.judge || {};
+  const dims = j.dimensions || j.scores || {};
+  const contracts = (d.skills || []).map(s => `<span class="skl">${esc(s)}</span>`).join("");
+  let bars = "";
+  const subj = Object.entries(dims).filter(([k, v]) => typeof v === "number");
+  bars += subj.map(([k, v]) => brow(k, v, false)).join("");
+  const hasCov = j.coverage != null;
+  if (subj.length) bars += `<div class="split">── ${hasCov ? "客观线（可程序化）" : "客观线：无 gold 基准，本次跳过"} ──</div>`;
+  if (hasCov) bars += brow(`要点覆盖 ${j.covered?.length ?? "—"}/${j.n_points ?? "—"}`, j.coverage, true);
+  return `<div style="margin-bottom:8px;font-size:11.5px;color:#8a97a4">加载的技能契约：${contracts}</div>
+    <div class="bars">${bars}</div>
+    <div style="margin-top:8px">技能采纳率 <b style="color:var(--brand)">${(d.adoption * 100).toFixed(0)}%</b> ·
+    执行步骤 ${d.steps} · 盲评均分 <b style="color:var(--brand)">${(j.weighted ?? 0).toFixed(2)}/10</b></div>
+    ${j.comment ? `<div class="trace">盲评意见：${esc(j.comment)}</div>` : ""}
+    ${renderPlan(d.plan)}`;
+  function brow(k, v, isObj) {
+    const pct = Math.max(0, Math.min(100, v <= 1 ? v * 100 : v * 10));
+    return `<div class="brow"><span>${esc(k)}</span><div class="btrack"><div class="bfill${isObj ? " obj" : ""}" style="width:${pct}%"></div></div><span class="bval">${typeof v === "number" ? v.toFixed(v <= 1 ? 2 : 1) : v}</span></div>`;
+  }
+}
+
+function renderStage4(d) {
+  if (!d.accepted) return `<div>本次轨迹未通过质量准入（阈值拦截）——治理的一部分：不是所有蒸馏都会入库。当前库规模 ${d.library_size}。</div>`;
+  return `<div class="nskill"><b>新候选技能：${esc(d.name)}</b>
+    <div style="font-size:12px;color:var(--ink2);margin-top:3px">${esc(d.capability || "")}</div>
+    <div class="meta">第 ${d.generation} 代 · 蒸馏记录 ${d.records} 条 · 库规模 → <b style="color:var(--ok)">${d.library_size}</b></div>
+    <div style="margin-top:8px"><button class="abtn" onclick="viewSkillRaw('${esc(d.name)}')">查看技能契约全文</button></div>
+    </div><div style="margin-top:6px;color:var(--ok)">下次遇到相似任务，它会被检索并优先推荐——闭环合拢。</div>`;
+}
+
+let LAST_EXEC = null;   // {task, step, skill, metrics} 供「无技能对照」复用
+
+async function runCompare(btn) {
+  if (!LAST_EXEC) return;
+  btn.disabled = true; const oldTxt = btn.textContent;
+  const box = document.getElementById("cmpbox");
+  box.innerHTML = '<div style="font-size:12px;color:var(--brand2);margin-top:10px"><span class="spin"></span> 正在跑两种对照：裸模型 · 提示词塞技能（各约 30 秒）…</div>';
+  const call = (mode) => jget2(API + "/api/execute_one",
+    { task: LAST_EXEC.task, step: LAST_EXEC.step, skill: LAST_EXEC.skill, mode }, 300000);
+  try {
+    const rBare = await call("none");
+    const rPrompt = await call("prompt");
+    const g = LAST_EXEC.metrics, s = LAST_EXEC.skill || "";
+    const m = r => ({
+      code: (r.code || "").length, out: (r.stdout || "").length,
+      files: (r.artifacts || []).length,
+      vf: r.verification_total ? r.verification_passed + "/" + r.verification_total + " 条带证据" : "无验收标准",
+      ok: r.final_ok ? "成功" : "未成功",
+    });
+    const B = m(rBare), P = m(rPrompt);
+    const cell = (v, best) => `<td style="color:${best ? "var(--ok)" : "inherit"};font-weight:${best ? 700 : 400}">${v}</td>`;
+    const win = (a, b, c) => [a, b, c].map(Number).indexOf(Math.max(a, b, c));
+    const wCode = win(g.code, P.code, B.code), wOut = win(g.out, P.out, B.out), wFile = win(g.files, P.files, B.files);
+    box.innerHTML = `<div class="reveal">
+      <div class="klabel" style="margin-top:12px">三方对照 · 同一任务、同一模型、同一步骤，唯一变量是「技能怎么被用」</div>
+      <table class="cmp">
+        <tr><th>指标</th><th style="width:22%">裸模型</th><th style="width:22%">提示词塞技能</th><th style="width:26%">SkillNet（契约模式）</th></tr>
+        <tr><td>运行结果</td>${cell(B.ok, false)}${cell(P.ok, false)}${cell(g.ok + "（" + (LAST_EXEC.metrics.fix || "") + "）", true)}</tr>
+        <tr><td>生成代码规模</td>${cell(B.code + " 字", wCode === 2)}${cell(P.code + " 字", wCode === 1)}${cell(g.code + " 字", wCode === 0)}</tr>
+        <tr><td>运行输出信息量</td>${cell(B.out + " 字", wOut === 2)}${cell(P.out + " 字", wOut === 1)}${cell(g.out + " 字", wOut === 0)}</tr>
+        <tr><td>落盘真实产物</td>${cell(B.files + " 个", wFile === 2)}${cell(P.files + " 个", wFile === 1)}${cell(g.files + " 个", wFile === 0)}</tr>
+        <tr><td>产物验收</td>${cell("无", false)}${cell("无", false)}${cell(g.vf, true)}</tr>
+        <tr><td>失败时修复依据</td>${cell("盲试", false)}${cell("盲试", false)}${cell("技能已知陷阱", true)}</tr>
+      </table>
+      <div style="font-size:12px;color:var(--ok);margin-top:6px">差异全部来自「技能被当成了什么」：背景资料（prompt）只是多了一段文字，
+      而契约模式把它变成<b>执行步骤 + 红线 + 验收标准 + 修复线索</b>——这才是技能资产该有的用法。</div>
+      <div style="font-size:11.5px;color:#8a97a4;margin-top:4px">说明：单次对照是演示性证据，不是统计结论；要做统计判断需多任务多轮次（与实验三同口径）。</div>
+    </div>`;
+  } catch (e) {
+    box.innerHTML = `<div style="font-size:12px;color:var(--bad);margin-top:8px">对照运行失败：${esc(e.message || e)}</div>`;
+  } finally { btn.disabled = false; btn.textContent = oldTxt; }
+}
+
+function renderSandbox(d, slug) {
+  if (!d || (!d.attempts || !d.attempts.length)) {
+    return `<div style="font-size:12.5px;color:var(--ink2)">本方案未包含适合自动化执行的分析步骤（通常是文献/写作类任务），已跳过沙箱执行。</div>`;
+  }
+  const ok = d.final_ok;
+  // 尝试轨迹：失败 -> 修复 -> 成功，这是 Run→Validate→Fix 的直接证据
+  const trail = d.attempts.map(a => {
+    const cls = a.ok ? "var(--ok)" : "var(--bad)";
+    const tag = a.ok ? "成功" : (a.kind || a.error_kind || "失败");
+    return `<span style="display:inline-block;border:1px solid ${cls};color:${cls};border-radius:999px;padding:0 9px;font-size:11px;margin-right:6px">第${a.n}次 ${tag}${a.duration ? " · " + a.duration + "s" : ""}</span>`;
+  }).join('<span style="color:#9aa7b3">→</span> ');
+  const fixNote = d.fixed
+    ? `<div style="font-size:12px;color:var(--ok);margin-top:6px">技能驱动的修复：前 ${d.n_attempts - 1} 次运行报错，把<b>错误输出 + 该技能的已知陷阱</b>一起交给模型后修复成功——没有技能就只能盲试。</div>`
+    : d.exhausted
+      ? `<div style="font-size:12px;color:var(--bad);margin-top:6px">已尝试 ${d.n_attempts} 次仍未成功：错误与技能陷阱都交付给了模型，说明当前任务粒度超出单次生成能力。这属于<b>需要记录的失败样本</b>（应缩小步骤粒度或改写技能），不做粉饰。</div>`
+      : `<div style="font-size:12px;color:#8a97a4;margin-top:6px">一次运行即通过（未触发修复）。</div>`;
+  const truncNote = d.truncated
+    ? `<div style="font-size:12px;color:var(--warn);margin-top:4px">检测到<b>输出截断</b>（报错指向文件末尾的未闭合结构）：已自动改用「精简重写」策略，不再让模型修补超长代码。</div>`
+    : "";
+
+  const codeBlock = `<details style="margin-top:10px"><summary style="cursor:pointer;font-size:12px;color:var(--brand2)">查看本次执行的完整代码（${(d.code || "").length} 字符）</summary><pre style="max-height:340px;overflow:auto;background:#f7f9fb;border:1px solid var(--line);padding:12px;font-size:11.5px;white-space:pre-wrap">${esc(d.code || "")}</pre></details>`;
+  const outBlock = d.stdout
+    ? `<div style="margin-top:10px"><div class="klabel">真实运行输出</div><pre style="max-height:260px;overflow:auto;background:#0f1720;color:#c8f0d8;padding:12px;font-size:11.5px;white-space:pre-wrap">${esc(d.stdout)}</pre></div>`
+    : "";
+
+  const arts = (d.artifacts || []);
+  const imgs = arts.filter(a => /\.(png|jpg|jpeg|svg)$/i.test(a.name));
+  const others = arts.filter(a => !/\.(png|jpg|jpeg|svg)$/i.test(a.name));
+  const imgBlock = imgs.length ? `<div style="margin-top:12px"><div class="klabel">真实产物 · 图像（由代码运行生成）</div>${
+      imgs.map(a => `<div style="margin-top:6px"><img src="${API}/api/artifact/${esc(slug)}/${encodeURIComponent(a.name)}" onerror="this.insertAdjacentHTML('afterend','<div style=&quot;color:#a8433a;font-size:12px&quot;>图片加载失败：浏览器可能缓存了旧版页面，请按 Ctrl+Shift+R 强制刷新</div>')" style="max-width:100%;border:1px solid var(--line);border-radius:4px" alt="${esc(a.name)}">
+        <div style="font-size:11px;color:#8a97a4">${esc(a.name)} · ${(a.bytes / 1024).toFixed(1)} KB · <a class="abtn" style="padding:1px 10px" href="${API}/api/artifact/${esc(slug)}/${encodeURIComponent(a.name)}?download=1">下载</a></div></div>`).join("")}</div>` : "";
+  const otherBlock = others.length ? `<div style="margin-top:10px;font-size:12px">落盘数据文件：${others.map(a => `<span class="skl">${esc(a.name)} · ${(a.bytes / 1024).toFixed(1)}KB</span>`).join(" ")}</div>` : "";
+
+  const vf = d.verification || [];
+  const vfBlock = vf.length ? `<div style="margin-top:12px"><div class="klabel">技能验收清单逐条核对（${d.verification_passed}/${d.verification_total} 通过）</div>
+      <table class="cmp">${vf.map(c => `<tr><td style="width:34px;font-weight:700;color:${c.passed ? "var(--ok)" : "var(--bad)"}">${c.passed ? "PASS" : "FAIL"}</td>
+        <td>${esc(c.item)}</td><td style="color:#8a97a4">${esc(c.evidence)}</td></tr>`).join("")}</table>
+      <div style="font-size:11.5px;color:#8a97a4;margin-top:4px">验收标准来自该技能的 verification 字段——技能契约在这里变成可执行的验收，不只是提示词。</div></div>`
+    : `<div style="font-size:11.5px;color:#8a97a4;margin-top:8px">${esc(d.verify_skip_reason || "本次未进行逐条验收")}。</div>`;
+
+  return `<div style="font-size:12.5px;margin-bottom:8px">
+      <b>${esc(d.step_label || "")} · ${esc(d.action || "")}</b>
+      ${d.skill ? `调用技能 <span class="skl hit">${esc(d.skill)}</span>` : ""}
+      <span style="color:#8a97a4">｜执行方式：生成代码 → 沙箱真实运行 → ${d.fixed ? "失败修复重试 → " : ""}技能验收</span>
+    </div>
+    ${(() => {
+      const st = d.skill_exec_stats || {};
+      const tot = st.exec_total || 0;
+      if (!tot) return "";
+      const okN = st.exec_ok || 0;
+      const rate = Math.round(okN / tot * 100);
+      return `<div style="font-size:11.5px;color:#8a97a4;margin-bottom:8px">该技能的历史执行记录：
+        累计执行 <b style="color:var(--ink)">${tot}</b> 次 · 成功 <b style="color:${rate >= 70 ? "var(--ok)" : "var(--warn)"}">${okN}</b> 次（${rate}%）
+        ${st.exec_fix ? `· 其中 ${st.exec_fix} 次经修复后成功` : ""}
+        ${st.exec_fail ? `· 失败 ${st.exec_fail} 次（最近错误类型 ${esc(st.exec_last_error || "")}）` : ""}
+        <span style="opacity:.8">—— 执行可靠性正在成为技能的质量信号</span></div>`;
+    })()}
+    <div>${trail}</div>${fixNote}${truncNote}${codeBlock}${outBlock}${imgBlock}${otherBlock}${vfBlock}
+    ${ok ? "" : `<div style="margin-top:8px;font-size:12px;color:var(--bad)">本次沙箱执行未成功（已尝试 ${d.n_attempts} 次）：${esc((d.attempts[d.attempts.length - 1] || {}).stderr || "")}</div>`}
+    ${ok && d.skill ? `<div style="margin-top:10px"><button class="abtn solid" onclick="runCompare(this)">跑三方对照：裸模型 / 提示词塞技能 / SkillNet</button></div><div id="cmpbox"></div>` : ""}`;
+}
+
+function renderArtifacts(d) {
+  if (!d || !d.artifacts || !d.artifacts.length) return "<i>本次未生成产物</i>";
+  const isDeliv = a => (a.kind || "").indexOf("方案交付物") >= 0;
+  const card = a => `<div class="artcard">
+      <div><div class="an">${esc(a.name)}</div>
+      <div class="ak">${esc(a.kind)} · ${(a.bytes / 1024).toFixed(1)} KB${a.declared_as ? " · 兑现清单项：" + esc(a.declared_as) : ""}</div></div>
+      <div class="sp"></div>
+      <button class="abtn" onclick="previewArtifact('${esc(d.slug)}','${esc(a.name)}')">在线查看</button>
+      <a class="abtn solid" href="${API}/api/artifact/${esc(d.slug)}/${encodeURIComponent(a.name)}?download=1">下载</a>
+    </div>`;
+  const deliv = d.artifacts.filter(isDeliv);
+  const docs = d.artifacts.filter(a => !isDeliv(a));
+  const stat = d.declared != null
+    ? `<div style="font-size:12px;margin-bottom:8px">方案声明交付物 <b style="color:var(--brand)">${d.declared}</b> 项 · 实际生成 <b style="color:var(--ok)">${d.generated}</b> 项${
+        d.generated < d.declared ? '<span style="color:var(--warn)">（未全部兑现，下方列出实际落盘的文件）</span>' : "（全部兑现）"}${d.deliverable_error ? `　<span style="color:var(--warn)">${esc(d.deliverable_error)}</span>` : ""}</div>`
+    : "";
+  const note = d.saved
+    ? `<div style="font-size:11.5px;color:var(--ok);margin-bottom:6px">已落盘到 out/demo_artifacts/${esc(d.slug)}/ —— 可直接交付或打印为 PDF</div>`
+    : `<div style="font-size:11.5px;color:var(--warn);margin-bottom:6px">内存产物（落盘失败：${esc(d.save_error || "未知")}）</div>`;
+  const head = t => `<div style="font-size:12px;color:#8a97a4;letter-spacing:1px;margin:10px 0 2px">── ${t} ──</div>`;
+  return `${stat}${note}
+    ${deliv.length ? head("方案声明的交付物（本次已生成内容）") + `<div class="art">${deliv.map(card).join("")}</div>` : ""}
+    ${docs.length ? head("过程文档（方案与依据）") + `<div class="art">${docs.map(card).join("")}</div>` : ""}
+    <div class="digest">任务指纹 ${esc(d.slug)} · 产物指纹 ${esc(d.digest)}（同一任务重复运行产物一致，可审计）</div>
+    <div style="font-size:11.5px;color:#8a97a4;margin-top:6px">交付物为方案级产出：内容具体到条目与参数，但涉及实验结果的数值均标注为示意值，需在真实数据上验证。</div>`;
+}
+
+/* ---------- 弹层：产物预览 / 技能全文 ---------- */
+function closeLayer() {
+  const l = document.getElementById("layer"); if (l) l.remove();
+}
+function openLayer(title, { html = "", src = "", text = "" } = {}) {
+  closeLayer();
+  const l = document.createElement("div"); l.className = "layer"; l.id = "layer";
+  l.onclick = e => { if (e.target === l) closeLayer(); };
+  const body = html ? html : src ? `<iframe src="${src}"></iframe>` : `<pre>${esc(text)}</pre>`;
+  l.innerHTML = `<div class="box"><div class="lb"><b>${esc(title)}</b>
+      <button class="abtn" onclick="closeLayer()">关闭</button></div>
+      <div class="lbody">${body}</div></div>`;
+  document.body.appendChild(l);
+}
+async function previewArtifact(slug, name) {
+  const url = `${API}/api/artifact/${slug}/${encodeURIComponent(name)}`;
+  if (name.endsWith(".html")) return openLayer(name, { src: url });
+  try {
+    const r = await fetch(url); const txt = await r.text();
+    openLayer(name, { text: txt });
+  } catch (e) { openLayer(name, { text: "加载失败：" + e.message }); }
+}
+async function viewSkillRaw(name) {
+  openLayer(name + " · 技能契约全文", { text: "加载中…" });
+  try {
+    const r = await fetch(`${API}/api/skill/${encodeURIComponent(name)}/raw`);
+    const d = await r.json();
+    openLayer(name + " · 技能契约全文（来源 " + d.source + "）", { text: d.content || "（空）" });
+  } catch (e) { openLayer(name, { text: "加载失败：" + e.message }); }
+}
+
+async function startRealRun() {
+  const task = $("task").value.trim();
+  if (!task){ $("task").focus(); return; }
+  const btn = $("run"); btn.disabled = true; const oldTxt = btn.textContent;
+  btn.textContent = "创建运行中…";
+  $("err").style.display = "none";
+  try {
+    const r = await fetch(API + "/api/runs", {
+      method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({task, gold: CUR_GOLD || [], k: 5, max_steps: 3, max_cost_yuan: 1.0, max_seconds: 300})
+    });
+    if (!r.ok){ const d = await r.json().catch(()=>({})); throw new Error(typeof d.detail === "string" ? d.detail : r.status); }
+    const d = await r.json();
+    runLive(d.run_id, task);          // 留在本页：Skill Universe 直接响应真实 Run
+  } catch (e) {
+    $("err").style.display = "block";
+    $("err").textContent = "创建运行失败：" + (e.message || e);
+    btn.disabled = false; btn.textContent = oldTxt;
+  }
+}
+
+/* ---------- WOW-1：本页 Live Run —— 星图 + 阶段条全部由真实 SSE 驱动 ---------- */
+const PHASES = [
+  ["retrieval", "检索对比"], ["ranking", "策略选择"], ["orchestration", "任务编排"],
+  ["dag", "DAG 收束"], ["plan", "研究方案"], ["exec", "真实执行"], ["final", "验收与进化"],
+];
+let LIVE_RUN = null;   // 当前本页展示的 run_id
+
+function livebarHTML() {
+  return "<div style='display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:10px 14px'>" +
+    "<span style='font-size:11px;letter-spacing:2px;color:#8a97a4'>LIVE RUN</span>" +
+    PHASES.map(([k, label]) =>
+      `<span id="ph-${k}" style="font-size:12px;color:#8a97a4;display:inline-flex;align-items:center;gap:5px">` +
+      `<i id="phd-${k}" style="width:8px;height:8px;border-radius:50%;background:#d5dde4;display:inline-block"></i>${label}<b id="pht-${k}" style="font-weight:400;color:#aab6c1"></b></span>`
+    ).join("") +
+    `<span style="flex:1"></span><a id="live-link" href="/run?id=${LIVE_RUN}" target="_blank" style="font-size:11.5px;color:var(--brand2)">完整面板 →</a></div>` +
+    `<div id="livesum" style="display:none;margin-top:10px"></div>`;
+}
+
+function setPhase(k, state, ms) {
+  const dot = document.getElementById("phd-" + k), t = document.getElementById("pht-" + k);
+  const wrap = document.getElementById("ph-" + k);
+  if (!dot) return;
+  if (state === "run") { dot.style.background = "#24557a"; dot.style.animation = "sp 1s linear infinite"; wrap.style.color = "var(--brand2)"; }
+  else { dot.style.animation = "";
+    dot.style.background = state === "done" ? "#2e7d4f" : state === "fail" ? "#a8433a" : "#d5dde4";
+    wrap.style.color = state === "done" ? "var(--ink)" : "#8a97a4"; }
+  if (ms != null && t) t.textContent = (ms / 1000).toFixed(1) + "s";
+}
+
+async function runLive(runId, task) {
+  LIVE_RUN = runId;
+  const bar = $("livebar");
+  bar.style.display = "block";
+  bar.innerHTML = livebarHTML();
+  document.getElementById("live-link").href = "/run?id=" + encodeURIComponent(runId);
+  if (window.HeroNet) HeroNet.exitDag();
+  setPhase("retrieval", "run");
+  let ended = false;
+  try {
+    const resp = await fetch(`${API}/api/runs/${encodeURIComponent(runId)}/stream`);
+    const reader = resp.body.getReader();
+    const dec = new TextDecoder();
+    let buf = "";
+    while (!ended) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split("\n");
+      buf = lines.pop();
+      for (const line of lines) {
+        const s = line.trim();
+        if (s === "event: end") { ended = true; break; }
+        if (!s.startsWith("data: ")) continue;
+        let ev; try { ev = JSON.parse(s.slice(6)); } catch { continue; }
+        handleRunEvent(ev, runId);
+        if (ev.type === "end") { ended = true; break; }
+      }
+    }
+  } catch (e) { /* 流断开：以最终状态接口为准 */ }
+  // 兜底：拉最终状态（无论流是否正常结束）
+  try {
+    const fin = await (await fetch(API + "/api/runs/" + encodeURIComponent(runId))).json();
+    renderLiveFinal(fin);
+  } catch {}
+}
+
+function handleRunEvent(ev, runId) {
+  const t = ev.type || "";
+  const d = ev.data || ev;                     // BUS 事件负载嵌套在 data 里
+  if (t === "retrieval.completed") {
+    setPhase("retrieval", "done", d.duration_ms);
+    setPhase("ranking", "run");
+    if (window.HeroNet && Array.isArray(d.selected)) HeroNet.highlight(d.selected);
+  } else if (t === "ranking.completed") {
+    setPhase("ranking", "done");
+    setPhase("orchestration", "run");
+  } else if (t === "orchestration.completed") {
+    setPhase("orchestration", "done");
+    setPhase("dag", "run");
+    if (window.HeroNet) HeroNet.select(d.order || d.skills || []);
+  } else if (t === "dag.ready") {
+    setPhase("dag", "done");
+    setPhase("plan", "run");
+    if (window.HeroNet && Array.isArray(d.nodes)) HeroNet.dagify(d.nodes);
+  } else if (t === "plan.created") {
+    setPhase("plan", "done", d.duration_ms);
+    setPhase("exec", "run");
+  } else if (t === "step.started") {
+    if (window.HeroNet) HeroNet.stepState(d.step, "running");
+  } else if (t === "step.completed") {
+    if (window.HeroNet) HeroNet.stepState(d.step, d.status === "done" ? "done" : "failed");
+  } else if (t === "steps.skipped") {
+    if (window.HeroNet) (d.steps || []).forEach(i => HeroNet.stepState(i, "skipped"));
+  } else if (t === "execution.finished") {
+    setPhase("exec", d.failed > 0 ? "fail" : "done");
+    setPhase("final", "run");
+  } else if (t === "evolution.proposed") {
+    // Moment 5：反馈真实回流 —— 蒸馏候选是否被质量准入
+    const sum = $("livesum"); if (!sum) return;
+    const card = document.getElementById("evo-card") || document.createElement("div");
+    card.id = "evo-card";
+    card.style.cssText = "margin-top:10px";
+    card.innerHTML = `<div style="background:var(--card);border:1px solid ${d.accepted ? "#cfe6d6" : "var(--line)"};border-left:3px solid ${d.accepted ? "var(--ok)" : "#9aa7b3"};border-radius:6px;padding:11px 15px;font-size:12.5px;color:var(--ink2)">` +
+      `<b style="color:var(--brand)">反馈回流 · 技能蒸馏</b> —— 本次任务的轨迹${d.accepted ? "已蒸馏为候选技能并通过质量准入" : "未达到准入标准（相似度/质量闸）"}：` +
+      `${d.accepted ? `<b style="color:var(--ok)">${esc(d.name || "新技能")}</b>` : "未准入"} · 库规模 ${d.library_size} · ` +
+      `<a href="/graph" target="_blank" style="color:var(--brand2)">在星图查看进化技能 →</a></div>`;
+    sum.appendChild(card);
+  } else if (t === "run.failed" || t === "run.budget_exceeded") {
+    ["retrieval","ranking","orchestration","dag","plan","exec"].forEach(k => {
+      const el = document.getElementById("ph-" + k);
+      if (el && el.style.color !== "var(--ink)") setPhase(k, "fail");
+    });
+    setPhase("final", "fail");
+    const sum = $("livesum");
+    if (sum) { sum.style.display = "block";
+      sum.innerHTML = `<div class="next" style="border-left:3px solid var(--bad)">运行失败：${esc(String(d.reason || t))}。<a href="/run?id=${encodeURIComponent(runId)}" target="_blank">查看详情</a></div>`; }
+    $("run").disabled = false; $("run").textContent = "发送";
+  }
+}
+
+function renderLiveFinal(fin) {
+  setPhase("final", fin.status === "COMPLETED" || fin.status === "PARTIAL" ? "done" : "fail");
+  const sum = $("livesum"); if (!sum) return;
+  const steps = fin.steps || [];
+  const nDone = steps.filter(s => s.status === "done").length;
+  const nFix = steps.filter(s => s.status === "done" && (s.n_attempts || 1) > 1).length;
+  const nFail = steps.filter(s => s.status === "failed").length;
+  const nSkip = steps.filter(s => s.status === "skipped").length;
+  const cp = ((fin.staged || {}).critical_path) || null;
+  const conc = (fin.staged || {}).max_concurrency;
+  const cpTxt = cp ? `关键路径 ${cp.steps.map(i => "Step " + (i + 1)).join(" → ")}（${(cp.ms / 1000).toFixed(1)}s / 总 ${(fin.duration_ms / 1000).toFixed(1)}s）` : "";
+  const ccTxt = conc > 1 ? `最大并行 ${conc} 步` : "";
+  sum.style.display = "block";
+  sum.innerHTML = "<div style='background:var(--card);border:1px solid var(--line);border-radius:6px;padding:12px 16px;font-size:12.5px;color:var(--ink2)'>" +
+    `<b style="color:var(--brand)">Run Summary</b> · ${fin.status === "COMPLETED" ? "已完成" : fin.status === "PARTIAL" ? "部分完成" : "失败"} · ¥${Number(fin.cost_yuan || 0).toFixed(3)} · ${(fin.duration_ms / 1000).toFixed(1)}s<br>` +
+    `步骤 ${steps.length}：一次通过 <b style="color:var(--ok)">${nDone - nFix}</b> · 修复后成功 <b style="color:#b0781a">${nFix}</b> · 失败 <b style="color:var(--bad)">${nFail}</b> · 跳过 <b>${nSkip}</b>` +
+    (ccTxt ? ` · <b style="color:var(--brand2)">${ccTxt}</b>` : "") +
+    (cpTxt ? `<br><span style="color:#8a97a4">${cpTxt}</span>` : "") +
+    ` · <a href="/run?id=${encodeURIComponent(fin.run_id)}" target="_blank" style="color:var(--brand2)">产物与验收证据 →</a></div>`;
+  $("run").disabled = false; $("run").textContent = "发送";
+}
+
+async function loadRunCenter(){
+  let runs = [];
+  try { runs = (await (await fetch(API + "/api/runs?limit=8")).json()).runs || []; } catch {}
+  const host = document.getElementById("runlist");
+  if (!runs.length){ host.innerHTML = '<div style="font-size:12.5px;color:#8a97a4;padding:8px 0">还没有运行记录 —— 在上方输入任务，点「实时运行」创建第一条。</div>'; return; }
+  const ST = {COMPLETED:["已完成","#2e7d4f"],PARTIAL:["部分完成","#b0781a"],FAILED:["失败","#a8433a"],
+              RUNNING:["运行中","#1f5f9e"],EXECUTING:["执行中","#1f5f9e"],RETRIEVING:["检索中","#1f5f9e"],
+              ORCHESTRATING:["编排中","#1f5f9e"],VERIFYING:["验收中","#1f5f9e"],EVOLVING:["进化中","#1f5f9e"],
+              CANCELLED:["已取消","#8a97a4"],INTERRUPTED:["已中断","#8a97a4"],CREATED:["已创建","#8a97a4"],BUDGET_EXCEEDED:["超预算","#a8433a"]};
+  host.innerHTML = '<table style="width:100%;border-collapse:collapse;font:12px/1.7 var(--mono)">' +
+    '<tr><th style="text-align:left;color:#8a97a4;padding:4px 8px;border-bottom:1px solid var(--line)">状态</th>' +
+    '<th style="text-align:left;color:#8a97a4;padding:4px 8px;border-bottom:1px solid var(--line)">任务</th>' +
+    '<th style="text-align:left;color:#8a97a4;padding:4px 8px;border-bottom:1px solid var(--line)">时长</th>' +
+    '<th style="text-align:left;color:#8a97a4;padding:4px 8px;border-bottom:1px solid var(--line)">成本</th>' +
+    '<th style="text-align:left;color:#8a97a4;padding:4px 8px;border-bottom:1px solid var(--line)">产物</th></tr>' +
+    runs.map(r => {
+      const pair = ST[r.status] || [r.status, "#8a97a4"];
+      return '<tr style="cursor:pointer" onclick="location.href=\'/run?id=' + encodeURIComponent(r.run_id) + '\'">' +
+        '<td style="padding:5px 8px;border-bottom:1px solid var(--line)"><span style="color:' + pair[1] + ';font-weight:600">' + pair[0] + '</span></td>' +
+        '<td style="padding:5px 8px;border-bottom:1px solid var(--line);color:var(--ink)">' + esc((r.task||"").slice(0,52)) + '</td>' +
+        '<td style="padding:5px 8px;border-bottom:1px solid var(--line)">' + fmtMs(r.duration_ms) + '</td>' +
+        '<td style="padding:5px 8px;border-bottom:1px solid var(--line)">¥' + Number(r.cost_yuan||0).toFixed(4) + '</td>' +
+        '<td style="padding:5px 8px;border-bottom:1px solid var(--line)">' + (r.artifacts||0) + '</td></tr>';
+    }).join("") + "</table>";
+}
+
+async function runDemo() {
+  const input = $("task"); const q = input.value.trim();
+  if (!q || input.disabled) return;
+  input.disabled = true; $("run").disabled = true; $("err").style.display = "none";
+  addUser(q);
+  const bot = addBot();
+  bot.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (!document.getElementById("prog")) {
+    const pr = document.createElement("div"); pr.id = "prog"; pr.style.width = "0";
+    document.body.appendChild(pr);
+  } else { document.getElementById("prog").style.width = "0"; }
+  $("run").textContent = "闭环运行中…";
+  const t0 = performance.now(); const id = ++RUN_ID;
+  try {
+    const r = await jget2(API + "/api/demo", { task: q, gold: CUR_GOLD, k: 5 }, 300000);
+    if (id !== RUN_ID) return;
+    const stages = r.stages || [];
+    const inject = (n, html) => { bot.querySelector(`[data-s="${n}"] .tl-body`).innerHTML = html; };
+    setStage(bot, 1, "running"); await tick(650);
+    inject(1, renderStage1(stages[0].detail, CUR_GOLD)); setStage(bot, 1, "done");
+    await tick(480);
+    setStage(bot, 2, "running"); await tick(560);
+    inject(2, renderBandit(stages[1].detail)); setStage(bot, 2, "done");
+    await tick(480);
+    setStage(bot, 3, "running"); await tick(560);
+    inject(3, renderStage2(stages[2].detail)); setStage(bot, 3, "done");
+    await tick(480);
+    setStage(bot, 4, "running"); await tick(620);
+    inject(4, renderStage3(stages[3].detail, CUR_GOLD)); setStage(bot, 4, "done");
+    await tick(480);
+    setStage(bot, 5, "running"); await tick(700);
+    const sbDet = stages[4] && stages[4].detail;
+    if (sbDet) {
+      const planSteps = ((stages[3] || {}).detail || {}).plan || {};
+      LAST_EXEC = {
+        task: q,
+        step: (planSteps.steps || [])[sbDet.step_index] || { action: sbDet.action },
+        skill: sbDet.skill,
+        metrics: {
+          code: (sbDet.code || "").length, out: (sbDet.stdout || "").length,
+          files: (sbDet.artifacts || []).length,
+          vf: sbDet.verification_total ? `${sbDet.verification_passed}/${sbDet.verification_total} 逐条带证据` : "无清单",
+          fix: sbDet.fixed ? "触发修复 " + sbDet.n_attempts + " 次" : "一次通过",
+        },
+      };
+    }
+    inject(5, renderSandbox(sbDet, r.slug)); setStage(bot, 5, "done");
+    await tick(480);
+    setStage(bot, 6, "running"); await tick(560);
+    inject(6, renderFeedback(stages[5].detail)); setStage(bot, 6, "done");
+    await tick(420);
+    setStage(bot, 7, "running"); await tick(520);
+    inject(7, renderArtifacts(stages[6] && stages[6].detail)); setStage(bot, 7, "done");
+    // 直接答复卡：用户问的问题在这里给出可见的回答（方案结论 + 真实执行输出）
+    {
+      const planDet = stages[3] && stages[3].detail;
+      const approach = (planDet && planDet.plan && planDet.plan.approach) || "";
+      const execDet = stages[4] && stages[4].detail;
+      const stdout = (execDet && execDet.stdout) || "";
+      const ans = document.createElement("div");
+      ans.className = "tl-card reveal";
+      ans.style.borderColor = "#cfe6d6";
+      ans.innerHTML = `<h4>直接答复<span class="st" style="color:var(--ok)">来自真实执行</span></h4>` +
+        `<div class="tl-body">` +
+        (approach ? `<div style="margin-bottom:8px"><b style="color:var(--brand)">结论：</b>${esc(String(approach))}</div>` : "") +
+        (stdout ? `<div><b style="color:var(--brand)">执行输出：</b><pre style="white-space:pre-wrap;font:11px/1.6 Consolas,monospace;color:var(--ink2);background:var(--soft);padding:8px 10px;border-radius:4px;margin-top:4px;max-height:260px;overflow:auto">${esc(stdout.slice(-1600))}</pre></div>`
+                : `<div style="color:#8a97a4">本次任务未产生执行输出（方案级任务请看上方交付物）。</div>`) +
+        `</div>`;
+      bot.appendChild(ans);
+      ans.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    const secs = (performance.now() - t0) / 1000;
+    const cb = bot.querySelector(".costbar"); cb.style.display = "flex";
+    cb.innerHTML = `<span>真实成本 ¥<b id="cv-${id}">0.00</b></span><span>Token <b id="tk-${id}">0</b></span><span>用时 <b>${secs.toFixed(1)}s</b></span><span>技能库 <b>${r.library_size}</b></span>`;
+    rollNum(document.getElementById(`cv-${id}`), r.cost_yuan, 4);
+    rollNum(document.getElementById(`tk-${id}`), r.tokens, 0);
+    $("lib-n").textContent = r.library_size + " 个技能";
+    $("run").textContent = "发送";
+  } catch (e) {
+    $("run").textContent = "发送";
+    const run = bot.querySelector(".tl-item.running");
+    if (run) run.className = "tl-item fail";
+    const rest = bot.querySelectorAll(".tl-item:not(.done):not(.fail)");
+    rest.forEach(x => (x.className = "tl-item fail"));
+    $("err").style.display = "block";
+    $("err").textContent = "调用失败：" + (e.message || e) + "。若提示 503 请在 .env 配置 DEEPSEEK_API_KEY；若服务未启动先运行 python run.py。";
+  } finally { input.disabled = false; $("run").disabled = false; $("run").textContent = "发送"; }
+}
+
+async function jget2(url, body, t) {
+  const c = new AbortController(); const to = setTimeout(() => c.abort(), t);
+  try {
+    const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body), signal: c.signal });
+    if (!r.ok) { const d = await r.json().catch(() => ({})); throw new Error(typeof d.detail === "string" ? d.detail : JSON.stringify(d.detail) || r.status); }
+    return await r.json();
+  } finally { clearTimeout(to); }
+}
+$("task").addEventListener("input", () => { CUR_GOLD = []; });
+boot();
+loadRunCenter();
+fillLiveNumbers();
+</script>
+
+<script>
+/* ================= HERO · 真实技能星图（数据来自 /api/graph，非插画） ================= */
+(function () {
+  const box = document.getElementById("heroNet");
+  const cv = document.getElementById("netcv");
+  const tip = document.getElementById("nettip");
+  const legendEl = document.getElementById("netlegend");
+  if (!box || !cv) return;
+  const ctx = cv.getContext("2d");
+  const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const PALETTE = ["#24557a", "#2e7d4f", "#b0783a", "#7a4a78", "#38788c", "#8c5a3a", "#5a6e3a", "#4a5a8c", "#a8433a", "#6b7b8c"];
+  let W = 0, H = 0, DPR = 1;
+  let nodes = [], edges = [], adj = new Map();     // id -> [{other, type}]
+  let alpha = 0, hover = null, drag = null, dragMoved = false, focusSet = null;
+  let visible = true, inited = false;
+
+  function resize() {
+    const r = box.getBoundingClientRect();
+    DPR = window.devicePixelRatio || 1;
+    W = r.width; H = r.height;
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  window.addEventListener("resize", () => { resize(); });
+
+  const hash = s => { let h = 0; for (const c of s) h = ((h * 31 + c.charCodeAt(0)) >>> 0); return h; };
+  const colorOf = (() => { const m = new Map(); return d => { if (!m.has(d)) m.set(d, PALETTE[hash(d) % PALETTE.length]); return m.get(d); }; })();
+
+  async function load() {
+    try {
+      const [g, st] = await Promise.all([
+        fetch(API + "/api/graph").then(r => r.json()),
+        fetch(API + "/api/stats").then(r => r.json()).catch(() => ({}))
+      ]);
+      edges = (g.edges || []).map(e => ({ s: e.source, t: e.target }));
+      const domCount = {};
+      nodes = (g.nodes || []).map(n => ({
+        id: n.id, dom: n.domain || "其他", ev: n.source !== "seed" || (n.generation || 0) > 0,
+        deg: 0, reward: n.mean_reward, pulls: n.pulls || 0,
+        x: 0, y: 0, vx: 0, vy: 0, fixed: false
+      }));
+      const byIdL = new Map(nodes.map(n => [n.id, n]));
+      edges = edges.filter(e => byIdL.has(e.s) && byIdL.has(e.t));
+      idx.clear(); nodes.forEach((n, i) => idx.set(n.id, i));
+      for (const e of edges) {
+        byIdL.get(e.s).deg++; byIdL.get(e.t).deg++;
+        if (!adj.has(e.s)) adj.set(e.s, []); adj.get(e.s).push(e.t);
+        if (!adj.has(e.t)) adj.set(e.t, []); adj.get(e.t).push(e.s);
+      }
+      // 初始位置：按领域聚拢在圆周附近
+      const doms = [...new Set(nodes.map(n => n.dom))];
+      doms.forEach((d, i) => {
+        const a = (i / doms.length) * Math.PI * 2;
+        const cx = W / 2 + Math.cos(a) * W * 0.28, cy = H / 2 + Math.sin(a) * H * 0.30;
+        domCount[d] = 0;
+        nodes.filter(n => n.dom === d).forEach(n => {
+          n.x = cx + (Math.random() - 0.5) * 90; n.y = cy + (Math.random() - 0.5) * 90; domCount[d]++;
+        });
+      });
+      // 指标数字（editorial count-up）
+      const stats = st && typeof st === "object" ? st : {};
+      const domN = typeof stats.domains === "number" ? stats.domains
+        : (stats.domains && typeof stats.domains === "object" ? Object.keys(stats.domains).length : doms.length);
+      const evN = typeof stats.evolved === "number" ? stats.evolved : nodes.filter(n => n.ev).length;
+      roll($("hm-skills"), nodes.length); roll($("hm-edges"), edges.length);
+      roll($("hm-evolved"), evN); roll($("hm-domains"), domN);
+      // 图例：前 5 大领域 + 进化标记
+      const top = Object.entries(domCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      legendEl.innerHTML = top.map(([d, c]) =>
+        `<span><i style="background:${colorOf(d)}"></i>${d} ${c}</span>`).join("")
+        + `<span><i class="ev"></i>进化技能 ${evN}</span>`;
+      inited = true; alpha = REDUCED ? 0 : 1;
+      pickBig();
+      if (REDUCED) { for (let i = 0; i < 320; i++) step(1); draw(); }
+      else if (!tick.raf) tick.raf = requestAnimationFrame(tick);
+    } catch (e) {
+      ctx.fillStyle = "#8a97a4"; ctx.font = "12px Microsoft YaHei"; ctx.textAlign = "center";
+      ctx.fillText("星图数据加载失败（服务未启动？）", W / 2, H / 2);
+    }
+  }
+
+  function roll(el, target) {
+    if (!el) return;
+    if (REDUCED) { el.textContent = target; return; }
+    const t0 = performance.now(), dur = 950;
+    (function f(t) {
+      const p = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(target * e);
+      if (p < 1) requestAnimationFrame(f);
+    })(t0);
+  }
+
+  function step(dt) {
+    if (dagMode) { alpha = 0; return; }       // DAG 形态下物理停用，坐标交给形态迁移
+    const a = Math.max(alpha, 0.02);
+    for (let i = 0; i < nodes.length; i++) {
+      const n = nodes[i];
+      // 斥力（栅格加速足够：98 节点 O(n²) 无压力）
+      for (let j = i + 1; j < nodes.length; j++) {
+        const o = nodes[j];
+        let dx = n.x - o.x, dy = n.y - o.y, d2 = dx * dx + dy * dy;
+        if (d2 < 1) { dx = Math.random() - 0.5; dy = Math.random() - 0.5; d2 = 1; }
+        if (d2 > 36000) continue;                 // 远距离截断
+        const f = 2400 / d2 * a, d = Math.sqrt(d2);
+        const fx = dx / d * f, fy = dy / d * f;
+        n.vx += fx; n.vy += fy; o.vx -= fx; o.vy -= fy;
+      }
+      // 向心力
+      n.vx += (W / 2 - n.x) * 0.0035 * a; n.vy += (H / 2 - n.y) * 0.0055 * a;
+    }
+    // 弹簧
+    for (const e of edges) {
+      const s = byId(e.s), t = byId(e.t); if (!s || !t) continue;
+      const dx = t.x - s.x, dy = t.y - s.y, d = Math.max(1, Math.hypot(dx, dy));
+      const f = (d - 62) * 0.028 * a, fx = dx / d * f, fy = dy / d * f;
+      s.vx += fx; s.vy += fy; t.vx -= fx; t.vy -= fy;
+    }
+    // 积分
+    for (const n of nodes) {
+      if (n === drag || n.fixed) { n.vx = n.vy = 0; continue; }
+      n.vx *= 0.86; n.vy *= 0.86;
+      n.x = Math.max(14, Math.min(W - 14, n.x + Math.max(-24, Math.min(24, n.vx))));
+      n.y = Math.max(14, Math.min(H - 14, n.y + Math.max(-24, Math.min(24, n.vy))));
+    }
+    alpha *= 0.991;
+  }
+  const idx = new Map();
+  function byId(id) { return nodes[idx.get(id)]; }
+
+  const big = new Set();                               // 常显标签：度数前 14
+  function pickBig() { [...nodes].sort((a, b) => b.deg - a.deg).slice(0, 10).forEach(n => big.add(n.id)); }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    const dimAll = focusSet !== null;
+    // 边
+    if (dagMode) { drawDagEdges(); } else for (const e of edges) {
+      const s = byId(e.s), t = byId(e.t); if (!s || !t) continue;
+      const hot = hover && (e.s === hover.id || e.t === hover.id);
+      const inF = dimAll && (focusSet.has(e.s) && focusSet.has(e.t));
+      let aLine = hot ? 0.85 : (focusSet ? (inF ? 0.5 : 0.05) : 0.14);
+      if (focusSet && !inF && !hot) aLine = 0.05;
+      ctx.strokeStyle = hot ? "rgba(36,85,122," + aLine + ")" : "rgba(34,48,62," + aLine + ")";
+      ctx.lineWidth = hot ? 1.4 : 0.8;
+      ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(t.x, t.y); ctx.stroke();
+    }
+    // 节点
+    for (const n of nodes) {
+      const isH = hover === n;
+      const dim = (focusSet && !focusSet.has(n.id)) || (hover && hover !== n && !(adj.get(hover.id) || []).includes(n.id));
+      const r = 3 + Math.min(7, n.deg * 0.55) + (isH ? 2.2 : 0);
+      ctx.globalAlpha = dim ? 0.13 : 1;
+      ctx.fillStyle = colorOf(n.dom);
+      ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, 6.2832); ctx.fill();
+      if (n.ev) { ctx.strokeStyle = "rgba(201,138,45,.85)"; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(n.x, n.y, r + 2.4, 0, 6.2832); ctx.stroke(); }
+      if (isH) { ctx.strokeStyle = "rgba(36,85,122,.9)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(n.x, n.y, r + 5, 0, 6.2832); ctx.stroke(); }
+      if (dagMode && dagMode.byNode.has(n)) {   // DAG 节点状态环（真实 Runtime 状态）
+        const di = dagMode.byNode.get(n);
+        const stt = dagMode.state.get(di) || "pending";
+        const col = stt === "running" ? "#24557a" : stt === "done" ? "#2e7d4f"
+          : stt === "failed" ? "#a8433a" : stt === "skipped" ? "#9aa7b3" : "#c98a2d";
+        ctx.strokeStyle = col; ctx.lineWidth = 2.2;
+        ctx.beginPath(); ctx.arc(n.x, n.y, r + 5.5, 0, 6.2832); ctx.stroke();
+        if (stt === "running") {                // 执行中脉冲
+          const p = (performance.now() / 600) % 1;
+          ctx.globalAlpha = (dim ? 0.13 : 1) * (1 - p) * 0.55;
+          ctx.beginPath(); ctx.arc(n.x, n.y, r + 5.5 + p * 7, 0, 6.2832); ctx.stroke();
+          ctx.globalAlpha = dim ? 0.13 : 1;
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+    // 标签（LOD：常显前 14 + 悬停邻域）
+    ctx.font = "9.5px 'Microsoft YaHei'"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+    for (const n of nodes) {
+      const show = big.has(n.id) || (hover && (n === hover || (adj.get(hover.id) || []).includes(n.id))) || (focusSet && focusSet.has(n.id));
+      if (!show) continue;
+      const dim = (focusSet && !focusSet.has(n.id)) || (hover && hover !== n && !(adj.get(hover.id) || []).includes(n.id));
+      ctx.globalAlpha = dim ? 0.15 : 0.92;
+      ctx.fillStyle = "#44576b";
+      if (n.x > W - 130) { ctx.textAlign = "right"; ctx.fillText(n.id, n.x - 9, n.y); ctx.textAlign = "left"; }
+      else ctx.fillText(n.id, n.x + 9, n.y);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  function tick() {
+    tick.raf = 0;
+    if (!visible || !inited) return;              // 恢复时由 IntersectionObserver 重新拉起
+    if (dagMode) { tickDag(); draw(); tick.raf = requestAnimationFrame(tick); return; }  // artifact flow 需连续帧
+    if (alpha > 0.003) { step(1); draw(); tick.drawn = false; }
+    else if (!tick.drawn) { draw(); tick.drawn = true; }
+    tick.raf = requestAnimationFrame(tick);
+  }
+
+  function pos(ev) { const r = cv.getBoundingClientRect(); return { x: ev.clientX - r.left, y: ev.clientY - r.top }; }
+  function pick(p) {
+    let best = null, bd = 1e9;
+    for (const n of nodes) { const d = Math.hypot(n.x - p.x, n.y - p.y); if (d < bd && d < 16) { bd = d; best = n; } }
+    return best;
+  }
+  cv.addEventListener("pointermove", ev => {
+    const p = pos(ev);
+    if (drag) { drag.x = p.x; drag.y = p.y; drag.vx = drag.vy = 0; dragMoved = true; alpha = Math.max(alpha, 0.3); draw(); return; }
+    const n = pick(p);
+    if (n !== hover) { hover = n; cv.style.cursor = n ? "pointer" : "crosshair"; if (!n) tip.style.opacity = 0; draw(); }
+    if (n) {
+      tip.innerHTML = `<b>${n.id}</b><br>领域 ${n.dom} · ${n.deg} 条关系<br>${n.ev ? "进化技能 · " : ""}质量分 ${n.reward != null ? n.reward.toFixed(2) : "—"} · 调用 ${n.pulls} 次`;
+      const br = box.getBoundingClientRect();
+      tip.style.left = Math.min(p.x + 14, br.width - 200) + "px";
+      tip.style.top = Math.min(p.y + 12, br.height - 70) + "px";
+      tip.style.opacity = 1;
+    }
+  });
+  cv.addEventListener("pointerdown", ev => {
+    const p = pos(ev); const n = pick(p);
+    if (n) { drag = n; dragMoved = false; cv.setPointerCapture(ev.pointerId); }
+  });
+  cv.addEventListener("pointerup", ev => {
+    if (drag && !dragMoved) {                       // 点击：聚焦邻域
+      if (focusSet && focusSet.has(drag.id)) focusSet = null;
+      else { focusSet = new Set([drag.id, ...(adj.get(drag.id) || [])]); }
+      alpha = Math.max(alpha, 0.25); draw();
+    }
+    drag = null;
+  });
+  cv.addEventListener("pointerleave", () => { hover = null; tip.style.opacity = 0; draw(); });
+
+  new IntersectionObserver(es => {
+    visible = es[0].isIntersecting;
+    if (visible && inited && !REDUCED && !tick.raf) tick.raf = requestAnimationFrame(tick);
+  }, { threshold: 0.02 }).observe(box);
+
+  // ============ WOW-1：Run 事件驱动星图（真实 SSE 事件，非预制动画） ============
+  // dagMode：选中的技能从 force 布局位置平滑迁移到 DAG 列布局（同一批对象，
+  // 同一 id 空间：Skill ID → Graph Node → Candidate → RunStep）。
+  let dagMode = null;      // null | {nodes:[{idx,skill,depends_on}], map:Map(idx->node), depth, state:Map(idx->status)}
+  let dagT = 0, dagTarget = 0;   // 形态迁移进度 0→1
+
+  function skillNode(name) { return name ? nodes.find(n => n.id === name) : null; }
+
+  function dagDepth(nodesDag) {
+    const dep = new Map();
+    function d(i) {
+      if (dep.has(i)) return dep.get(i);
+      const n = nodesDag[i] || nodesDag[nodesDag.findIndex(x => x.idx === i)];
+      const ds = (n && n.depends_on || []).map(d);
+      const v = ds.length ? Math.max(...ds) + 1 : 0;
+      dep.set(i, v); return v;
+    }
+    nodesDag.forEach(n => d(n.idx));
+    return dep;
+  }
+
+  function tickDag() {
+    if (dagT < dagTarget) {
+      dagT = Math.min(dagTarget, dagT + 1 / 42);   // ~42 帧完成形态迁移
+      const e = 1 - Math.pow(1 - dagT, 3);
+      dagMode.map.forEach((node, idx) => {
+        const tgt = dagMode.targets.get(idx);
+        if (!tgt) return;
+        node.x += (tgt.x - node.x) * 0.16 * (0.4 + e);
+        node.y += (tgt.y - node.y) * 0.16 * (0.4 + e);
+      });
+      tick.drawn = false;
+    }
+  }
+
+  function drawDagEdges() {
+    const d = dagMode, map = d.map;
+    for (const n of d.nodes) {
+      const t = map.get(n.idx); if (!t) continue;
+      for (const di of (n.depends_on || [])) {
+        const s = map.get(di); if (!s) continue;
+        const stt = d.state.get(di) || "pending";
+        const sts = d.state.get(n.idx) || "pending";
+        const active = (stt === "done" || stt === "failed") && sts !== "skipped";
+        ctx.strokeStyle = stt === "failed" ? "rgba(168,67,58,.75)"
+          : active ? "rgba(36,85,122,.8)" : "rgba(34,48,62,.18)";
+        ctx.lineWidth = active ? 1.6 : 1;
+        // 箭头
+        const dx = t.x - s.x, dy = t.y - s.y, len = Math.max(1, Math.hypot(dx, dy));
+        const pad = 9, ex = t.x - dx / len * pad, ey = t.y - dy / len * pad;
+        const sx = s.x + dx / len * pad, sy = s.y + dy / len * pad;
+        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+        if (active) {
+          const a = Math.atan2(dy, dx);
+          ctx.fillStyle = stt === "failed" ? "rgba(168,67,58,.9)" : "rgba(36,85,122,.9)";
+          ctx.beginPath();
+          ctx.moveTo(ex, ey);
+          ctx.lineTo(ex - 7 * Math.cos(a - .42), ey - 7 * Math.sin(a - .42));
+          ctx.lineTo(ex - 7 * Math.cos(a + .42), ey - 7 * Math.sin(a + .42));
+          ctx.closePath(); ctx.fill();
+          if (sts === "running") {           // artifact flow：流动的小点
+            const tt = (performance.now() / 700) % 1;
+            ctx.beginPath(); ctx.arc(sx + dx * tt, sy + dy * tt, 2.4, 0, 6.2832);
+            ctx.fillStyle = "rgba(36,85,122,.95)"; ctx.fill();
+          }
+        }
+      }
+    }
+  }
+
+  window.HeroNet = {
+    highlight(ids) {
+      if (!inited || !ids || !ids.length) return;
+      focusSet = new Set(ids.filter(id => nodes.some(n => n.id === id)));
+      alpha = Math.max(alpha, 0.35); tick.drawn = false; if (REDUCED) draw();
+    },
+    select(names) {                          // 排序/选择完成：被选中的进一步提高权重
+      if (!inited || !names || !names.length) return;
+      focusSet = new Set(names.filter(id => nodes.some(n => n.id === id)));
+      alpha = Math.max(alpha, 0.3); tick.drawn = false; if (REDUCED) draw();
+    },
+    dagify(nodesDag) {                       // dag.ready：收束成执行 DAG
+      if (!inited || !nodesDag || !nodesDag.length) return;
+      const map = new Map(), idOf = new Map();
+      nodesDag.forEach(n => {
+        const node = skillNode(n.skill);
+        if (node) { map.set(n.idx, node); idOf.set(n.idx, node.id); }
+      });
+      if (map.size < 2) return;
+      dagMode = { nodes: nodesDag, map, idOf, state: new Map() };
+      dagMode.byNode = new Map();
+      map.forEach((node, i) => dagMode.byNode.set(node, i));
+      dagMode.targets = null;
+      // 目标坐标
+      const dep = dagDepth(nodesDag);
+      const maxD = Math.max(...dep.values(), 0);
+      const cols = {};
+      nodesDag.forEach(n => { const dd = dep.get(n.idx) || 0; (cols[dd] = cols[dd] || []).push(n); });
+      const mL = 76, mR = 46, mT = 50, mB = 44;
+      dagMode.targets = new Map();
+      nodesDag.forEach(n => {
+        const dd = dep.get(n.idx) || 0, col = cols[dd] || [], k = col.indexOf(n);
+        const x = mL + (maxD ? dd * (W - mL - mR) / maxD : (W - mL - mR) / 2);
+        const y = col.length === 1 ? H / 2 : mT + k * (H - mT - mB) / Math.max(1, col.length - 1);
+        dagMode.targets.set(n.idx, { x, y });
+      });
+      dagT = 0; dagTarget = 1;
+      focusSet = new Set([...idOf.values()]);
+      alpha = 0.05;                          // 力布局停用，交给形态迁移
+      tick.drawn = false; if (REDUCED) { dagT = dagTarget = 1; draw(); }
+    },
+    stepState(idx, status) {                 // running/done/failed/skipped/repair
+      if (!dagMode) return;
+      dagMode.state.set(idx, status);
+      tick.drawn = false; if (REDUCED) draw();
+    },
+    exitDag() {
+      if (!dagMode) return;
+      dagMode = null; focusSet = null;
+      alpha = 0.6; tick.drawn = false; if (REDUCED) draw();
+    },
+    clear() { focusSet = null; tick.drawn = false; if (REDUCED) draw(); }
+  };
+
+  // 数据加载
+  resize();
+  load();
+})();
+</script>
+</body>
+</html>

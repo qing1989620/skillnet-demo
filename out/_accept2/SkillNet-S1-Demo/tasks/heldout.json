@@ -1,0 +1,105 @@
+{
+ "version": "heldout-v1",
+ "frozen_at": "2026-09-23",
+ "split": "heldout",
+ "note": [
+  "冻结测试集。用途只有两个：跑最终结果、给报告引用。",
+  "禁止针对本文件调参（检索权重、阈值、扩展深度、提示词都不行）。",
+  "如果发现有人针对它调过参，必须重新生成一版新的 held-out。",
+  "",
+  "与 dev 集（tasks/benchmark.json）的三点刻意差异：",
+  "1. 措辞：dev 是第一人称口语叙述（「我拿到一批…想先做…」）；",
+  "   本集是第三人称任务简报（「某研究组需…」），句式和用词都不同。",
+  "2. 领域组合：覆盖 dev 集未出现或极少出现的领域",
+  "   （神经科学、工程与仿真、数学与建模、基金申请与规划）。",
+  "3. gold 标注路径：dev 是「先写任务、再找技能」；",
+  "   本集是「先看技能卡的 capability/use_when、再据此构造任务」（skill-first），",
+  "   两条路径独立，降低同源偏置。"
+ ],
+ "tasks": [
+  {
+   "id": "H01",
+   "domain": "神经科学",
+   "query": "某研究组采集了一批静息态脑电数据，需先完成伪迹去除与频带功率提取，再据此构建功能连接矩阵并分析其网络拓扑属性，用于比较两组被试的差异。",
+   "gold": ["eeg-preprocessing", "connectome-topology", "statistical-testing"],
+   "workflow": [["eeg-preprocessing", "connectome-topology"], ["connectome-topology", "statistical-testing"]]
+  },
+  {
+   "id": "H02",
+   "domain": "天文学与空间科学",
+   "query": "一份巡天项目的光变曲线存在采样不均匀与周期性缺口，需要在抑制噪声的同时判定目标是否为变星，并给出周期估计与不确定性。",
+   "gold": ["lightcurve-analysis", "signal-processing"],
+   "workflow": [["lightcurve-analysis", "signal-processing"]]
+  },
+  {
+   "id": "H03",
+   "domain": "工程与仿真",
+   "query": "某课题组要对一个换热器流道做数值模拟，需要完成网格无关性验证、湍流模型选择与流场可视化，并与实验测得的温度序列做一致性比对。",
+   "gold": ["cfd-simulation", "fem-analysis", "signal-processing"],
+   "workflow": [["cfd-simulation", "signal-processing"]]
+  },
+  {
+   "id": "H04",
+   "domain": "数学与建模",
+   "query": "一个多目标调度问题需要建立数学模型并求解，同时要把目标函数中的高阶项做符号化简以便分析其凸性，最后给出求解方案的可信度评估。",
+   "gold": ["optimization-solver", "symbolic-derivation", "statistical-testing"],
+   "workflow": [["symbolic-derivation", "optimization-solver"]]
+  },
+  {
+   "id": "H05",
+   "domain": "蛋白质组学与结构生物学",
+   "query": "某蛋白复合物的构象变化只能用分子动力学方法考察，需要完成体系构建、平衡与长时间模拟，并从轨迹中提取关键构象与自由能信息。",
+   "gold": ["md-simulation", "protein-structure-predict"],
+   "workflow": [["protein-structure-predict", "md-simulation"]]
+  },
+  {
+   "id": "H06",
+   "domain": "数据与分析",
+   "query": "业务方给到一张字段含义不明的宽表，要求先做完整的描述性画像与缺失模式诊断，再检验几组业务假设是否成立，并说明结论的统计可靠性。",
+   "gold": ["eda-profiling", "data-cleaning", "statistical-testing"],
+   "workflow": [["data-cleaning", "eda-profiling"], ["eda-profiling", "statistical-testing"]]
+  },
+  {
+   "id": "H07",
+   "domain": "机器学习与人工智能",
+   "query": "在固定算力预算下训练一个深度模型，需要在超参空间内做有策略的搜索，同时严格避免时间序列场景下的信息泄漏，并给出模型决策的可解释证据。",
+   "gold": ["hyperparameter-search", "deep-learning-training", "leakage-guard", "model-interpretability"],
+   "workflow": [["leakage-guard", "deep-learning-training"], ["deep-learning-training", "model-interpretability"]]
+  },
+  {
+   "id": "H08",
+   "domain": "生态与环境科学",
+   "query": "某生态站希望用涡度通量观测数据反演碳通量，需要建立机器学习模型并做交叉验证，同时检验残差在空间上是否存在自相关。",
+   "gold": ["flux-tower-ml", "cross-validation-protocol", "spatial-autocorrelation"],
+   "workflow": [["flux-tower-ml", "cross-validation-protocol"], ["flux-tower-ml", "spatial-autocorrelation"]]
+  },
+  {
+   "id": "H09",
+   "domain": "临床与健康科学",
+   "query": "一项多中心研究需要基于基因型数据构建疾病风险评分，并把若干个小样本队列的证据合并，最终给出可用于临床解释的风险分层方案。",
+   "gold": ["gwas-prs", "meta-analysis", "clinical-feature-engineering"],
+   "workflow": [["gwas-prs", "meta-analysis"], ["meta-analysis", "clinical-feature-engineering"]]
+  },
+  {
+   "id": "H10",
+   "domain": "文献与研究",
+   "query": "需要为一个新兴交叉方向建立持续性的文献追踪机制，并对其中三篇关键论文做逐段精读，最后核验其引用链条是否可靠。",
+   "gold": ["arxiv-monitor", "paper-deep-read", "citation-verify"],
+   "workflow": [["arxiv-monitor", "paper-deep-read"], ["paper-deep-read", "citation-verify"]]
+  },
+  {
+   "id": "H11",
+   "domain": "学术写作与可视化",
+   "query": "一篇投稿被要求大修，需要在回复审稿意见的同时重绘全部主图，并按目标期刊的排版要求准备最终稿与会议海报。",
+   "gold": ["peer-review-response", "scientific-visualization", "venue-template", "poster-slides"],
+   "workflow": [["scientific-visualization", "venue-template"], ["peer-review-response", "venue-template"], ["venue-template", "poster-slides"]]
+  },
+  {
+   "id": "H12",
+   "domain": "基金申请与规划",
+   "query": "申请人需要在有限篇幅内把研究问题、技术路线与可行性论证组织成一份完整的项目申请书，并说明与已有工作的差异。",
+   "gold": ["research-proposal", "scientific-writing", "research-gap-mining"],
+   "workflow": [["research-gap-mining", "research-proposal"], ["research-proposal", "scientific-writing"]]
+  }
+ ]
+}

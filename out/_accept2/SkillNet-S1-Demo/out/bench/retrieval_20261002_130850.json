@@ -1,0 +1,1410 @@
+{
+ "manifest": {
+  "generated_at": "2026-10-02T13:08:50+0800",
+  "git_commit": "3cbaf0f",
+  "skill_count": 75,
+  "edge_count": 90,
+  "evolved_count": 0,
+  "domain_count": 22,
+  "library_hash": "86ac1484bf368ab9",
+  "dataset_hash": {
+   "benchmark.json": "41cadbe2dd0543ba",
+   "heldout.json": "eb4c359f2545b15a"
+  },
+  "model": "deepseek-chat",
+  "fabric_rerank": false,
+  "note": "fabric 档 rerank=False：纯图扩展消融口径，不含 LLM 重排收益"
+ },
+ "summary": {
+  "dev": {
+   "bm25": 0.8,
+   "hybrid": 0.8,
+   "fabric": 0.8583,
+   "n": 20
+  },
+  "heldout": {
+   "bm25": 0.7361,
+   "hybrid": 0.7639,
+   "fabric": 0.7222,
+   "n": 12
+  }
+ },
+ "rows": [
+  {
+   "split": "dev",
+   "id": "T01",
+   "gold_n": 3,
+   "bm25": {
+    "recall": 0.6667,
+    "latency_ms": 2.4,
+    "selected": [
+     "scrna-qc-clustering",
+     "differential-expression",
+     "variant-calling",
+     "survival-analysis",
+     "statistical-testing"
+    ]
+   },
+   "hybrid": {
+    "recall": 0.6667,
+    "latency_ms": 2.0,
+    "selected": [
+     "scrna-qc-clustering",
+     "differential-expression",
+     "variant-calling",
+     "survival-analysis",
+     "statistical-testing"
+    ]
+   },
+   "fabric": {
+    "recall": 1.0,
+    "latency_ms": 1.9,
+    "selected": [
+     "scrna-qc-clustering",
+     "scientific-visualization",
+     "differential-expression",
+     "variant-calling",
+     "survival-analysis"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 1,
+    "added_relevant": 1,
+    "added_noise": 0
+   }
+  },
+  {
+   "split": "dev",
+   "id": "T02",
+   "gold_n": 3,
+   "bm25": {
+    "recall": 0.6667,
+    "latency_ms": 1.1,
+    "selected": [
+     "dft-formation-energy",
+     "crystal-structure-predict",
+     "admet-prediction",
+     "materials-screening",
+     "protein-structure-predict"
+    ]
+   },
+   "hybrid": {
+    "recall": 0.6667,
+    "latency_ms": 1.7,
+    "selected": [
+     "dft-formation-energy",
+     "crystal-structure-predict",
+     "materials-screening",
+     "admet-prediction",
+     "protein-structure-predict"
+    ]
+   },
+   "fabric": {
+    "recall": 0.6667,
+    "latency_ms": 1.7,
+    "selected": [
+     "dft-formation-energy",
+     "crystal-structure-predict",
+     "materials-screening",
+     "admet-prediction",
+     "protein-structure-predict"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 0,
+    "added_relevant": 0,
+    "added_noise": 0
+   }
+  },
+  {
+   "split": "dev",
+   "id": "T03",
+   "gold_n": 3,
+   "bm25": {
+    "recall": 0.6667,
+    "latency_ms": 0.8,
+    "selected": [
+     "literature-review",
+     "deep-learning-training",
+     "citation-verify",
+     "admet-prediction",
+     "connectome-topology"
+    ]
+   },
+   "hybrid": {
+    "recall": 0.6667,
+    "latency_ms": 1.5,
+    "selected": [
+     "literature-review",
+     "deep-learning-training",
+     "citation-verify",
+     "admet-prediction",
+     "connectome-topology"
+    ]
+   },
+   "fabric": {
+    "recall": 0.3333,
+    "latency_ms": 1.5,
+    "selected": [
+     "literature-review",
+     "pdf",
+     "paper-deep-read",
+     "meta-analysis",
+     "deep-learning-training"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 3,
+    "added_relevant": 0,
+    "added_noise": 3
+   }
+  },
+  {
+   "split": "dev",
+   "id": "T04",
+   "gold_n": 3,
+   "bm25": {
+    "recall": 1.0,
+    "latency_ms": 0.9,
+    "selected": [
+     "clinical-feature-engineering",
+     "leakage-guard",
+     "survival-analysis",
+     "statistical-testing",
+     "eda-profiling"
+    ]
+   },
+   "hybrid": {
+    "recall": 1.0,
+    "latency_ms": 1.4,
+    "selected": [
+     "clinical-feature-engineering",
+     "leakage-guard",
+     "statistical-testing",
+     "survival-analysis",
+     "eda-profiling"
+    ]
+   },
+   "fabric": {
+    "recall": 1.0,
+    "latency_ms": 1.5,
+    "selected": [
+     "clinical-feature-engineering",
+     "gwas-prs",
+     "leakage-guard",
+     "statistical-testing",
+     "survival-analysis"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 1,
+    "added_relevant": 0,
+    "added_noise": 1
+   }
+  },
+  {
+   "split": "dev",
+   "id": "T05",
+   "gold_n": 2,
+   "bm25": {
+    "recall": 1.0,
+    "latency_ms": 1.0,
+    "selected": [
+     "econometric-panel",
+     "causal-inference",
+     "statistical-testing",
+     "meta-analysis",
+     "protein-structure-predict"
+    ]
+   },
+   "hybrid": {
+    "recall": 1.0,
+    "latency_ms": 1.5,
+    "selected": [
+     "econometric-panel",
+     "causal-inference",
+     "statistical-testing",
+     "meta-analysis",
+     "protein-structure-predict"
+    ]
+   },
+   "fabric": {
+    "recall": 1.0,
+    "latency_ms": 1.5,
+    "selected": [
+     "econometric-panel",
+     "causal-inference",
+     "statistical-testing",
+     "connectome-topology",
+     "spatial-autocorrelation"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 2,
+    "added_relevant": 0,
+    "added_noise": 2
+   }
+  },
+  {
+   "split": "dev",
+   "id": "T06",
+   "gold_n": 3,
+   "bm25": {
+    "recall": 1.0,
+    "latency_ms": 0.9,
+    "selected": [
+     "molecular-docking",
+     "md-simulation",
+     "admet-prediction",
+     "protein-structure-predict",
+     "cross-validation-protocol"
+    ]
+   },
+   "hybrid": {
+    "recall": 1.0,
+    "latency_ms": 1.5,
+    "selected": [
+     "molecular-docking",
+     "md-simulation",
+     "admet-prediction",
+     "protein-structure-predict",
+     "molecular-descriptors"
+    ]
+   },
+   "fabric": {
+    "recall": 1.0,
+    "latency_ms": 1.6,
+    "selected": [
+     "molecular-docking",
+     "md-simulation",
+     "admet-prediction",
+     "protein-structure-predict",
+     "molecular-descriptors"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 1,
+    "added_relevant": 0,
+    "added_noise": 1
+   }
+  },
+  {
+   "split": "dev",
+   "id": "T07",
+   "gold_n": 3,
+   "bm25": {
+    "recall": 1.0,
+    "latency_ms": 0.9,
+    "selected": [
+     "tabular-ml-baseline",
+     "leakage-guard",
+     "causal-inference",
+     "flux-tower-ml",
+     "cross-validation-protocol"
+    ]
+   },
+   "hybrid": {
+    "recall": 1.0,
+    "latency_ms": 1.4,
+    "selected": [
+     "tabular-ml-baseline",
+     "leakage-guard",
+     "causal-inference",
+     "cross-validation-protocol",
+     "statistical-testing"
+    ]
+   },
+   "fabric": {
+    "recall": 0.6667,
+    "latency_ms": 1.5,
+    "selected": [
+     "tabular-ml-baseline",
+     "leakage-guard",
+     "survival-analysis",
+     "factor-backtest",
+     "causal-inference"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 2,
+    "added_relevant": 0,
+    "added_noise": 2
+   }
+  },
+  {
+   "split": "dev",
+   "id": "T08",
+   "gold_n": 2,
+   "bm25": {
+    "recall": 1.0,
+    "latency_ms": 0.7,
+    "selected": [
+     "pathway-enrichment",
+     "differential-expression",
+     "scrna-qc-clustering",
+     "gwas-prs",
+     "variant-calling"
+    ]
+   },
+   "hybrid": {
+    "recall": 1.0,
+    "latency_ms": 1.2,
+    "selected": [
+     "pathway-enrichment",
+     "differential-expression",
+     "scrna-qc-clustering",
+     "gwas-prs",
+     "connectome-topology"
+    ]
+   },
+   "fabric": {
+    "recall": 1.0,
+    "latency_ms": 1.4,
+    "selected": [
+     "pathway-enrichment",
+     "differential-expression",
+     "scientific-visualization",
+     "scrna-qc-clustering",
+     "gwas-prs"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 1,
+    "added_relevant": 0,
+    "added_noise": 1
+   }
+  },
+  {
+   "split": "dev",
+   "id": "T09",
+   "gold_n": 3,
+   "bm25": {
+    "recall": 1.0,
+    "latency_ms": 1.2,
+    "selected": [
+     "venue-template",
+     "citation-verify",
+     "scientific-writing",
+     "paper-deep-read",
+     "literature-review"
+    ]
+   },
+   "hybrid": {
+    "recall": 1.0,
+    "latency_ms": 1.8,
+    "selected": [
+     "venue-template",
+     "citation-verify",
+     "scientific-writing",
+     "paper-deep-read",
+     "literature-review"
+    ]
+   },
+   "fabric": {
+    "recall": 1.0,
+    "latency_ms": 1.5,
+    "selected": [
+     "citation-verify",
+     "venue-template",
+     "scientific-writing",
+     "paper-deep-read",
+     "scientific-visualization"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 1,
+    "added_relevant": 0,
+    "added_noise": 1
+   }
+  },
+  {
+   "split": "dev",
+   "id": "T10",
+   "gold_n": 3,
+   "bm25": {
+    "recall": 1.0,
+    "latency_ms": 0.8,
+    "selected": [
+     "scientific-visualization",
+     "statistical-testing",
+     "data-cleaning",
+     "hyperparameter-search",
+     "eda-profiling"
+    ]
+   },
+   "hybrid": {
+    "recall": 1.0,
+    "latency_ms": 1.8,
+    "selected": [
+     "scientific-visualization",
+     "statistical-testing",
+     "data-cleaning",
+     "eda-profiling",
+     "causal-inference"
+    ]
+   },
+   "fabric": {
+    "recall": 0.6667,
+    "latency_ms": 1.8,
+    "selected": [
+     "scientific-visualization",
+     "statistical-testing",
+     "scientific-writing",
+     "scrna-qc-clustering",
+     "thermodynamics-calc"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 3,
+    "added_relevant": 0,
+    "added_noise": 3
+   }
+  },
+  {
+   "split": "dev",
+   "id": "T11",
+   "gold_n": 2,
+   "bm25": {
+    "recall": 1.0,
+    "latency_ms": 0.9,
+    "selected": [
+     "connectome-topology",
+     "deep-learning-training",
+     "spatial-autocorrelation",
+     "econometric-panel",
+     "statistical-testing"
+    ]
+   },
+   "hybrid": {
+    "recall": 1.0,
+    "latency_ms": 1.4,
+    "selected": [
+     "connectome-topology",
+     "statistical-testing",
+     "eda-profiling",
+     "deep-learning-training",
+     "causal-inference"
+    ]
+   },
+   "fabric": {
+    "recall": 1.0,
+    "latency_ms": 1.4,
+    "selected": [
+     "connectome-topology",
+     "statistical-testing",
+     "eda-profiling",
+     "deep-learning-training",
+     "causal-inference"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 2,
+    "added_relevant": 0,
+    "added_noise": 2
+   }
+  },
+  {
+   "split": "dev",
+   "id": "T12",
+   "gold_n": 2,
+   "bm25": {
+    "recall": 0.5,
+    "latency_ms": 0.8,
+    "selected": [
+     "remote-sensing-index",
+     "signal-processing",
+     "variant-calling",
+     "lightcurve-analysis",
+     "flux-tower-ml"
+    ]
+   },
+   "hybrid": {
+    "recall": 0.5,
+    "latency_ms": 1.3,
+    "selected": [
+     "remote-sensing-index",
+     "signal-processing",
+     "data-cleaning",
+     "causal-inference",
+     "variant-calling"
+    ]
+   },
+   "fabric": {
+    "recall": 1.0,
+    "latency_ms": 1.4,
+    "selected": [
+     "remote-sensing-index",
+     "spatial-autocorrelation",
+     "signal-processing",
+     "data-cleaning",
+     "leakage-guard"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 3,
+    "added_relevant": 1,
+    "added_noise": 2
+   }
+  },
+  {
+   "split": "dev",
+   "id": "T13",
+   "gold_n": 3,
+   "bm25": {
+    "recall": 0.3333,
+    "latency_ms": 0.9,
+    "selected": [
+     "flux-tower-ml",
+     "dft-formation-energy",
+     "admet-prediction",
+     "molecular-docking",
+     "tabular-ml-baseline"
+    ]
+   },
+   "hybrid": {
+    "recall": 0.3333,
+    "latency_ms": 1.4,
+    "selected": [
+     "flux-tower-ml",
+     "spatial-autocorrelation",
+     "eda-profiling",
+     "remote-sensing-index",
+     "factor-backtest"
+    ]
+   },
+   "fabric": {
+    "recall": 0.6667,
+    "latency_ms": 1.5,
+    "selected": [
+     "flux-tower-ml",
+     "cross-validation-protocol",
+     "spatial-autocorrelation",
+     "remote-sensing-index",
+     "eda-profiling"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 4,
+    "added_relevant": 1,
+    "added_noise": 3
+   }
+  },
+  {
+   "split": "dev",
+   "id": "T14",
+   "gold_n": 2,
+   "bm25": {
+    "recall": 1.0,
+    "latency_ms": 1.0,
+    "selected": [
+     "md-simulation",
+     "molecular-docking",
+     "crystal-structure-predict",
+     "statistical-testing",
+     "fem-analysis"
+    ]
+   },
+   "hybrid": {
+    "recall": 1.0,
+    "latency_ms": 1.5,
+    "selected": [
+     "md-simulation",
+     "molecular-docking",
+     "crystal-structure-predict",
+     "statistical-testing",
+     "data-cleaning"
+    ]
+   },
+   "fabric": {
+    "recall": 1.0,
+    "latency_ms": 1.5,
+    "selected": [
+     "md-simulation",
+     "protein-structure-predict",
+     "molecular-docking",
+     "statistical-testing",
+     "crystal-structure-predict"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 1,
+    "added_relevant": 0,
+    "added_noise": 1
+   }
+  },
+  {
+   "split": "dev",
+   "id": "T15",
+   "gold_n": 2,
+   "bm25": {
+    "recall": 1.0,
+    "latency_ms": 0.8,
+    "selected": [
+     "admet-prediction",
+     "molecular-descriptors",
+     "dft-formation-energy",
+     "molecular-docking",
+     "clinical-feature-engineering"
+    ]
+   },
+   "hybrid": {
+    "recall": 1.0,
+    "latency_ms": 1.3,
+    "selected": [
+     "admet-prediction",
+     "molecular-descriptors",
+     "dft-formation-energy",
+     "clinical-feature-engineering",
+     "molecular-docking"
+    ]
+   },
+   "fabric": {
+    "recall": 1.0,
+    "latency_ms": 1.4,
+    "selected": [
+     "admet-prediction",
+     "molecular-descriptors",
+     "dft-formation-energy",
+     "materials-screening",
+     "clinical-feature-engineering"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 1,
+    "added_relevant": 0,
+    "added_noise": 1
+   }
+  },
+  {
+   "split": "dev",
+   "id": "T16",
+   "gold_n": 2,
+   "bm25": {
+    "recall": 0.5,
+    "latency_ms": 0.7,
+    "selected": [
+     "factor-backtest",
+     "flux-tower-ml",
+     "canvas-design",
+     "tabular-ml-baseline",
+     "slack-gif-creator"
+    ]
+   },
+   "hybrid": {
+    "recall": 0.5,
+    "latency_ms": 1.2,
+    "selected": [
+     "factor-backtest",
+     "slack-gif-creator",
+     "canvas-design",
+     "algorithmic-art",
+     "frontend-design"
+    ]
+   },
+   "fabric": {
+    "recall": 1.0,
+    "latency_ms": 1.3,
+    "selected": [
+     "factor-backtest",
+     "econometric-panel",
+     "leakage-guard",
+     "slack-gif-creator",
+     "canvas-design"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 2,
+    "added_relevant": 1,
+    "added_noise": 1
+   }
+  },
+  {
+   "split": "dev",
+   "id": "T17",
+   "gold_n": 2,
+   "bm25": {
+    "recall": 0.5,
+    "latency_ms": 1.0,
+    "selected": [
+     "thermodynamics-calc",
+     "symbolic-derivation",
+     "protein-structure-predict",
+     "differential-expression",
+     "tabular-ml-baseline"
+    ]
+   },
+   "hybrid": {
+    "recall": 0.5,
+    "latency_ms": 1.6,
+    "selected": [
+     "thermodynamics-calc",
+     "symbolic-derivation",
+     "protein-structure-predict",
+     "differential-expression",
+     "tabular-ml-baseline"
+    ]
+   },
+   "fabric": {
+    "recall": 1.0,
+    "latency_ms": 1.9,
+    "selected": [
+     "thermodynamics-calc",
+     "scientific-visualization",
+     "symbolic-derivation",
+     "protein-structure-predict",
+     "differential-expression"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 1,
+    "added_relevant": 1,
+    "added_noise": 0
+   }
+  },
+  {
+   "split": "dev",
+   "id": "T18",
+   "gold_n": 2,
+   "bm25": {
+    "recall": 0.5,
+    "latency_ms": 0.8,
+    "selected": [
+     "lightcurve-analysis",
+     "remote-sensing-index",
+     "cross-validation-protocol",
+     "survival-analysis",
+     "variant-calling"
+    ]
+   },
+   "hybrid": {
+    "recall": 0.5,
+    "latency_ms": 1.3,
+    "selected": [
+     "lightcurve-analysis",
+     "remote-sensing-index",
+     "cross-validation-protocol",
+     "survival-analysis",
+     "eda-profiling"
+    ]
+   },
+   "fabric": {
+    "recall": 0.5,
+    "latency_ms": 1.3,
+    "selected": [
+     "lightcurve-analysis",
+     "remote-sensing-index",
+     "spatial-autocorrelation",
+     "cross-validation-protocol",
+     "tabular-ml-baseline"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 2,
+    "added_relevant": 0,
+    "added_noise": 2
+   }
+  },
+  {
+   "split": "dev",
+   "id": "T19",
+   "gold_n": 3,
+   "bm25": {
+    "recall": 0.6667,
+    "latency_ms": 0.7,
+    "selected": [
+     "econometric-panel",
+     "protein-structure-predict",
+     "data-cleaning",
+     "code-helper",
+     "causal-inference"
+    ]
+   },
+   "hybrid": {
+    "recall": 0.6667,
+    "latency_ms": 1.2,
+    "selected": [
+     "econometric-panel",
+     "data-cleaning",
+     "protein-structure-predict",
+     "leakage-guard",
+     "causal-inference"
+    ]
+   },
+   "fabric": {
+    "recall": 0.6667,
+    "latency_ms": 1.3,
+    "selected": [
+     "econometric-panel",
+     "statistical-testing",
+     "data-cleaning",
+     "protein-structure-predict",
+     "md-simulation"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 2,
+    "added_relevant": 1,
+    "added_noise": 1
+   }
+  },
+  {
+   "split": "dev",
+   "id": "T20",
+   "gold_n": 2,
+   "bm25": {
+    "recall": 1.0,
+    "latency_ms": 0.9,
+    "selected": [
+     "peer-review-response",
+     "scientific-writing",
+     "factor-backtest",
+     "paper-deep-read",
+     "statistical-testing"
+    ]
+   },
+   "hybrid": {
+    "recall": 1.0,
+    "latency_ms": 1.4,
+    "selected": [
+     "peer-review-response",
+     "factor-backtest",
+     "paper-deep-read",
+     "scientific-writing",
+     "statistical-testing"
+    ]
+   },
+   "fabric": {
+    "recall": 1.0,
+    "latency_ms": 1.6,
+    "selected": [
+     "peer-review-response",
+     "factor-backtest",
+     "paper-deep-read",
+     "econometric-panel",
+     "scientific-writing"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 1,
+    "added_relevant": 0,
+    "added_noise": 1
+   }
+  },
+  {
+   "split": "heldout",
+   "id": "H01",
+   "gold_n": 3,
+   "bm25": {
+    "recall": 1.0,
+    "latency_ms": 1.1,
+    "selected": [
+     "eeg-preprocessing",
+     "connectome-topology",
+     "survival-analysis",
+     "differential-expression",
+     "statistical-testing"
+    ]
+   },
+   "hybrid": {
+    "recall": 1.0,
+    "latency_ms": 1.7,
+    "selected": [
+     "eeg-preprocessing",
+     "connectome-topology",
+     "survival-analysis",
+     "statistical-testing",
+     "differential-expression"
+    ]
+   },
+   "fabric": {
+    "recall": 0.6667,
+    "latency_ms": 1.7,
+    "selected": [
+     "eeg-preprocessing",
+     "connectome-topology",
+     "signal-processing",
+     "survival-analysis",
+     "clinical-feature-engineering"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 2,
+    "added_relevant": 0,
+    "added_noise": 2
+   }
+  },
+  {
+   "split": "heldout",
+   "id": "H02",
+   "gold_n": 2,
+   "bm25": {
+    "recall": 0.5,
+    "latency_ms": 0.9,
+    "selected": [
+     "lightcurve-analysis",
+     "cfd-simulation",
+     "materials-screening",
+     "survival-analysis",
+     "crystal-structure-predict"
+    ]
+   },
+   "hybrid": {
+    "recall": 0.5,
+    "latency_ms": 1.4,
+    "selected": [
+     "lightcurve-analysis",
+     "survival-analysis",
+     "cfd-simulation",
+     "materials-screening",
+     "causal-inference"
+    ]
+   },
+   "fabric": {
+    "recall": 1.0,
+    "latency_ms": 1.4,
+    "selected": [
+     "lightcurve-analysis",
+     "signal-processing",
+     "survival-analysis",
+     "cfd-simulation",
+     "scientific-visualization"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 2,
+    "added_relevant": 1,
+    "added_noise": 1
+   }
+  },
+  {
+   "split": "heldout",
+   "id": "H03",
+   "gold_n": 3,
+   "bm25": {
+    "recall": 0.3333,
+    "latency_ms": 1.0,
+    "selected": [
+     "cfd-simulation",
+     "symbolic-derivation",
+     "algotrace",
+     "protein-structure-predict",
+     "md-simulation"
+    ]
+   },
+   "hybrid": {
+    "recall": 0.3333,
+    "latency_ms": 1.5,
+    "selected": [
+     "cfd-simulation",
+     "symbolic-derivation",
+     "scientific-visualization",
+     "venue-template",
+     "poster-slides"
+    ]
+   },
+   "fabric": {
+    "recall": 0.3333,
+    "latency_ms": 1.5,
+    "selected": [
+     "cfd-simulation",
+     "scientific-visualization",
+     "symbolic-derivation",
+     "optimization-solver",
+     "eda-profiling"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 3,
+    "added_relevant": 0,
+    "added_noise": 3
+   }
+  },
+  {
+   "split": "heldout",
+   "id": "H04",
+   "gold_n": 3,
+   "bm25": {
+    "recall": 0.6667,
+    "latency_ms": 0.9,
+    "selected": [
+     "optimization-solver",
+     "symbolic-derivation",
+     "protein-structure-predict",
+     "materials-screening",
+     "tabular-ml-baseline"
+    ]
+   },
+   "hybrid": {
+    "recall": 0.6667,
+    "latency_ms": 1.5,
+    "selected": [
+     "optimization-solver",
+     "symbolic-derivation",
+     "materials-screening",
+     "protein-structure-predict",
+     "leakage-guard"
+    ]
+   },
+   "fabric": {
+    "recall": 0.6667,
+    "latency_ms": 1.6,
+    "selected": [
+     "optimization-solver",
+     "symbolic-derivation",
+     "materials-screening",
+     "protein-structure-predict",
+     "leakage-guard"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 1,
+    "added_relevant": 0,
+    "added_noise": 1
+   }
+  },
+  {
+   "split": "heldout",
+   "id": "H05",
+   "gold_n": 2,
+   "bm25": {
+    "recall": 0.5,
+    "latency_ms": 1.0,
+    "selected": [
+     "md-simulation",
+     "molecular-docking",
+     "thermodynamics-calc",
+     "remote-sensing-index",
+     "admet-prediction"
+    ]
+   },
+   "hybrid": {
+    "recall": 0.5,
+    "latency_ms": 1.5,
+    "selected": [
+     "md-simulation",
+     "molecular-docking",
+     "thermodynamics-calc",
+     "admet-prediction",
+     "survival-analysis"
+    ]
+   },
+   "fabric": {
+    "recall": 0.5,
+    "latency_ms": 1.5,
+    "selected": [
+     "md-simulation",
+     "molecular-docking",
+     "thermodynamics-calc",
+     "scientific-visualization",
+     "admet-prediction"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 1,
+    "added_relevant": 0,
+    "added_noise": 1
+   }
+  },
+  {
+   "split": "heldout",
+   "id": "H06",
+   "gold_n": 3,
+   "bm25": {
+    "recall": 0.6667,
+    "latency_ms": 0.9,
+    "selected": [
+     "statistical-testing",
+     "model-interpretability",
+     "pathway-enrichment",
+     "spatial-autocorrelation",
+     "eda-profiling"
+    ]
+   },
+   "hybrid": {
+    "recall": 0.6667,
+    "latency_ms": 1.4,
+    "selected": [
+     "statistical-testing",
+     "pathway-enrichment",
+     "model-interpretability",
+     "eda-profiling",
+     "spatial-autocorrelation"
+    ]
+   },
+   "fabric": {
+    "recall": 0.3333,
+    "latency_ms": 1.5,
+    "selected": [
+     "statistical-testing",
+     "connectome-topology",
+     "econometric-panel",
+     "scientific-visualization",
+     "survival-analysis"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 4,
+    "added_relevant": 0,
+    "added_noise": 4
+   }
+  },
+  {
+   "split": "heldout",
+   "id": "H07",
+   "gold_n": 4,
+   "bm25": {
+    "recall": 0.75,
+    "latency_ms": 1.0,
+    "selected": [
+     "hyperparameter-search",
+     "model-interpretability",
+     "cross-validation-protocol",
+     "deep-learning-training",
+     "tabular-ml-baseline"
+    ]
+   },
+   "hybrid": {
+    "recall": 0.75,
+    "latency_ms": 1.5,
+    "selected": [
+     "hyperparameter-search",
+     "model-interpretability",
+     "tabular-ml-baseline",
+     "deep-learning-training",
+     "clinical-feature-engineering"
+    ]
+   },
+   "fabric": {
+    "recall": 0.75,
+    "latency_ms": 1.6,
+    "selected": [
+     "hyperparameter-search",
+     "model-interpretability",
+     "tabular-ml-baseline",
+     "deep-learning-training",
+     "cross-validation-protocol"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 0,
+    "added_relevant": 0,
+    "added_noise": 0
+   }
+  },
+  {
+   "split": "heldout",
+   "id": "H08",
+   "gold_n": 3,
+   "bm25": {
+    "recall": 1.0,
+    "latency_ms": 0.9,
+    "selected": [
+     "spatial-autocorrelation",
+     "flux-tower-ml",
+     "cross-validation-protocol",
+     "dft-formation-energy",
+     "tabular-ml-baseline"
+    ]
+   },
+   "hybrid": {
+    "recall": 1.0,
+    "latency_ms": 1.5,
+    "selected": [
+     "spatial-autocorrelation",
+     "flux-tower-ml",
+     "cross-validation-protocol",
+     "tabular-ml-baseline",
+     "dft-formation-energy"
+    ]
+   },
+   "fabric": {
+    "recall": 1.0,
+    "latency_ms": 1.5,
+    "selected": [
+     "spatial-autocorrelation",
+     "flux-tower-ml",
+     "remote-sensing-index",
+     "cross-validation-protocol",
+     "tabular-ml-baseline"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 1,
+    "added_relevant": 0,
+    "added_noise": 1
+   }
+  },
+  {
+   "split": "heldout",
+   "id": "H09",
+   "gold_n": 3,
+   "bm25": {
+    "recall": 1.0,
+    "latency_ms": 1.0,
+    "selected": [
+     "gwas-prs",
+     "clinical-feature-engineering",
+     "variant-calling",
+     "survival-analysis",
+     "meta-analysis"
+    ]
+   },
+   "hybrid": {
+    "recall": 1.0,
+    "latency_ms": 1.5,
+    "selected": [
+     "gwas-prs",
+     "clinical-feature-engineering",
+     "literature-review",
+     "meta-analysis",
+     "survival-analysis"
+    ]
+   },
+   "fabric": {
+    "recall": 1.0,
+    "latency_ms": 1.5,
+    "selected": [
+     "gwas-prs",
+     "clinical-feature-engineering",
+     "leakage-guard",
+     "literature-review",
+     "meta-analysis"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 2,
+    "added_relevant": 0,
+    "added_noise": 2
+   }
+  },
+  {
+   "split": "heldout",
+   "id": "H10",
+   "gold_n": 3,
+   "bm25": {
+    "recall": 1.0,
+    "latency_ms": 0.9,
+    "selected": [
+     "citation-verify",
+     "arxiv-monitor",
+     "paper-deep-read",
+     "literature-review",
+     "tabular-ml-baseline"
+    ]
+   },
+   "hybrid": {
+    "recall": 1.0,
+    "latency_ms": 1.3,
+    "selected": [
+     "citation-verify",
+     "arxiv-monitor",
+     "paper-deep-read",
+     "literature-review",
+     "research-gap-mining"
+    ]
+   },
+   "fabric": {
+    "recall": 1.0,
+    "latency_ms": 1.3,
+    "selected": [
+     "citation-verify",
+     "paper-deep-read",
+     "arxiv-monitor",
+     "venue-template",
+     "literature-review"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 1,
+    "added_relevant": 0,
+    "added_noise": 1
+   }
+  },
+  {
+   "split": "heldout",
+   "id": "H11",
+   "gold_n": 4,
+   "bm25": {
+    "recall": 0.75,
+    "latency_ms": 0.8,
+    "selected": [
+     "venue-template",
+     "peer-review-response",
+     "scientific-writing",
+     "poster-slides",
+     "canvas-design"
+    ]
+   },
+   "hybrid": {
+    "recall": 0.75,
+    "latency_ms": 1.3,
+    "selected": [
+     "venue-template",
+     "peer-review-response",
+     "poster-slides",
+     "canvas-design",
+     "scientific-writing"
+    ]
+   },
+   "fabric": {
+    "recall": 0.75,
+    "latency_ms": 1.3,
+    "selected": [
+     "venue-template",
+     "peer-review-response",
+     "poster-slides",
+     "scientific-writing",
+     "canvas-design"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 0,
+    "added_relevant": 0,
+    "added_noise": 0
+   }
+  },
+  {
+   "split": "heldout",
+   "id": "H12",
+   "gold_n": 3,
+   "bm25": {
+    "recall": 0.6667,
+    "latency_ms": 0.9,
+    "selected": [
+     "research-proposal",
+     "paper-deep-read",
+     "scientific-writing",
+     "statistical-testing",
+     "literature-review"
+    ]
+   },
+   "hybrid": {
+    "recall": 1.0,
+    "latency_ms": 1.3,
+    "selected": [
+     "research-proposal",
+     "paper-deep-read",
+     "literature-review",
+     "research-gap-mining",
+     "scientific-writing"
+    ]
+   },
+   "fabric": {
+    "recall": 0.6667,
+    "latency_ms": 1.4,
+    "selected": [
+     "research-proposal",
+     "paper-deep-read",
+     "literature-review",
+     "pdf",
+     "research-gap-mining"
+    ]
+   },
+   "fabric_gain": {
+    "added_n": 2,
+    "added_relevant": 1,
+    "added_noise": 1
+   }
+  }
+ ]
+}
