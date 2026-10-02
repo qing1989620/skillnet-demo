@@ -230,6 +230,26 @@ verify 31/31 · selfcheck 18/18
 
 ---
 
+## Round 4 · DAG=Runtime + WOW-1 接线 + 当前库基准（2026-10-02）
+
+**Outcome First**
+
+1. **用户体验**：首页输入任务不再跳页——星图直接响应真实 Run：候选点亮 → 选中加权 → 收束成 DAG（同一批节点平滑迁移，非 fade 切换）→ 节点状态环 + 边上产物流动 → Run Summary（一次通过/修复/失败/跳过 + 关键路径）。
+2. **技术真实性**：编排 workflow 成为权威执行图（此前 build_steps 收了参数不用、强行线性）；图调度器支持真并行（context 隔离账本）；挖出被「LLM 瞬时问题」掩盖多日的真崩溃（worker 对 to_dict() 属性访问，/api/runs 检索完成即崩）。
+3. **性能**：关键路径自动计算（失败步计入）；并发度真实记录（本例 DAG 无并行机会时诚实标 dag-serial）。
+4. **评估**：当前库基准首次以 manifest 锁定 98/200/23/41 + library_hash；fabric 补回/噪声首次量化（dev 补 44 位中 7 相关 37 噪声）。
+5. **仍挡住 DONE**：Experiment B（Skill Usage）/C（Evolution）/D（LinUCB）未跑；/graph 未升级四模式；Skill Profile 未建；E2E p50 未测。
+
+**Change 摘要**：pipeline.py（build_steps workflow 权威化 + _run_steps_graph 图调度器 + _critical_path）；server.py（workflow 接线 + res.selected 崩溃修复）；briefing.html（HeroNet.dagify/stepState + startRealRun 本页 SSE 消费 + 阶段条/Summary）；tools/bench_current_library.py（新）。
+
+**Evidence**：pytest 34/34 ×4（新增 3 项 DAG 集成测试）；真实 E2E b5bf6a46-130540：COMPLETED，step3 try=3 修复后成功，critical_path [1,3,2] 138.1s；基准 out/bench/retrieval_20261002_130948.json。
+
+**Reviewer attack**：Eng——"你的并行是假的吧？"：max_concurrency 由调度器锁内计数，A→(B,C)→D 测试证明 B/C 重叠窗口 ≥0.5s；PM——"首页 Live Run 和 /run 页重复？"：首页是产品舞台（叙事+星图），/run 是完整工作台，Summary 卡互链不互斥。
+
+**Decision**：KEEP。下一轮优先级：Experiment B/C/D 并行跑 → /graph 四模式 → Skill Profile → LLM waterfall。
+
+---
+
 ## Round 3 计划（下一步）
 
 **P0 剩余**
