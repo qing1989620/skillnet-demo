@@ -48,10 +48,24 @@ Orchestrator workflow（技能依赖边，权威）
 
 ## 6. Evaluation（Current，manifest 锁定）
 
-Recall@5（98 技能/200 边库）：dev bm25 0.725 → hybrid 0.742 → **fabric 0.825**；
-heldout bm25 0.653 → **hybrid 0.708** → fabric 0.667。
-**负面结果如实**：fabric 纯图扩展补回中噪声占 84–95%（dev 37/44、heldout 18/19）——佐证 LLM 重排与置信度分流的必要性；heldout 上 fabric 不敌 hybrid，不包装。
-*Historical*：51 技能/62 边与 90/162 时代的实验数字仅作历史参照，不冒充当前结论。
+**Experiment A — Retrieval**（Recall@5，98 技能/200 边库）：
+dev bm25 0.725 → hybrid 0.742 → **fabric 0.825**；heldout bm25 0.653 → **hybrid 0.708** → fabric 0.667。
+负面结果如实：fabric 纯图扩展补回中噪声占 84–95%（dev 37/44、heldout 18/19）——佐证 LLM 重排与置信度分流的必要性；heldout 上 fabric 不敌 hybrid，不包装。
+
+**Experiment B — Skill Usage**（5 dev 任务 × 3 模式 × 真实 deepseek 执行，skill_usage_20261002_135229.json）：
+
+| 模式 | 成功率 | 平均尝试 | 修复率 | 验收通过 | 成本/run | 时延 |
+|---|---|---|---|---|---|---|
+| none | 100% | 1.4 | 40% | 17.8 | ¥0.143 | 14.7s |
+| prompt | 100% | **1.0** | **0%** | **20.2** | ¥0.157 | **14.3s** |
+| contract | 100% | 1.2 | 20% | 17.6 | ¥0.200 | 17.6s |
+
+**负面结果如实（天花板效应）**：在简单单步 dev 任务上三种模式全部成功，
+contract 模式成本最高（+40% vs none）、速度最慢，本样本**不支持「契约模式更好」**——
+其价值主张（陷阱规避、逐条验收）需要更难任务/heldout 验证。
+历史实验（51 技能时代，contract 信息量 2217 vs 1285/1510 字）标 **Historical**，不冒充当前结论。
+
+*Historical*：51 技能/62 边与 90/162 时代的实验数字仅作历史参照。
 
 ## 7. Tests
 
@@ -79,14 +93,14 @@ pytest 34/34 ×3 · verify 31/31 · selfcheck 18/18；含 DAG 集成测试（A�
 |---|---|---|
 | Visual | **88** | 截图包成立；组件一致性与获奖级差距（dashboard/run 未完全对齐 Hero 质感） |
 | Runtime | **90** | DAG=Runtime 已证；缺结构化日志、并发 smoke、cancel×DAG 复验 |
-| Evaluation | **78** | 当前库只有检索基准；B/C/D 实验未跑、judge 独立性未解决 |
+| Evaluation | **82** | A/B 两实验已在当前库落地（含负面结果）；C/D 未跑、judge 独立性未解决、B 样本仅 n=5 单步任务 |
 | Engineering | **86** | 34×3 全绿零联网；缺结构化日志与并发 smoke |
 | Demo | **82** | Moment 1–3 极强；Moment 4/5 的 UI 深度不足 |
-| **综合** | **NOT DONE — 84/100** | 距 DONE 最大缺口：Evaluation 78（需 ≥90）与 Demo 82（需 ≥95） |
+| **综合** | **NOT DONE — 86/100** | 距 DONE 最大缺口：Evaluation 82（需 ≥90，C/D 实验未跑）与 Demo 82（需 ≥95） |
 
 ## 11. 通往 DONE 的剩余工作（按优先级）
 
-1. 当前库重跑 Experiment B（none/prompt/contract 三模式真实对照）——直接抬升 Evaluation 与 Demo 的 Evidence Moment
+1. Experiment B 扩样本：heldout 任务 + 多步真实任务（简单任务天花板效应掩盖契约模式价值）
 2. Evidence deep-link + L3 展示 + Evolution Candidate 卡片进 Live Run（补齐 Moment 4/5）
 3. 结构化日志 + 并发 smoke test（抬 Runtime/Engineering 过 92）
 4. dashboard/run 组件对齐 Hero 设计 tokens（Visual → 95）
