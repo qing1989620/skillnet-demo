@@ -168,7 +168,8 @@ def _mark_downstream_skipped(run: Run, failed_idx: int, reason: str) -> list[int
 # 单步执行（生成 → 沙箱 → 修复 → L1/L2 检查 → L3 技能验收）
 # ----------------------------------------------------------------------
 def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
-             budget: Any, up_artifacts: list[str], max_attempts: int = MAX_ATTEMPTS) -> None:
+             budget: Any, up_artifacts: list[str], max_attempts: int = MAX_ATTEMPTS,
+             mode: str = "contract") -> None:
     skill = lib.get(step.skill) if (step.skill and lib is not None) else None
     step_dir = workspace / f"step{step.idx + 1}"
     step_dir.mkdir(parents=True, exist_ok=True)
@@ -223,9 +224,9 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         if attempt == 1:
             prompt = _gen_code_prompt(run.task, {"action": step.action, "key_params": [],
                                                  "expected_output": ""}, skill, stack,
-                                      mode="contract", carried=carried)
+                                      mode=mode, carried=carried)
         else:
-            prompt = _fix_prompt(code, step.attempts[-1].stderr, skill, attempt, mode="contract")
+            prompt = _fix_prompt(code, step.attempts[-1].stderr, skill, attempt, mode=mode)
         _emit(run, "code.generating", step=step.idx, attempt=attempt)
         c0, y0 = _llm_snapshot()
         _t = now_ms()

@@ -322,22 +322,22 @@ const EV_TEXT = (ev) => {
     case "retrieval.completed": return `Retrieved <b>${(d.selected||[]).length}</b> candidates · decision <b>${esc(d.decision||"")}</b> · ${fmtMs(d.duration_ms||0)}`;
     case "ranking.completed": return `Ranking ready — top: <b>${esc(d.top||"—")}</b>`;
     case "orchestration.completed": return `Workflow ready — <b>${(d.skills||[]).length}</b> skills · ${(d.workflow||0)} edges · ${fmtMs(d.duration_ms||0)}`;
-    case "plan.created": return `Plan created — <b>${d.steps}</b> steps · ${fmtMs(d.duration_ms||0)}`;
-    case "run.executing": return `Executing <b>${d.steps}</b> step(s)`;
-    case "step.started": return `Step ${ev.step+1} started — ${esc((d.action||"").slice(0,80))}${d.skill?` · <b>${esc(d.skill)}</b>`:""}`;
-    case "step.inputs": return `Step ${ev.step+1} input ← <b>${(d.files||[]).join(", ")}</b>`;
-    case "code.generating": return `Step ${ev.step+1}: generating code (attempt ${d.attempt})`;
-    case "step.attempt": return `Step ${ev.step+1} attempt #${d.attempt} <b>${d.ok?"PASSED":"FAILED"}</b>${d.error_kind?` · ${esc(d.error_kind)}`:""} · ${fmtMs(d.duration_ms||0)}`;
-    case "step.retry": return `Step ${ev.step+1}: repair requested — ${esc(d.reason||"")}`;
+    case "plan.created": return `研究方案 — <b>${d.steps}</b> 个步骤 · ${fmtMs(d.duration_ms||0)}`;
+    case "run.executing": return `开始执行 <b>${d.steps}</b> 个步骤`;
+    case "step.started": return `Step ${ev.step+1} 开始 — ${esc((d.action||"").slice(0,80))}${d.skill?` · <b>${esc(d.skill)}</b>`:""}`;
+    case "step.inputs": return `Step ${ev.step+1} 输入 ← <b>${(d.files||[]).join(", ")}</b>`;
+    case "code.generating": return `Step ${ev.step+1}: 生成代码（第 ${d.attempt} 次尝试）`;
+    case "step.attempt": return `Step ${ev.step+1} 尝试 #${d.attempt} <b>${d.ok?"成功":"失败"}</b>${d.error_kind?` · ${esc(d.error_kind)}`:""} · ${fmtMs(d.duration_ms||0)}`;
+    case "step.retry": return `Step ${ev.step+1}: 请求修复 — ${esc(d.reason||"")}`;
     case "artifact.created": return `✓ <b>${esc(d.name)}</b> 已创建 (${(d.bytes/1024).toFixed(1)} KB)`;
     case "check.result": return `${d.passed?"✓":"✗"} ${esc(d.name)}${d.passed?"":` — ${esc((d.detail||"").slice(0,70))}`}`;
-    case "step.completed": return `Step ${ev.step+1} completed — ${d.status} · ${d.artifacts} artifacts · checks ${d.checks} · ${fmtMs(d.duration_ms||0)}`;
-    case "step.error": return `Step ${ev.step+1} error — ${esc((d.error||"").slice(0,90))}`;
-    case "steps.skipped": return `Steps skipped ${JSON.stringify(d.steps)} — ${esc(d.reason||"")}`;
-    case "execution.finished": return `Execution finished — done <b>${d.done}</b> · failed <b>${d.failed}</b> · ${fmtMs(d.duration_ms||0)}`;
-    case "judge.completed": return `Semantic review — weighted <b>${d.weighted}</b>${d.coverage!=null?` · coverage ${d.coverage}`:""}`;
-    case "evolution.proposed": return `Skill distillation — ${d.accepted?`accepted <b>${esc(d.name)}</b>`:"not admitted"} · library ${d.library_size}`;
-    case "run.finished": return `<b>Run ${d.status}</b> · ${fmtMs(d.duration_ms||0)} · ¥${Number(d.cost||0).toFixed(3)}`;
+    case "step.completed": return `Step ${ev.step+1} 完成 — ${d.status} · 产物 ${d.artifacts} · 验收 ${d.checks} · ${fmtMs(d.duration_ms||0)}`;
+    case "step.error": return `Step ${ev.step+1} 异常 — ${esc((d.error||"").slice(0,90))}`;
+    case "steps.skipped": return `步骤 ${JSON.stringify(d.steps)} 被跳过 — ${esc(d.reason||"")}`;
+    case "execution.finished": return `执行结束 — 成功 <b>${d.done}</b> · 失败 <b>${d.failed}</b> · ${fmtMs(d.duration_ms||0)}`;
+    case "judge.completed": return `语义评审 — 加权 <b>${d.weighted}</b>${d.coverage!=null?` · 覆盖 ${d.coverage}`:""}`;
+    case "evolution.proposed": return `技能蒸馏 — ${d.accepted?`已准入 <b>${esc(d.name)}</b>`:"未准入"} · 库规模 ${d.library_size}`;
+    case "run.finished": return `<b>运行结束 ${d.status}</b> · ${fmtMs(d.duration_ms||0)} · ¥${Number(d.cost||0).toFixed(3)}`;
     default: return `${esc(ev.type)} ${esc(JSON.stringify(d).slice(0,90))}`;
   }
 };
@@ -434,10 +434,10 @@ function stepHtml(s){
   <div class="ins-sec"><div class="ins-k">阶段细分（这段时间花在哪）</div>${stageRows}</div>
   <div class="ins-sec"><div class="ins-k">执行尝试</div>${attempts}</div>
   <div class="ins-sec"><div class="ins-k">产物验收（分层）</div>
-    <div class="layer l1"><div class="lh"><span>L1 · Deterministic — VERIFIED</span><span>${l1.filter(c=>c.passed).length}/${l1.length}</span></div>
+    <div class="layer l1"><div class="lh"><span>L1 · 确定性检查 — VERIFIED</span><span>${l1.filter(c=>c.passed).length}/${l1.length}</span></div>
       <div class="note" style="border-style:solid;margin:0 0 6px">机器可验证约束（文件/表头/行数/数值范围/可编译）。<b>不等价于结果正确。</b></div>${chk(l1)}</div>
-    <div class="layer l2"><div class="lh"><span>L2 · Skill assertions</span><span>${l2.filter(c=>c.passed).length}/${l2.length}</span></div>${chk(l2)}</div>
-    <div class="layer l3"><div class="lh"><span>L3 · Semantic review</span><span>${l3.filter(c=>c.passed).length}/${l3.length}</span></div>
+    <div class="layer l2"><div class="lh"><span>L2 · 技能断言 — ASSERTIONS</span><span>${l2.filter(c=>c.passed).length}/${l2.length}</span></div>${chk(l2)}</div>
+    <div class="layer l3"><div class="lh"><span>L3 · 语义评审 — SEMANTIC REVIEW</span><span>${l3.filter(c=>c.passed).length}/${l3.length}</span></div>
       <div class="note" style="border-style:solid;margin:0 0 6px">由模型判定，且<b>与被评者是同一模型</b>——只作参考，不构成独立证据。</div>${chk(l3)}</div>
     ${s.verify_skip_reason?`<div class="note">${esc(s.verify_skip_reason)}</div>`:""}
   </div>
