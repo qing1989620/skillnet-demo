@@ -46,6 +46,18 @@ def retriever() -> Retriever:
     return Retriever(SkillLibrary(build_seed_skills())).build()
 
 
+@pytest.fixture(autouse=True)
+def _no_real_llm(monkeypatch):
+    """策略测试只验证 BM25 阈值与分流语义，不打真实 LLM。
+
+    实测踩过：fabric 模式每个查询触发一次真实 router 调用（42 任务 ≈ 43 次），
+    慢（25s+）、花钱，且这些调用全部记进进程级默认账本，把后续 pipeline
+    测试的 40 次调用预算直接烧光（BudgetExceeded: 41 > 40），4 个测试被毒死。
+    mock 成空数组 = rerank 失败的官方降级路径（保持 BM25 序，决策语义不变）。
+    """
+    monkeypatch.setattr("skillnet.retriever.chat_json", lambda *a, **kw: [])
+
+
 def _tasks(name: str) -> list[dict]:
     return json.loads((ROOT / "tasks" / name).read_text(encoding="utf-8"))["tasks"]
 

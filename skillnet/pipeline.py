@@ -93,6 +93,21 @@ def build_steps(plan: dict[str, Any], workflow: list[list[str]] | None = None) -
     return out
 
 
+def _copy_retry(src: pathlib.Path, dst: pathlib.Path, tries: int = 4) -> bool:
+    """带退避的文件复制。Windows 上新写文件可能被 AV/索引服务短暂锁定，
+    一次 copy2 的 OSError 不代表真失败——静默吞掉会导致产物传播偶发断裂
+    （实测踩过：下游 FileNotFoundError，run 在 PARTIAL/VERIFYING 间摇摆）。"""
+    for i in range(tries):
+        try:
+            shutil.copy2(src, dst)
+            return True
+        except OSError:
+            if i == tries - 1:
+                return False
+            time.sleep(0.05 * (2 ** i))
+    return False
+
+
 def _mark_downstream_skipped(run: Run, failed_idx: int, reason: str) -> list[int]:
     """把依赖失败步骤的下游标记为 skipped（依赖链阻断）。"""
     skipped: list[int] = []
@@ -118,7 +133,11 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
     step_dir.mkdir(parents=True, exist_ok=True)
 
     # ---- 前序产物进入本步输入（文件系统级真实）----
+    # 注意：这里只登记名字；物理复制在每个 attempt 的 try 目录里做——
+    # 沙箱 cwd 是 step_dir/tryN，把文件复制到 step_dir 根目录下游代码读不到
+    # （实测踩过：s1.inputs 报告成功、沙箱里 FileNotFoundError）。
     carried: list[str] = []
+    carry_pairs: list[tuple[str, str]] = []
     for name in up_artifacts:
         src = workspace / "artifacts" / name
         if not src.is_file():
@@ -126,11 +145,8 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         # 关键：恢复原始文件名（workspace 里的展示名带 stepN_ 前缀，但上游代码
         # 是按原名写的——下游沙箱里必须叫原名，否则 "clean.csv" 读不到）
         orig = re.sub(r"^step\d+_", "", name)
-        try:
-            shutil.copy2(src, step_dir / orig)
-            carried.append(orig)
-        except OSError:
-            pass
+        carry_pairs.append((name, orig))
+        carried.append(orig)
     step.inputs = carried
     if carried:
         _emit(run, "step.inputs", step=step.idx, files=carried)
@@ -157,6 +173,11 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
 
     for attempt in range(1, max_attempts + 1):
         check_budget(run)
+        # 本 attempt 的沙箱工作目录 + 携带产物落位（cwd=tryN，文件必须在 tryN 里）
+        workdir = step_dir / f"try{attempt}"
+        workdir.mkdir(parents=True, exist_ok=True)
+        for aname, orig in carry_pairs:
+            _copy_retry(workspace / "artifacts" / aname, workdir / orig)
         phase = "code_gen" if attempt == 1 else f"repair{attempt - 1}_llm"
         if attempt == 1:
             prompt = _gen_code_prompt(run.task, {"action": step.action, "key_params": [],
@@ -194,7 +215,7 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         if _syntax_err is None:
             _t = now_ms()
             result = sandbox.run_python(code, timeout=90, keep_dir=True,
-                                        workdir=step_dir / f"try{attempt}")
+                                        workdir=workdir)
             step.stages[f"sandbox_try{attempt}_ms"] = now_ms() - _t
         else:
             _se = _syntax_err
@@ -235,9 +256,7 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
             continue
         name = f"step{step.idx + 1}_{src.name}"
         dst = art_dir / name
-        try:
-            shutil.copy2(src, dst)
-        except OSError:
+        if not _copy_retry(src, dst):
             continue
         paths.append(dst)
         art = Artifact(name=name, kind="真实运行产物", bytes=dst.stat().st_size,

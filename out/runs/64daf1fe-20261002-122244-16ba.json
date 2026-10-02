@@ -1,0 +1,807 @@
+{
+ "run_id": "64daf1fe-20261002-122244-16ba",
+ "task": "数学建模",
+ "task_fp": "64daf1fe",
+ "status": "FAILED",
+ "model": "deepseek-chat",
+ "skills": [],
+ "retrieval": {
+  "bm25": {
+   "query": "数学建模",
+   "mode": "bm25",
+   "selected": [
+    "math-modeling-pipeline",
+    "optimization-solver",
+    "symbolic-derivation",
+    "math-theory-proof-and-simulation-verify",
+    "competition-data-science-pipeline"
+   ],
+   "candidates": [
+    {
+     "name": "math-modeling-pipeline",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 12.99235,
+     "rank": 1,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "optimization-solver",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 8.50423,
+     "rank": 2,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "symbolic-derivation",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 6.53992,
+     "rank": 3,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "math-theory-proof-and-simulation-verify",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 4.78584,
+     "rank": 4,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "competition-data-science-pipeline",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 4.07951,
+     "rank": 5,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "competition-reproducible-ml-pipeline",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 3.83697,
+     "rank": 6,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "survival-analysis",
+     "channels": [
+      "bm25"
+     ],
+     "score": 3.23353,
+     "rank": 7,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "clinical-feature-engineering",
+     "channels": [
+      "bm25"
+     ],
+     "score": 3.17994,
+     "rank": 8,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "eda-profiling",
+     "channels": [
+      "bm25"
+     ],
+     "score": 3.1537,
+     "rank": 9,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "flux-tower-ml",
+     "channels": [
+      "bm25"
+     ],
+     "score": 3.14514,
+     "rank": 10,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "broad-topic-to-evidence-pipeline",
+     "channels": [
+      "bm25"
+     ],
+     "score": 3.0437,
+     "rank": 11,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "missing-data-baseline-modeling",
+     "channels": [
+      "bm25"
+     ],
+     "score": 2.58888,
+     "rank": 12,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "differential-expression",
+     "channels": [
+      "bm25"
+     ],
+     "score": 2.33273,
+     "rank": 13,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "spatial-autocorrelation",
+     "channels": [
+      "bm25"
+     ],
+     "score": 2.27733,
+     "rank": 14,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "molecular-descriptors",
+     "channels": [
+      "bm25"
+     ],
+     "score": 2.23308,
+     "rank": 15,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "tabular-ml-baseline",
+     "channels": [
+      "bm25"
+     ],
+     "score": 2.12578,
+     "rank": 16,
+     "rerank_score": null,
+     "note": ""
+    }
+   ],
+   "trace": [
+    "BM25 召回 16 条"
+   ],
+   "confidence": 0.7532,
+   "raw_bm25_top": 11.2977,
+   "fusion_score": 12.9924,
+   "decision": "confirm",
+   "decision_reason": "BM25 原始分 11.30 落在 [2.0, 15.0)：建议展示候选让使用者确认后再执行",
+   "degraded": false,
+   "components": {
+    "bm25": true,
+    "vector": false,
+    "structural": false,
+    "graph_expansion": false,
+    "llm_rerank": false
+   },
+   "degraded_reason": ""
+  },
+  "hybrid": {
+   "query": "数学建模",
+   "mode": "hybrid",
+   "selected": [
+    "math-modeling-pipeline",
+    "optimization-solver",
+    "symbolic-derivation",
+    "math-theory-proof-and-simulation-verify",
+    "competition-data-science-pipeline"
+   ],
+   "candidates": [
+    {
+     "name": "math-modeling-pipeline",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 1.15,
+     "rank": 1,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "optimization-solver",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 0.72508,
+     "rank": 2,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "symbolic-derivation",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 0.46909,
+     "rank": 3,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "math-theory-proof-and-simulation-verify",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.27773,
+     "rank": 4,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "competition-data-science-pipeline",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 0.26154,
+     "rank": 5,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "competition-reproducible-ml-pipeline",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.18143,
+     "rank": 6,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "econometric-panel",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.0856,
+     "rank": 7,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "survival-analysis",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.08241,
+     "rank": 8,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "clinical-feature-engineering",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.07842,
+     "rank": 9,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "eda-profiling",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.07647,
+     "rank": 10,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "flux-tower-ml",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.07583,
+     "rank": 11,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "broad-topic-to-evidence-pipeline",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.06491,
+     "rank": 12,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "two-group-statistical-testing-with-effect-size",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.05533,
+     "rank": 13,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "missing-data-baseline-modeling",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.03108,
+     "rank": 14,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "contract-review",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.02045,
+     "rank": 15,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "exam-prep-quantified-closed-loop",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.02039,
+     "rank": 16,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "scrna-qc-clustering",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.01791,
+     "rank": 17,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "peer-review-response",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.01594,
+     "rank": 18,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "differential-expression",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.0154,
+     "rank": 19,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "dose-response-ic50-pipeline",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.01445,
+     "rank": 20,
+     "rerank_score": null,
+     "note": ""
+    }
+   ],
+   "trace": [
+    "BM25 召回 16 条",
+    "语义向量召回 20 条",
+    "结构信号召回 4 条",
+    "加权融合后候选池 30 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
+   ],
+   "confidence": 0.7532,
+   "raw_bm25_top": 11.2977,
+   "fusion_score": 1.15,
+   "decision": "confirm",
+   "decision_reason": "BM25 原始分 11.30 落在 [2.0, 15.0)：建议展示候选让使用者确认后再执行",
+   "degraded": false,
+   "components": {
+    "bm25": true,
+    "vector": true,
+    "structural": true,
+    "graph_expansion": false,
+    "llm_rerank": false
+   },
+   "degraded_reason": ""
+  },
+  "fabric": {
+   "query": "数学建模",
+   "mode": "fabric",
+   "selected": [
+    "math-modeling-pipeline",
+    "optimization-solver",
+    "symbolic-derivation",
+    "statistical-testing",
+    "scientific-visualization"
+   ],
+   "candidates": [
+    {
+     "name": "math-modeling-pipeline",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 1.25664,
+     "rank": 1,
+     "rerank_score": 1.0,
+     "note": ""
+    },
+    {
+     "name": "optimization-solver",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 0.76924,
+     "rank": 2,
+     "rerank_score": 0.8333333333333334,
+     "note": ""
+    },
+    {
+     "name": "symbolic-derivation",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 0.49765,
+     "rank": 3,
+     "rerank_score": 0.6666666666666667,
+     "note": ""
+    },
+    {
+     "name": "statistical-testing",
+     "channels": [
+      "fused"
+     ],
+     "score": 1.07363,
+     "rank": 4,
+     "rerank_score": 0.5,
+     "note": ""
+    },
+    {
+     "name": "scientific-visualization",
+     "channels": [
+      "fused"
+     ],
+     "score": 1.04236,
+     "rank": 5,
+     "rerank_score": 0.33333333333333337,
+     "note": ""
+    },
+    {
+     "name": "math-theory-proof-and-simulation-verify",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.28607,
+     "rank": 6,
+     "rerank_score": 0.16666666666666663,
+     "note": ""
+    },
+    {
+     "name": "competition-data-science-pipeline",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 0.26154,
+     "rank": 7,
+     "rerank_score": -15.5,
+     "note": ""
+    },
+    {
+     "name": "leakage-guard",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.24441,
+     "rank": 8,
+     "rerank_score": -15.5,
+     "note": ""
+    },
+    {
+     "name": "estimator-robustness-audit",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.24441,
+     "rank": 9,
+     "rerank_score": -15.5,
+     "note": ""
+    },
+    {
+     "name": "data-cleaning",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.23016,
+     "rank": 10,
+     "rerank_score": -15.5,
+     "note": ""
+    },
+    {
+     "name": "tabular-ml-baseline",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.23016,
+     "rank": 11,
+     "rerank_score": -15.5,
+     "note": ""
+    },
+    {
+     "name": "competition-reproducible-ml-pipeline",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.18687,
+     "rank": 12,
+     "rerank_score": -15.5,
+     "note": ""
+    },
+    {
+     "name": "econometric-panel",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.0856,
+     "rank": 13,
+     "rerank_score": -15.5,
+     "note": ""
+    },
+    {
+     "name": "survival-analysis",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.08241,
+     "rank": 14,
+     "rerank_score": -15.5,
+     "note": ""
+    },
+    {
+     "name": "eda-profiling",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.07876,
+     "rank": 15,
+     "rerank_score": -15.5,
+     "note": ""
+    },
+    {
+     "name": "clinical-feature-engineering",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.07842,
+     "rank": 16,
+     "rerank_score": -15.5,
+     "note": ""
+    },
+    {
+     "name": "flux-tower-ml",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.07583,
+     "rank": 17,
+     "rerank_score": -15.5,
+     "note": ""
+    },
+    {
+     "name": "broad-topic-to-evidence-pipeline",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.06491,
+     "rank": 18,
+     "rerank_score": -15.5,
+     "note": ""
+    },
+    {
+     "name": "two-group-statistical-testing-with-effect-size",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.05533,
+     "rank": 19,
+     "rerank_score": -15.5,
+     "note": ""
+    },
+    {
+     "name": "missing-data-baseline-modeling",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.03108,
+     "rank": 20,
+     "rerank_score": -15.5,
+     "note": ""
+    },
+    {
+     "name": "contract-review",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.02045,
+     "rank": 21,
+     "rerank_score": -15.5,
+     "note": ""
+    },
+    {
+     "name": "exam-prep-quantified-closed-loop",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.02039,
+     "rank": 22,
+     "rerank_score": -15.5,
+     "note": ""
+    },
+    {
+     "name": "scrna-qc-clustering",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.01791,
+     "rank": 23,
+     "rerank_score": -15.5,
+     "note": ""
+    },
+    {
+     "name": "peer-review-response",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.01594,
+     "rank": 24,
+     "rerank_score": -15.5,
+     "note": ""
+    },
+    {
+     "name": "differential-expression",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.0154,
+     "rank": 25,
+     "rerank_score": -15.5,
+     "note": ""
+    },
+    {
+     "name": "dose-response-ic50-pipeline",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.01445,
+     "rank": 26,
+     "rerank_score": -15.5,
+     "note": ""
+    }
+   ],
+   "trace": [
+    "BM25 召回 16 条",
+    "语义向量召回 20 条",
+    "结构信号召回 4 条",
+    "加权融合后候选池 30 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+    "关系图扩展补入 6 条：statistical-testing, scientific-visualization, leakage-guard, estimator-robustness-audit, data-cleaning, tabular-ml-baseline",
+    "LLM 重排 6 条候选",
+    "三档对照完成：bm25 5 / hybrid 5 / fabric 5"
+   ],
+   "confidence": 0.7532,
+   "raw_bm25_top": 11.2977,
+   "fusion_score": 1.2566,
+   "decision": "confirm",
+   "decision_reason": "BM25 原始分 11.30 落在 [2.0, 15.0)：建议展示候选让使用者确认后再执行",
+   "degraded": false,
+   "components": {
+    "bm25": true,
+    "vector": true,
+    "structural": true,
+    "graph_expansion": true,
+    "llm_rerank": true
+   },
+   "degraded_reason": ""
+  }
+ },
+ "ranking": [],
+ "plan": {},
+ "judge": {},
+ "steps": [],
+ "step_stats": {
+  "total": 0,
+  "done": 0,
+  "failed": 0,
+  "skipped": 0,
+  "retried": 0
+ },
+ "artifacts": [],
+ "feedback": [],
+ "evolution": {},
+ "staged": {
+  "retrieval_ms": 475
+ },
+ "budget": {
+  "max_cost_yuan": 1.0,
+  "max_llm_calls": 40,
+  "max_seconds": 300,
+  "max_attempts_per_step": 3
+ },
+ "cost_yuan": 0.0029,
+ "tokens": 1334,
+ "llm_calls": 1,
+ "duration_ms": 679,
+ "started_at_ms": 1790914964979,
+ "ended_at_ms": 1790914965658,
+ "error": "AttributeError: 'dict' object has no attribute 'selected'",
+ "events": [
+  {
+   "ts_ms": 1790914965183,
+   "type": "run.started",
+   "step": null,
+   "data": {
+    "task": "数学建模"
+   }
+  },
+  {
+   "ts_ms": 1790914965658,
+   "type": "run.error",
+   "step": null,
+   "data": {
+    "error": "AttributeError: 'dict' object has no attribute 'selected'"
+   }
+  }
+ ]
+}

@@ -36,6 +36,21 @@ def _mkrun(fp: str = "abc123", status: str | None = None) -> Run:
     return r
 
 
+@pytest.fixture(autouse=True)
+def _fresh_llm_ledger():
+    """每个测试前后重置进程级默认账本。
+
+    账本是 contextvar 缺省回落的全局单例（见 llm.current_ledger）：任何先跑的
+    测试若真实调了 LLM（如 fabric 重排），会把 run.llm_calls 顶到预算上限，
+    让本文件的 pipeline 测试集体死于 BudgetExceeded（实测 41 > 40 毒死 4 个）。
+    """
+    from skillnet import llm as _llm
+
+    _llm.LEDGER.reset()
+    yield
+    _llm.LEDGER.reset()
+
+
 def test_run_id_unique_per_execution(tmp_path):
     """同一任务重复运行：task_fp 相同，run_id 不同（历史不覆盖）。"""
     a, b = _mkrun(), _mkrun()
@@ -215,6 +230,7 @@ def test_two_step_dependency_and_artifact_propagation(tmp_path, monkeypatch):
     plan = {"steps": [{"action": "产数据"}, {"action": "读数据做分析"}]}
     _mock_llm(monkeypatch, [GOOD_STEP1, GOOD_STEP2])
     pipeline.execute_run(r, None, tmp_path / "ws", plan, max_steps=2)
+    pipeline.finalize_status(r)          # 终态唯一权威：execute_run 后必须 finalize（见 pipeline.py 注释）
     assert r.status == "COMPLETED"
     s1, s2 = r.steps[0], r.steps[1]
     assert s1.status == "done" and s2.status == "done"
@@ -231,6 +247,7 @@ def test_failed_upstream_blocks_downstream(tmp_path, monkeypatch):
     plan = {"steps": [{"action": "第一步会失败"}, {"action": "依赖第一步的产物"}]}
     _mock_llm(monkeypatch, [BAD_STEP, BAD_STEP])       # 第 1 步两次都语法错
     pipeline.execute_run(r, None, tmp_path / "ws", plan, max_steps=2)
+    pipeline.finalize_status(r)
     assert r.steps[0].status == "failed"
     assert r.steps[1].status == "skipped"
     assert r.status in ("FAILED", "PARTIAL")
@@ -243,8 +260,10 @@ def test_retry_then_success(tmp_path, monkeypatch):
     plan = {"steps": [{"action": "产数据并落盘"}]}
     _mock_llm(monkeypatch, [BAD_STEP, GOOD_STEP1])
     pipeline.execute_run(r, None, tmp_path / "ws", plan, max_steps=3)
+    pipeline.finalize_status(r)
     s = r.steps[0]
     assert s.status == "done" and s.n_attempts == 2 and s.fixed
+    assert r.status == "COMPLETED"
 
 
 def test_partial_completion(tmp_path, monkeypatch):
@@ -254,6 +273,7 @@ def test_partial_completion(tmp_path, monkeypatch):
     plan = {"steps": [{"action": "产数据"}, {"action": "第二步写坏文件"}]}
     _mock_llm(monkeypatch, [GOOD_STEP1, BAD_STEP, BAD_STEP, BAD_STEP])
     pipeline.execute_run(r, None, tmp_path / "ws", plan, max_steps=2)
+    pipeline.finalize_status(r)
     assert r.status in ("PARTIAL", "FAILED")
     assert r.steps[0].status == "done"
     # 第一步的产物在 workspace/artifacts 里保留（不被第二步失败抹掉）
