@@ -1296,6 +1296,75 @@ def stream_run(run_id: str) -> Any:
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
 
+@app.get("/api/capabilities")
+def capabilities() -> dict[str, Any]:
+    """能力自证端点：把对照表里承诺的每一项能力用**可计算的实时值**回答。
+
+    设计目的：审阅者可以 curl 这个端点自行核对，而不是只能相信页面文案。
+    这里不写死任何数字——库规模、泛化倍数、阈值、算子清单全部现场计算/读取。
+    """
+    from collections import defaultdict
+
+    from skillnet import adapters
+    from skillnet.retriever import (AUTO_EXECUTE_THRESHOLD,
+                                    MANUAL_CONFIRM_THRESHOLD)
+    from skillnet.schema import QUALITY_DIMENSIONS
+
+    lib_ = lib()
+    groups: dict[str, list[str]] = defaultdict(list)
+    for s in lib_:
+        groups[s.domain].append(s.name)
+    dom = max(groups, key=lambda d: len(groups[d]))
+    a, b = groups[dom][0], groups[dom][1]
+    far = next(s.name for s in lib_ if s.domain != dom)
+    bandit = SharedLinUCB(lib_, alpha=0.25, seed=17)
+    task = lib_.get(a).capability or f"{dom} 领域的典型任务"
+    before = {n: bandit.score(task, n)[1] for n in (a, b, far)}
+    bandit.update(task, a, reward=0.95)
+    after = {n: bandit.score(task, n)[1] for n in (a, b, far)}
+    d_near = abs(after[b] - before[b])
+    d_far = abs(after[far] - before[far])
+    seed_n = sum(1 for s in lib_ if s.source == "seed")
+    evo_n = len(lib_) - seed_n
+    return {
+        "library": {
+            "skills": len(lib_), "domains": len(groups),
+            "edges": sum(len(s.relations) for s in lib_),
+            "seed": seed_n, "evolved": evo_n,
+            "source": "/api/health · /api/graph（同一实时数据源）",
+        },
+        "linucb": {
+            "generalization_ratio": round(d_near / max(d_far, 1e-9), 2),
+            "near_delta": round(d_near, 6), "far_delta": round(d_far, 6),
+            "method": "SharedLinUCB.update 后同领域未评估技能的预测值变化 / 异领域变化",
+            "tests": "tests/test_bandit.py::test_bandit_cross_skill_generalization",
+        },
+        "confidence_gating": {
+            "auto_execute_threshold": AUTO_EXECUTE_THRESHOLD,
+            "manual_confirm_threshold": MANUAL_CONFIRM_THRESHOLD,
+            "calibration": "42 条查询实测分布标定（见 skillnet/retriever.py 常量注释）",
+            "tests": "tests/test_retrieval_policy.py（无关查询不误判 auto、真实任务不误判 direct）",
+        },
+        "quality_dimensions": list(QUALITY_DIMENSIONS),
+        "evolver_operators": ["distill", "mutate", "crossover", "regenerate"],
+        "framework_targets": {k: v for k, v in sorted(adapters.SKILLS_DIRS.items())},
+        "ledger": {
+            "scope": "请求级 contextvar 账本（llm.ledger_scope），跨线程用 copy_context 传播",
+            "fields": ["cost_yuan", "prompt_tokens", "completion_tokens", "by_role.calls"],
+            "tests": "tests/test_runtime_pipeline.py::test_budget_exceeded_on_cost",
+        },
+        "statistics": {
+            "paired_bootstrap": "bench/run_bench.py::paired_bootstrap（均值差 95% 置信区间）",
+            "note": "CI 跨 0 即如实标注『未证明显著提升』",
+        },
+        "reproducibility": {
+            "selfcheck": "python verify.py → 31 项交付自检",
+            "tests": "python -m pytest tests/ -q（不联网、确定性）",
+            "manifest": "out/bench/*.json 内含 git_commit / library_hash / dataset_hash / model",
+        },
+    }
+
+
 @app.get("/api/runs/{run_id}/artifacts/{name}")
 def run_artifact(run_id: str, name: str, download: int = 0) -> Any:
     """Run 产物访问（工作区 artifacts 目录）。

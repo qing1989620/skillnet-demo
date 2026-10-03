@@ -49,7 +49,7 @@
   </div>
   <div class="meta">
     <b>交付日期</b> 2026-10-02 · <b>版本</b> git <code>1b58b9f</code> ·
-    <b>当前库</b> 100 技能 / 200+ 关系边 / 25 演化（随每次运行自动增长，实时以接口 /api/health 为准）<br>
+    <b>当前库</b> 102 技能 / 44 领域 / 217 关系边 / 27 演化（随每次运行自动增长，实时以 /api/health 为准）<br>
     <b>测试</b> pytest 35/35 ×3 全绿（不联网、确定性）· 交付自检 31/31 · 自检 18/18<br>
     <b>模型</b> deepseek-chat（可配置；未配密钥时浏览/检索/星图/导出功能完整可用）
   </div>
@@ -58,7 +58,7 @@
 <h2>1 · 结论摘要（一页讲完）</h2>
 <div class="hl">
   <b>做了什么</b>：把「Agent 技能」从散落的提示词文本，变成一套有检索、有编排、真执行、可验收、能进化的<b>资产体系</b>，
-  并以可运行 Demo 完整呈现。技能库 100 项 / 200 余条类型化关系边（其中 25 项由系统自主演化产生，随运行持续增长）。
+  并以可运行 Demo 完整呈现。技能库 102 项 / 44 个领域 / 217 条类型化关系边（其中 27 项由系统自主演化产生，随运行持续增长）。
 </div>
 <p><b>关键数字</b>（全部来自当前库实测，manifest 锁定 git commit 与库哈希）：</p>
 <ul>
@@ -163,6 +163,8 @@
   <li>验证测试：<code>python -m pytest tests/ -q</code>（预期 35 passed，约 3 秒，不联网）</li>
   <li>复现基准：<code>python tools/bench_current_library.py</code>（检索，零 API 成本）、<code>python tools/eval_skill_usage.py 5</code>（技能使用，消耗少量 API 额度）</li>
 </ol>
+<p><b>能力自证</b>：对照表里承诺的每项能力都可通过 <code>GET /api/capabilities</code> 自行核对——库规模、LinUCB 泛化比（现场计算 ≈1.25×）、分流阈值、五维质量分、四算子、四框架落点、账本字段等，页面「逐项对照」表的每个「展开」按钮即调用该端点渲染实时值。</p>
+<p><b>能力自证</b>：对照表里承诺的每项能力都可通过 <code>GET /api/capabilities</code> 自行核对——库规模、LinUCB 泛化比（现场计算 ≈1.25×）、分流阈值、五维质量分、四算子、四框架落点、账本字段等，页面「逐项对照」表的每个「展开」按钮即调用该端点渲染实时值。</p>
 <p>基准原始数据见 <code>out/bench/*.json</code>（含 manifest：git commit / 库哈希 / 数据集哈希）；截图见 <code>out/final_shots/</code>；完整迭代过程见 <code>docs/rebuild-log.md</code>。</p>
 <div class="footer-note">SkillNet-S1 · 单一数据源溯源 · 所有运行均为真实 API 调用与真实沙箱执行，无预置结果 · 报告生成于 2026-10-02</div>
 

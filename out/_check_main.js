@@ -1,5 +1,5 @@
 
-const PAGE_VER = "2026-10-03b";   // 改版递增：与服务端不一致时自动强制刷新
+const PAGE_VER = "2026-10-03c";   // 改版递增：与服务端不一致时自动强制刷新
 const API = location.port ? location.origin : "http://127.0.0.1:8848";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -53,18 +53,91 @@ async function jget(url, t = 8000) {
 }
 
 let TASKS = [], CUR_GOLD = [], RUN_ID = 0;
+let CAP = null;                       // 能力自证数据（/api/capabilities 缓存）
 async function fillLiveNumbers() {
   try {
     const g = await jget(API + "/api/graph", 8000);
     const doms = new Set(g.nodes.map(n => n.domain)).size;
     const evolved = g.nodes.filter(n => n.source !== "seed").length;
     const map = { skills: g.nodes.length, domains: doms, edges: g.edges.length, evolved: evolved };
+    try {
+      CAP = await jget(API + "/api/capabilities", 8000);
+      map.linucb_ratio = (CAP.linucb && CAP.linucb.generalization_ratio) || map.linucb_ratio;
+    } catch (e2) { /* 端点不可用时保留静态占位 */ }
     document.querySelectorAll("[data-live]").forEach(el => {
       const v = map[el.dataset.live];
       if (v != null) el.textContent = v;
     });
   } catch (e) { /* 离线时保留占位符，不阻塞页面 */ }
 }
+
+/* ---------- 能力证据面板：每项能力的实时值 / 实现位置 / 测试 / 自核命令 ---------- */
+function evidenceDetail(key) {
+  if (!CAP) return "<div style='color:#8a97a4'>能力数据加载中（或服务未启动）—— 也可直接访问 <code>/api/capabilities</code></div>";
+  const L = CAP.library, C = CAP.confidence_gating, K = CAP.linucb, S = CAP.statistics, R = CAP.reproducibility;
+  const rows = arr => arr.map(([k, v]) => `<span>${k}</span><span>${v}</span>`).join("");
+  const wrap = (title, pairs, cmd) =>
+    `<h5>${title}<span class="close" onclick="document.getElementById('evpanel').innerHTML=''">收起 ✕</span></h5>` +
+    `<div class="kv">${rows(pairs)}</div>` +
+    (cmd ? `<div style="margin-top:8px;color:#8a97a4">自核命令：<code>${cmd}</code></div>` : "");
+  switch (key) {
+    case "library": return wrap("三层本体 · 技能库构成（实时计算）", [
+      ["技能总数", L.skills + " 个"], ["领域数", L.domains + " 个"],
+      ["类型化关系边", L.edges + " 条"], ["种子 / 演化", L.seed + " / " + L.evolved + "（演化随运行自动增长）"],
+      ["数据来源", "<code>/api/graph</code> 实时返回（本页数字与接口同源）"]],
+      "curl -s http://127.0.0.1:8848/api/graph | python -c \"import json,sys; g=json.load(sys.stdin); print(len(g['nodes']), len(g['edges']))\"");
+    case "linucb": return wrap("技能选择（Shared LinUCB）· 跨技能泛化实测", [
+      ["泛化比（同/异领域）", "<b>" + K.generalization_ratio + "×</b>（现场计算，非历史值）"],
+      ["同领域未评估技能 Δ", K.near_delta], ["异领域技能 Δ", K.far_delta],
+      ["测量方法", K.method], ["锁定测试", "<code>" + K.tests + "</code>"]],
+      "python -m pytest tests/test_bandit.py -q");
+    case "gating": return wrap("置信度分流 · 阈值与标定依据", [
+      ["自动执行阈值", "BM25 原始分 ≥ " + C.auto_execute_threshold],
+      ["人工确认区间", "[" + C.manual_confirm_threshold + ", " + C.auto_execute_threshold + ")"],
+      ["无匹配直答", "< " + C.manual_confirm_threshold + "（无关查询实测为 0）"],
+      ["标定依据", C.calibration], ["锁定测试", "<code>" + C.tests + "</code>"]],
+      "python -m pytest tests/test_retrieval_policy.py -q");
+    case "quality": return wrap("技能契约 · 五维质量分（准入闸）", [
+      ["质量维度", CAP.quality_dimensions.join(" / ")],
+      ["用法", "检索排序先验 + 进化准入判定（代码 <code>skillnet/schema.py::quality_score</code>）"],
+      ["契约扩展字段", "陷阱提示 pitfalls · 验证方式 verification · 输入输出 inputs/outputs"]],
+      "python -c \"from skillnet.schema import QUALITY_DIMENSIONS as Q; print(Q)\"");
+    case "evolver": return wrap("技能进化 · 四算子与准入", [
+      ["算子", CAP.evolver_operators.join(" / ")],
+      ["闭环", "轨迹蒸馏 → 质量准入（相似度 + 命名 + 步骤数）→ 落盘 → 星图标记"],
+      ["实测", "本次会话中库规模随运行从 98 → " + L.skills + "，全部经准入闸"],
+      ["代码", "<code>skillnet/evolver.py</code> · 演示入口 <code>POST /api/evolve</code>"]],
+      "curl -s -X POST http://127.0.0.1:8848/api/evolve -H 'Content-Type: application/json' -d '{\"task\":\"示例\"}'");
+    case "stats": return wrap("评估体系 · 统计检验", [
+      ["配对检验", S.paired_bootstrap], ["判定口径", S.note],
+      ["数据集治理", "dev（调参）/ held-out（结论）严格隔离，调参集过拟合主动暴露"],
+      ["代码", "<code>bench/run_bench.py</code>"]],
+      "python bench/run_bench.py --help");
+    case "ledger": return wrap("成本核算 · 请求级账本", [
+      ["隔离方式", CAP.ledger.scope], ["账本字段", CAP.ledger.fields.join(" / ")],
+      ["锁定测试", "<code>" + CAP.ledger.tests + "</code>"],
+      ["页面可见", "每次运行结束的 Run Summary 与时间线均显示 ¥ 三位小数"]],
+      "python -m pytest tests/test_runtime_pipeline.py -q");
+    case "frameworks": return wrap("跨框架互操作 · 导出落点", [
+      ...Object.entries(CAP.framework_targets).map(([k, v]) => [k, "<code>" + v + "</code>"]),
+      ["代码", "<code>skillnet/adapters.py</code> · 导出为一次写全多落点，避免只认一个目录"]],
+      "curl -s -X POST http://127.0.0.1:8848/api/export -H 'Content-Type: application/json' -d '{}'");
+    case "repro": return wrap("可复现工程 · 自检与溯源", [
+      ["交付自检", R.selfcheck], ["测试", R.tests], ["数字溯源", R.manifest]],
+      "python verify.py && python -m pytest tests/ -q");
+    default: return "";
+  }
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest && e.target.closest(".evtag");
+  if (!b) return;
+  const host = document.getElementById("evpanel");
+  if (!host) return;
+  const html = evidenceDetail(b.dataset.ev);
+  if (!html) { host.innerHTML = ""; return; }
+  host.innerHTML = "<div class='evpanel'>" + html + "</div>";
+  host.scrollIntoView({ behavior: "smooth", block: "nearest" });
+});
 
 async function boot() {
   try {

@@ -35,7 +35,7 @@
 |---|---|---|
 | 技能找不准 | SkillNet 论文（arXiv 2603.04448）实测：前沿 Agent 在真实社区技能池上检索完整度仅个位数至 30% | 三档检索 + 关系图扩展（实测 BM25 召回 66.7% → Fabric 100%） |
 | 技能编排会崩 | 同上：要求按依赖组织工作流时硬任务分数进一步下滑 | 类型化关系图 + 拓扑排序编排 |
-| 技能只进不出 | EvoScientist（华为）指出 AI 科学家系统是静态流水线，反复走死路 | 轨迹蒸馏 + 质量准入，库自动增长（当前 98 个技能中 23 个来自演化，实时数字以 /api/health 为准） |
+| 技能只进不出 | EvoScientist（华为）指出 AI 科学家系统是静态流水线，反复走死路 | 轨迹蒸馏 + 质量准入，库自动增长（当前 102 个技能中 27 个来自演化，实时数字以 /api/health 为准） |
 | 技能质量无数据 | 通用做法没有执行成败记录 | 执行结果记账（`exec_total/exec_ok/exec_fix/exec_fail`）+ 失败样本归档 |
 | 效果无法证明 | 现有方案多停留在演示 | 有/无技能的**三方对照实验**（内置三种技能使用模式） |
 
@@ -192,9 +192,10 @@ class Skill:
 
 - **数据源**：`seed/catalog_data.py` 的 `RAW` 列表（`S(...)` 构造调用，1,363 行）。
   **注意**：`seed/skills/*/SKILL.md` 只是导出产物，不是数据源——改 SKILL.md 不会生效。
-- **当前规模（2026-10-02 实测）**：98 个技能 / 41 个领域 / 200 条类型化关系边（其中 23 个为演化技能）。历史口径 90/36/162（15 演化）与 51 技能/62 边的实验数据均标 **Historical**。
+- **当前规模（2026-10-03 实测）**：102 个技能 / 44 个领域 / 217 条类型化关系边（其中 27 个为演化技能）。
+  库随每次运行自主增长，**实时值以 `/api/health`、`/api/graph`、`/api/capabilities` 为准**。历史口径 90/36/162（15 演化）与 51 技能/62 边的实验数据均标 **Historical**。
 - **技能构成**：51 个科研方法技能 + 24 个工具交付技能（导入自开发组另一成员的项目）
-  + 23 个演化技能（跨项目融合后持续增长，实时以 /api/health 为准）。
+  + 27 个演化技能（跨项目融合后持续增长，实时以 /api/health 为准）。
 - **持久化**：技能库可落盘为 `data/library.json`（原子写：先写临时文件再替换）。
 - **并发安全**：`SkillLibrary` 内部一把可重入锁；遍历类方法返回副本
   （否则 `/api/evolve` 加技能时并发的 `/api/search` 会抛
@@ -374,7 +375,7 @@ stdout/stderr/error_kind/duration）/ `n_attempts` / `fixed`（尝试>1 **且最
   `regenerate`（再生）。
 - **质量准入**（`assess_quality`）：命名合规 → 步骤数下限 → 与现有技能相似度阈值
   （`max(Jaccard, 0.9×重叠系数)`）→ 判定是否入库，未通过则记录理由。
-- 新技能带 `generation` 与 `parent` 溯源；当前 98 个技能中 23 个来自演化。
+- 新技能带 `generation` 与 `parent` 溯源；当前 102 个技能中 27 个来自演化。
 
 **已知局限**：准入是启发式（关键词 + 相似度），**没有运行测试**；
 `origin_task` 字段当前未写入（来源追溯不完整）。
@@ -886,3 +887,20 @@ mv .env .env.bak && python run.py        # fabric 会显式降级，LLM 相关�
 | 执行记账 | 把执行成败写入技能 stats 并归档，作为技能质量信号 |
 | dev / heldout | 调参集 / 冻结测试集（后者只用于最终结论） |
 | 产物指纹 | 产物内容的 sha256 前缀（同任务重复运行一致，可审计） |
+
+
+## 能力自证端点（/api/capabilities）
+
+对照表里承诺的每项能力都可以**自行核对**，不依赖文案：
+
+```
+GET /api/capabilities
+→ library{s skills/domains/edges/seed/evolved}   实时库规模
+→ linucb{generalization_ratio, near_delta, far_delta}   现场计算的跨技能泛化比
+→ confidence_gating{auto_execute_threshold, manual_confirm_threshold, calibration}
+→ quality_dimensions[]（五维）· evolver_operators[]（四算子）
+→ framework_targets{}（四种导出落点）· ledger{} · statistics{} · reproducibility{}
+```
+
+页面「与 SkillNet 论文逐项对照」表的每个「展开」按钮都调用该端点渲染实时值、
+实现位置、锁定测试与自核命令。
