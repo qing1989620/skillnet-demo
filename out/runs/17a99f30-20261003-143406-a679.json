@@ -1,0 +1,1953 @@
+{
+ "run_id": "17a99f30-20261003-143406-a679",
+ "task": "解释一下费马大定理的核心思想",
+ "task_fp": "17a99f30",
+ "status": "COMPLETED",
+ "model": "deepseek-chat",
+ "skills": [
+  "math-theorem-explainer",
+  "math-concept-formalization-and-verification",
+  "discernment-nudge"
+ ],
+ "retrieval": {
+  "bm25": {
+   "query": "解释一下费马大定理的核心思想",
+   "mode": "bm25",
+   "selected": [
+    "math-theorem-explainer",
+    "research-field-top-ideas-distillation",
+    "math-concept-formalization-and-verification",
+    "connectome-topology",
+    "model-interpretability"
+   ],
+   "candidates": [
+    {
+     "name": "math-theorem-explainer",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 25.06235,
+     "rank": 1,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "research-field-top-ideas-distillation",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 12.00507,
+     "rank": 2,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "math-concept-formalization-and-verification",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 10.97724,
+     "rank": 3,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "connectome-topology",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 5.8043,
+     "rank": 4,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "model-interpretability",
+     "channels": [
+      "bm25"
+     ],
+     "score": 5.66446,
+     "rank": 5,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "data-cleaning",
+     "channels": [
+      "bm25"
+     ],
+     "score": 4.5657,
+     "rank": 6,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "clinical-feature-engineering",
+     "channels": [
+      "bm25"
+     ],
+     "score": 4.13974,
+     "rank": 7,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "pathway-enrichment",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 4.10641,
+     "rank": 8,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "missing-data-baseline-modeling",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 4.07606,
+     "rank": 9,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "flux-tower-ml",
+     "channels": [
+      "bm25"
+     ],
+     "score": 2.94201,
+     "rank": 10,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "code-helper",
+     "channels": [
+      "bm25"
+     ],
+     "score": 2.81892,
+     "rank": 11,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "tabular-ml-baseline",
+     "channels": [
+      "bm25"
+     ],
+     "score": 2.78178,
+     "rank": 12,
+     "rerank_score": null,
+     "note": ""
+    }
+   ],
+   "trace": [
+    "BM25 召回 12 条"
+   ],
+   "confidence": 1.0,
+   "raw_bm25_top": 22.7426,
+   "fusion_score": 25.0623,
+   "decision": "auto",
+   "decision_reason": "BM25 原始分 22.74 ≥ 15.0：技能匹配明确，可直接执行",
+   "degraded": false,
+   "components": {
+    "bm25": true,
+    "vector": false,
+    "structural": false,
+    "graph_expansion": false,
+    "llm_rerank": false
+   },
+   "degraded_reason": ""
+  },
+  "hybrid": {
+   "query": "解释一下费马大定理的核心思想",
+   "mode": "hybrid",
+   "selected": [
+    "math-theorem-explainer",
+    "research-field-top-ideas-distillation",
+    "math-concept-formalization-and-verification",
+    "pathway-enrichment",
+    "connectome-topology"
+   ],
+   "candidates": [
+    {
+     "name": "math-theorem-explainer",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 1.0469,
+     "rank": 1,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "research-field-top-ideas-distillation",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.49838,
+     "rank": 2,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "math-concept-formalization-and-verification",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.41013,
+     "rank": 3,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "pathway-enrichment",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.29623,
+     "rank": 4,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "connectome-topology",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.20603,
+     "rank": 5,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "missing-data-baseline-modeling",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.1512,
+     "rank": 6,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "dose-response-ic50-estimation",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.10283,
+     "rank": 7,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "model-interpretability",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.09954,
+     "rank": 8,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "molecular-descriptors",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.07383,
+     "rank": 9,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "deep-learning-training",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.06342,
+     "rank": 10,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "data-cleaning",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.0616,
+     "rank": 11,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "noncoding-snp-crispr-causal-validation",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.04953,
+     "rank": 12,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "clinical-feature-engineering",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.04689,
+     "rank": 13,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "dose-response-ic50-robust-estimation",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.04609,
+     "rank": 14,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "md-simulation",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.04467,
+     "rank": 15,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "sequence-to-lead-structure-based-screening",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.0287,
+     "rank": 16,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "eda-profiling",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.01921,
+     "rank": 17,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "thermodynamics-calc",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.01782,
+     "rank": 18,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "dose-response-ic50-pipeline",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.01087,
+     "rank": 19,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "code-helper",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.00742,
+     "rank": 20,
+     "rerank_score": null,
+     "note": ""
+    }
+   ],
+   "trace": [
+    "BM25 召回 12 条",
+    "语义向量召回 20 条",
+    "结构信号召回 0 条",
+    "加权融合后候选池 26 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
+   ],
+   "confidence": 1.0,
+   "raw_bm25_top": 22.7426,
+   "fusion_score": 1.0469,
+   "decision": "auto",
+   "decision_reason": "BM25 原始分 22.74 ≥ 15.0：技能匹配明确，可直接执行",
+   "degraded": false,
+   "components": {
+    "bm25": true,
+    "vector": true,
+    "structural": true,
+    "graph_expansion": false,
+    "llm_rerank": false
+   },
+   "degraded_reason": ""
+  },
+  "fabric": {
+   "query": "解释一下费马大定理的核心思想",
+   "mode": "fabric",
+   "selected": [
+    "math-theorem-explainer",
+    "math-concept-formalization-and-verification",
+    "math-modeling-pipeline",
+    "research-field-top-ideas-distillation",
+    "arxiv-monitor"
+   ],
+   "candidates": [
+    {
+     "name": "math-theorem-explainer",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 1.07831,
+     "rank": 1,
+     "rerank_score": 1.0,
+     "note": ""
+    },
+    {
+     "name": "math-concept-formalization-and-verification",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.42244,
+     "rank": 2,
+     "rerank_score": 0.5,
+     "note": ""
+    },
+    {
+     "name": "math-modeling-pipeline",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.92127,
+     "rank": 3,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "research-field-top-ideas-distillation",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.49838,
+     "rank": 4,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "arxiv-monitor",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.43857,
+     "rank": 5,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "paper-deep-read",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.43857,
+     "rank": 6,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "research-gap-mining",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.43857,
+     "rank": 7,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "citation-verify",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.43857,
+     "rank": 8,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "scientific-writing",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.36092,
+     "rank": 9,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "discernment-nudge",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.36092,
+     "rank": 10,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "pathway-enrichment",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.29623,
+     "rank": 11,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "scrna-qc-clustering",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.26068,
+     "rank": 12,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "differential-expression",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.23698,
+     "rank": 13,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "connectome-topology",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.20603,
+     "rank": 14,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "statistical-testing",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.18131,
+     "rank": 15,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "missing-data-baseline-modeling",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.1512,
+     "rank": 16,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "dose-response-ic50-estimation",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.10283,
+     "rank": 17,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "model-interpretability",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.09954,
+     "rank": 18,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "molecular-descriptors",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.07383,
+     "rank": 19,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "deep-learning-training",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.06342,
+     "rank": 20,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "data-cleaning",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.0616,
+     "rank": 21,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "noncoding-snp-crispr-causal-validation",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.04953,
+     "rank": 22,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "clinical-feature-engineering",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.04689,
+     "rank": 23,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "dose-response-ic50-robust-estimation",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.04609,
+     "rank": 24,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "md-simulation",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.04467,
+     "rank": 25,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "sequence-to-lead-structure-based-screening",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.0287,
+     "rank": 26,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "eda-profiling",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.01921,
+     "rank": 27,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "thermodynamics-calc",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.01782,
+     "rank": 28,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "dose-response-ic50-pipeline",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.01087,
+     "rank": 29,
+     "rerank_score": -48.5,
+     "note": ""
+    },
+    {
+     "name": "code-helper",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.00742,
+     "rank": 30,
+     "rerank_score": -48.5,
+     "note": ""
+    }
+   ],
+   "trace": [
+    "BM25 召回 12 条",
+    "语义向量召回 20 条",
+    "结构信号召回 0 条",
+    "加权融合后候选池 26 条（BM25 0.70 / 语义 0.20 / 结构 0.10）",
+    "关系图扩展补入 10 条：math-modeling-pipeline, arxiv-monitor, paper-deep-read, research-gap-mining, citation-verify, scientific-writing",
+    "LLM 重排 2 条候选",
+    "三档对照完成：bm25 5 / hybrid 5 / fabric 5"
+   ],
+   "confidence": 1.0,
+   "raw_bm25_top": 22.7426,
+   "fusion_score": 1.0783,
+   "decision": "auto",
+   "decision_reason": "BM25 原始分 22.74 ≥ 15.0：技能匹配明确，可直接执行",
+   "degraded": false,
+   "components": {
+    "bm25": true,
+    "vector": true,
+    "structural": true,
+    "graph_expansion": true,
+    "llm_rerank": true
+   },
+   "degraded_reason": ""
+  }
+ },
+ "ranking": [
+  {
+   "name": "math-modeling-pipeline",
+   "priority": 0.7452,
+   "exploit": 0.0,
+   "explore": 0.7452
+  },
+  {
+   "name": "math-concept-formalization-and-verification",
+   "priority": 0.744,
+   "exploit": 0.0,
+   "explore": 0.744
+  },
+  {
+   "name": "research-field-top-ideas-distillation",
+   "priority": 0.7419,
+   "exploit": 0.0,
+   "explore": 0.7419
+  },
+  {
+   "name": "math-theorem-explainer",
+   "priority": 0.7343,
+   "exploit": 0.0,
+   "explore": 0.7343
+  },
+  {
+   "name": "arxiv-monitor",
+   "priority": 0.6685,
+   "exploit": 0.0,
+   "explore": 0.6685
+  }
+ ],
+ "plan": {
+  "approach": "把费马大定理当作一个纯数学命题做解释性研究：先用 math-theorem-explainer 完成命题形式化与前提条件清单，再用 math-concept-formalization-and-verification 做边界反例核验与误解对照，随后梳理证明史脉络与核心逻辑链，最后用 discernment-nudge 对结论中的隐含假设与年份争议做判断校准，产出可核验的解释包。",
+  "steps": [
+   {
+    "skill": "math-theorem-explainer",
+    "action": "形式化命题：写出 x^n+y^n=z^n 在 n≥3、x,y,z∈Z\\{0} 下无正整数解，显式声明定义域与前提，并列出 n=1、n=2、n≥3 的边界情形对照表。",
+    "key_params": [
+     "n≥3（定理成立的最小阈值，n=2 有勾股数反例）",
+     "x,y,z∈Z\\{0}（排除零解与平凡解）",
+     "边界情形取 n=1,2,3,4 与 n≥5 分组"
+    ],
+    "expected_output": "精确命题陈述 + 前提条件清单 + 边界情形对照表",
+    "check": "n=2 时 3²+4²=5² 满足方程但违反 n≥3，确认前提不可省略；n=1 时 1+2=3 有解，确认 n≥3 是必要约束。"
+   },
+   {
+    "skill": "math-concept-formalization-and-verification",
+    "action": "构造边界反例清单：取 n=2 勾股数、n=1 平凡解、x 或 y 为负整数、z=0 等情形，逐条标注违反哪条前提，并代入原方程核验是否构成对定理的反驳。",
+    "key_params": [
+     "反例覆盖：n=1、n=2、负整数、零解四类",
+     "数值核验误差阈值 <1e-12（整数运算可精确验证，取 0 误差）",
+     "每条反例标注违反的前提编号"
+    ],
+    "expected_output": "边界反例核验记录表，确认无反例推翻定理",
+    "check": "每条反例必须至少违反一条前提（n≥3 或 x,y,z∈Z\\{0}），否则该反例将构成真反驳，需重新检查命题陈述。"
+   },
+   {
+    "skill": "math-theorem-explainer",
+    "action": "梳理证明史时间线：按覆盖范围聚类各阶段结论（n=3、n=4、正则素数、全部 n≥3），标注每阶段文献与年份，并标注怀尔斯证明的宣布、补洞、发表三个节点。",
+    "key_params": [
+     "阶段划分：n=3（欧拉，约1770）、n=4（费马/欧拉）、正则素数（库默尔，约1840）、全部 n≥3（怀尔斯，1993宣布/1994补洞/1995发表）",
+     "争议年份用「约」标注",
+     "区分宣布年份与正式发表年份"
+    ],
+    "expected_output": "证明史时间线表 + 各阶段覆盖范围矩阵",
+    "check": "相邻阶段覆盖范围并集无空档且无重叠遗漏；怀尔斯条目必须同时含 1993、1994、1995 三个时间节点。"
+   },
+   {
+    "skill": "math-theorem-explainer",
+    "action": "拆解核心证明思想：画出「椭圆曲线→模形式→谷山-志村猜想→弗雷构造→怀尔斯-泰勒补洞」逻辑链因果图，每步标注具名定理与年份，确认矛盾点所在。",
+    "key_params": [
+     "关键桥梁：弗雷曲线（1986）、谷山-志村猜想、模性提升定理",
+     "矛盾点：若存在解则构造出非模椭圆曲线，与谷山-志村矛盾",
+     "每步标注定理名与年份"
+    ],
+    "expected_output": "核心证明逻辑链因果图（文字版）",
+    "check": "每一步能由前一步加一个具名定理推出；矛盾点明确指向「非模椭圆曲线」与「谷山-志村猜想」的冲突。"
+   },
+   {
+    "skill": "math-concept-formalization-and-verification",
+    "action": "列出常见误解对照表：区分费马大定理与费马小定理、费马素数猜想；澄清「无解」不等于「不可判定」；说明定理不提供算法、不涉及计算复杂度。",
+    "key_params": [
+     "误解条目：名称混淆、演讲即证明、无解=不可验证、忽略早期特殊情形证明",
+     "每条含「误解陈述—区分陈述—反例/边界」",
+     "明确适用边界：不提供求解算法、不涉及复杂度"
+    ],
+    "expected_output": "常见误解对照表 + 适用边界说明",
+    "check": "每条误解有明确区分陈述；逐条核验反例满足对应命题前提；确认「无解」是已证真命题而非不可判定。"
+   },
+   {
+    "skill": "discernment-nudge",
+    "action": "判断校准：检查结论中依赖的未言明假设（如默认整数环、默认经典逻辑），标注哪些年份存在争议、哪些核验只是抽样，给出校准提问清单。",
+    "key_params": [
+     "校准项：隐含假设、年份争议、抽样局限",
+     "每条校准对应前序步骤中的具体论断",
+     "提问清单不少于 3 条"
+    ],
+    "expected_output": "判断校准提问清单",
+    "check": "每条校准能对应到前序步骤的具体论断，确认无未标注的隐含假设。"
+   }
+  ],
+  "risks": [
+   "把费马大定理与费马小定理、费马素数猜想混淆——应对：在形式化步骤显式列出三者陈述并对照。",
+   "误称怀尔斯 1993 年演讲即为完整证明——应对：标注 1993 宣布、1994 补洞、1995 正式发表三个节点。",
+   "把「无解」误解为「计算上不可判定」——应对：明确定理是已证真命题，与算法可解性无关。",
+   "遗漏早期数学家对 n=3、n=4 等特殊情形的证明——应对：在证明史步骤标注各情形归属与年份。"
+  ],
+  "artifacts": [
+   "费马大定理精确形式化陈述与前提条件清单",
+   "边界情形对照表与反例核验记录",
+   "证明史时间线表与覆盖范围矩阵",
+   "核心证明逻辑链因果图（文字版）",
+   "常见误解对照表与适用边界说明",
+   "判断校准提问清单"
+  ]
+ },
+ "judge": {
+  "scores": {
+   "skill_grounding": 7.0,
+   "executability": 6.0,
+   "rigor": 6.0,
+   "scientific_validity": 7.0
+  },
+  "weighted": 6.5,
+  "coverage": null,
+  "covered": [],
+  "n_points": 0,
+  "comment": "方案覆盖了形式化、边界反例、证明史与核心逻辑链等关键环节，工具调用与任务基本匹配；但部分步骤（如逻辑链因果图、判断校准）仍偏笼统，缺少可操作的判据与具体文献核验方式，且对'解释性研究'的验证标准不够明确。"
+ },
+ "steps": [
+  {
+   "idx": 0,
+   "action": "形式化命题：写出 x^n+y^n=z^n 在 n≥3、x,y,z∈Z\\{0} 下无正整数解，显式声明定义域与前提，并列出 n=1、n=2、n≥3 的边界情形对照表。",
+   "skill": "math-theorem-explainer",
+   "status": "done",
+   "depends_on": [],
+   "inputs": [],
+   "code": "# -*- coding: utf-8 -*-\n\"\"\"\n费马大定理核心思想 —— 步骤1：形式化命题 + 边界情形对照表\n技能：math-theorem-explainer\n本文件只实现最核心的可运行路径：形式化、边界反例核验、误解对照、证明史时间线。\n\"\"\"\nimport csv\nimport matplotlib\nmatplotlib.use('Agg')\nimport matplotlib.pyplot as plt\n\nplt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'DejaVu Sans']\nplt.rcParams['axes.unicode_minus'] = False\n\n# ============================================================\n# 1. 符号形式化命题\n# ============================================================\nPROPOSITION = {\n    \"name\": \"费马大定理 (Fermat's Last Theorem, FLT)\",\n    \"statement\": \"对任意整数 n>=3，方程 x^n + y^n = z^n 不存在满足 x,y,z 均为非零整数的解。\",\n    \"formal\": \"∀n∈Z, n>=3: ¬∃(x,y,z)∈(Z\\\\{0})^3 使得 x^n + y^n = z^n\",\n    \"domain\": {\n        \"n\": \"整数, n >= 3\",\n        \"x,y,z\": \"非零整数 (Z\\\\{0})\",\n    },\n    \"premises\": [\n        \"n 为整数且 n >= 3\",\n        \"x, y, z 均为非零整数（排除 0 以避免平凡解）\",\n        \"方程形式严格为 x^n + y^n = z^n（非 x^n + y^n = z^m 等变体）\",\n    ],\n}\n\n# 边界情形对照表：n=1, n=2, n>=3\nBOUNDARY_TABLE = [\n    {\"n\": \"n = 1\", \"equation\": \"x + y = z\",\n     \"solution_status\": \"有无穷多非零整数解\",\n     \"example\": \"x=1, y=2, z=3\",\n     \"is_FLT_scope\": \"否（n<3，不在定理范围）\"},\n    {\"n\": \"n = 2\", \"equation\": \"x^2 + y^2 = z^2\",\n     \"solution_status\": \"有无穷多非零整数解（勾股数）\",\n     \"example\": \"x=3, y=4, z=5\",\n     \"is_FLT_scope\": \"否（n=2，不在定理范围）\"},\n    {\"n\": \"n >= 3\", \"equation\": \"x^n + y^n = z^n\",\n     \"solution_status\": \"无任何非零整数解（费马大定理）\",\n     \"example\": \"不存在\",\n     \"is_FLT_scope\": \"是（定理覆盖范围）\"},\n]\n\n# ============================================================\n# 2. 边界反例验证：前提不可省略\n# ============================================================\ndef check_counterexample(x, y, z, n):\n    \"\"\"核验 (x,y,z,n) 是否满足方程，以及是否满足 FLT 前提。\"\"\"\n    lhs = x**n + y**n\n    rhs = z**n\n    satisfies_eq = (lhs == rhs)\n    satisfies_premise = (n >= 3) and (x != 0) and (y != 0) and (z != 0)\n    return {\n        \"x\": x, \"y\": y, \"z\": z, \"n\": n,\n        \"lhs\": lhs, \"rhs\": rhs,\n        \"satisfies_equation\": satisfies_eq,\n        \"satisfies_FLT_premise\": satisfies_premise,\n        \"is_valid_counterexample_to_FLT\": satisfies_eq and satisfies_premise,\n    }\n\n# 边界反例：勾股数 (3,4,5) n=2 —— 满足方程但违反 n>=3 前提\nce1 = check_counterexample(3, 4, 5, 2)\n# 边界反例：n=1 的 (1,2,3) —— 满足方程但违反 n>=3 前提\nce2 = check_counterexample(1, 2, 3, 1)\n# 对照：n=3 的 (3,4,5) —— 不满足方程\nce3 = check_counterexample(3, 4, 5, 3)\n\n# ============================================================\n# 3. 误解对照表（规避「名称相似定理混淆」陷阱）\n# ============================================================\nMISCONCEPTION_TABLE = [\n    {\"混淆项\": \"费马大定理 (FLT)\",\n     \"陈述\": \"n>=3 时 x^n+y^n=z^n 无非零整数解\",\n     \"与FLT关系\": \"本体\",\n     \"区分要点\": \"关于指数 n>=3 的无解性\"},\n    {\"混淆项\": \"费马小定理 (Fermat's Little Theorem)\",\n     \"陈述\": \"若 p 为素数且 gcd(a,p)=1，则 a^(p-1) ≡ 1 (mod p)\",\n     \"与FLT关系\": \"名称相似，内容无关\",\n     \"区分要点\": \"模算术中的同余性质，非丢番图方程\"},\n    {\"混淆项\": \"费马素数猜想 (Fermat Prime Conjecture)\",\n     \"陈述\": \"形如 F_n = 2^(2^n)+1 的数均为素数\",\n     \"与FLT关系\": \"名称相似，内容无关\",\n     \"区分要点\": \"已被欧拉用 F_5=641×6700417 证伪\"},\n    {\"混淆项\": \"费马大定理的『无解』\",\n     \"陈述\": \"无解 ≠ 无法验证 ≠ 计算不可判定\",\n     \"与FLT关系\": \"语义澄清\",\n     \"区分要点\": \"FLT 是已证的真命题，与算法可解性/复杂度无关\"},\n]\n\n# ============================================================\n# 4. 证明史脉络（覆盖范围聚类 + 时间节点）\n# ============================================================\nPROOF_HISTORY = [\n    {\"阶段\": \"n=4\", \"覆盖范围\": \"n=4 全部情形\",\n     \"结论强度\": \"部分情形\", \"归属\": \"费马 (Fermat)\",\n     \"年份\": 1637, \"文献\": \"费马手稿旁注（后由他人整理）\"},\n    {\"阶段\": \"n=3\", \"覆盖范围\": \"n=3 全部情形\",\n     \"结论强度\": \"部分情形\", \"归属\": \"欧拉 (Euler)\",\n     \"年份\": 1770, \"文献\": \"Euler, 'Vollständige Anleitung zur Algebra'\"},\n    {\"阶段\": \"正则素数\", \"覆盖范围\": \"所有正则素数 p 的 n=p\",\n     \"结论强度\": \"部分情形（覆盖无穷多但非全部）\", \"归属\": \"库默尔 (Kummer)\",\n     \"年份\": 1847, \"文献\": \"Kummer, 'Beweis des Fermat'schen Satzes...'\"},\n    {\"阶段\": \"全部 n>=3\", \"覆盖范围\": \"所有 n>=3\",\n     \"结论强度\": \"全称命题\", \"归属\": \"怀尔斯 (Wiles) + 泰勒 (Taylor)\",\n     \"年份\": 1995, \"文献\": \"Wiles, Annals of Mathematics 141 (1995) 443-551\"},\n]\n\n# 证明完整性状态（规避「误称演讲即完整证明」陷阱）\nCOMPLETENESS_STATUS = {\n    \"宣布年份\": 1993,\n    \"宣布场合\": \"怀尔斯在剑桥 Newton Institute 演讲\",\n    \"漏洞发现\": \"1993 年审稿过程中发现关键引理（Euler system）存在漏洞\",\n    \"补洞合作\": \"1994 年与 Richard Taylor 合作修补\",\n    \"补全年份\": 1994,\n    \"正式发表年份\": 1995,\n    \"发表期刊\": \"Annals of Mathematics, 141 (1995), 443-551\",\n    \"结论\": \"1993 年演讲不是完整证明；完整证明以 1995 年正式发表为准\",\n}\n\n# ============================================================\n# 5. 输出关键结果\n# ============================================================\nprint(\"=\" * 70)\nprint(\"【1】形式化命题\")\nprint(\"=\" * 70)\nprint(\"名称:\", PROPOSITION[\"name\"])\nprint(\"陈述:\", PROPOSITION[\"statement\"])\nprint(\"形式化:\", PROPOSITION[\"formal\"])\nprint(\"定义域:\", PROPOSITION[\"domain\"])\nprint(\"前提条件:\")\nfor p in PROPOSITION[\"premises\"]:\n    print(\"  -\", p)\n\nprint()\nprint(\"=\" * 70)\nprint(\"【2】边界情形对照表 (n=1 / n=2 / n>=3)\")\nprint(\"=\" * 70)\nfor row in BOUNDARY_TABLE:\n    print(f\"  {row['n']:8s} | {row['equation']:20s} | {row['solution_status']:30s} | 在FLT范围: {row['is_FLT_scope']}\")\n\nprint()\nprint(\"=\" * 70)\nprint(\"【3】边界反例核验（前提不可省略）\")\nprint(\"=\" * 70)\nfor ce in [ce1, ce2, ce3]:\n    print(f\"  (x,y,z,n)=({ce['x']},{ce['y']},{ce['z']},{ce['n']}) | \"\n          f\"满足方程: {ce['satisfies_equation']} | \"\n          f\"满足FLT前提: {ce['satisfies_FLT_premise']} | \"\n          f\"构成FLT反例: {ce['is_valid_counterexample_to_FLT']}\")\nprint(\"  结论: 勾股数 (3,4,5) 与 (1,2,3) 满足方程但违反 n>=3 前提，\")\nprint(\"        因此不构成对费马大定理的反驳，证明前提条件不可省略。\")\n\nprint()\nprint(\"=\" * 70)\nprint(\"【4】误解对照表\")\nprint(\"=\" * 70)\nfor m in MISCONCEPTION_TABLE:\n    print(f\"  [{m['混淆项']}]\")\n    print(f\"    陈述: {m['陈述']}\")\n    print(f\"    与FLT关系: {m['与FLT关系']} | 区分要点: {m['区分要点']}\")\n\nprint()\nprint(\"=\" * 70)\nprint(\"【5】证明史脉络（覆盖范围聚类）\")\nprint(\"=\" * 70)\nfor h in PROOF_HISTORY:\n    print(f\"  {h['阶段']:10s} | 覆盖: {h['覆盖范围']:25s} | \"\n          f\"强度: {h['结论强度']:20s} | {h['归属']} ({h['年份']})\")\n\nprint()\nprint(\"=\" * 70)\nprint(\"【6】证明完整性状态（规避『演讲即证明』陷阱）\")\nprint(\"=\" * 70)\nfor k, v in COMPLETENESS_STATUS.items():\n    print(f\"  {k}: {v}\")\n\n# ============================================================\n# 6. 落盘：CSV + 图\n# ============================================================\n# CSV 1: 边界情形对照表\nwith open(\"boundary_cases.csv\", \"w\", newline=\"\", encoding=\"utf-8-sig\") as f:\n    writer = csv.DictWriter(f, fieldnames=[\"n\", \"equation\", \"solution_status\", \"example\", \"is_FLT_scope\"])\n    writer.writeheader()\n    writer.writerows(BOUNDARY_TABLE)\n\n# CSV 2: 证明史\nwith open(\"proof_history.csv\", \"w\", newline=\"\", encoding=\"utf-8-sig\") as f:\n    writer = csv.DictWriter(f, fieldnames=[\"阶段\", \"覆盖范围\", \"结论强度\", \"归属\", \"年份\", \"文献\"])\n    writer.writeheader()\n    writer.writerows(PROOF_HISTORY)\n\n# 图：证明史时间线（覆盖范围 vs 年份）\nfig, ax = plt.subplots(figsize=(10, 5))\nyears = [h[\"年份\"] for h in PROOF_HISTORY]\nlabels = [h[\"阶段\"] for h in PROOF_HISTORY]\nstrengths = [h[\"结论强度\"] for h in PROOF_HISTORY]\ncolors = [\"#4C72B0\", \"#4C72B0\", \"#DD8452\", \"#C44E52\"]\nax.scatter(years, [1]*len(years), s=300, c=colors, zorder=3)\nfor i, (yr, lb, st) in enumerate(zip(years, labels, strengths)):\n    ax.annotate(f\"{lb}\\n({yr})\\n{st}\", (yr, 1), textcoords=\"offset points\",\n                xytext=(0, 25 if i % 2 == 0 else -55), ha=\"center\", fontsize=9)\nax.set_xlim(1600, 2020)\nax.set_ylim(0.5, 1.5)\nax.set_yticks([])\nax.set_xlabel(\"年份\")\nax.set_title(\"费马大定理证明史时间线（按覆盖范围聚类）\")\nax.grid(axis=\"x\", linestyle=\"--\", alpha=0.4)\nplt.tight_layout()\nplt.savefig(\"figure.png\", dpi=150)\nplt.close()\n\nprint()\nprint(\"=\" * 70)\nprint(\"已落盘: boundary_cases.csv, proof_history.csv, figure.png\")\nprint(\"=\" * 70)",
+   "n_attempts": 1,
+   "fixed": false,
+   "exhausted": false,
+   "attempts": [
+    {
+     "n": 1,
+     "ok": true,
+     "stdout": "======================================================================\n【1】形式化命题\n======================================================================\n名称: 费马大定理 (Fermat's Last Theorem, FLT)\n陈述: 对任意整数 n>=3，方程 x^n + y^n = z^n 不存在满足 x,y,z 均为非零整数的解。\n形式化: ∀n∈Z, n>=3: ¬∃(x,y,z)∈(Z\\{0})^3 使得 x^n + y^n = z^n\n定义域: {'n': '整数, n >= 3', 'x,y,z': '非零整数 (Z\\\\{0})'}\n前提条件:\n  - n 为整数且 n >= 3\n  - x, y, z 均为非零整数（排除 0 以避免平凡解）\n  - 方程形式严格为 x^n + y^n = z^n（非 x^n + y^n = z^m 等变体）\n\n======================================================================\n【2】边界情形对照表 (n=1 / n=2 / n>=3)\n======================================================================\n  n = 1    | x + y = z            | 有无穷多非零整数解                      | 在FLT范围: 否（n<3，不在定理范围）\n  n = 2    | x^2 + y^2 = z^2      | 有无穷多非零整数解（勾股数）                 | 在FLT范围: 否（n=2，不在定理范围）\n  n >= 3   | x^n + y^n = z^n      | 无任何非零整数解（费马大定理）                | 在FLT范围: 是（定理覆盖范围）\n\n======================================================================\n【3】边界反例核验（前提不可省略）\n======================================================================\n  (x,y,z,n)=(3,4,5,2) | 满足方程: True | 满足FLT前提: False | 构成FLT反例: False\n  (x,y,z,n)=(1,2,3,1) | 满足方程: True | 满足FLT前提: False | 构成FLT反例: False\n  (x,y,z,n)=(3,4,5,3) | 满足方程: False | 满足FLT前提: True | 构成FLT反例: False\n  结论: 勾股数 (3,4,5) 与 (1,2,3) 满足方程但违反 n>=3 前提，\n        因此不构成对费马大定理的反驳，证明前提条件不可省略。\n\n======================================================================\n【4】误解对照表\n======================================================================\n  [费马大定理 (FLT)]\n    陈述: n>=3 时 x^n+y^n=z^n 无非零整数解\n    与FLT关系: 本体 | 区分要点: 关于指数 n>=3 的无解性\n  [费马小定理 (Fermat's Little Theorem)]\n    陈述: 若 p 为素数且 gcd(a,p)=1，则 a^(p-1) ≡ 1 (mod p)\n    与FLT关系: 名称相似，内容无关 | 区分要点: 模算术中的同余性质，非丢番图方程\n  [费马素数猜想 (Fermat Prime Conjecture)]\n    陈述: 形如 F_n = 2^(2^n)+1 的数均为素数\n    与FLT关系: 名称相似，内容无关 | 区分要点: 已被欧拉用 F_5=641×6700417 证伪\n  [费马大定理的『无解』]\n    陈述: 无解 ≠ 无法验证 ≠ 计算不可判定\n    与FLT关系: 语义澄清 | 区分要点: FLT 是已证的真命题，与算法可解性/复杂度无关\n\n======================================================================\n【5】证明史脉络（覆盖范围聚类）\n======================================================================\n  n=4        | 覆盖: n=4 全部情形                  | 强度: 部分情形                 | 费马 (Fermat) (1637)\n  n=3        | 覆盖: n=3 全部情形                  | 强度: 部分情形                 | 欧拉 (Euler) (1770)\n  正则素数       | 覆盖: 所有正则素数 p 的 n=p            | 强度: 部分情形（覆盖无穷多但非全部）      | 库默尔 (Kummer) (1847)\n  全部 n>=3    | 覆盖: 所有 n>=3                   | 强度: 全称命题                 | 怀尔斯 (Wiles) + 泰勒 (Taylor) (1995)\n\n======================================================================\n【6】证明完整性状态（规避『演讲即证明』陷阱）\n======================================================================\n  宣布年份: 1993\n  宣布场合: 怀尔斯在剑桥 Newton Institute 演讲\n  漏洞发现: 1993 年审稿过程中发现关键引理（Euler system）存在漏洞\n  补洞合作: 1994 年与 Richard Taylor 合作修补\n  补全年份: 1994\n  正式发表年份: 1995\n  发表期刊: Annals of Mathematics, 141 (1995), 443-551\n  结论: 1993 年演讲不是完整证明；完整证明以 1995 年正式发表为准\n\n======================================================================\n已落盘: boundary_cases.csv, proof_history.csv, figure.png\n======================================================================\n",
+     "stderr": "",
+     "error_kind": "",
+     "duration_ms": 1410,
+     "truncated": false
+    }
+   ],
+   "artifacts": [
+    {
+     "name": "step1_boundary_cases.csv",
+     "kind": "真实运行产物",
+     "bytes": 371,
+     "sha256": "b9f6a2f6ba05c136",
+     "from_step": 0,
+     "url": "/api/runs/17a99f30-20261003-143406-a679/artifacts/step1_boundary_cases.csv"
+    },
+    {
+     "name": "step1_figure.png",
+     "kind": "真实运行产物",
+     "bytes": 58008,
+     "sha256": "8ff185bb3915e97d",
+     "from_step": 0,
+     "url": "/api/runs/17a99f30-20261003-143406-a679/artifacts/step1_figure.png"
+    },
+    {
+     "name": "step1_proof_history.csv",
+     "kind": "真实运行产物",
+     "bytes": 547,
+     "sha256": "87760489e8deccfb",
+     "from_step": 0,
+     "url": "/api/runs/17a99f30-20261003-143406-a679/artifacts/step1_proof_history.csv"
+    }
+   ],
+   "checks": [
+    {
+     "name": "执行退出码为 0",
+     "passed": true,
+     "detail": "returncode=0"
+    },
+    {
+     "name": "运行有实质输出",
+     "passed": true,
+     "detail": "3099 字符 / 61 行"
+    },
+    {
+     "name": "产生至少一个文件产物",
+     "passed": true,
+     "detail": "3 个"
+    },
+    {
+     "name": "step1_boundary_cases.csv 存在",
+     "passed": true,
+     "detail": "371 字节"
+    },
+    {
+     "name": "step1_boundary_cases.csv 非空",
+     "passed": true,
+     "detail": "371 字节"
+    },
+    {
+     "name": "step1_boundary_cases.csv 是可解析 CSV",
+     "passed": true,
+     "detail": "4 行（含表头）"
+    },
+    {
+     "name": "step1_boundary_cases.csv 含表头且列数 > 0",
+     "passed": true,
+     "detail": "列：﻿n, equation, solution_status, example, is_FLT_scope"
+    },
+    {
+     "name": "step1_boundary_cases.csv 含数据行",
+     "passed": true,
+     "detail": "3 行数据"
+    },
+    {
+     "name": "step1_boundary_cases.csv 各行列数一致",
+     "passed": true,
+     "detail": "列数集合 [5]"
+    },
+    {
+     "name": "step1_figure.png 存在",
+     "passed": true,
+     "detail": "58008 字节"
+    },
+    {
+     "name": "step1_figure.png 非空",
+     "passed": true,
+     "detail": "58008 字节"
+    },
+    {
+     "name": "step1_figure.png 是有效 PNG",
+     "passed": true,
+     "detail": "1500×750"
+    },
+    {
+     "name": "step1_figure.png 尺寸合理",
+     "passed": true,
+     "detail": "1500×750（过小可能是空图）"
+    },
+    {
+     "name": "step1_proof_history.csv 存在",
+     "passed": true,
+     "detail": "547 字节"
+    },
+    {
+     "name": "step1_proof_history.csv 非空",
+     "passed": true,
+     "detail": "547 字节"
+    },
+    {
+     "name": "step1_proof_history.csv 是可解析 CSV",
+     "passed": true,
+     "detail": "5 行（含表头）"
+    },
+    {
+     "name": "step1_proof_history.csv 含表头且列数 > 0",
+     "passed": true,
+     "detail": "列：﻿阶段, 覆盖范围, 结论强度, 归属, 年份, 文献"
+    },
+    {
+     "name": "step1_proof_history.csv 含数据行",
+     "passed": true,
+     "detail": "4 行数据"
+    },
+    {
+     "name": "step1_proof_history.csv 各行列数一致",
+     "passed": true,
+     "detail": "列数集合 [6]"
+    }
+   ],
+   "checks_passed": 19,
+   "checks_total": 19,
+   "verifications": [
+    {
+     "item": "每个阶段的结论有至少一篇原始文献支撑，且覆盖范围无重叠遗漏。",
+     "passed": false,
+     "evidence": "产物中未见文献引用",
+     "layer": "llm"
+    },
+    {
+     "item": "逻辑链每一步可追溯到具体定理名与年份，矛盾点明确。",
+     "passed": false,
+     "evidence": "产物中未见定理名与年份",
+     "layer": "llm"
+    },
+    {
+     "item": "逐条核验反例是否满足命题前提，确认边界反例不构成对定理的反驳。",
+     "passed": true,
+     "evidence": "check_counterexample核验前提",
+     "layer": "llm"
+    },
+    {
+     "item": "误解对照表中每条误解都有明确的区分陈述。",
+     "passed": true,
+     "evidence": "MISCONCEPTION_TABLE含区分要点",
+     "layer": "llm"
+    },
+    {
+     "item": "证明完整性状态标注了宣布、补洞、发表三个时间节点。",
+     "passed": true,
+     "evidence": "1993宣布、1994补洞、1995发表",
+     "layer": "llm"
+    }
+   ],
+   "verification_passed": 3,
+   "verification_total": 5,
+   "verify_skip_reason": "",
+   "error": "",
+   "duration_ms": 13365,
+   "started_at_ms": 1791009255622,
+   "ended_at_ms": 1791009268987,
+   "stages": {
+    "code_gen_ms": 10348,
+    "llm_calls": 3,
+    "llm_cost_yuan": 0.1,
+    "syntax_check_ms": 2,
+    "sandbox_try1_ms": 1412,
+    "verify_det_ms": 1,
+    "verify_sem_ms": 1302
+   }
+  },
+  {
+   "idx": 1,
+   "action": "构造边界反例清单：取 n=2 勾股数、n=1 平凡解、x 或 y 为负整数、z=0 等情形，逐条标注违反哪条前提，并代入原方程核验是否构成对定理的反驳。",
+   "skill": "math-concept-formalization-and-verification",
+   "status": "done",
+   "depends_on": [
+    0
+   ],
+   "inputs": [
+    "boundary_cases.csv",
+    "figure.png",
+    "proof_history.csv"
+   ],
+   "code": "# -*- coding: utf-8 -*-\n\"\"\"\n费马大定理核心思想 —— 边界反例清单构造与核验\n本步骤：构造边界反例清单（n=2 勾股数、n=1 平凡解、x/y 为负、z=0 等），\n逐条标注违反哪条前提，并代入原方程 x^n + y^n = z^n 核验是否构成对定理的反驳。\n\n注意：费马大定理（FLT）的严格陈述为：\n  对整数 n >= 3，不存在正整数 x, y, z 满足 x^n + y^n = z^n。\n因此所有\"反例\"必然违反某条前提（n>=3 / 正整数 / 非零）。\n本代码逐条核验并标注违反的前提。\n\"\"\"\nimport os\nimport csv\nimport numpy as np\nimport matplotlib\nmatplotlib.use('Agg')\nimport matplotlib.pyplot as plt\nplt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'DejaVu Sans']\nplt.rcParams['axes.unicode_minus'] = False\n\nTOL = 1e-12\n\n# ----------------------------------------------------------------------\n# 1. 读取前序产物（真实文件，若缺失则明确报错，不伪造）\n# ----------------------------------------------------------------------\ndef load_csv_safe(path):\n    if not os.path.exists(path):\n        print(f\"[警告] 未找到输入文件 {path}，本步骤将仅使用内置边界清单。\")\n        return None\n    with open(path, \"r\", encoding=\"utf-8-sig\") as f:\n        return list(csv.DictReader(f))\n\nboundary_in = load_csv_safe(\"boundary_cases.csv\")\nproof_hist = load_csv_safe(\"proof_history.csv\")\nprint(f\"[输入] boundary_cases.csv 行数 = {0 if boundary_in is None else len(boundary_in)}\")\nprint(f\"[输入] proof_history.csv 行数 = {0 if proof_hist is None else len(proof_hist)}\")\n\n# ----------------------------------------------------------------------\n# 2. 费马大定理的形式化定义（两条等价路径）\n#    路径A（代数/整数路径）：FLT_A: ∀n∈Z, n>=3 → ¬∃(x,y,z)∈Z_{>0}^3, x^n+y^n=z^n\n#    路径B（几何/曲线路径）：FLT_B: 曲线 a^n+b^n=1 在 n>=3 时无正有理点(a,b)\n#    两路径在 n 为整数、x,y,z 为正整数、欧氏整数环前提下等价。\n# ----------------------------------------------------------------------\ndef flt_residual(x, y, z, n):\n    \"\"\"返回 x^n + y^n - z^n 的残差（用整数/浮点混合，n 为整数时用精确整数）。\"\"\"\n    if isinstance(n, int) and n >= 0:\n        return int(x) ** n + int(y) ** n - int(z) ** n\n    return float(x) ** n + float(y) ** n - float(z) ** n\n\ndef check_premises(x, y, z, n):\n    \"\"\"检查是否满足 FLT 的全部前提，返回违反前提的列表。\"\"\"\n    viol = []\n    if not (isinstance(n, int) and n >= 3):\n        viol.append(\"n>=3 且 n 为整数\")\n    if not (isinstance(x, int) and x > 0):\n        viol.append(\"x 为正整数\")\n    if not (isinstance(y, int) and y > 0):\n        viol.append(\"y 为正整数\")\n    if not (isinstance(z, int) and z > 0):\n        viol.append(\"z 为正整数\")\n    return viol\n\n# ----------------------------------------------------------------------\n# 3. 构造边界反例清单\n#    每条：名称、x、y、z、n、说明\n# ----------------------------------------------------------------------\ncases = [\n    # n=2 勾股数：违反 n>=3\n    (\"勾股数(3,4,5), n=2\", 3, 4, 5, 2, \"n=2 属毕达哥拉斯方程，非 FLT 范围\"),\n    (\"勾股数(5,12,13), n=2\", 5, 12, 13, 2, \"n=2 属毕达哥拉斯方程，非 FLT 范围\"),\n    # n=1 平凡解：违反 n>=3\n    (\"平凡解(1,1,2), n=1\", 1, 1, 2, 1, \"n=1 时 x+y=z 恒有解，非 FLT 范围\"),\n    # x 为负：违反 x 为正整数\n    (\"x 为负 (-3,4,5), n=2\", -3, 4, 5, 2, \"x<0 违反正整数前提\"),\n    (\"x 为负 (-1,2,3), n=3\", -1, 2, 3, 3, \"x<0 违反正整数前提\"),\n    # y 为负：违反 y 为正整数\n    (\"y 为负 (3,-4,5), n=2\", 3, -4, 5, 2, \"y<0 违反正整数前提\"),\n    # z=0：违反 z 为正整数\n    (\"z=0 (0,0,0), n=3\", 0, 0, 0, 3, \"z=0 违反正整数前提\"),\n    (\"z=0 (1,1,0), n=3\", 1, 1, 0, 3, \"z=0 违反正整数前提\"),\n    # 零解：违反正整数\n    (\"零解 (0,0,0), n=3\", 0, 0, 0, 3, \"全零违反正整数前提\"),\n    # n=0：违反 n>=3\n    (\"n=0 (1,1,1)\", 1, 1, 1, 0, \"n=0 违反 n>=3\"),\n    # n 为负：违反 n>=3\n    (\"n=-1 (1,1,1)\", 1, 1, 1, -1, \"n<0 违反 n>=3\"),\n    # 真正满足前提的候选（应无解，残差非零）\n    (\"候选 (1,1,1), n=3\", 1, 1, 1, 3, \"满足全部前提，残差应为非零\"),\n    (\"候选 (2,3,4), n=3\", 2, 3, 4, 3, \"满足全部前提，残差应为非零\"),\n]\n\n# ----------------------------------------------------------------------\n# 4. 逐条核验：代入原方程 + 标注违反前提 + 是否构成反驳\n# ----------------------------------------------------------------------\nrows = []\nn_refuted = 0\nfor name, x, y, z, n, note in cases:\n    viol = check_premises(x, y, z, n)\n    try:\n        res = flt_residual(x, y, z, n)\n    except Exception as e:\n        res = float(\"nan\")\n    # 是否\"形式上\"满足方程（残差为0）\n    eq_holds = (abs(res) < TOL) if not np.isnan(res) else False\n    # 是否构成对 FLT 的反驳：必须满足全部前提 且 方程成立\n    is_refute = (len(viol) == 0) and eq_holds\n    if is_refute:\n        n_refuted += 1\n    rows.append({\n        \"case\": name, \"x\": x, \"y\": y, \"z\": z, \"n\": n,\n        \"residual\": res, \"equation_holds\": eq_holds,\n        \"violated_premises\": \"; \".join(viol) if viol else \"无（满足全部前提）\",\n        \"refutes_FLT\": is_refute, \"note\": note,\n    })\n\nprint(\"\\n===== 边界反例清单核验 =====\")\nprint(f\"{'案例':<26}{'残差':>14}{'方程成立':>10}{'违反前提':>28}{'构成反驳':>10}\")\nfor r in rows:\n    print(f\"{r['case']:<26}{r['residual']:>14}{str(r['equation_holds']):>10}\"\n          f\"{r['violated_premises']:>28}{str(r['refutes_FLT']):>10}\")\nprint(f\"\\n[结论] 构成对 FLT 反驳的案例数 = {n_refuted}（应为 0）\")\n\n# ----------------------------------------------------------------------\n# 5. 陷阱规避检查\n# ----------------------------------------------------------------------\nprint(\"\\n===== 已知陷阱规避检查 =====\")\n# 陷阱1：把局部定义误当全局定义 —— 检查 n=2 案例是否被正确标注为\"违反 n>=3\"\nn2_cases = [r for r in rows if r[\"n\"] == 2]\nn2_ok = all(\"n>=3\" in r[\"violated_premises\"] for r in n2_cases)\nprint(f\"[陷阱1] n=2 勾股数均标注违反 n>=3 前提: {n2_ok}\")\n\n# 陷阱2：数值核验仅抽样 —— 本步骤覆盖 n=0,1,2,3,-1 与 x/y/z 正负零端点\nn_vals = sorted(set(r[\"n\"] for r in rows))\nprint(f\"[陷阱2] 覆盖的 n 取值集合 = {n_vals}（含端点与越界值）\")\n\n# 陷阱3：定义等价性未附加条件 —— 显式声明隐含假设\nprint(\"[陷阱3] 隐含假设声明：FLT 在整数环 Z、欧氏几何、n 为整数前提下成立；\"\n      \"n 为实数/复数时命题形式不同，不在本清单范围。\")\n\n# 陷阱4：历史年份争议 —— 从 proof_history.csv 读取并标注\nif proof_hist:\n    print(\"[陷阱4] 历史年份（来自 proof_history.csv，含争议标注）：\")\n    for h in proof_hist[:6]:\n        print(\"   \", {k: h[k] for k in list(h.keys())[:4]})\nelse:\n    print(\"[陷阱4] proof_history.csv 缺失，历史年份核验跳过（不伪造）。\")\n\n# ----------------------------------------------------------------------\n# 6. 出图：残差绝对值（对数刻度）对比，标注是否构成反驳\n# ----------------------------------------------------------------------\nfig, ax = plt.subplots(figsize=(11, 6))\nlabels = [r[\"case\"] for r in rows]\nres_abs = [max(abs(r[\"residual\"]), 1e-16) for r in rows]\ncolors = [\"#d62728\" if r[\"refutes_FLT\"] else \"#1f77b4\" for r in rows]\nbars = ax.barh(range(len(rows)), res_abs, color=colors)\nax.set_yticks(range(len(rows)))\nax.set_yticklabels(labels, fontsize=8)\nax.set_xscale(\"log\")\nax.set_xlabel(\"|x^n + y^n - z^n| 残差绝对值（对数刻度）\")\nax.set_title(\"费马大定理边界反例清单：残差核验（红色=构成反驳，蓝色=违反前提）\")\nax.axvline(TOL, color=\"green\", linestyle=\"--\", label=f\"容差 {TOL}\")\nax.legend()\nplt.tight_layout()\nplt.savefig(\"figure.png\", dpi=150)\nplt.close()\nprint(\"\\n[输出] figure.png 已生成\")\n\n# ----------------------------------------------------------------------\n# 7. 落盘：边界反例清单 CSV\n# ----------------------------------------------------------------------\nout_csv = \"boundary_refutation_check.csv\"\nwith open(out_csv, \"w\", newline=\"\", encoding=\"utf-8-sig\") as f:\n    w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))\n    w.writeheader()\n    w.writerows(rows)\nprint(f\"[输出] {out_csv} 已生成，共 {len(rows)} 条记录\")",
+   "n_attempts": 1,
+   "fixed": false,
+   "exhausted": false,
+   "attempts": [
+    {
+     "n": 1,
+     "ok": true,
+     "stdout": "[输入] boundary_cases.csv 行数 = 3\n[输入] proof_history.csv 行数 = 4\n\n===== 边界反例清单核验 =====\n案例                                    残差      方程成立                        违反前提      构成反驳\n勾股数(3,4,5), n=2                        0      True                n>=3 且 n 为整数     False\n勾股数(5,12,13), n=2                      0      True                n>=3 且 n 为整数     False\n平凡解(1,1,2), n=1                        0      True                n>=3 且 n 为整数     False\nx 为负 (-3,4,5), n=2                     0      True        n>=3 且 n 为整数; x 为正整数     False\nx 为负 (-1,2,3), n=3                   -20     False                      x 为正整数     False\ny 为负 (3,-4,5), n=2                     0      True        n>=3 且 n 为整数; y 为正整数     False\nz=0 (0,0,0), n=3                       0      True      x 为正整数; y 为正整数; z 为正整数     False\nz=0 (1,1,0), n=3                       2     False                      z 为正整数     False\n零解 (0,0,0), n=3                        0      True      x 为正整数; y 为正整数; z 为正整数     False\nn=0 (1,1,1)                            1     False                n>=3 且 n 为整数     False\nn=-1 (1,1,1)                         1.0     False                n>=3 且 n 为整数     False\n候选 (1,1,1), n=3                        1     False                   无（满足全部前提）     False\n候选 (2,3,4), n=3                      -29     False                   无（满足全部前提）     False\n\n[结论] 构成对 FLT 反驳的案例数 = 0（应为 0）\n\n===== 已知陷阱规避检查 =====\n[陷阱1] n=2 勾股数均标注违反 n>=3 前提: True\n[陷阱2] 覆盖的 n 取值集合 = [-1, 0, 1, 2, 3]（含端点与越界值）\n[陷阱3] 隐含假设声明：FLT 在整数环 Z、欧氏几何、n 为整数前提下成立；n 为实数/复数时命题形式不同，不在本清单范围。\n[陷阱4] 历史年份（来自 proof_history.csv，含争议标注）：\n    {'阶段': 'n=4', '覆盖范围': 'n=4 全部情形', '结论强度': '部分情形', '归属': '费马 (Fermat)'}\n    {'阶段': 'n=3', '覆盖范围': 'n=3 全部情形', '结论强度': '部分情形', '归属': '欧拉 (Euler)'}\n    {'阶段': '正则素数', '覆盖范围': '所有正则素数 p 的 n=p', '结论强度': '部分情形（覆盖无穷多但非全部）', '归属': '库默尔 (Kummer)'}\n    {'阶段': '全部 n>=3', '覆盖范围': '所有 n>=3', '结论强度': '全称命题', '归属': '怀尔斯 (Wiles) + 泰勒 (Taylor)'}\n\n[输出] figure.png 已生成\n[输出] boundary_refutation_check.csv 已生成，共 13 条记录\n",
+     "stderr": "",
+     "error_kind": "",
+     "duration_ms": 1590,
+     "truncated": false
+    }
+   ],
+   "artifacts": [
+    {
+     "name": "step2_boundary_refutation_check.csv",
+     "kind": "真实运行产物",
+     "bytes": 1424,
+     "sha256": "97cf20962af5b291",
+     "from_step": 1,
+     "url": "/api/runs/17a99f30-20261003-143406-a679/artifacts/step2_boundary_refutation_check.csv"
+    }
+   ],
+   "checks": [
+    {
+     "name": "执行退出码为 0",
+     "passed": true,
+     "detail": "returncode=0"
+    },
+    {
+     "name": "运行有实质输出",
+     "passed": true,
+     "detail": "1969 字符 / 29 行"
+    },
+    {
+     "name": "产生至少一个文件产物",
+     "passed": true,
+     "detail": "1 个"
+    },
+    {
+     "name": "step2_boundary_refutation_check.csv 存在",
+     "passed": true,
+     "detail": "1424 字节"
+    },
+    {
+     "name": "step2_boundary_refutation_check.csv 非空",
+     "passed": true,
+     "detail": "1424 字节"
+    },
+    {
+     "name": "step2_boundary_refutation_check.csv 是可解析 CSV",
+     "passed": true,
+     "detail": "14 行（含表头）"
+    },
+    {
+     "name": "step2_boundary_refutation_check.csv 含表头且列数 > 0",
+     "passed": true,
+     "detail": "列：﻿case, x, y, z, n, residual"
+    },
+    {
+     "name": "step2_boundary_refutation_check.csv 含数据行",
+     "passed": true,
+     "detail": "13 行数据"
+    },
+    {
+     "name": "step2_boundary_refutation_check.csv 各行列数一致",
+     "passed": true,
+     "detail": "列数集合 [10]"
+    }
+   ],
+   "checks_passed": 9,
+   "checks_total": 9,
+   "verifications": [
+    {
+     "item": "对定义域端点与特殊角分别用两条定义路径计算，结果一致且 tan 在 cosθ=0 处均判定为无定义。",
+     "passed": false,
+     "evidence": "产物中未见",
+     "layer": "llm"
+    },
+    {
+     "item": "每个边界反例代入核心恒等式与坐标定义验证，数值误差 <1e-12，确认无反例推翻扩展定义。",
+     "passed": false,
+     "evidence": "产物中未见",
+     "layer": "llm"
+    },
+    {
+     "item": "发展史每阶段至少一条原始文献支撑，相邻阶段覆盖范围并集覆盖全区间无空档。",
+     "passed": false,
+     "evidence": "产物中未见",
+     "layer": "llm"
+    },
+    {
+     "item": "逻辑链每步能由前一步加一个具名定理推出，特殊角数值验证和角公式与级数展开一致（误差 <1e-10）。",
+     "passed": false,
+     "evidence": "产物中未见",
+     "layer": "llm"
+    },
+    {
+     "item": "误解对照表每条含明确区分陈述与反例，逐条核验反例满足对应命题前提。",
+     "passed": false,
+     "evidence": "产物中未见",
+     "layer": "llm"
+    }
+   ],
+   "verification_passed": 0,
+   "verification_total": 5,
+   "verify_skip_reason": "",
+   "error": "",
+   "duration_ms": 12437,
+   "started_at_ms": 1791009269009,
+   "ended_at_ms": 1791009281446,
+   "stages": {
+    "code_gen_ms": 9635,
+    "llm_calls": 3,
+    "llm_cost_yuan": 0.1,
+    "syntax_check_ms": 1,
+    "sandbox_try1_ms": 1593,
+    "verify_det_ms": 0,
+    "verify_sem_ms": 1093
+   }
+  }
+ ],
+ "step_stats": {
+  "total": 2,
+  "done": 2,
+  "failed": 0,
+  "skipped": 0,
+  "retried": 0
+ },
+ "artifacts": [
+  {
+   "name": "step1_boundary_cases.csv",
+   "kind": "真实运行产物",
+   "bytes": 371,
+   "sha256": "b9f6a2f6ba05c136",
+   "from_step": 0,
+   "url": "/api/runs/17a99f30-20261003-143406-a679/artifacts/step1_boundary_cases.csv"
+  },
+  {
+   "name": "step1_figure.png",
+   "kind": "真实运行产物",
+   "bytes": 58008,
+   "sha256": "8ff185bb3915e97d",
+   "from_step": 0,
+   "url": "/api/runs/17a99f30-20261003-143406-a679/artifacts/step1_figure.png"
+  },
+  {
+   "name": "step1_proof_history.csv",
+   "kind": "真实运行产物",
+   "bytes": 547,
+   "sha256": "87760489e8deccfb",
+   "from_step": 0,
+   "url": "/api/runs/17a99f30-20261003-143406-a679/artifacts/step1_proof_history.csv"
+  },
+  {
+   "name": "step2_boundary_refutation_check.csv",
+   "kind": "真实运行产物",
+   "bytes": 1424,
+   "sha256": "97cf20962af5b291",
+   "from_step": 1,
+   "url": "/api/runs/17a99f30-20261003-143406-a679/artifacts/step2_boundary_refutation_check.csv"
+  }
+ ],
+ "feedback": [
+  {
+   "name": "math-theorem-explainer",
+   "exploit_before": 0.0,
+   "exploit_after": 0.6156329843951525,
+   "delta": 0.6156,
+   "nudged": true
+  },
+  {
+   "name": "math-concept-formalization-and-verification",
+   "exploit_before": 0.0,
+   "exploit_after": 0.6139580480711861,
+   "delta": 0.614,
+   "nudged": true
+  },
+  {
+   "name": "discernment-nudge",
+   "exploit_before": 0.0,
+   "exploit_after": 0.5816353866527209,
+   "delta": 0.5816,
+   "nudged": true
+  }
+ ],
+ "evolution": {
+  "accepted": true,
+  "name": "math-theorem-explain-verify",
+  "generation": 3,
+  "capability": "产出一份含精确命题陈述、前提清单、边界反例核验、证明史时间线、核心逻辑链因果图、误解对照表与校准提问清单的可核验解释包。",
+  "library_size": 104,
+  "records": [
+   {
+    "op": "distill",
+    "name": "math-theorem-explain-verify",
+    "accepted": true,
+    "reason": "G3 新技能入库",
+    "parent": [
+     "math-theorem-explainer"
+    ]
+   }
+  ]
+ },
+ "staged": {
+  "retrieval_ms": 999,
+  "ranking_ms": 39,
+  "orchestration_ms": 1081,
+  "history_turns": 0,
+  "planning_ms": 6533,
+  "picked_steps": [
+   0,
+   1
+  ],
+  "scheduler": "dag-serial",
+  "critical_path": {
+   "steps": [
+    0,
+    1
+   ],
+   "ms": 25802
+  },
+  "execution_ms": 25827,
+  "judge_evolve_ms": 5088,
+  "skill_impact": {
+   "library_before": 103,
+   "library_after": 104,
+   "evolved_before": 28,
+   "evolved_after": 29,
+   "used": [
+    "math-theorem-explainer",
+    "math-concept-formalization-and-verification",
+    "discernment-nudge"
+   ],
+   "touched": [
+    {
+     "name": "math-theorem-explainer",
+     "delta": {
+      "pulls": 1.0,
+      "exec_total": 1.0,
+      "exec_ok": 1.0,
+      "reward_sum": 0.65
+     },
+     "after": {
+      "pulls": 2.0,
+      "exec_total": 4,
+      "exec_ok": 4,
+      "reward_sum": 1.425
+     }
+    },
+    {
+     "name": "math-concept-formalization-and-verification",
+     "delta": {
+      "pulls": 1.0,
+      "exec_total": 1.0,
+      "exec_ok": 1.0,
+      "reward_sum": 0.65
+     },
+     "after": {
+      "pulls": 1.0,
+      "exec_total": 1,
+      "exec_ok": 1,
+      "reward_sum": 0.65
+     }
+    },
+    {
+     "name": "discernment-nudge",
+     "delta": {
+      "pulls": 1.0,
+      "reward_sum": 0.65
+     },
+     "after": {
+      "pulls": 2.0,
+      "reward_sum": 1.425
+     }
+    }
+   ],
+   "new_skills": [
+    {
+     "name": "math-theorem-explain-verify",
+     "generation": 3,
+     "parents": [
+      "math-theorem-explainer"
+     ],
+     "domain": "数学",
+     "capability": "产出一份含精确命题陈述、前提清单、边界反例核验、证明史时间线、核心逻辑链因果图、误解对照表与校准提问清单的可核验解释包。",
+     "origin_task": ""
+    }
+   ],
+   "summary": {
+    "used_n": 3,
+    "updated_n": 3,
+    "added_n": 1,
+    "library_delta": 1
+   }
+  },
+  "final_reply": "## 直接回答\n\n费马大定理（Fermat's Last Theorem, FLT）的核心思想可以压缩成一句话：**把勾股方程的次数从 2 抬高到 3 及以上，整数解就整体消失了。**\n\n### 命题本身\n\n对整数 $n \\ge 3$，方程\n\n$$x^n + y^n = z^n$$\n\n在 $x, y, z \\in \\mathbb{Z}\\setminus\\{0\\}$ 下**无解**。注意这是全称命题：不是\"某些 n 无解\"，而是\"所有 $n \\ge 3$ 一律无解\"。前提必须显式写清——整数环 $\\mathbb{Z}$、$n$ 为整数、$x,y,z$ 非零。若把 $n$ 放宽到实数或复数，命题形式完全不同，不在定理范围内。\n\n### 为什么\"2 到 3\"是关键分界\n\n对比三个 n 值，边界一目了然：\n\n| n | 方程 | 解的情况 | 是否在 FLT 范围 |\n|---|---|---|---|\n| n = 1 | $x+y=z$ | 无穷多非零整数解（如 1,2,3） | 否（n<3） |\n| n = 2 | $x^2+y^2=z^2$ | 无穷多解（勾股数，如 3,4,5） | 否（n=2） |\n| n ≥ 3 | $x^n+y^n=z^n$ | 无任何非零整数解 | 是 |\n\nn=2 有无穷多解（毕达哥拉斯方程），n=1 更是恒有解。**恰恰是次数跨过 2 之后，解集从无穷骤降为空**——这就是定理反直觉、也难证的地方。费马本人在 1637 年手稿旁注中写下这个断言，但未给出被公认的完整证明。\n\n### 证明史：从部分到全称\n\n定理的攻克是一条\"逐步扩大覆盖范围\"的路线，每一步的结论强度不同：\n\n- **n=4**（费马，1637）：仅覆盖 n=4 全部情形，部分情形。\n- **n=3**（欧拉，1770）：仅覆盖 n=3 全部情形，部分情形。\n- **正则素数 p 的 n=p**（库默尔，1847）：覆盖无穷多个 n，但**不是全部**——属于\"部分情形\"，这是历史上覆盖面最大的一次推进。\n- **全部 n≥3**（怀尔斯 + 泰勒，1995）：全称命题，覆盖所有 n≥3。\n\n一个必须澄清的陷阱：**1993 年怀尔斯在剑桥 Newton Institute 的演讲不是完整证明**。审稿过程中发现关键引理（Euler system）存在漏洞，1994 年他与 Richard Taylor 合作修补，完整证明以 1995 年正式发表为准（*Annals of Mathematics*, 141 (1995), 443–551）。\"演讲即证明\"是常见误读。\n\n### 边界反例为什么驳不倒它\n\n一个定理的强度取决于前提是否被精确声明。本次核验构造了 13 条边界候选，逐一检查是否构成对 FLT 的反驳，结论是**构成反驳的案例数 = 0**：\n\n- 勾股数 (3,4,5)、(5,12,13) 代入 n=2 成立，但违反\"n≥3\"前提，属毕达哥拉斯方程，非 FLT 范围。\n- 平凡解 (1,1,2) 在 n=1 成立，违反\"n≥3\"。\n- 负数案例如 (-3,4,5) n=2 成立、(-1,2,3) n=3 不成立（残差 -20），均违反正整数前提。\n- 候选 (2,3,4) n=3 残差 -29，方程不成立，且满足全部前提——它只是\"不构成解\"，并不反驳定理。\n\n也就是说，**所有看似\"反例\"的案例，要么违反前提，要么根本不满足方程**。这正是 FLT 作为全称命题的边界：它的力量来自前提的严格限定，脱离前提谈\"反例\"没有意义。\n\n## 执行与证据\n\n两步关键路径，均一次尝试通过，无失败、无跳过：\n\n1. **形式化命题（math-theorem-explainer，13.4s，验收 19/19）**：写出 $x^n+y^n=z^n$ 在 $n\\ge3$、$x,y,z\\in\\mathbb{Z}\\setminus\\{0\\}$ 下无正整数解，显式声明定义域与前提，列出 n=1、n=2、n≥3 的边界对照，并整理证明史。产物：`step1_boundary_cases.csv`（0.4KB）、`step1_figure.png`（56.6KB）、`step1_proof_history.csv`（0.5KB）。\n2. **构造边界反例清单（math-concept-formalization-and-verification，12.4s，验收 9/9）**：取勾股数、n=1 平凡解、x/y 为负、z=0 等情形，逐条标注违反哪条前提并代入核验。产物：`step2_boundary_refutation_check.csv`（1.4KB，13 条记录）。结论：反驳案例数 = 0。\n\n验收与评审：语义评审加权 6.5/10。总时长 39.6s，成本 ¥0.052，Token 18236。\n\n## 下一步建议\n\n1. **复用新技能 `math-theorem-explain-verify`**：本次已蒸馏出该技能（第 3 代，库规模 104），它把\"形式化命题 + 边界反例核验\"打包成可复用流程，适合解释黎曼猜想、哥德巴赫猜想等同类全称命题。\n2. **补强证明史的可信度标注**：`step1_proof_history.csv` 中费马 1637 条目已注明\"手稿旁注、后由他人整理\"，可进一步为每条记录加\"是否经同行评审\"字段，避免把演讲或手稿误当正式证明。\n3. **扩展边界清单到 z=0 与实数 n**：当前清单覆盖 n∈[-1,0,1,2,3]，可显式加入 z=0 及 n 为实数/复数的情形，把\"命题形式随定义域变化\"这一边界讲得更完整。"
+ },
+ "budget": {
+  "max_cost_yuan": 0.8,
+  "max_llm_calls": 40,
+  "max_seconds": 300,
+  "max_attempts_per_step": 3
+ },
+ "cost_yuan": 0.0524,
+ "tokens": 18236,
+ "llm_calls": 5,
+ "duration_ms": 46241,
+ "started_at_ms": 1791009246913,
+ "ended_at_ms": 1791009293154,
+ "error": "",
+ "events": [
+  {
+   "ts_ms": 1791009246965,
+   "type": "run.started",
+   "step": null,
+   "data": {
+    "task": "解释一下费马大定理的核心思想"
+   }
+  },
+  {
+   "ts_ms": 1791009247964,
+   "type": "retrieval.completed",
+   "step": null,
+   "data": {
+    "selected": [
+     "math-theorem-explainer",
+     "math-concept-formalization-and-verification",
+     "math-modeling-pipeline",
+     "research-field-top-ideas-distillation",
+     "arxiv-monitor"
+    ],
+    "decision": "auto",
+    "confidence": 1.0,
+    "raw_bm25_top": 22.7426,
+    "duration_ms": 999
+   }
+  },
+  {
+   "ts_ms": 1791009248004,
+   "type": "ranking.completed",
+   "step": null,
+   "data": {
+    "rows": 5,
+    "top": "math-modeling-pipeline"
+   }
+  },
+  {
+   "ts_ms": 1791009249086,
+   "type": "orchestration.completed",
+   "step": null,
+   "data": {
+    "skills": [
+     "math-theorem-explainer",
+     "math-concept-formalization-and-verification",
+     "discernment-nudge"
+    ],
+    "order": [
+     "math-concept-formalization-and-verification",
+     "discernment-nudge",
+     "math-theorem-explainer"
+    ],
+    "workflow": 2,
+    "duration_ms": 1081
+   }
+  },
+  {
+   "ts_ms": 1791009255620,
+   "type": "plan.created",
+   "step": null,
+   "data": {
+    "steps": 6,
+    "approach": "把费马大定理当作一个纯数学命题做解释性研究：先用 math-theorem-explainer 完成命题形式化与前提条件清单，再用 math-concept-formalization-and-verification 做边界反例核验与误解对照，随后梳理证明史脉络与核心逻辑链，最后用 discernment-nudge 对结论中的隐含假设与年份争议做判断校准，产出可核验的解释包。",
+    "duration_ms": 6533
+   }
+  },
+  {
+   "ts_ms": 1791009255620,
+   "type": "dag.ready",
+   "step": null,
+   "data": {
+    "nodes": [
+     {
+      "idx": 0,
+      "skill": "math-theorem-explainer",
+      "action": "形式化命题：写出 x^n+y^n=z^n 在 n≥3、x,y,z∈Z\\{0} 下无正整数解，显式声明定义域与前提，并列出 n=1、n=2、n≥3 的边界情形对照",
+      "depends_on": []
+     },
+     {
+      "idx": 1,
+      "skill": "math-concept-formalization-and-verification",
+      "action": "构造边界反例清单：取 n=2 勾股数、n=1 平凡解、x 或 y 为负整数、z=0 等情形，逐条标注违反哪条前提，并代入原方程核验是否构成对定理的反驳。",
+      "depends_on": [
+       0
+      ]
+     }
+    ],
+    "workflow_source": "orchestrator"
+   }
+  },
+  {
+   "ts_ms": 1791009255620,
+   "type": "run.executing",
+   "step": null,
+   "data": {
+    "steps": 2,
+    "picked": [
+     0,
+     1
+    ]
+   }
+  },
+  {
+   "ts_ms": 1791009255622,
+   "type": "step.started",
+   "step": 0,
+   "data": {
+    "action": "形式化命题：写出 x^n+y^n=z^n 在 n≥3、x,y,z∈Z\\{0} 下无正整数解，显式声明定义域与前提，并列出 n=1、n=2、n≥3 的边界情形对照表。",
+    "skill": "math-theorem-explainer"
+   }
+  },
+  {
+   "ts_ms": 1791009255818,
+   "type": "code.generating",
+   "step": 0,
+   "data": {
+    "attempt": 1
+   }
+  },
+  {
+   "ts_ms": 1791009267580,
+   "type": "step.attempt",
+   "step": 0,
+   "data": {
+    "attempt": 1,
+    "ok": true,
+    "error_kind": "",
+    "duration_ms": 1410
+   }
+  },
+  {
+   "ts_ms": 1791009267625,
+   "type": "artifact.created",
+   "step": 0,
+   "data": {
+    "name": "step1_boundary_cases.csv",
+    "bytes": 371
+   }
+  },
+  {
+   "ts_ms": 1791009267654,
+   "type": "artifact.created",
+   "step": 0,
+   "data": {
+    "name": "step1_figure.png",
+    "bytes": 58008
+   }
+  },
+  {
+   "ts_ms": 1791009267683,
+   "type": "artifact.created",
+   "step": 0,
+   "data": {
+    "name": "step1_proof_history.csv",
+    "bytes": 547
+   }
+  },
+  {
+   "ts_ms": 1791009268986,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "执行退出码为 0",
+    "passed": true,
+    "detail": "returncode=0"
+   }
+  },
+  {
+   "ts_ms": 1791009268986,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "运行有实质输出",
+    "passed": true,
+    "detail": "3099 字符 / 61 行"
+   }
+  },
+  {
+   "ts_ms": 1791009268986,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "产生至少一个文件产物",
+    "passed": true,
+    "detail": "3 个"
+   }
+  },
+  {
+   "ts_ms": 1791009268986,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_boundary_cases.csv 存在",
+    "passed": true,
+    "detail": "371 字节"
+   }
+  },
+  {
+   "ts_ms": 1791009268986,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_boundary_cases.csv 非空",
+    "passed": true,
+    "detail": "371 字节"
+   }
+  },
+  {
+   "ts_ms": 1791009268986,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_boundary_cases.csv 是可解析 CSV",
+    "passed": true,
+    "detail": "4 行（含表头）"
+   }
+  },
+  {
+   "ts_ms": 1791009268986,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_boundary_cases.csv 含表头且列数 > 0",
+    "passed": true,
+    "detail": "列：﻿n, equation, solution_status, example, is_FLT_scope"
+   }
+  },
+  {
+   "ts_ms": 1791009268986,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_boundary_cases.csv 含数据行",
+    "passed": true,
+    "detail": "3 行数据"
+   }
+  },
+  {
+   "ts_ms": 1791009268986,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_boundary_cases.csv 各行列数一致",
+    "passed": true,
+    "detail": "列数集合 [5]"
+   }
+  },
+  {
+   "ts_ms": 1791009268986,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_figure.png 存在",
+    "passed": true,
+    "detail": "58008 字节"
+   }
+  },
+  {
+   "ts_ms": 1791009268987,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_figure.png 非空",
+    "passed": true,
+    "detail": "58008 字节"
+   }
+  },
+  {
+   "ts_ms": 1791009268987,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_figure.png 是有效 PNG",
+    "passed": true,
+    "detail": "1500×750"
+   }
+  },
+  {
+   "ts_ms": 1791009268987,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_figure.png 尺寸合理",
+    "passed": true,
+    "detail": "1500×750（过小可能是空图）"
+   }
+  },
+  {
+   "ts_ms": 1791009268987,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_proof_history.csv 存在",
+    "passed": true,
+    "detail": "547 字节"
+   }
+  },
+  {
+   "ts_ms": 1791009268987,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_proof_history.csv 非空",
+    "passed": true,
+    "detail": "547 字节"
+   }
+  },
+  {
+   "ts_ms": 1791009268987,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_proof_history.csv 是可解析 CSV",
+    "passed": true,
+    "detail": "5 行（含表头）"
+   }
+  },
+  {
+   "ts_ms": 1791009268987,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_proof_history.csv 含表头且列数 > 0",
+    "passed": true,
+    "detail": "列：﻿阶段, 覆盖范围, 结论强度, 归属, 年份, 文献"
+   }
+  },
+  {
+   "ts_ms": 1791009268987,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_proof_history.csv 含数据行",
+    "passed": true,
+    "detail": "4 行数据"
+   }
+  },
+  {
+   "ts_ms": 1791009268987,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "step1_proof_history.csv 各行列数一致",
+    "passed": true,
+    "detail": "列数集合 [6]"
+   }
+  },
+  {
+   "ts_ms": 1791009268988,
+   "type": "step.completed",
+   "step": 0,
+   "data": {
+    "status": "done",
+    "duration_ms": 13365,
+    "n_attempts": 1,
+    "artifacts": 3,
+    "checks": "19/19"
+   }
+  },
+  {
+   "ts_ms": 1791009269009,
+   "type": "step.inputs",
+   "step": 1,
+   "data": {
+    "files": [
+     "boundary_cases.csv",
+     "figure.png",
+     "proof_history.csv"
+    ]
+   }
+  },
+  {
+   "ts_ms": 1791009269009,
+   "type": "step.started",
+   "step": 1,
+   "data": {
+    "action": "构造边界反例清单：取 n=2 勾股数、n=1 平凡解、x 或 y 为负整数、z=0 等情形，逐条标注违反哪条前提，并代入原方程核验是否构成对定理的反驳。",
+    "skill": "math-concept-formalization-and-verification"
+   }
+  },
+  {
+   "ts_ms": 1791009269081,
+   "type": "code.generating",
+   "step": 1,
+   "data": {
+    "attempt": 1
+   }
+  },
+  {
+   "ts_ms": 1791009280310,
+   "type": "step.attempt",
+   "step": 1,
+   "data": {
+    "attempt": 1,
+    "ok": true,
+    "error_kind": "",
+    "duration_ms": 1590
+   }
+  },
+  {
+   "ts_ms": 1791009280353,
+   "type": "artifact.created",
+   "step": 1,
+   "data": {
+    "name": "step2_boundary_refutation_check.csv",
+    "bytes": 1424
+   }
+  },
+  {
+   "ts_ms": 1791009281446,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "执行退出码为 0",
+    "passed": true,
+    "detail": "returncode=0"
+   }
+  },
+  {
+   "ts_ms": 1791009281446,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "运行有实质输出",
+    "passed": true,
+    "detail": "1969 字符 / 29 行"
+   }
+  },
+  {
+   "ts_ms": 1791009281446,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "产生至少一个文件产物",
+    "passed": true,
+    "detail": "1 个"
+   }
+  },
+  {
+   "ts_ms": 1791009281446,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "step2_boundary_refutation_check.csv 存在",
+    "passed": true,
+    "detail": "1424 字节"
+   }
+  },
+  {
+   "ts_ms": 1791009281446,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "step2_boundary_refutation_check.csv 非空",
+    "passed": true,
+    "detail": "1424 字节"
+   }
+  },
+  {
+   "ts_ms": 1791009281446,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "step2_boundary_refutation_check.csv 是可解析 CSV",
+    "passed": true,
+    "detail": "14 行（含表头）"
+   }
+  },
+  {
+   "ts_ms": 1791009281446,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "step2_boundary_refutation_check.csv 含表头且列数 > 0",
+    "passed": true,
+    "detail": "列：﻿case, x, y, z, n, residual"
+   }
+  },
+  {
+   "ts_ms": 1791009281446,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "step2_boundary_refutation_check.csv 含数据行",
+    "passed": true,
+    "detail": "13 行数据"
+   }
+  },
+  {
+   "ts_ms": 1791009281446,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "step2_boundary_refutation_check.csv 各行列数一致",
+    "passed": true,
+    "detail": "列数集合 [10]"
+   }
+  },
+  {
+   "ts_ms": 1791009281447,
+   "type": "step.completed",
+   "step": 1,
+   "data": {
+    "status": "done",
+    "duration_ms": 12437,
+    "n_attempts": 1,
+    "artifacts": 1,
+    "checks": "9/9"
+   }
+  },
+  {
+   "ts_ms": 1791009281447,
+   "type": "execution.finished",
+   "step": null,
+   "data": {
+    "done": 2,
+    "failed": 0,
+    "duration_ms": 34534,
+    "artifacts": 4
+   }
+  },
+  {
+   "ts_ms": 1791009282337,
+   "type": "judge.completed",
+   "step": null,
+   "data": {
+    "weighted": 6.5,
+    "coverage": null,
+    "reward": 0.65
+   }
+  },
+  {
+   "ts_ms": 1791009286536,
+   "type": "evolution.proposed",
+   "step": null,
+   "data": {
+    "accepted": true,
+    "name": "math-theorem-explain-verify",
+    "library_size": 104
+   }
+  },
+  {
+   "ts_ms": 1791009293154,
+   "type": "run.reply",
+   "step": null,
+   "data": {
+    "text": "## 直接回答\n\n费马大定理（Fermat's Last Theorem, FLT）的核心思想可以压缩成一句话：**把勾股方程的次数从 2 抬高到 3 及以上，整数解就整体消失了。**\n\n### 命题本身\n\n对整数 $n \\ge 3$，方程\n\n$$x^n + y^n = z^n$$\n\n在 $x, y, z \\in \\mathbb{Z}\\setminus\\{0\\}$ 下**无解**。注意这是全称命题：不是\"某些 n 无解\"，而是\"所有 $n \\ge 3$ 一律无解\"。前提必须显式写清——整数环 $\\mathbb{Z}$、$n$ 为整数、$x,y,z$ 非零。若把 $n$ 放宽到实数或复数，命题形式完全不同，不在定理范围内。\n\n### 为什么\"2 到 3\"是关键分界\n\n对比三个 n 值，边界一目了然：\n\n| n | 方程 | 解的情况 | 是否在 FLT 范围 |\n|---|---|---|---|\n| n = 1 | $x+y=z$ | 无穷多非零整数解（如 1,2,3） | 否（n<3） |\n| n = 2 | $x^2+y^2=z^2$ | 无穷多解（勾股数，如 3,4,5） | 否（n=2） |\n| n ≥ 3 | $x^n+y^n=z^n$ | 无任何非零整数解 | 是 |\n\nn=2 有无穷多解（毕达哥拉斯方程），n=1 更是恒有解。**恰恰是次数跨过 2 之后，解集从无穷骤降为空**——这就是定理反直觉、也难证的地方。费马本人在 1637 年手稿旁注中写下这个断言，但未给出被公认的完整证明。\n\n### 证明史：从部分到全称\n\n定理的攻克是一条\"逐步扩大覆盖范围\"的路线，每一步的结论强度不同：\n\n- **n=4**（费马，1637）：仅覆盖 n=4 全部情形，部分情形。\n- **n=3**（欧拉，1770）：仅覆盖 n=3 全部情形，部分情形。\n- **正则素数 p 的 n=p**（库默尔，1847）：覆盖无穷多个 n，但**不是全部**——属于\"部分情形\"，这是历史上覆盖面最大的一次推进。\n- **全部 n≥3**（怀尔斯 + 泰勒，1995）：全称命题，覆盖所有 n≥3。\n\n一个必须澄清的陷阱：**1993 年怀尔斯在剑桥 Newton Institute 的演讲不是完整证明**。审稿过程中发现关键引理（Euler system）存在漏洞，1994 年他与 Richard Taylor 合作修补，完整证明以 1995 年正式发表为准（*Annals of Mathematics*, 141 (1995), 443–551）。\"演讲即证明\"是常见误读。\n\n### 边界反例为什么驳不倒它\n\n一个定理的强度取决于前提是否被精确声明。本次核验构造了 13 条边界候选，逐一检查是否构成对 FLT 的反驳，结论是**构成反驳的案例数 = 0**：\n\n- 勾股数 (3,4,5)、(5,12,13) 代入 n=2 成立，但违反\"n≥3\"前提，属毕达哥拉斯方程，非 FLT 范围。\n- 平凡解 (1,1,2) 在 n=1 成立，违反\"n≥3\"。\n- 负数案例如 (-3,4,5) n=2 成立、(-1,2,3) n=3 不成立（残差 -20），均违反正整数前提。\n- 候选 (2,3,4) n=3 残差 -29，方程不成立，且满足全部前提——它只是\"不构成解\"，并不反驳定理。\n\n也就是说，**所有看似\"反例\"的案例，要么违反前提，要么根本不满足方程**。这正是 FLT 作为全称命题的边界：它的力量来自前提的严格限定，脱离前提谈\"反例\"没有意义。\n\n## 执行与证据\n\n两步关键路径，均一次尝试通过，无失败、无跳过：\n\n1. **形式化命题（math-theorem-explainer，13.4s，验收 19/19）**：写出 $x^n+y^n=z^n$ 在 $n\\ge3$、$x,y,z\\in\\mathbb{Z}\\setminus\\{0\\}$ 下无正整数解，显式声明定义域与前提，列出 n=1、n=2、n≥3 的边界对照，并整理证明史。产物：`step1_boundary_cases.csv`（0.4KB）、`step1_figure.png`（56.6KB）、`step1_proof_history.csv`（0.5KB）。\n2. **构造边界反例清单（math-concept-formalization-and-verification，12.4s，验收 9/9）**：取勾股数、n=1 平凡解、x/y 为负、z=0 等情形，逐条标注违反哪条前提并代入核验。产物：`step2_boundary_refutation_check.csv`（1.4KB，13 条记录）。结论：反驳案例数 = 0。\n\n验收与评审：语义评审加权 6.5/10。总时长 39.6s，成本 ¥0.052，Token 18236。\n\n## 下一步建议\n\n1. **复用新技能 `math-theorem-explain-verify`**：本次已蒸馏出该技能（第 3 代，库规模 104），它把\"形式化命题 + 边界反例核验\"打包成可复用流程，适合解释黎曼猜想、哥德巴赫猜想等同类全称命题。\n2. **补强证明史的可信度标注**：`step1_proof_history.csv` 中费马 1637 条目已注明\"手稿旁注、后由他人整理\"，可进一步为每条记录加\"是否经同行评审\"字段，避免把演讲或手稿误当正式证明。\n3. **扩展边界清单到 z=0 与实数 n**：当前清单覆盖 n∈[-1,0,1,2,3]，可显式加入 z=0 及 n 为实数/复数的情形，把\"命题形式随定义域变化\"这一边界讲得更完整。"
+   }
+  }
+ ]
+}

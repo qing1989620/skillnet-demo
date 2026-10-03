@@ -171,6 +171,34 @@
   .evpanel .kv span:nth-child(odd) { color: #8a97a4; }
   .evpanel code { font: 11.5px/1.6 Consolas, monospace; background: var(--soft); padding: 1px 5px; border-radius: 3px; }
   .evpanel .close { float: right; cursor: pointer; color: #9aa7b3; font-size: 12px; }
+  /* 本次任务总结：SkillNet 的角色与技能库成长（数据来自技能统计前后差值） */
+  .task-summary { margin-top: 14px; background: #fbfcfd; border: 1px solid #dbe4ec;
+    border-left: 4px solid #2e7d4f; border-radius: 8px; padding: 18px 22px 16px; }
+  .task-summary .ts-head { display: flex; align-items: center; gap: 8px; font-size: 12px;
+    font-weight: 700; color: #1a3a5c; letter-spacing: .5px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--line); }
+  .task-summary .ts-head i { width: 7px; height: 7px; border-radius: 50%; background: #2e7d4f;
+    box-shadow: 0 0 0 3px rgba(46,125,79,.12); }
+  .task-summary .ts-role { font-size: 12.5px; color: var(--ink2); margin: 10px 0 4px; }
+  .task-summary .ts-steps { display: grid; gap: 6px; margin: 10px 0 4px; }
+  .task-summary .ts-step { display: grid; grid-template-columns: 66px 1fr; gap: 10px;
+    font-size: 12.5px; align-items: baseline; }
+  .task-summary .ts-step b { color: var(--brand2); font-weight: 700; }
+  .task-summary .ts-metrics { display: flex; gap: 22px; flex-wrap: wrap; margin: 12px 0 6px;
+    padding: 10px 14px; background: #fff; border: 1px solid var(--line); border-radius: 6px; }
+  .task-summary .ts-metrics div { font-size: 12.5px; color: var(--ink2); }
+  .task-summary .ts-metrics b { font-family: Bahnschrift, 'Segoe UI', sans-serif;
+    font-size: 15px; color: var(--brand); margin-right: 4px; }
+  .task-summary .ts-sec { font-size: 11px; letter-spacing: 2px; color: #8a97a4; margin: 14px 0 6px; }
+  .task-summary table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .task-summary th { text-align: left; color: #8a97a4; font-weight: 400; padding: 4px 8px;
+    border-bottom: 1px solid var(--line); }
+  .task-summary td { padding: 4px 8px; border-bottom: 1px solid var(--line); color: var(--ink2); }
+  .task-summary td.up { color: #2e7d4f; font-weight: 600; font-family: var(--mono, monospace); }
+  .task-summary .newskill { margin-top: 8px; padding: 10px 14px; background: #f0f7f2;
+    border: 1px solid #cfe6d6; border-radius: 6px; font-size: 12.5px; }
+  .task-summary .newskill code { background: #fff; padding: 1px 5px; border-radius: 3px;
+    font: 11.5px Consolas, monospace; color: #24557a; }
   .ai-reply { margin-top: 18px; background: #fff; border: 1px solid #d8e2ea;
     border-radius: 8px; padding: 20px 24px 18px; box-shadow: 0 1px 3px rgba(26,58,92,.05); }
   .ai-reply .rp-head { display: flex; align-items: center; gap: 8px; font-size: 12px;
@@ -222,7 +250,9 @@
   table.vs td { border: 1px solid var(--line); padding: 7px 12px; }
   table.vs td.yes { color: var(--ok); font-weight: 600; white-space: nowrap; }
   table.vs td.no { color: #a6b2bd; white-space: nowrap; }
-  table.vs td.no3 { color: #9aa7b3; }        /* 「未涉及」类专业表述（不刺眼、不弱化差异） */
+  table.vs td.no3 { color: #9aa7b3; }
+  table.vs.dense td { font-size: 12px; line-height: 1.65; }
+  table.vs.dense td.ours { background: #eef4ef; }        /* 「未涉及」类专业表述（不刺眼、不弱化差异） */
   table.vs td.ours { background: #f0f6f1; }
   .uniq { margin-top: 16px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
   .uq { border-top: 3px solid var(--ok); background: #fff; border: 1px solid var(--line); border-top: 3px solid var(--ok); padding: 12px 13px; font-size: 11.5px; }
@@ -304,6 +334,8 @@
     <span class="stat"><span class="dot" id="dot-key"></span>模型密钥 <span id="key-txt">—</span></span>
     <span class="stat">技能库 <b id="lib-n" style="color:var(--ink)">—</b></span>
     <span class="spacer"></span>
+    <a href="/chat">对话工作台</a>
+    <a href="/chat">对话工作台</a>
     <a href="/runs" target="_blank">运行中心</a>
     <a href="/graph" target="_blank">技能星图</a>
     <a href="/dashboard" target="_blank">完整面板</a>
@@ -483,15 +515,43 @@
   <h2>四种做法放在一起看</h2>
   <div class="sub">同一个任务、同一个模型，差别只在「技能怎么被用起来」。右侧三张卡是本项目的独有能力，点击可直接跳到真实产物。</div>
 
-  <table class="vs">
-    <tr><th style="width:20%">能力</th><th>裸模型</th><th>提示词塞技能</th><th>通用向量 RAG</th><th style="width:20%">SkillNet（本项目）</th></tr>
-    <tr><td>技能组织方式</td><td class="no3">—</td><td class="no3">平铺文本</td><td class="no3">向量库</td><td class="ours">类型化关系图（<span data-live="edges">—</span> 条边）</td></tr>
-    <tr><td>检索</td><td class="no3">—</td><td class="no3">— 全靠上下文</td><td>单路向量</td><td class="ours">三档：关键词 + 语义 + <b>关系图扩展</b></td></tr>
-    <tr><td>是否真的执行</td><td class="no3">只输出文本</td><td class="no3">只输出文本</td><td class="no3">只输出文本</td><td class="ours"><b>沙箱真实运行</b> + 失败修复循环</td></tr>
-    <tr><td>产物验收</td><td class="no3">—</td><td class="no3">—</td><td class="no3">—</td><td class="ours"><b>技能 verification 逐条验收</b>（带证据）</td></tr>
-    <tr><td>选择策略</td><td class="no3">—</td><td class="no3">—</td><td class="no3">—</td><td class="ours"><b>LinUCB + 反馈回流</b>（下次排序会变）</td></tr>
-    <tr><td>技能进化</td><td class="no3">—</td><td class="no3">手工维护</td><td class="no3">手工维护</td><td class="ours"><b>轨迹蒸馏 + 质量准入</b>（库自己长）</td></tr>
-    <tr><td>效果如何证明</td><td class="no3">—</td><td class="no3">—</td><td class="no3">—</td><td class="ours">有/无技能<b>对照实验</b> + dev/heldout 隔离</td></tr>
+  <table class="vs dense">
+    <tr><th style="width:13%">能力</th><th style="width:21%">裸模型</th><th style="width:21%">提示词塞技能</th><th style="width:21%">通用向量 RAG</th><th>SkillNet（本项目）</th></tr>
+    <tr><td><b>技能组织</b></td>
+      <td class="no3">无技能概念，能力全在参数记忆里，无法增删查改</td>
+      <td class="no3">平铺文本，整篇塞进上下文；技能之间无结构、无类型</td>
+      <td class="no3">向量库，按语义相似度召回片段；技能被压平成 embedding</td>
+      <td class="ours">类型化关系图：<span data-live="edges">—</span> 条边（依赖 / 组合 / 衍生）<br>技能可组合成 <b>可执行的 DAG</b></td></tr>
+    <tr><td><b>检索</b></td>
+      <td class="no3">不检索，全部依赖模型参数</td>
+      <td class="no3">不检索，技能是否用上取决于上下文长度</td>
+      <td class="no3">单路向量相似度；<b>无关键词兜底、无关系扩展</b>，召回靠语义巧合</td>
+      <td class="ours">三档可对照：BM25 关键词 + 语义 + <b>关系图扩展</b><br>置信度分流（自动执行 / 人工确认 / 直答）</td></tr>
+    <tr><td><b>真实执行</b></td>
+      <td class="no3">只输出文本；能否运行、能否复现不可知</td>
+      <td class="no3">只输出文本；技能是「描述」不是「可运行契约」</td>
+      <td class="no3">只输出文本；检索到的片段无法被执行</td>
+      <td class="ours"><b>沙箱真实运行 Python</b>：产物落盘、跨步传递<br>失败 → 自动修复循环（最多 3 次尝试）</td></tr>
+    <tr><td><b>产物验收</b></td>
+      <td class="no3">无验收标准，输出即结果</td>
+      <td class="no3">无验收；模型说完成就算完成</td>
+      <td class="no3">无验收；无法判断召回内容是否可用</td>
+      <td class="ours">技能 <code>verification</code> <b>逐条程序化验收</b>（文件 / 表头 / JSON / 数值范围）+ L3 语义评审</td></tr>
+    <tr><td><b>选择策略</b></td>
+      <td class="no3">无（每次从头生成，经验不积累）</td>
+      <td class="no3">无排序；给什么用什么</td>
+      <td class="no3">单次相似度排序，<b>无反馈学习</b></td>
+      <td class="ours"><b>Shared LinUCB</b> + 反馈回流：本次成败改变下次排序（泛化 ≈<span data-live="linucb_ratio">1.25</span>×）</td></tr>
+    <tr><td><b>技能进化</b></td>
+      <td class="no3">无技能，无从进化</td>
+      <td class="no3">技能靠人工手写与维护，不进则退</td>
+      <td class="no3">索引靠人工更新，库不会自己变好</td>
+      <td class="ours">轨迹蒸馏 + 质量准入（<b>库自己长</b>：本次会话 98 → <span data-live="skills">—</span>）</td></tr>
+    <tr><td><b>效果证明</b></td>
+      <td class="no3">无对照，只能主观感受</td>
+      <td class="no3">只能主观比较两个提示词</td>
+      <td class="no3">只能报召回率，无法证明任务完成得更好</td>
+      <td class="ours">有 / 无技能<b>对照实验</b> + dev / held-out 隔离 + 配对 bootstrap 95% CI（含负面结果）</td></tr>
   </table>
 
   <div class="uniq" style="grid-template-columns:repeat(3,1fr)">
@@ -582,7 +642,7 @@
 </section>
 
 <script>
-const PAGE_VER = "2026-10-03c";   // 改版递增：与服务端不一致时自动强制刷新
+const PAGE_VER = "2026-10-03e";   // 改版递增：与服务端不一致时自动强制刷新
 const API = location.port ? location.origin : "http://127.0.0.1:8848";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1112,6 +1172,53 @@ const PHASES = [
 let LIVE_RUN = null;   // 当前本页展示的 run_id
 let LIVE_REPLY = "";   // Agent 最终回复（run.reply 事件带来，真实 LLM 生成）
 
+/* ---------- 本次任务总结：SkillNet 在本次任务里的角色 + 技能库成长 ---------- */
+function taskSummaryHTML(fin) {
+  const imp = (fin.staged || {}).skill_impact;
+  if (!imp) return "";
+  const s = imp.summary || {};
+  const steps = fin.steps || [];
+  const nDone = steps.filter(x => x.status === "done").length;
+  const nFix = steps.filter(x => x.status === "done" && (x.n_attempts || 1) > 1).length;
+  const chkOk = steps.reduce((a, x) => a + (x.checks || []).filter(c => c.passed).length, 0);
+  const chkAll = steps.reduce((a, x) => a + (x.checks || []).length, 0);
+  const usedList = (imp.used || []).slice(0, 8).join("、") || "通用执行";
+  const delta = s.library_delta || 0;
+  const evoUp = (imp.evolved_after || 0) - (imp.evolved_before || 0);
+  const touchedRows = (imp.touched || []).slice(0, 8).map(x => {
+    const parts = Object.entries(x.delta || {}).map(([k, v]) =>
+      `${k} <b class="up">${v > 0 ? "+" : ""}${v}</b>`).join(" · ");
+    return `<tr><td><code>${esc(x.name)}</code></td><td>${parts || "—"}</td></tr>`;
+  }).join("");
+  const newCards = (imp.new_skills || []).map(n =>
+    `<div class="newskill"><b style="color:var(--ok)">新增技能：<code>${esc(n.name)}</code></b>` +
+    `<span style="color:#8a97a4"> · 第 ${n.generation} 代 · 领域 ${esc(n.domain || "—")}` +
+    (n.parents && n.parents.length ? ` · 衍生自 ${esc(n.parents.join("、"))}` : "") + `</span>` +
+    (n.capability ? `<div style="margin-top:5px;color:var(--ink2)">${esc(n.capability)}</div>` : "") +
+    (n.origin_task ? `<div style="margin-top:4px;color:#8a97a4">来源任务：${esc(n.origin_task)}</div>` : "") + `</div>`
+  ).join("");
+  return `<div class="task-summary">
+    <div class="ts-head"><i></i>本次任务总结 · SkillNet 扮演的角色<span class="rp-meta">数据来自技能统计前后差值</span></div>
+    <div class="ts-role">它不是执行者，而是这个 Agent 的<b>能力运维层</b>：本次任务里它完成了「找到能力 → 挑出能力 → 编排能力 → 验收产物 → 沉淀能力」五件事。</div>
+    <div class="ts-steps">
+      <div class="ts-step"><b>① 检索</b><span>从 ${imp.library_before} 个技能中三档检索（BM25 / 语义 / 关系图扩展）定位候选</span></div>
+      <div class="ts-step"><b>② 选择</b><span>LinUCB 按任务条件化排序，最终采用 ${s.used_n || 0} 个技能：${esc(usedList)}</span></div>
+      <div class="ts-step"><b>③ 编排</b><span>按技能依赖边生成执行 DAG，${steps.length} 步真实执行（含修复后的 ${nFix} 步）</span></div>
+      <div class="ts-step"><b>④ 验收</b><span>程序化验收 ${chkOk}/${chkAll} 通过${nDone < steps.length ? `，${steps.length - nDone} 步未完成` : "，全部步骤完成"}</span></div>
+      <div class="ts-step"><b>⑤ 沉淀</b><span>${(imp.new_skills || []).length ? `蒸馏并准入 ${(imp.new_skills || []).length} 个新技能（见下）` : "本次未产生通过准入的新技能（相似度/质量闸拦截）"}</span></div>
+    </div>
+    <div class="ts-metrics">
+      <div><b>${imp.library_before} → ${imp.library_after}</b>技能库规模${delta ? `（+${delta}）` : ""}</div>
+      <div><b>${imp.evolved_before} → ${imp.evolved_after}</b>演化技能${evoUp ? `（+${evoUp}）` : ""}</div>
+      <div><b>${s.updated_n || 0}</b>个技能被本次任务更新</div>
+      <div><b>${s.used_n || 0}</b>个技能被采用</div>
+    </div>
+    ${touchedRows ? `<div class="ts-sec">── 技能资产更新（本次使用后的真实统计变化）──</div>
+    <table><tr><th style="width:38%">技能</th><th>变化（pulls 调用 · exec_total 执行 · exec_ok 成功 · reward_sum 奖励）</th></tr>${touchedRows}</table>` : ""}
+    ${newCards ? `<div class="ts-sec">── 能力沉淀（本次任务为 Agent 长出的新能力）──</div>${newCards}` : ""}
+  </div>`;
+}
+
 function mountReplyCard() {
   const sum = $("livesum"); if (!sum) return;
   const old = document.getElementById("ai-reply-slot"); if (old) old.remove();
@@ -1310,6 +1417,14 @@ function renderLiveFinal(fin) {
     steps.map(stepCard).join("");
   if (evoExisting) sum.appendChild(evoExisting);   // 保留进化卡（先到的事件）
   mountReplyCard();                                // Agent 最终回复（流程展示完的最后一段）
+  document.getElementById("task-summary-slot")?.remove();
+  const tsHtml = taskSummaryHTML(fin);
+  if (tsHtml) {                                    // 本次任务总结（角色 + 技能库成长）
+    const slot = document.createElement("div");
+    slot.id = "task-summary-slot";
+    slot.innerHTML = tsHtml;
+    sum.appendChild(slot);
+  }
   $("run").disabled = false; $("run").textContent = "发送";
 }
 

@@ -783,6 +783,15 @@ def run_page() -> Any:
     return FileResponse(str(f))
 
 
+@app.get("/chat")
+def chat_page() -> Any:
+    """对话工作台：左栏会话历史（只记问题）+ 右栏提问与结果，支持追问上下文。"""
+    f = WEB_DIR / "chat.html"
+    if not f.exists():
+        raise HTTPException(404, "web/chat.html 不存在")
+    return FileResponse(str(f))
+
+
 @app.get("/graph")
 def graph_page() -> Any:
     """交互式技能星图（Canvas 力导向，可拖拽/缩放/悬停高亮）。"""
@@ -921,6 +930,9 @@ class RunReq(BaseModel):
     max_cost_yuan: float = Field(default=1.0, gt=0, le=20)
     max_seconds: int = Field(default=300, ge=30, le=1800)
     max_llm_calls: int = Field(default=40, ge=5, le=200)
+    # 追问上下文：同一会话此前轮次的 [{q, a}]（a 为上一轮回复摘要）。
+    # 只用于规划阶段与最终回复，不污染检索（检索必须用当前问题本身）。
+    history: list[dict[str, Any]] = Field(default_factory=list, max_length=20)
 
 
 def _artifact_digest(run: Any, limit_chars: int = 4200, per_file: int = 900) -> str:
@@ -966,6 +978,49 @@ def _stdout_digest(run: Any, per_step: int = 800, limit: int = 3000) -> str:
         if tail:
             out.append(f"第{st.idx + 1}步（{st.skill or '通用'}）输出摘录：\n{tail[-per_step:]}")
     return "\n\n".join(out)[:limit] or "（无执行输出）"
+
+
+def _skill_snapshot(lib_: Any) -> dict[str, dict[str, Any]]:
+    """技能统计快照（任务开始/结束时各拍一次，差值即「本次任务对技能做了什么」）。"""
+    out: dict[str, dict[str, Any]] = {}
+    for s in lib_:
+        out[s.name] = dict(s.stats or {})
+    return out
+
+
+def _skill_impact(before: dict[str, dict[str, Any]], after: dict[str, dict[str, Any]],
+                  used: list[str], new_skills: list[dict[str, Any]],
+                  lib_before: int, lib_after: int,
+                  evolved_before: int, evolved_after: int) -> dict[str, Any]:
+    """本次任务的「技能资产影响账」：谁被调用了、统计怎么变的、新增了什么。
+
+    这是「SkillNet 在此任务中扮演什么角色」的**真实数据来源**——
+    全部来自技能 stats 的前后差值，不是文案。"""
+    fields = ("pulls", "exec_total", "exec_ok", "exec_fix", "exec_fail", "reward_sum")
+    touched: list[dict[str, Any]] = []
+    for name, a in after.items():
+        b = before.get(name)
+        if b is None or b == a:
+            continue
+        delta = {f: round(float(a.get(f, 0)) - float(b.get(f, 0)), 4)
+                 for f in fields if float(a.get(f, 0)) != float(b.get(f, 0))}
+        if delta:
+            touched.append({"name": name, "delta": delta,
+                            "after": {f: a.get(f) for f in fields if f in a}})
+    touched.sort(key=lambda x: (-abs(x["delta"].get("pulls", 0)), -abs(x["delta"].get("exec_total", 0))))
+    return {
+        "library_before": lib_before, "library_after": lib_after,
+        "evolved_before": evolved_before, "evolved_after": evolved_after,
+        "used": [s for s in (used or []) if s],
+        "touched": touched[:12],
+        "new_skills": new_skills,
+        "summary": {
+            "used_n": len([s for s in (used or []) if s]),
+            "updated_n": len(touched),
+            "added_n": len(new_skills),
+            "library_delta": lib_after - lib_before,
+        },
+    }
 
 
 def _compose_final_reply(run: Any, led: Any) -> str:
@@ -1058,6 +1113,10 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
     if run is None:
         return
     led = llm.UsageLedger()
+    lib_before_snapshot = _skill_snapshot(lib())
+    lib_size_before = len(lib())
+    evolved_before = sum(1 for s in lib() if s.source != "seed")
+    new_skill_records: list[dict[str, Any]] = []
     try:
         with llm.ledger_scope(led):
             r = STATE["retriever"]
@@ -1108,7 +1167,20 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
             # 4) 方案
             t0 = time.time()
             agent = STATE["agent"]
-            arun = agent.run(run.task, skills=run.skills, style=STYLE_GUIDED)
+            # 追问上下文：把此前轮次的问题与上一轮回复摘要拼进规划输入（检索仍只用当前问题）
+            plan_task = run.task
+            hist = [h for h in (req.history or []) if isinstance(h, dict) and h.get("q")]
+            if hist:
+                tail = hist[-3:]
+                ctx_lines = []
+                for h in tail:
+                    ctx_lines.append(f"用户：{str(h.get('q'))[:300]}")
+                    if h.get("a"):
+                        ctx_lines.append(f"你上一轮的回答摘要：{str(h.get('a'))[:400]}")
+                plan_task = (run.task + "\n\n【这是同一会话的后续追问，前文如下（请结合前文回答，"
+                             "但研究步骤只针对当前问题）】\n" + "\n".join(ctx_lines))
+            run.staged["history_turns"] = len(hist)
+            arun = agent.run(plan_task, skills=run.skills, style=STYLE_GUIDED)
             run.plan = arun.response or {}
             run.status = "EXECUTING"
             run.staged["planning_ms"] = int((time.time() - t0) * 1000)
@@ -1154,6 +1226,15 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
             if new_skill:
                 refresh_runtime()
                 persist_library()
+            if new_skill is not None:
+                new_skill_records.append({
+                    "name": getattr(new_skill, "name", ""),
+                    "generation": getattr(new_skill, "generation", 0),
+                    "parents": list(getattr(new_skill, "parent", []) or []),
+                    "domain": getattr(new_skill, "domain", ""),
+                    "capability": (getattr(new_skill, "capability", "") or "")[:220],
+                    "origin_task": (getattr(new_skill, "origin_task", "") or "")[:200],
+                })
             run.evolution = {
                 "accepted": new_skill is not None,
                 "name": getattr(new_skill, "name", None),
@@ -1173,6 +1254,16 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                 a.url = f"/api/runs/{run.run_id}/artifacts/{a.name}"
         if len(run.steps) == 0:
             run.error = "没有可执行步骤"
+
+        # 7.5) 本次任务的「技能资产影响账」——供前端『本次任务总结』与回复共用
+        try:
+            run.staged["skill_impact"] = _skill_impact(
+                lib_before_snapshot, _skill_snapshot(lib()),
+                list(run.skills or []), new_skill_records,
+                lib_size_before, len(lib()), evolved_before,
+                sum(1 for s in lib() if s.source != "seed"))
+        except Exception as exc:
+            run.staged["skill_impact_error"] = f"{type(exc).__name__}: {exc}"
 
         # 8) Agent 最终回复（真实 LLM 生成，读真实运行事实；失败不影响终态）
         # 注意：必须在 finalize_status **之前**发布 run.reply —— 否则 Run 已成终态，

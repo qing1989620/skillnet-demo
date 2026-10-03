@@ -1,5 +1,5 @@
 
-const PAGE_VER = "2026-10-03c";   // 改版递增：与服务端不一致时自动强制刷新
+const PAGE_VER = "2026-10-03e";   // 改版递增：与服务端不一致时自动强制刷新
 const API = location.port ? location.origin : "http://127.0.0.1:8848";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -529,6 +529,53 @@ const PHASES = [
 let LIVE_RUN = null;   // 当前本页展示的 run_id
 let LIVE_REPLY = "";   // Agent 最终回复（run.reply 事件带来，真实 LLM 生成）
 
+/* ---------- 本次任务总结：SkillNet 在本次任务里的角色 + 技能库成长 ---------- */
+function taskSummaryHTML(fin) {
+  const imp = (fin.staged || {}).skill_impact;
+  if (!imp) return "";
+  const s = imp.summary || {};
+  const steps = fin.steps || [];
+  const nDone = steps.filter(x => x.status === "done").length;
+  const nFix = steps.filter(x => x.status === "done" && (x.n_attempts || 1) > 1).length;
+  const chkOk = steps.reduce((a, x) => a + (x.checks || []).filter(c => c.passed).length, 0);
+  const chkAll = steps.reduce((a, x) => a + (x.checks || []).length, 0);
+  const usedList = (imp.used || []).slice(0, 8).join("、") || "通用执行";
+  const delta = s.library_delta || 0;
+  const evoUp = (imp.evolved_after || 0) - (imp.evolved_before || 0);
+  const touchedRows = (imp.touched || []).slice(0, 8).map(x => {
+    const parts = Object.entries(x.delta || {}).map(([k, v]) =>
+      `${k} <b class="up">${v > 0 ? "+" : ""}${v}</b>`).join(" · ");
+    return `<tr><td><code>${esc(x.name)}</code></td><td>${parts || "—"}</td></tr>`;
+  }).join("");
+  const newCards = (imp.new_skills || []).map(n =>
+    `<div class="newskill"><b style="color:var(--ok)">新增技能：<code>${esc(n.name)}</code></b>` +
+    `<span style="color:#8a97a4"> · 第 ${n.generation} 代 · 领域 ${esc(n.domain || "—")}` +
+    (n.parents && n.parents.length ? ` · 衍生自 ${esc(n.parents.join("、"))}` : "") + `</span>` +
+    (n.capability ? `<div style="margin-top:5px;color:var(--ink2)">${esc(n.capability)}</div>` : "") +
+    (n.origin_task ? `<div style="margin-top:4px;color:#8a97a4">来源任务：${esc(n.origin_task)}</div>` : "") + `</div>`
+  ).join("");
+  return `<div class="task-summary">
+    <div class="ts-head"><i></i>本次任务总结 · SkillNet 扮演的角色<span class="rp-meta">数据来自技能统计前后差值</span></div>
+    <div class="ts-role">它不是执行者，而是这个 Agent 的<b>能力运维层</b>：本次任务里它完成了「找到能力 → 挑出能力 → 编排能力 → 验收产物 → 沉淀能力」五件事。</div>
+    <div class="ts-steps">
+      <div class="ts-step"><b>① 检索</b><span>从 ${imp.library_before} 个技能中三档检索（BM25 / 语义 / 关系图扩展）定位候选</span></div>
+      <div class="ts-step"><b>② 选择</b><span>LinUCB 按任务条件化排序，最终采用 ${s.used_n || 0} 个技能：${esc(usedList)}</span></div>
+      <div class="ts-step"><b>③ 编排</b><span>按技能依赖边生成执行 DAG，${steps.length} 步真实执行（含修复后的 ${nFix} 步）</span></div>
+      <div class="ts-step"><b>④ 验收</b><span>程序化验收 ${chkOk}/${chkAll} 通过${nDone < steps.length ? `，${steps.length - nDone} 步未完成` : "，全部步骤完成"}</span></div>
+      <div class="ts-step"><b>⑤ 沉淀</b><span>${(imp.new_skills || []).length ? `蒸馏并准入 ${(imp.new_skills || []).length} 个新技能（见下）` : "本次未产生通过准入的新技能（相似度/质量闸拦截）"}</span></div>
+    </div>
+    <div class="ts-metrics">
+      <div><b>${imp.library_before} → ${imp.library_after}</b>技能库规模${delta ? `（+${delta}）` : ""}</div>
+      <div><b>${imp.evolved_before} → ${imp.evolved_after}</b>演化技能${evoUp ? `（+${evoUp}）` : ""}</div>
+      <div><b>${s.updated_n || 0}</b>个技能被本次任务更新</div>
+      <div><b>${s.used_n || 0}</b>个技能被采用</div>
+    </div>
+    ${touchedRows ? `<div class="ts-sec">── 技能资产更新（本次使用后的真实统计变化）──</div>
+    <table><tr><th style="width:38%">技能</th><th>变化（pulls 调用 · exec_total 执行 · exec_ok 成功 · reward_sum 奖励）</th></tr>${touchedRows}</table>` : ""}
+    ${newCards ? `<div class="ts-sec">── 能力沉淀（本次任务为 Agent 长出的新能力）──</div>${newCards}` : ""}
+  </div>`;
+}
+
 function mountReplyCard() {
   const sum = $("livesum"); if (!sum) return;
   const old = document.getElementById("ai-reply-slot"); if (old) old.remove();
@@ -727,6 +774,14 @@ function renderLiveFinal(fin) {
     steps.map(stepCard).join("");
   if (evoExisting) sum.appendChild(evoExisting);   // 保留进化卡（先到的事件）
   mountReplyCard();                                // Agent 最终回复（流程展示完的最后一段）
+  document.getElementById("task-summary-slot")?.remove();
+  const tsHtml = taskSummaryHTML(fin);
+  if (tsHtml) {                                    // 本次任务总结（角色 + 技能库成长）
+    const slot = document.createElement("div");
+    slot.id = "task-summary-slot";
+    slot.innerHTML = tsHtml;
+    sum.appendChild(slot);
+  }
   $("run").disabled = false; $("run").textContent = "发送";
 }
 
