@@ -519,6 +519,38 @@
   .shot-cap b { color: var(--brand); }
   @media (max-width: 900px) { .shots { grid-template-columns: 1fr; } .shot img { height: 240px; } }
 
+
+  /* ==================== 背景层（AI 生成候选，人工筛选 + 裁水印 + 压缩） ====================
+     选型原则（对标 Mercury 整屏视觉 / Stripe 流体渐变）：
+       · 全站底：极淡等距网格 + 冷光晕（bg-grid，覆盖率 100%，不干扰阅读）
+       · Hero　：水墨墨晕（bg-ink，右上扩散、左侧留白，与"墨"的调性呼应）
+     可读性保障：图上层叠近白蒙版（左浓右淡），正文对比度不受影响。 */
+  body::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background: url("/static/assets/bg-grid.jpg") center / cover no-repeat fixed;
+    opacity: .55; }
+  .hero { background-image:
+      linear-gradient(90deg, rgba(251,250,248,.97) 0%, rgba(251,250,248,.86) 42%, rgba(251,250,248,.42) 100%),
+      url("/static/assets/bg-ink.jpg") !important;
+    background-size: cover, cover !important;
+    background-position: center, center right !important;
+    background-repeat: no-repeat, no-repeat !important; }
+
+
+  /* ==================== 背景层（AI 生成候选，人工筛选 + 裁水印 + 压缩） ====================
+     选型原则（对标 Mercury 整屏视觉 / Stripe 流体渐变）：
+       · 全站底：极淡等距网格 + 冷光晕（bg-grid，覆盖率 100%，不干扰阅读）
+       · Hero　：水墨墨晕（bg-ink，右上扩散、左侧留白，与"墨"的调性呼应）
+     可读性保障：图上层叠近白蒙版（左浓右淡），正文对比度不受影响。 */
+  body::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background: url("/static/assets/bg-grid.jpg") center / cover no-repeat fixed;
+    opacity: .55; }
+  .hero { background-image:
+      linear-gradient(90deg, rgba(251,250,248,.97) 0%, rgba(251,250,248,.86) 42%, rgba(251,250,248,.42) 100%),
+      url("/static/assets/bg-ink.jpg") !important;
+    background-size: cover, cover !important;
+    background-position: center, center right !important;
+    background-repeat: no-repeat, no-repeat !important; }
+
 </style>
 </head>
 <body>
@@ -876,7 +908,7 @@
 </section>
 
 <script>
-const PAGE_VER = "2026-10-03l";   // 改版递增：与服务端不一致时自动强制刷新
+const PAGE_VER = "2026-10-03m";   // 改版递增：与服务端不一致时自动强制刷新
 const API = location.port ? location.origin : "http://127.0.0.1:8848";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
