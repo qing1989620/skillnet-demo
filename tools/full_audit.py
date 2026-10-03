@@ -60,6 +60,12 @@ def static_checks() -> None:
         dup = {x for x in ids if ids.count(x) > 1}
         if dup:
             add("P1", "静态", f"{p.name} 存在重复 id", ", ".join(sorted(dup)))
+        # 连续重复行（重复导航项/重复脚本片段——都源自"追加式编辑未做幂等检查"）
+        lines = t.splitlines()
+        for i in range(len(lines) - 1):
+            a, b = lines[i].strip(), lines[i + 1].strip()
+            if a and a == b and ("<a href" in a or a.startswith("<div") or a.startswith("window.")):
+                add("P1", "静态", f"{p.name} 连续重复行（疑似重复插入）", a[:100])
         # 明显的未闭合标签粗查（div/section）
         for tag in ("div", "section", "table"):
             opens = len(re.findall(rf"<{tag}[\s>]", t))
