@@ -1,0 +1,236 @@
+/* ============================================================================
+   SkillNet-S1 · 共享 UI 层（ui.css）
+   所有页面统一引入。<link rel="stylesheet" href="/static/assets/ui.css">
+
+   规格来源（实机截图学习，2026-10-03）：
+     · Tremor（Vercel）：极细边框 + 几乎无阴影 + 精确字号阶梯 + 低饱和图表色
+     · shadcn/ui：输入/按钮/卡片/空态的统一高度与圆角，图标为细线 SVG
+     · Resend：单一焦点物 + 极致克制（黑/白/一色）
+   设计原则：层级由「边框 + 背景色差 + 间距」建立，而不是靠阴影与装饰。
+   ========================================================================== */
+
+:root {
+  /* 容器与节奏 */
+  --page-w: 1240px;
+  --page-pad: 32px;
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 18px; --sp-5: 26px; --sp-6: 36px;
+
+  /* 圆角尺度（统一 3 档：小控件 / 卡片 / 大容器） */
+  --r-sm: 6px; --r-md: 10px; --r-lg: 14px;
+
+  /* 边框：极细极浅（三家共同做法） */
+  --bd: 1px solid rgba(26, 58, 92, .10);
+  --bd-strong: 1px solid rgba(26, 58, 92, .18);
+
+  /* 阴影：静置几乎不可见，悬停才轻微浮现 */
+  --sh-0: 0 1px 2px rgba(26, 58, 92, .04);
+  --sh-1: 0 4px 14px rgba(26, 58, 92, .07);
+  --sh-2: 0 16px 36px rgba(26, 58, 92, .10);
+
+  /* 动效：短、带意义 */
+  --d-1: .15s cubic-bezier(.2, .6, .3, 1);
+  --d-2: .28s cubic-bezier(.2, .6, .3, 1);
+
+  /* 字号阶梯 */
+  --f-cap: 11.5px; --f-sm: 12.5px; --f-base: 13.5px; --f-lg: 15px;
+}
+
+/* ---------------------------------------------------------------- 背景（全站统一）
+   浅色页用极淡网格纹理；深色页用星座底（由页面自行覆盖 --bg-img）。 */
+:root { --bg-img: url("/static/assets/bg-grid.jpg"); --bg-op: .85; }
+body::after {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: var(--bg-img) center / cover no-repeat fixed; opacity: var(--bg-op);
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto !important; } }
+
+/* 平滑锚点与滚动 */
+html { scroll-behavior: smooth; }
+
+/* ---------------------------------------------------------------- 按钮（统一规格）
+   高度 38px / 圆角 pill / 实心为主、描边为次；按压微缩，聚焦有环。 */
+.ui-btn, .btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  height: 38px; padding: 0 18px; border-radius: 999px;
+  font-size: var(--f-base); font-weight: 600; line-height: 1;
+  border: var(--bd); background: #fff; color: var(--brand2, #24557a);
+  cursor: pointer; text-decoration: none; white-space: nowrap;
+  transition: background var(--d-1), border-color var(--d-1), color var(--d-1),
+              transform var(--d-1), box-shadow var(--d-1);
+}
+.ui-btn:hover, .btn:hover { background: #f6f9fc; border-color: rgba(26,58,92,.2); transform: translateY(-1px); }
+.ui-btn:active, .btn:active { transform: translateY(0) scale(.985); }
+.ui-btn:focus-visible, .btn:focus-visible,
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid var(--brand2, #24557a); outline-offset: 2px;
+}
+.ui-btn-primary, .btn-primary, .runbtn, .send {
+  background: linear-gradient(180deg, #2b5f88, #1f4a70); color: #fff;
+  border: 1px solid #1b4162; box-shadow: 0 1px 2px rgba(26, 58, 92, .18);
+}
+.ui-btn-primary:hover, .btn-primary:hover, .runbtn:hover, .send:hover {
+  background: linear-gradient(180deg, #31699a, #235078); box-shadow: 0 6px 18px rgba(26, 58, 92, .22);
+}
+.ui-btn:disabled, button:disabled { opacity: .55; cursor: not-allowed; transform: none !important; }
+
+/* ---------------------------------------------------------------- 卡片（统一规格）
+   白底 + 极细边 + 圆角 12 + 几乎无阴影；悬停仅轻微抬升 + 边框加深。 */
+.ui-card, .card, .kpi, .pain, .uq {
+  background: #fff; border: var(--bd); border-radius: var(--r-lg);
+  box-shadow: var(--sh-0);
+  transition: transform var(--d-2), box-shadow var(--d-2), border-color var(--d-2);
+}
+.ui-card:hover, .card:hover, .kpi:hover, .pain:hover, .uq:hover {
+  transform: translateY(-2px); box-shadow: var(--sh-1); border-color: rgba(26, 58, 92, .16);
+}
+
+/* ---------------------------------------------------------------- 输入（统一规格）
+   高度 38px、圆角 8px、细边、聚焦时边框加深（不用阴影发光）。 */
+.ui-input, input[type="text"], input[type="search"], textarea, select {
+  border: var(--bd); border-radius: var(--r-sm); background: #fff;
+  color: var(--ink, #22303e); font-size: var(--f-base);
+  transition: border-color var(--d-1), background var(--d-1);
+}
+input[type="text"]:hover, input[type="search"]:hover, textarea:hover { border-color: rgba(26,58,92,.2); }
+input::placeholder, textarea::placeholder { color: #9aa7b3; }
+
+/* ---------------------------------------------------------------- 徽章 / 标签 */
+.ui-badge, .badge {
+  display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 9px;
+  border-radius: 999px; font-size: var(--f-cap); font-weight: 600;
+  border: var(--bd); background: #f8fafc; color: var(--brand2, #24557a);
+}
+.ui-badge-ok { background: #f1f8f3; border-color: #cfe6d6; color: #2e7d4f; }
+.ui-badge-warn { background: #fdf8f0; border-color: #ecd9b8; color: #b0781a; }
+.ui-badge-bad { background: #fdf2f1; border-color: #e6c9c5; color: #a8433a; }
+
+/* ---------------------------------------------------------------- 表格（统一规格）
+   弱网格线 + 表头浅灰 + 数字等宽 + 行悬停高亮。 */
+.ui-table, table.vs, table.data {
+  font-variant-numeric: tabular-nums;
+}
+.ui-table th, table.data th {
+  font-size: var(--f-cap); font-weight: 600; color: #8a97a4;
+  text-align: left; padding: 8px 12px; border-bottom: var(--bd); background: #fbfcfd;
+}
+.ui-table td, table.data td { padding: 9px 12px; border-bottom: var(--bd); }
+.ui-table tbody tr:hover, table.data tbody tr:hover { background: #f7fafc; }
+
+/* ---------------------------------------------------------------- 空态 / 骨架 / 加载 */
+.ui-empty {
+  display: grid; place-items: center; gap: 10px; padding: 42px 20px;
+  color: #8a97a4; font-size: var(--f-sm); text-align: center; line-height: 1.9;
+}
+.ui-skeleton {
+  height: 12px; border-radius: var(--r-sm);
+  background: linear-gradient(90deg, #eef2f6 25%, #e2e8ef 37%, #eef2f6 63%);
+  background-size: 400% 100%; animation: ui-sk 1.4s ease infinite;
+}
+@keyframes ui-sk { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+
+/* ---------------------------------------------------------------- 交互：滚动进场
+   元素进入视口时淡入上移（motion 作为信息：新内容出现要看得见）。
+   JS 端：ui.js 用 IntersectionObserver 加 .is-in。 */
+.ui-reveal { opacity: 0; transform: translateY(10px);
+  transition: opacity .5s cubic-bezier(.2,.6,.3,1), transform .5s cubic-bezier(.2,.6,.3,1); }
+.ui-reveal.is-in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .ui-reveal { opacity: 1; transform: none; } }
+
+/* ---------------------------------------------------------------- 交互：滚动进度
+   顶部 2px 品牌进度条（把静态装饰线改成有信息量的进度指示）。 */
+#ui-progress { position: fixed; top: 0; left: 0; height: 2px; z-index: 200; width: 0;
+  background: linear-gradient(90deg, #1a3a5c, #24557a 40%, #2e7d4f 72%, #c98a2d);
+  transition: width .08s linear; }
+
+/* ---------------------------------------------------------------- 交互：卡片指针微光
+   指针进入卡片时，边框沿鼠标方向略微提亮（极轻，不喧哗）。 */
+.ui-glow { position: relative; overflow: hidden; }
+.ui-glow::after {
+  content: ""; position: absolute; inset: -1px; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(220px circle at var(--mx, 50%) var(--my, 50%),
+              rgba(36, 85, 122, .10), transparent 62%);
+  opacity: 0; transition: opacity var(--d-2);
+}
+.ui-glow:hover::after { opacity: 1; }
+
+/* ---------------------------------------------------------------- 滚动条（统一） */
+* { scrollbar-width: thin; scrollbar-color: #cfd8e0 transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #cfd8e0; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #b8c4cf; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ---------------------------------------------------------------- 数字等宽（全局） */
+.num, .kpi .n, .hm .n, td, .ui-table, code, pre { font-variant-numeric: tabular-nums; }
+
+/* ============================================================================
+   跨页面统一（补丁层）：各页历史上各自定义了顶栏与标题，参数不一致
+   （.82/blur12 vs .94/blur6，字号也各不同）。这里用更高优先级的选择器统一，
+   但保留页面自身的专有布局（Hero、三栏工作台等用更具体选择器，不受影响）。
+   ========================================================================== */
+
+/* 顶栏：统一为白毛玻璃 + 细下边框 + 同高 */
+body > header, .topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(255, 255, 255, .82);
+  backdrop-filter: saturate(1.6) blur(12px);
+  -webkit-backdrop-filter: saturate(1.6) blur(12px);
+  border-bottom: 1px solid rgba(26, 58, 92, .10);
+}
+body > header * , .topbar * { box-sizing: border-box; }
+
+/* 标题阶梯：统一三档（页面可用更具体选择器覆盖） */
+body > main h1, .page-title {
+  font-size: clamp(26px, 2.6vw, 36px); line-height: 1.18; letter-spacing: -.02em; font-weight: 700;
+}
+body > main h2 {
+  font-size: clamp(19px, 1.7vw, 23px); line-height: 1.25; letter-spacing: -.015em; font-weight: 700;
+}
+body > main h3 { font-size: 16px; line-height: 1.35; font-weight: 600; }
+
+/* 页面内小标题（各页常见写法：灰色小字 + 字距）统一 */
+.page-kicker, .kicker {
+  font-size: 11.5px; letter-spacing: 2.5px; font-weight: 700;
+  color: var(--brand2, #24557a); text-transform: none;
+}
+
+/* 卡片统一到共享规格（含各页常见的 .panel/.box） */
+.panel, .box, .block {
+  background: #fff; border: var(--bd); border-radius: var(--r-lg); box-shadow: var(--sh-0);
+}
+
+/* ============================================================================
+   跨页面统一（补丁层）：各页历史上各自定义了顶栏与标题，参数不一致
+   （.82/blur12 vs .94/blur6，字号也各不同）。这里用更高优先级的选择器统一，
+   但保留页面自身的专有布局（Hero、三栏工作台等用更具体选择器，不受影响）。
+   ========================================================================== */
+
+/* 顶栏：统一为白毛玻璃 + 细下边框 + 同高 */
+body > header, .topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(255, 255, 255, .82);
+  backdrop-filter: saturate(1.6) blur(12px);
+  -webkit-backdrop-filter: saturate(1.6) blur(12px);
+  border-bottom: 1px solid rgba(26, 58, 92, .10);
+}
+body > header * , .topbar * { box-sizing: border-box; }
+
+/* 标题阶梯：统一三档（页面可用更具体选择器覆盖） */
+body > main h1, .page-title {
+  font-size: clamp(26px, 2.6vw, 36px); line-height: 1.18; letter-spacing: -.02em; font-weight: 700;
+}
+body > main h2 {
+  font-size: clamp(19px, 1.7vw, 23px); line-height: 1.25; letter-spacing: -.015em; font-weight: 700;
+}
+body > main h3 { font-size: 16px; line-height: 1.35; font-weight: 600; }
+
+/* 页面内小标题（各页常见写法：灰色小字 + 字距）统一 */
+.page-kicker, .kicker {
+  font-size: 11.5px; letter-spacing: 2.5px; font-weight: 700;
+  color: var(--brand2, #24557a); text-transform: none;
+}
+
+/* 卡片统一到共享规格（含各页常见的 .panel/.box） */
+.panel, .box, .block {
+  background: #fff; border: var(--bd); border-radius: var(--r-lg); box-shadow: var(--sh-0);
+}
