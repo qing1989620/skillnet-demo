@@ -367,7 +367,7 @@
 
   footer { border-top: 1px solid var(--line); margin-top: 30px; padding: 16px 0 34px; font-size: 11px; color: #9aa7b3; }
   /* ---------- HERO · 产品舞台 ---------- */
-  .hero { position: relative; overflow: hidden; padding: 58px 0 46px; border-bottom: 1px solid var(--line);
+  .hero { position: relative; overflow: hidden; padding: 52px 0 42px; border-bottom: 1px solid var(--line);
     background:
       radial-gradient(1100px 480px at 88% -12%, rgba(36,85,122,.08), transparent 62%),
       radial-gradient(800px 380px at -8% 112%, rgba(46,125,79,.05), transparent 55%),
@@ -486,8 +486,12 @@
     letter-spacing: -.015em !important; }
   section.wrap .sub { font-size: 15px !important; line-height: 1.75 !important; max-width: 780px; }
 
-  /* 2.2 留白节奏：section 上下拉开（Stripe 实测 ~110px，Vercel ~140px） */
-  section.wrap { padding-top: 92px !important; padding-bottom: 92px !important; }
+  /* 2.2 留白节奏（v3 修正）：段间总间距控制在 ~104px，避免中段空旷
+     上一版 92+92=184px 过大，实测显得"中间空"；现在上下各 52px。 */
+  section.wrap { padding-top: 52px !important; padding-bottom: 52px !important; }
+  section.wrap h2 { margin-bottom: 8px !important; }
+  section.wrap .sub { margin-bottom: 24px !important; }
+  section.wrap .kicker { margin-bottom: 4px !important; }
 
   /* 2.3 卡片：圆角 14px + 极柔阴影 + 悬停加深 */
   .pain, .kpi, .uniq .uq, .card, .hm { border-radius: 14px !important; box-shadow: 0 1px 2px rgba(26,58,92,.05) !important; }
@@ -497,7 +501,7 @@
   .btn { border-radius: 999px !important; padding: 11px 22px !important; }
 
   /* 2.5 产品截图卡：浏览器窗口质感（Vercel 放 Notion 界面 / Stripe 放收银台的做法） */
-  .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 26px; }
+  .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 20px; }
   .shot { display: block; text-decoration: none; border: 1px solid var(--line); border-radius: 16px;
     overflow: hidden; background: #fff; box-shadow: 0 1px 2px rgba(26,58,92,.05);
     transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
@@ -872,7 +876,7 @@
 </section>
 
 <script>
-const PAGE_VER = "2026-10-03k";   // 改版递增：与服务端不一致时自动强制刷新
+const PAGE_VER = "2026-10-03l";   // 改版递增：与服务端不一致时自动强制刷新
 const API = location.port ? location.origin : "http://127.0.0.1:8848";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
