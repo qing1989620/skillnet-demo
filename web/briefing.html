@@ -416,6 +416,60 @@
     .topbar a { font-size: 11.5px; white-space: nowrap; letter-spacing: 0; }
   }
   @media (max-width: 860px) { .pain3, .map4, .uniq, .kpi { grid-template-columns: 1fr 1fr; } .bars { grid-template-columns: 1fr; } }
+
+  /* ==================== 精修层（2026-10-03） ====================
+     对标参考库：Vercel/Linear 的 bento 与克制阴影、Mercury 的编辑式排版、
+     2026 玻璃拟态（仅 chrome）。全部为"打开即见"的视觉层，不改结构与逻辑。 */
+
+  /* 1) 顶部品牌渐变细线（页面身份感，克制到 2px） */
+  body::before { content: ""; position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 120;
+    background: linear-gradient(90deg, #1a3a5c 0%, #24557a 32%, #2e7d4f 68%, #c98a2d 100%);
+    opacity: .9; }
+
+  /* 2) 页面背景：极淡径向渐晕（editorial 层次，不喧宾夺主） */
+  body { background:
+      radial-gradient(1100px 520px at 12% -8%, rgba(36,85,122,.05), transparent 62%),
+      radial-gradient(900px 460px at 102% 2%, rgba(46,125,79,.04), transparent 58%),
+      var(--bg); }
+
+  /* 3) Hero 指标 → bento 卡片（Vercel/Linear 范式：细边 + 微阴影 + 悬停抬升） */
+  .h-metrics { display: grid !important; grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px; align-items: stretch; }
+  .hm-divider { display: none; }
+  .hm { background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 16px 12px; box-shadow: 0 1px 2px rgba(26,58,92,.04);
+    transition: transform var(--dur-1, .15s), box-shadow var(--dur-1, .15s), border-color var(--dur-1, .15s); }
+  .hm:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(26,58,92,.09);
+    border-color: #cfdbe6; }
+  .hm .n { font-size: 34px !important; line-height: 1.05; color: var(--brand); }
+  .hm.first .n { font-size: 46px !important; color: var(--ink); }
+  .hm .t { margin-top: 6px; font-size: 11.5px; color: var(--ink3); letter-spacing: 1px; }
+
+  /* 4) 按钮体系：主按钮渐变+阴影，次按钮描边+悬停填充 */
+  .btn { border-radius: 8px !important; padding: 10px 18px !important; font-size: 13px !important;
+    transition: transform var(--dur-1, .15s), box-shadow var(--dur-1, .15s), background var(--dur-1, .15s) !important; }
+  .btn-primary { background: linear-gradient(180deg, #2b5f88, #1f4a70) !important; color: #fff !important;
+    border: 1px solid #1b4162 !important; box-shadow: 0 2px 6px rgba(26,58,92,.18); }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(26,58,92,.22); }
+  .btn-primary:active { transform: translateY(0); box-shadow: 0 2px 6px rgba(26,58,92,.18); }
+  .btn-ghost { background: #fff !important; border: 1px solid #cfdbe6 !important; color: var(--brand2) !important; }
+  .btn-ghost:hover { background: #f4f8fb !important; border-color: var(--brand2) !important;
+    transform: translateY(-1px); }
+
+  /* 5) 章节编号（editorial 章节感：01 / 02 …） */
+  body { counter-reset: sec; }
+  section.wrap { counter-increment: sec; }
+  section.wrap > .kicker::before { content: counter(sec, decimal-leading-zero); color: #b7c2cc;
+    letter-spacing: 1px; margin-right: 8px; font-weight: 700; }
+
+  /* 6) 内容卡片层次：统一阴影与悬停（Pain/KPI/结论框等） */
+  .pain, .kpi, .uniq .uq, .card { border-radius: 10px !important;
+    transition: transform var(--dur-1, .15s), box-shadow var(--dur-1, .15s); }
+  .pain:hover, .kpi:hover, .uniq .uq:hover { transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(26,58,92,.07); }
+
+  /* 7) 章节间细分隔（节奏感，避免"一整片白"） */
+  section.wrap + section.wrap { border-top: 1px solid rgba(26,58,92,.055); }
 </style>
 </head>
 <body>
@@ -565,6 +619,12 @@
         </div>
       </div>
     </div>
+  </div>
+  <div id="ver-badge" title="当前页面版本；点击可强制刷新" onclick="forceRefresh()"
+       style="position:fixed;right:14px;bottom:14px;z-index:99;font:11px/1 var(--mono,monospace);
+       color:#9aa7b3;background:rgba(255,255,255,.85);border:1px solid var(--line);
+       border-radius:999px;padding:5px 10px;cursor:pointer;backdrop-filter:blur(6px)">
+    版本 <b id="ver-txt" style="color:var(--brand2);font-weight:700"></b> · 点击刷新
   </div>
   <!-- 兼容旧单轮渲染路径（实时运行已并入工作台；此处为兜底容器，id 与模板不重复） -->
   <div id="livebar-legacy" style="display:none"></div>
@@ -746,7 +806,7 @@
 </section>
 
 <script>
-const PAGE_VER = "2026-10-03h";   // 改版递增：与服务端不一致时自动强制刷新
+const PAGE_VER = "2026-10-03j";   // 改版递增：与服务端不一致时自动强制刷新
 const API = location.port ? location.origin : "http://127.0.0.1:8848";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1151,7 +1211,13 @@ function wsOnEvent(i, ev){
 /* 原「实时运行」入口并入工作台（功能不减：仍是真实 SSE 流） */
 async function startRealRun(){ return wsSubmit(); }
 
+function forceRefresh(){
+  const u = new URL(location.href);
+  u.searchParams.set("v", Date.now().toString(36));      // cache-bust
+  location.replace(u.toString());
+}
 async function boot() {
+  const vt = document.getElementById("ver-txt"); if (vt) vt.textContent = PAGE_VER;
   try {
     const h = await jget(API + "/api/health", 4000);
     // 缓存自愈：版本不一致时强制刷新一次（带 cache-bust 参数）

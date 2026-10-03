@@ -186,6 +186,20 @@ def _startup_sweep() -> None:
         log.error("启动清扫失败：%s", exc)
 
 
+@app.middleware("http")
+async def _no_cache_html(request: Any, call_next: Any) -> Any:
+    """HTML 页面一律禁缓存：改版后「刷新即新版」，不再依赖页面内自愈脚本。
+
+    背景：曾出现「改了但用户看到的还是旧版」——因为 HTML 被浏览器缓存，
+    页面内自愈脚本要等 boot() 执行才生效，首次加载仍可能是旧的。"""
+    resp = await call_next(request)
+    ctype = resp.headers.get("content-type", "")
+    if ctype.startswith("text/html"):
+        resp.headers["Cache-Control"] = "no-store, must-revalidate"
+        resp.headers["Pragma"] = "no-cache"
+    return resp
+
+
 @app.get("/api/health")
 def health() -> dict[str, Any]:
     """健康检查。除了存活，也暴露「是否需要密钥」「是否有未落盘的改动」这类运行状态。"""

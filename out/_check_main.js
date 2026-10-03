@@ -1,5 +1,5 @@
 
-const PAGE_VER = "2026-10-03h";   // 改版递增：与服务端不一致时自动强制刷新
+const PAGE_VER = "2026-10-03j";   // 改版递增：与服务端不一致时自动强制刷新
 const API = location.port ? location.origin : "http://127.0.0.1:8848";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -404,7 +404,13 @@ function wsOnEvent(i, ev){
 /* 原「实时运行」入口并入工作台（功能不减：仍是真实 SSE 流） */
 async function startRealRun(){ return wsSubmit(); }
 
+function forceRefresh(){
+  const u = new URL(location.href);
+  u.searchParams.set("v", Date.now().toString(36));      // cache-bust
+  location.replace(u.toString());
+}
 async function boot() {
+  const vt = document.getElementById("ver-txt"); if (vt) vt.textContent = PAGE_VER;
   try {
     const h = await jget(API + "/api/health", 4000);
     // 缓存自愈：版本不一致时强制刷新一次（带 cache-bust 参数）
