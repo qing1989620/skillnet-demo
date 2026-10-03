@@ -1,0 +1,5 @@
+﻿step,reason,rows_before,rows_after,rows_affected
+去重,主键重复提交，保留首次,481,480,1
+分数越界,"分数超出[0,满分]，置空并标记",480,480,0
+用时为负,duration<0，置空并标记,480,480,0
+未作答标记,score=0且用时<3min,480,480,0

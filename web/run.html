@@ -8,6 +8,23 @@
 <style>
   /* 视觉原则：technical / precise / quiet / trustworthy / dense but legible
      —— 不使用霓虹渐变、玻璃拟态、彩色 KPI 卡；状态色有语义。 */
+  /* Agent 最终回复：与 Mission Control 一致的收尾卡 */
+  .ai-reply{margin:18px 0 4px;background:#fff;border:1px solid #d8e2ea;border-radius:8px;
+    padding:18px 22px 16px;box-shadow:0 1px 3px rgba(26,58,92,.05)}
+  .ai-reply .rp-head{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;
+    color:#1a3a5c;letter-spacing:.5px;padding-bottom:9px;border-bottom:1px solid var(--line)}
+  .ai-reply .rp-head i{width:7px;height:7px;border-radius:50%;background:#24557a;
+    box-shadow:0 0 0 3px rgba(36,85,122,.12)}
+  .ai-reply .rp-meta{margin-left:auto;font-weight:400;color:var(--ink3);font-size:11px}
+  .ai-reply .rp-body{font-size:13px;line-height:1.9;color:var(--ink);margin-top:10px}
+  .ai-reply .rp-body h5{font-size:12.5px;color:#24557a;margin:10px 0 3px}
+  .ai-reply .rp-body p{margin:6px 0}
+  .ai-reply .rp-body ul,.ai-reply .rp-body ol{margin:6px 0 6px 20px}
+  .ai-reply .rp-body li{margin:2px 0}
+  .ai-reply .rp-body code{font:12px/1.6 var(--mono);background:var(--panel2);padding:1px 5px;
+    border-radius:3px;color:#24557a}
+  .ai-reply .rp-body pre{background:var(--panel2);border:1px solid var(--line);border-radius:5px;
+    padding:10px 12px;margin:7px 0;overflow:auto;font:12px/1.65 var(--mono);color:var(--ink2)}
   :root{
     /* 浅色（与 Mission Control / 既有页面一致的视觉语言） */
     --bg:#fbfaf8; --panel:#ffffff; --panel2:#f4f6f8; --line:#e3e8ee;
@@ -337,6 +354,7 @@ const EV_TEXT = (ev) => {
     case "execution.finished": return `执行结束 — 成功 <b>${d.done}</b> · 失败 <b>${d.failed}</b> · ${fmtMs(d.duration_ms||0)}`;
     case "judge.completed": return `语义评审 — 加权 <b>${d.weighted}</b>${d.coverage!=null?` · 覆盖 ${d.coverage}`:""}`;
     case "evolution.proposed": return `技能蒸馏 — ${d.accepted?`已准入 <b>${esc(d.name)}</b>`:"未准入"} · 库规模 ${d.library_size}`;
+    case "run.reply": renderReply(d.text || ""); return `Agent 最终回复已生成（${(d.text||"").length} 字）`;
     case "run.finished": return `<b>运行结束 ${d.status}</b> · ${fmtMs(d.duration_ms||0)} · ¥${Number(d.cost||0).toFixed(3)}`;
     default: return `${esc(ev.type)} ${esc(JSON.stringify(d).slice(0,90))}`;
   }
@@ -476,6 +494,39 @@ document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
   document.querySelectorAll(".col").forEach(c => c.classList.toggle("on", c.dataset.tab === b.dataset.t));
 });
 
+/* ---------- Agent 最终回复（Markdown 轻渲染，先 esc 再处理标记） ---------- */
+const mdToHtml = md => {
+  const inline = s => s.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
+                        .replace(/`([^`]+)`/g, "<code>$1</code>");
+  const src = (typeof esc === "function" ? esc(String(md || "")) : String(md || ""))
+    .replace(/```(\w*)\n?([\s\S]*?)```/g,
+      (_m, _l, code) => "\u0000PRE" + btoa(unescape(encodeURIComponent(code))) + "\u0000");
+  return src.split(/\n{2,}/).map(b => {
+    const x = b.trim(); if (!x) return "";
+    const pre = x.match(/^\u0000PRE([A-Za-z0-9+/=]*)\u0000$/);
+    if (pre) return "<pre>" + decodeURIComponent(escape(atob(pre[1]))) + "</pre>";
+    if (/^#{1,4}\s/.test(x)) return "<h5>" + inline(x.replace(/^#{1,4}\s/, "")) + "</h5>";
+    if (x.split("\n").every(l => !l.trim() || /^\s*[-*]\s/.test(l)))
+      return "<ul>" + x.split("\n").filter(l => l.trim())
+        .map(l => "<li>" + inline(l.replace(/^\s*[-*]\s/, "")) + "</li>").join("") + "</ul>";
+    if (x.split("\n").every(l => !l.trim() || /^\s*\d+[.、)]\s/.test(l)))
+      return "<ol>" + x.split("\n").filter(l => l.trim())
+        .map(l => "<li>" + inline(l.replace(/^\s*\d+[.、)]\s/, "")) + "</li>").join("") + "</ol>";
+    return "<p>" + inline(x).replace(/\n/g, "<br>") + "</p>";
+  }).filter(Boolean).join("");
+};
+function renderReply(text){
+  const old = document.getElementById("ai-reply"); if (old) old.remove();
+  if (!text) return;
+  const host = document.getElementById("inspector") || document.body;
+  const d = document.createElement("div");
+  d.id = "ai-reply"; d.className = "ai-reply";
+  d.innerHTML = '<div class="rp-head"><i></i>Agent 最终回复' +
+    '<span class="rp-meta">基于本次真实执行数据生成</span></div>' +
+    '<div class="rp-body">' + mdToHtml(text) + '</div>';
+  host.parentNode.insertBefore(d, host.nextSibling);   // 紧跟时间线/检查器区块之后
+}
+
 /* ---------- boot ---------- */
 (async function boot(){
   if (!RUN_ID){ document.body.innerHTML = '<div style="padding:24px;font:13px monospace;color:#9aa8b8">缺少 run id —— 请从 Mission Control 启动一次 Run。</div>'; return; }
@@ -490,6 +541,8 @@ document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
   if (!STATIC_MODE) subscribe();
   else { $("cancel").disabled = true; }
   tickHeader();
+  // 历史 run 复查：回复已落盘则直接渲染
+  try { if (RUN.staged && RUN.staged.final_reply) renderReply(RUN.staged.final_reply); } catch {}
 })();
 </script>
 </body>

@@ -1,9 +1,36 @@
 
-const PAGE_VER = "2026-10-02i";   // 改版递增：与服务端不一致时自动强制刷新
+const PAGE_VER = "2026-10-03a";   // 改版递增：与服务端不一致时自动强制刷新
 const API = location.port ? location.origin : "http://127.0.0.1:8848";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmtMs = ms => ms == null ? "—" : (ms >= 1000 ? (ms / 1000).toFixed(1) + "s" : Math.max(0, Math.round(ms)) + "ms");
+
+/* 轻量 Markdown → HTML（Agent 回复用）：标题/列表/代码块/粗体/行内代码。
+   先 esc 再处理标记——所有内容都来自 LLM，必须当不可信文本。 */
+function mdToHtml(md) {
+  const inline = s => s.replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
+                        .replace(/`([^`]+)`/g, "<code>$1</code>");
+  const src = esc(String(md || "")).replace(/```(\w*)\n?([\s\S]*?)```/g,
+    (_m, _lang, code) => `\u0000PRE${btoa(unescape(encodeURIComponent(code)))}\u0000`);
+  const blocks = src.split(/\n{2,}/).map(b => {
+    const t = b.trim(); if (!t) return "";
+    const pre = t.match(/^\u0000PRE([A-Za-z0-9+/=]*)\u0000$/);
+    if (pre) return `<pre>${decodeURIComponent(escape(atob(pre[1])))}</pre>`;
+    if (/^#{1,4}\s/.test(t)) return `<h5>${inline(t.replace(/^#{1,4}\s/, ""))}</h5>`;
+    if (t.split("\n").every(l => !l.trim() || /^\s*[-*]\s/.test(l)))
+      return "<ul>" + t.split("\n").filter(l => l.trim()).map(l => `<li>${inline(l.replace(/^\s*[-*]\s/, ""))}</li>`).join("") + "</ul>";
+    if (t.split("\n").every(l => !l.trim() || /^\s*\d+[.、)]\s/.test(l)))
+      return "<ol>" + t.split("\n").filter(l => l.trim()).map(l => `<li>${inline(l.replace(/^\s*\d+[.、)]\s/, ""))}</li>`).join("") + "</ol>";
+    return `<p>${inline(t).replace(/\n/g, "<br>")}</p>`;
+  });
+  return blocks.filter(Boolean).join("");
+}
+
+function replyCardHTML(text) {
+  return `<div class="ai-reply"><div class="rp-head"><i></i>Agent 最终回复` +
+    `<span class="rp-meta">基于本次真实执行数据生成</span></div>` +
+    `<div class="rp-body">${mdToHtml(text)}</div></div>`;
+}
 
 async function jget(url, t = 8000) {
   const c = new AbortController(); const to = setTimeout(() => c.abort(), t);
@@ -413,6 +440,17 @@ const PHASES = [
   ["dag", "DAG 收束"], ["plan", "研究方案"], ["exec", "真实执行"], ["final", "验收与进化"],
 ];
 let LIVE_RUN = null;   // 当前本页展示的 run_id
+let LIVE_REPLY = "";   // Agent 最终回复（run.reply 事件带来，真实 LLM 生成）
+
+function mountReplyCard() {
+  const sum = $("livesum"); if (!sum) return;
+  const old = document.getElementById("ai-reply-slot"); if (old) old.remove();
+  if (!LIVE_REPLY) return;
+  const slot = document.createElement("div");
+  slot.id = "ai-reply-slot";
+  slot.innerHTML = replyCardHTML(LIVE_REPLY);
+  sum.appendChild(slot);                       // 流程展示完后，最后一段回复
+}
 
 function livebarHTML() {
   return "<div style='display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:10px 14px'>" +
@@ -443,6 +481,7 @@ async function runLive(runId, task) {
   bar.innerHTML = livebarHTML();
   document.getElementById("live-link").href = "/run?id=" + encodeURIComponent(runId);
   if (window.HeroNet) HeroNet.exitDag();
+  LIVE_REPLY = "";
   setPhase("retrieval", "run");
   let ended = false;
   try {
@@ -503,6 +542,9 @@ function handleRunEvent(ev, runId) {
   } else if (t === "execution.finished") {
     setPhase("exec", d.failed > 0 ? "fail" : "done");
     setPhase("final", "run");
+  } else if (t === "run.reply") {
+    LIVE_REPLY = d.text || "";
+    mountReplyCard();                          // 可能早于或晚于 renderLiveFinal，幂等插入
   } else if (t === "evolution.proposed") {
     // Moment 5：反馈真实回流 —— 蒸馏候选是否被质量准入
     const sum = $("livesum"); if (!sum) return;
@@ -568,6 +610,13 @@ function renderLiveFinal(fin) {
     L.push(`<div><b>做什么：</b>${esc(s.action || "")}</div>`);
     if (s.skill) L.push(`<div><b>使用技能：</b><code>${esc(s.skill)}</code></div>`);
     L.push(`<div><b>执行过程：</b>共 ${s.n_attempts || 1} 次尝试 · 耗时 ${fmtMs(s.duration_ms)}${fixed ? '（前几次失败，对照技能记录的陷阱自动修复）' : ""}</div>`);
+    const t0 = fin.started_at_ms || (steps[0] && steps[0].started_at_ms) || 0;
+    const totalMs = Math.max(1, fin.duration_ms || 0);
+    if (t0 && s.started_at_ms && s.duration_ms > 0) {
+      const leftPct = Math.max(0, Math.min(99, (s.started_at_ms - t0) / totalMs * 100));
+      const widthPct = Math.max(1, Math.min(100 - leftPct, s.duration_ms / totalMs * 100));
+      L.push(`<div style="margin-left:14px"><div style="position:relative;height:6px;background:var(--soft);border-radius:3px;overflow:hidden"><div style="position:absolute;left:${leftPct}%;width:${widthPct}%;height:100%;background:${pair[1]};opacity:.72;border-radius:3px"></div></div><div style="font-size:10.5px;color:#8a97a4;margin-top:2px">时间轴：第 ${((s.started_at_ms - t0) / 1000).toFixed(1)}s 开始（占整条运行的 ${widthPct.toFixed(0)}%）</div></div>`);
+    }
     const fails = (s.attempts || []).filter(a => !a.ok);
     if (fails.length) L.push(`<div style="margin-left:14px;color:#8a6d3b">失败详情：${fails.map(a => `第 ${a.n} 次 ${esc(a.error_kind || "未知错误")}（${esc((a.stderr || "").slice(-130))}）`).join("；")}</div>`);
     if ((s.checks || []).length) {
@@ -590,6 +639,7 @@ function renderLiveFinal(fin) {
     `<div style="margin-top:14px;font-size:11px;letter-spacing:2px;color:#8a97a4">── 每一步的执行解释 ──</div>` +
     steps.map(stepCard).join("");
   if (evoExisting) sum.appendChild(evoExisting);   // 保留进化卡（先到的事件）
+  mountReplyCard();                                // Agent 最终回复（流程展示完的最后一段）
   $("run").disabled = false; $("run").textContent = "发送";
 }
 

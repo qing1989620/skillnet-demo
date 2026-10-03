@@ -923,6 +923,68 @@ class RunReq(BaseModel):
     max_llm_calls: int = Field(default=40, ge=5, le=200)
 
 
+def _compose_final_reply(run: Any, led: Any) -> str:
+    """用**真实运行事实**生成一段自然语言「Agent 最终回复」（Codex 式收尾）。
+
+    真实性约束：
+      - prompt 里只放已发生的事（步骤状态/尝试/产物/验收/成本/进化），
+        并明确要求「不得编造数字与结论、失败与跳过必须如实说明」；
+      - 无密钥或调用失败 → 抛错，由调用方兜底（回复是加法，绝不拖垮主流程）。
+    """
+    st_map = {"done": "完成", "failed": "失败", "skipped": "跳过（上游失败阻断）",
+              "running": "执行中", "pending": "等待"}
+    step_lines = []
+    for st in run.steps:
+        fixed = "（前几次失败，已自动修复）" if (st.status == "done" and st.n_attempts > 1) else ""
+        chk = (f"{sum(1 for c in st.checks if c.passed)}/{len(st.checks)}"
+               if st.checks else "该步无程序化检查")
+        arts = "、".join(a.name for a in st.artifacts) or "无"
+        if st.status == "skipped" and st.verify_skip_reason:
+            fixed += f"，原因：{st.verify_skip_reason[:60]}"
+        if st.status == "failed" and st.error:
+            fixed += f"，错误：{str(st.error)[:100]}"
+        step_lines.append(
+            f"- 第{st.idx + 1}步｜技能 {st.skill or '通用'}｜{st_map.get(st.status, st.status)}{fixed}"
+            f"｜{st.n_attempts} 次尝试｜{st.duration_ms / 1000:.1f}s｜验收 {chk}｜产物 {arts}")
+    arts_line = "、".join(f"{a.name}（{a.bytes / 1024:.1f}KB）" for a in run.artifacts) or "无"
+    judged = (f"语义评审加权 {float(run.judge.get('weighted') or 0):.1f}/10"
+              if isinstance(run.judge, dict) and run.judge.get("weighted") is not None else "未产生评审分")
+    cp = (run.staged or {}).get("critical_path") or {}
+    cp_line = (f"关键路径 {' → '.join('步骤' + str(i + 1) for i in cp.get('steps', []))}"
+               f"（{cp.get('ms', 0) / 1000:.1f}s）" if cp.get("steps") else "未计算")
+    evo = run.evolution or {}
+    evo_line = (f"已蒸馏出新技能 {evo.get('name')}（第 {evo.get('generation')} 代，库规模 {evo.get('library_size')}）"
+                if evo.get("accepted") else "本次未产生通过准入的新技能")
+    prompt = f"""你是 SkillNet 的科研 Agent。下面是一次**刚刚真实完成**的任务运行的完整事实记录。
+请给用户写一段「最终回复」，说清楚：你做了什么、关键结论、遇到问题怎么解决的、交付了什么、下一步建议。
+
+硬性要求：
+- 中文，像给同事汇报：专业、直接，禁止客套开场（不要"好的/很高兴/没问题"）
+- Markdown 格式，用小标题或短列表组织，总长 180~320 字
+- **只允许使用下面给出的事实**，禁止编造数字、结论或未发生的步骤
+- 有失败-修复必须写明；有跳过/失败/无产物必须如实说明，不许粉饰
+
+【任务】{run.task}
+
+【采用技能】{'、'.join([s for s in (run.skills or []) if s][:8]) or '无（通用执行）'}
+
+【执行图（权威依赖图）】
+{chr(10).join(step_lines) or '- 无可执行步骤'}
+
+【关键路径】{cp_line}
+【交付产物】{arts_line}
+【验收与评审】{judged}
+【运行事实】总时长 {run.duration_ms / 1000:.1f}s · 成本 ¥{float(run.cost_yuan or 0):.3f} · Token {run.tokens} · 步骤结果：完成 {sum(1 for s in run.steps if s.status == 'done')} · 失败 {sum(1 for s in run.steps if s.status == 'failed')} · 跳过 {sum(1 for s in run.steps if s.status == 'skipped')}
+（注意：此刻 Run 的终态判定尚未执行，不要在回复里写具体终态词，按上述步骤结果如实描述）
+【能力沉淀】{evo_line}
+"""
+    raw = llm.chat(
+        [{"role": "system", "content": "你是严谨的科研 Agent，只基于给定事实写最终回复，不编造。"},
+         {"role": "user", "content": prompt}],
+        role="reporter", temperature=0.3, max_tokens=800)
+    return (raw or "").strip()
+
+
 def _run_worker(run_id: str, req: "RunReq") -> None:
     """后台执行一个 Run：检索 → 策略排序 → 编排 → 多步执行 → 蒸馏 → 落盘。"""
     store = run_store()
@@ -1045,6 +1107,18 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                 a.url = f"/api/runs/{run.run_id}/artifacts/{a.name}"
         if len(run.steps) == 0:
             run.error = "没有可执行步骤"
+
+        # 8) Agent 最终回复（真实 LLM 生成，读真实运行事实；失败不影响终态）
+        # 注意：必须在 finalize_status **之前**发布 run.reply —— 否则 Run 已成终态，
+        # SSE 流会在"终态且事件发完"时立即 end，回复事件永远送不到前端（实测踩过）。
+        try:
+            reply = _compose_final_reply(run, led)
+            if reply:
+                run.staged["final_reply"] = reply
+                BUS.publish(run, "run.reply", text=reply)
+        except Exception as exc:
+            run.staged["final_reply_error"] = f"{type(exc).__name__}: {exc}"
+        pipeline.sync_usage(run, led)
         pipeline.finalize_status(run)
     except Exception as exc:                       # 任何异常都要落到 Run 上
         run.status = STATUS_FAILED

@@ -535,3 +535,57 @@ def test_sandbox_chinese_output_and_artifact_names(tmp_path):
     assert "评分算法: 2 项" in res["stdout"]
     assert "\ufffd" not in res["stdout"], "stdout 仍有替换符（编码断裂）"
     assert "报告.csv" in [a["name"] for a in res["artifacts"]]
+
+
+def test_final_reply_prompt_carries_real_facts(tmp_path, monkeypatch):
+    """Agent 最终回复（Codex 式收尾）的真实性约束：
+
+    - prompt 必须携带真实运行事实（任务/技能/每步状态与尝试/产物/成本）；
+    - 必须显式禁止编造数字与结论；
+    - 失败/跳过要如实进入 prompt（不许粉饰）。"""
+    import server
+    from skillnet.runtime import Artifact, ExecutionAttempt
+
+    captured = {}
+
+    def fake_chat(messages, **kw):
+        captured["messages"] = messages
+        captured["kw"] = kw
+        return "### 完成情况\n- 三步均已真实执行"
+
+    monkeypatch.setattr(server.llm, "chat", fake_chat)
+    r = _mkrun("reply")
+    r.task = "对一批剂量-存活率数据做剂量反应分析"
+    r.skills = ["s-a", "s-b"]
+    s1 = RunStep(idx=0, action="产共享数据", skill="s-a", status="done")
+    s1.attempts = [ExecutionAttempt(n=1, ok=True, stdout="ok", stderr="", error_kind="",
+                                    duration_ms=900, truncated=False)]
+    s1.artifacts = [Artifact(name="step1_shared.csv", kind="真实运行产物", bytes=2048,
+                             sha256="x" * 8, from_step=0)]
+    s2 = RunStep(idx=1, action="分支处理", skill="s-b", status="done")
+    s2.attempts = [ExecutionAttempt(n=1, ok=False, stdout="", stderr="ValueError: bad",
+                                    error_kind="exception", duration_ms=500, truncated=False),
+                   ExecutionAttempt(n=2, ok=True, stdout="ok", stderr="", error_kind="",
+                                    duration_ms=700, truncated=False)]
+    r.steps = [s1, s2]
+    r.artifacts = list(s1.artifacts)
+    r.cost_yuan = 0.0512
+    r.tokens = 3210
+    r.started_at_ms = now_ms() - 12000          # duration_ms 是只读 property
+    r.ended_at_ms = now_ms()
+    r.judge = {"weighted": 8.2, "coverage": 0.75}
+
+    text = server._compose_final_reply(r, None)
+    assert text.startswith("###")
+    assert captured["kw"].get("role") == "reporter"
+    prompt = captured["messages"][1]["content"]
+    assert "不得编造" in prompt or "禁止编造" in prompt
+    for kw in ("剂量反应分析", "s-a", "s-b", "step1_shared.csv", "¥0.051", "3210",
+               "自动修复", "8.2", "步骤结果", "不要在回复里写具体终态词"):
+        assert kw in prompt, f"prompt 缺少真实事实：{kw}"
+
+    # 失败步骤必须如实进入 prompt（不粉饰）
+    r.steps[1].status = "failed"
+    r.steps[1].error = "ValueError: 真实错误"
+    prompt2 = server._compose_final_reply(r, None) and captured["messages"][1]["content"]
+    assert "失败" in prompt2 and "真实错误" in prompt2
