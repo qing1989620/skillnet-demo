@@ -1,5 +1,5 @@
 
-const PAGE_VER = "2026-10-03e";   // 改版递增：与服务端不一致时自动强制刷新
+const PAGE_VER = "2026-10-03f";   // 改版递增：与服务端不一致时自动强制刷新
 const API = location.port ? location.origin : "http://127.0.0.1:8848";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -139,6 +139,224 @@ document.addEventListener("click", e => {
   host.scrollIntoView({ behavior: "smooth", block: "nearest" });
 });
 
+
+/* ================== 对话工作台（首页内嵌双栏；与 /chat 共用同一会话存储） ==================
+   设计：左栏只记问题（可新建/切换会话）；右栏多轮结果流。
+   追问：提交时携带本会话最近 3 轮 {q, a}（a=上一轮回复摘要）——检索仍只用当前问题。 */
+const WS_KEY = "skillnet_chat_sessions_v1";
+let WS_SESSIONS = [], WS_CUR = null, wsBusy = false;
+const WS_PHASES = [["retrieval","检索对比"],["ranking","策略选择"],["orchestration","任务编排"],
+                   ["dag","DAG 收束"],["plan","研究方案"],["exec","真实执行"],["final","验收与进化"]];
+
+function wsLoad(){ try { WS_SESSIONS = JSON.parse(localStorage.getItem(WS_KEY) || "[]"); } catch { WS_SESSIONS = []; }
+  if (!Array.isArray(WS_SESSIONS)) WS_SESSIONS = []; }
+function wsSave(){ try { localStorage.setItem(WS_KEY, JSON.stringify(WS_SESSIONS)); } catch {} }
+function wsSess(){ return WS_SESSIONS.find(s => s.id === WS_CUR) || null; }
+function wsNew(){ if (wsBusy) return;
+  const s = { id: "s" + Date.now(), title: "", created: Date.now(), turns: [] };
+  WS_SESSIONS.unshift(s); WS_CUR = s.id; wsSave(); wsRenderList(); wsRenderMsgs();
+  $("task").focus(); }
+function wsOpen(id){ if (wsBusy) return; WS_CUR = id; wsRenderList(); wsRenderMsgs(); }
+
+function wsRenderList(){
+  const host = $("ws-list"); if (!host) return;
+  if (!WS_SESSIONS.length){
+    host.innerHTML = '<div style="padding:12px 6px;font-size:12px;color:#8a97a4;line-height:1.9">还没有对话。<br>点上方「新建对话」开始。</div>';
+    return;
+  }
+  host.innerHTML = WS_SESSIONS.map(s => `
+    <div class="ws-item ${s.id === WS_CUR ? "on" : ""}" onclick="wsOpen('${s.id}')">
+      <div class="t">${esc(s.title || "（新对话）")}</div>
+      <div class="m">${s.turns.length} 问 · ${new Date(s.created).toLocaleString("zh-CN", {month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit"})}</div>
+    </div>`).join("");
+}
+
+function wsPhaseBar(i){
+  return '<div class="phases">' + WS_PHASES.map(([k, label]) =>
+    `<span class="ph" id="wsp-${i}-${k}"><i></i>${label}</span>`).join("") + '</div>' +
+    `<div class="sub2" id="wss-${i}">Run 创建后实时显示各阶段状态</div>`;
+}
+function wsSetPhase(i, k, state, ms){
+  const el = document.getElementById(`wsp-${i}-${k}`); if (!el) return;
+  el.className = "ph " + (state === "run" ? "on" : state === "done" ? "ok" : state === "fail" ? "no" : "");
+  if (ms != null) el.insertAdjacentHTML("beforeend", ` <b style="font-weight:400;color:#aab6c1">${(ms/1000).toFixed(1)}s</b>`);
+}
+function wsSetSub(i, txt){ const el = document.getElementById(`wss-${i}`); if (el) el.textContent = txt; }
+
+function wsTurnHTML(t, i){
+  const body = t._loaded
+    ? wsResultHTML(t._fin)
+    : '<span style="color:#8a97a4">' + (t.body || "已提交，等待结果…") + "</span>";
+  return `<div class="ws-turn" id="wst-${i}">
+    <div class="ws-q"><div class="who">你</div><div class="txt">${esc(t.q)}</div></div>
+    <div class="ws-card" id="wsc-${i}">${body}</div>
+  </div>`;
+}
+
+function wsRenderMsgs(){
+  const host = $("ws-msgs"); if (!host) return;
+  const s = wsSess();
+  if (!s || !s.turns.length){
+    host.innerHTML = '<div class="ws-empty">在上面输入问题，调用完整 Agent 框架。<br>' +
+      '执行完成后这里会给出：Run Summary · 每一步的执行解释 · AI 回复 · 本次任务总结。<br>' +
+      '同一个对话里可以继续追问，系统会自动带上上下文。</div>';
+    return;
+  }
+  host.innerHTML = s.turns.map((t, i) => wsTurnHTML(t, i)).join("");
+  s.turns.forEach((t, i) => { if (t.run_id && !t._loaded && !t._loading) wsHydrate(i, t.run_id); });
+  host.scrollTop = host.scrollHeight;
+}
+
+async function wsHydrate(i, runId){
+  const s = wsSess(), t = s && s.turns[i]; if (!t) return;
+  t._loading = true;
+  try {
+    const fin = await jget(API + "/api/runs/" + encodeURIComponent(runId), 15000);
+    t._loaded = true; t._fin = fin;
+    const box = document.getElementById(`wsc-${i}`);
+    if (box) box.innerHTML = wsResultHTML(fin);
+  } catch (e) {
+    const box = document.getElementById(`wsc-${i}`);
+    if (box) box.innerHTML = '<span style="color:#8a97a4">无法加载该次运行详情（' + esc(e.message || e) + "）</span>";
+  } finally { t._loading = false; }
+}
+
+/* 完整结果：Run Summary + 折叠的逐步解释/原始事件 + AI 回复 + 本次任务总结 */
+function wsResultHTML(fin){
+  if (!fin) return "";
+  const steps = fin.steps || [];
+  const nDone = steps.filter(s => s.status === "done").length;
+  const nFix = steps.filter(s => s.status === "done" && (s.n_attempts || 1) > 1).length;
+  const nFail = steps.filter(s => s.status === "failed").length;
+  const nSkip = steps.filter(s => s.status === "skipped").length;
+  const cp = (fin.staged || {}).critical_path;
+  const cpTxt = cp ? `关键路径 ${cp.steps.map(x => "Step " + (x + 1)).join(" → ")}（${(cp.ms/1000).toFixed(1)}s / 总 ${(fin.duration_ms/1000).toFixed(1)}s）` : "";
+  const sum = `<div style="background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:10px 13px">` +
+    `<b style="color:var(--brand)">Run Summary</b> · ${fin.status === "COMPLETED" ? "已完成" : fin.status === "PARTIAL" ? "部分完成" : fin.status} · ` +
+    `¥${Number(fin.cost_yuan || 0).toFixed(3)} · ${(fin.duration_ms/1000).toFixed(1)}s<br>` +
+    `步骤 ${steps.length}：一次通过 <b style="color:var(--ok)">${nDone - nFix}</b> · 修复后成功 <b style="color:#b0781a">${nFix}</b> · 失败 <b style="color:var(--bad)">${nFail}</b> · 跳过 <b>${nSkip}</b>` +
+    (cpTxt ? `<br><span style="color:#8a97a4">${cpTxt}</span>` : "") +
+    ` · <a href="/run?id=${encodeURIComponent(fin.run_id)}" target="_blank" style="color:var(--brand2)">完整面板 →</a></div>`;
+  const stepsHtml = steps.map(s => stepCardHTML(s, fin)).join("") || '<div style="color:#8a97a4">无步骤</div>';
+  const evTypes = ((fin.events || []).map(e => e.type).join(" → ")) || "（无事件记录）";
+  const reply = (fin.staged || {}).final_reply;
+  return sum +
+    `<div style="margin-top:10px;font-size:12px;color:var(--brand2);cursor:pointer" onclick="wsToggle(this)">查看执行详情（${steps.length} 步 · 逐步解释与产物） ▾</div>
+     <div style="display:none;margin-top:10px;border-top:1px dashed var(--line);padding-top:10px">
+       ${stepsHtml}
+       <div style="margin-top:10px"><div style="font-size:11px;letter-spacing:2px;color:#8a97a4">── 原始事件序列 ──</div>
+       <pre style="white-space:pre-wrap;font:11px/1.6 Consolas,monospace;background:var(--soft);padding:9px 11px;border-radius:4px;margin-top:5px">${esc(evTypes)}</pre></div>
+     </div>` +
+    (reply ? replyCardHTML(reply) : "") +
+    taskSummaryHTML(fin);
+}
+function wsToggle(el){
+  const d = el.nextElementSibling;
+  const open = d.style.display !== "none";
+  d.style.display = open ? "none" : "block";
+  el.textContent = el.textContent.replace(open ? "▾" : "▴", open ? "▴" : "▾");
+}
+
+async function wsSubmit(){
+  if (wsBusy) return;
+  const input = $("task"); const q = input.value.trim();
+  if (!q){ input.focus(); return; }
+  if (!wsSess()) wsNew();
+  const s = wsSess();
+  wsBusy = true;
+  const btn = $("run"); const oldTxt = btn.textContent;
+  btn.disabled = true; btn.textContent = "运行中…";
+  $("err").style.display = "none";
+
+  const history = s.turns.map(t => ({ q: t.q, a: t.reply_digest || "" })).slice(-3);
+  const turn = { q, run_id: null, ts: Date.now(), status: "running", body: wsPhaseBar(s.turns.length) };
+  s.turns.push(turn);
+  if (!s.title) s.title = q.slice(0, 34);
+  wsSave(); wsRenderList(); wsRenderMsgs();
+  const i = s.turns.length - 1;
+  const host = $("ws-msgs"); host.scrollTop = host.scrollHeight;
+  input.value = "";
+
+  try {
+    const r = await fetch(API + "/api/runs", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ task: q, k: 5, max_steps: 3, max_cost_yuan: 1.0,
+                             max_seconds: 420, history })
+    });
+    if (!r.ok){ const d = await r.json().catch(() => ({}));
+      throw new Error(typeof d.detail === "string" ? d.detail : ("HTTP " + r.status)); }
+    const { run_id } = await r.json();
+    turn.run_id = run_id; wsSave();
+    wsSetSub(i, "Run 已创建：" + run_id);
+    await wsStream(i, run_id);
+    const fin = await jget(API + "/api/runs/" + encodeURIComponent(run_id), 15000);
+    turn._loaded = true; turn._fin = fin; turn.status = fin.status;
+    const reply = (fin.staged || {}).final_reply || "";
+    turn.reply_digest = reply.replace(/[#*`>\-]/g, "").slice(0, 400);
+    const box = document.getElementById(`wsc-${i}`);
+    if (box) box.innerHTML = wsResultHTML(fin);
+    wsSave();
+  } catch (e) {
+    turn.status = "error";
+    const box = document.getElementById(`wsc-${i}`);
+    if (box) box.innerHTML = '<div style="color:var(--bad)">运行失败：' + esc(e.message || e) + "</div>";
+    wsSave();
+  } finally {
+    wsBusy = false; btn.disabled = false; btn.textContent = oldTxt;
+    host.scrollTop = host.scrollHeight;
+  }
+}
+
+async function wsStream(i, runId){
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 480000);
+  try {
+    const resp = await fetch(`${API}/api/runs/${encodeURIComponent(runId)}/stream`, { signal: ctrl.signal });
+    const reader = resp.body.getReader(); const dec = new TextDecoder();
+    let buf = "";
+    while (true) {
+      const { done, value } = await reader.read(); if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split("\n"); buf = lines.pop();
+      for (const line of lines) {
+        const x = line.trim();
+        if (x === "event: end") return;
+        if (!x.startsWith("data: ")) continue;
+        let ev; try { ev = JSON.parse(x.slice(6)); } catch { continue; }
+        wsOnEvent(i, ev);
+        if (ev.type === "end") return;
+      }
+    }
+  } catch (e) { /* 流断开：以最终状态接口为准 */ }
+  finally { clearTimeout(timer); }
+}
+
+function wsOnEvent(i, ev){
+  const t = ev.type || "", d = ev.data || ev;
+  if (t === "retrieval.completed"){ wsSetPhase(i, "retrieval", "done", d.duration_ms); wsSetPhase(i, "ranking", "run");
+    wsSetSub(i, `检索完成：三档对照，候选 ${(d.selected || []).length} 个`); }
+  else if (t === "ranking.completed"){ wsSetPhase(i, "ranking", "done"); wsSetPhase(i, "orchestration", "run"); }
+  else if (t === "orchestration.completed"){ wsSetPhase(i, "orchestration", "done"); wsSetPhase(i, "dag", "run");
+    wsSetSub(i, `编排完成：${(d.skills || []).length} 个技能进入执行图`); }
+  else if (t === "dag.ready"){ wsSetPhase(i, "dag", "done"); wsSetPhase(i, "plan", "run");
+    wsSetSub(i, `执行图就绪：${(d.nodes || []).length} 步（来源 ${d.workflow_source || "—"}）`); }
+  else if (t === "plan.created"){ wsSetPhase(i, "plan", "done", d.duration_ms); wsSetPhase(i, "exec", "run");
+    wsSetSub(i, `方案生成：${d.steps} 步`); }
+  else if (t === "step.started"){ wsSetSub(i, `执行中：Step ${d.step + 1}`); }
+  else if (t === "step.attempt" && d.ok === false){ wsSetSub(i, `Step ${d.step + 1} 第 ${d.attempt} 次失败，准备自动修复`); }
+  else if (t === "execution.finished"){ wsSetPhase(i, "exec", d.failed > 0 ? "fail" : "done"); wsSetPhase(i, "final", "run"); }
+  else if (t === "evolution.proposed"){ wsSetSub(i, d.accepted ? `技能蒸馏：已准入 ${d.name} · 库规模 ${d.library_size}` : "技能蒸馏：本次未准入"); }
+  else if (t === "run.reply"){ wsSetPhase(i, "final", "done"); wsSetSub(i, "Agent 最终回复已生成"); }
+  else if (t === "run.failed" || t === "run.budget_exceeded"){
+    WS_PHASES.forEach(([k]) => { const el = document.getElementById(`wsp-${i}-${k}`);
+      if (el && el.className !== "ph ok") wsSetPhase(i, k, "fail"); });
+    wsSetSub(i, "运行中断：" + String(d.reason || t));
+  }
+}
+
+/* 原「实时运行」入口并入工作台（功能不减：仍是真实 SSE 流） */
+async function startRealRun(){ return wsSubmit(); }
+
 async function boot() {
   try {
     const h = await jget(API + "/api/health", 4000);
@@ -167,6 +385,13 @@ async function boot() {
       $("task").value = t.query; CUR_GOLD = t.gold || [];
     });
   } catch (e) { $("chips").innerHTML = ""; }
+
+  // 对话工作台初始化：恢复本机会话；没有则新建一个空会话
+  try {
+    wsLoad();
+    if (!WS_SESSIONS.length) { wsNew(); }
+    else { WS_CUR = WS_SESSIONS[0].id; wsRenderList(); wsRenderMsgs(); }
+  } catch (e) { /* 工作台不可用时不影响首页其余部分 */ }
 }
 
 function addUser(q) {
@@ -529,6 +754,40 @@ const PHASES = [
 let LIVE_RUN = null;   // 当前本页展示的 run_id
 let LIVE_REPLY = "";   // Agent 最终回复（run.reply 事件带来，真实 LLM 生成）
 
+/* 步骤卡（多轮复用）：做什么 / 使用技能 / 尝试与失败详情 / 验收 / 产物 / 输出 / 时间轴 */
+function stepCardHTML(s, fin) {
+    const stMap = { done: ["完成", "#2e7d4f"], failed: ["失败", "#a8433a"], skipped: ["已跳过", "#8a97a4"], running: ["执行中", "#24557a"], pending: ["等待", "#8a97a4"] };
+    const pair = stMap[s.status] || [s.status, "#8a97a4"];
+    const fixed = s.status === "done" && (s.n_attempts || 1) > 1;
+    const L = [];
+    L.push(`<div><b>做什么：</b>${esc(s.action || "")}</div>`);
+    if (s.skill) L.push(`<div><b>使用技能：</b><code>${esc(s.skill)}</code></div>`);
+    L.push(`<div><b>执行过程：</b>共 ${s.n_attempts || 1} 次尝试 · 耗时 ${fmtMs(s.duration_ms)}${fixed ? '（前几次失败，对照技能记录的陷阱自动修复）' : ""}</div>`);
+    const t0 = fin.started_at_ms || (steps[0] && steps[0].started_at_ms) || 0;
+    const totalMs = Math.max(1, fin.duration_ms || 0);
+    if (t0 && s.started_at_ms && s.duration_ms > 0) {
+      const leftPct = Math.max(0, Math.min(99, (s.started_at_ms - t0) / totalMs * 100));
+      const widthPct = Math.max(1, Math.min(100 - leftPct, s.duration_ms / totalMs * 100));
+      L.push(`<div style="margin-left:14px"><div style="position:relative;height:6px;background:var(--soft);border-radius:3px;overflow:hidden"><div style="position:absolute;left:${leftPct}%;width:${widthPct}%;height:100%;background:${pair[1]};opacity:.72;border-radius:3px"></div></div><div style="font-size:10.5px;color:#8a97a4;margin-top:2px">时间轴：第 ${((s.started_at_ms - t0) / 1000).toFixed(1)}s 开始（占整条运行的 ${widthPct.toFixed(0)}%）</div></div>`);
+    }
+    const fails = (s.attempts || []).filter(a => !a.ok);
+    if (fails.length) L.push(`<div style="margin-left:14px;color:#8a6d3b">失败详情：${fails.map(a => `第 ${a.n} 次 ${esc(a.error_kind || "未知错误")}（${esc((a.stderr || "").slice(-130))}）`).join("；")}</div>`);
+    if ((s.checks || []).length) {
+      const okN = s.checks.filter(c => c.passed).length;
+      const bad = s.checks.filter(c => !c.passed).slice(0, 3).map(c => esc(c.name)).join("、");
+      L.push(`<div style="margin-left:14px"><b>程序化验收：</b>${okN}/${s.checks.length} 通过${okN < s.checks.length ? ` — 未通过项：${bad}` : ""}</div>`);
+    }
+    if ((s.artifacts || []).length) L.push(`<div style="margin-left:14px"><b>产出物：</b>${s.artifacts.map(a => `<a href="${API}/api/runs/${encodeURIComponent(fin.run_id)}/artifacts/${encodeURIComponent(a.name)}" target="_blank" style="color:var(--brand2)">${esc(a.name)}</a>（${(a.bytes / 1024).toFixed(1)} KB）`).join("、")}</div>`);
+    if ((s.inputs || []).length) L.push(`<div style="margin-left:14px;color:#8a97a4">读取的上游产物：${esc(s.inputs.join("、"))}（文件级真实传递）</div>`);
+    if (s.status === "skipped" && s.verify_skip_reason) L.push(`<div style="margin-left:14px;color:#8a97a4">${esc(s.verify_skip_reason)}</div>`);
+    if (s.status === "failed" && s.error) L.push(`<div style="margin-left:14px;color:var(--bad)">最终错误：${esc(String(s.error).slice(0, 220))}</div>`);
+    const okAtt = (s.attempts || []).filter(a => a.ok).slice(-1)[0];
+    if (okAtt && (okAtt.stdout || "").trim()) L.push(`<div style="margin-left:14px"><b>输出摘要：</b><pre style="white-space:pre-wrap;font:11px/1.6 Consolas,monospace;background:var(--soft);padding:8px 10px;border-radius:4px;margin-top:3px;max-height:240px;overflow:auto">${esc(okAtt.stdout.slice(-900))}</pre></div>`);
+    return `<div style="background:var(--card);border:1px solid var(--line);border-left:3px solid ${pair[1]};border-radius:6px;padding:11px 15px;margin-top:10px;font-size:12.5px">` +
+      `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><b style="color:var(--brand)">Step ${s.idx + 1} · ${esc(s.skill || "通用")}</b><span style="color:${pair[1]};font-weight:700;white-space:nowrap">${pair[0]}${fixed ? "（修复后成功）" : ""}</span></div>` +
+      `<div style="margin-top:6px;display:grid;gap:3px">${L.join("")}</div></div>`;
+}
+
 /* ---------- 本次任务总结：SkillNet 在本次任务里的角色 + 技能库成长 ---------- */
 function taskSummaryHTML(fin) {
   const imp = (fin.staged || {}).skill_impact;
@@ -736,38 +995,7 @@ function renderLiveFinal(fin) {
     `</div>`;
 
   /* ── 每一步的详细解释 ── */
-  const stepCard = s => {
-    const stMap = { done: ["完成", "#2e7d4f"], failed: ["失败", "#a8433a"], skipped: ["已跳过", "#8a97a4"], running: ["执行中", "#24557a"], pending: ["等待", "#8a97a4"] };
-    const pair = stMap[s.status] || [s.status, "#8a97a4"];
-    const fixed = s.status === "done" && (s.n_attempts || 1) > 1;
-    const L = [];
-    L.push(`<div><b>做什么：</b>${esc(s.action || "")}</div>`);
-    if (s.skill) L.push(`<div><b>使用技能：</b><code>${esc(s.skill)}</code></div>`);
-    L.push(`<div><b>执行过程：</b>共 ${s.n_attempts || 1} 次尝试 · 耗时 ${fmtMs(s.duration_ms)}${fixed ? '（前几次失败，对照技能记录的陷阱自动修复）' : ""}</div>`);
-    const t0 = fin.started_at_ms || (steps[0] && steps[0].started_at_ms) || 0;
-    const totalMs = Math.max(1, fin.duration_ms || 0);
-    if (t0 && s.started_at_ms && s.duration_ms > 0) {
-      const leftPct = Math.max(0, Math.min(99, (s.started_at_ms - t0) / totalMs * 100));
-      const widthPct = Math.max(1, Math.min(100 - leftPct, s.duration_ms / totalMs * 100));
-      L.push(`<div style="margin-left:14px"><div style="position:relative;height:6px;background:var(--soft);border-radius:3px;overflow:hidden"><div style="position:absolute;left:${leftPct}%;width:${widthPct}%;height:100%;background:${pair[1]};opacity:.72;border-radius:3px"></div></div><div style="font-size:10.5px;color:#8a97a4;margin-top:2px">时间轴：第 ${((s.started_at_ms - t0) / 1000).toFixed(1)}s 开始（占整条运行的 ${widthPct.toFixed(0)}%）</div></div>`);
-    }
-    const fails = (s.attempts || []).filter(a => !a.ok);
-    if (fails.length) L.push(`<div style="margin-left:14px;color:#8a6d3b">失败详情：${fails.map(a => `第 ${a.n} 次 ${esc(a.error_kind || "未知错误")}（${esc((a.stderr || "").slice(-130))}）`).join("；")}</div>`);
-    if ((s.checks || []).length) {
-      const okN = s.checks.filter(c => c.passed).length;
-      const bad = s.checks.filter(c => !c.passed).slice(0, 3).map(c => esc(c.name)).join("、");
-      L.push(`<div style="margin-left:14px"><b>程序化验收：</b>${okN}/${s.checks.length} 通过${okN < s.checks.length ? ` — 未通过项：${bad}` : ""}</div>`);
-    }
-    if ((s.artifacts || []).length) L.push(`<div style="margin-left:14px"><b>产出物：</b>${s.artifacts.map(a => `<a href="${API}/api/runs/${encodeURIComponent(fin.run_id)}/artifacts/${encodeURIComponent(a.name)}" target="_blank" style="color:var(--brand2)">${esc(a.name)}</a>（${(a.bytes / 1024).toFixed(1)} KB）`).join("、")}</div>`);
-    if ((s.inputs || []).length) L.push(`<div style="margin-left:14px;color:#8a97a4">读取的上游产物：${esc(s.inputs.join("、"))}（文件级真实传递）</div>`);
-    if (s.status === "skipped" && s.verify_skip_reason) L.push(`<div style="margin-left:14px;color:#8a97a4">${esc(s.verify_skip_reason)}</div>`);
-    if (s.status === "failed" && s.error) L.push(`<div style="margin-left:14px;color:var(--bad)">最终错误：${esc(String(s.error).slice(0, 220))}</div>`);
-    const okAtt = (s.attempts || []).filter(a => a.ok).slice(-1)[0];
-    if (okAtt && (okAtt.stdout || "").trim()) L.push(`<div style="margin-left:14px"><b>输出摘要：</b><pre style="white-space:pre-wrap;font:11px/1.6 Consolas,monospace;background:var(--soft);padding:8px 10px;border-radius:4px;margin-top:3px;max-height:240px;overflow:auto">${esc(okAtt.stdout.slice(-900))}</pre></div>`);
-    return `<div style="background:var(--card);border:1px solid var(--line);border-left:3px solid ${pair[1]};border-radius:6px;padding:11px 15px;margin-top:10px;font-size:12.5px">` +
-      `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><b style="color:var(--brand)">Step ${s.idx + 1} · ${esc(s.skill || "通用")}</b><span style="color:${pair[1]};font-weight:700;white-space:nowrap">${pair[0]}${fixed ? "（修复后成功）" : ""}</span></div>` +
-      `<div style="margin-top:6px;display:grid;gap:3px">${L.join("")}</div></div>`;
-  };
+  const stepCard = s => stepCardHTML(s, fin);
 
   sum.innerHTML = summaryCard + aiCard +
     `<div style="margin-top:14px;font-size:11px;letter-spacing:2px;color:#8a97a4">── 每一步的执行解释 ──</div>` +
