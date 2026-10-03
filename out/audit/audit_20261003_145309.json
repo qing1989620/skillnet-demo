@@ -1,0 +1,76 @@
+{
+ "generated_at": "2026-10-03T14:53:09+0800",
+ "issues": [
+  {
+   "sev": "P0",
+   "area": "端点",
+   "msg": "接口 /api/experiments 返回 404",
+   "detail": "{\"detail\":\"Not Found\"}"
+  },
+  {
+   "sev": "P1",
+   "area": "静态",
+   "msg": "briefing.html 存在重复 id",
+   "detail": "livesum"
+  },
+  {
+   "sev": "P1",
+   "area": "端点",
+   "msg": "页面 / 疑似非 HTML",
+   "detail": "<!DOCTYPE html>\r\n<html lang=\"zh-CN\">\r\n<head>\r\n<meta charset=\"UTF-8\">\r\n<meta name=\"viewport\" content=\"width=device-width,"
+  },
+  {
+   "sev": "P1",
+   "area": "端点",
+   "msg": "页面 /chat 疑似非 HTML",
+   "detail": "<!DOCTYPE html>\n<html lang=\"zh-CN\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, ini"
+  },
+  {
+   "sev": "P1",
+   "area": "端点",
+   "msg": "页面 /graph 疑似非 HTML",
+   "detail": "<!DOCTYPE html>\r\n<html lang=\"zh-CN\">\r\n<head>\r\n<meta charset=\"UTF-8\">\r\n<meta name=\"viewport\" content=\"width=device-width,"
+  },
+  {
+   "sev": "P1",
+   "area": "端点",
+   "msg": "页面 /dashboard 疑似非 HTML",
+   "detail": "<!DOCTYPE html>\r\n<html lang=\"zh-CN\">\r\n<head>\r\n<meta charset=\"utf-8\">\r\n<meta name=\"viewport\" content=\"width=device-width,"
+  },
+  {
+   "sev": "P1",
+   "area": "端点",
+   "msg": "页面 /runs 疑似非 HTML",
+   "detail": "<!DOCTYPE html>\r\n<html lang=\"zh-CN\">\r\n<head>\r\n<meta charset=\"UTF-8\">\r\n<meta name=\"viewport\" content=\"width=device-width,"
+  },
+  {
+   "sev": "P1",
+   "area": "端点",
+   "msg": "页面 /run 疑似非 HTML",
+   "detail": "<!DOCTYPE html>\r\n<html lang=\"zh-CN\">\r\n<head>\r\n<meta charset=\"UTF-8\">\r\n<meta name=\"viewport\" content=\"width=device-width,"
+  },
+  {
+   "sev": "P1",
+   "area": "边界",
+   "msg": "不存在产物应 404，实际 0",
+   "detail": ""
+  }
+ ],
+ "endpoint_status": {
+  "/": 200,
+  "/chat": 200,
+  "/graph": 200,
+  "/dashboard": 200,
+  "/runs": 200,
+  "/run": 200,
+  "/api/health": 200,
+  "/api/graph": 200,
+  "/api/stats": 200,
+  "/api/tasks": 200,
+  "/api/capabilities": 200,
+  "/api/experiments": 404,
+  "/api/skills": 200,
+  "/api/runs?limit=5": 200
+ },
+ "runs_checked": 3
+}

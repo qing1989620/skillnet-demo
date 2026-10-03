@@ -1647,3 +1647,22 @@ rs": 7}
 {"skill": "math-concept-formalization-and-verification", "task": "解释一下费马大定理的核心思想", "action": "构造边界反例清单：取 n=2 勾股数、n=1 平凡解、x 或 y 为负整数、z=0 等情形，逐条标注违反哪条前提，并代入原方程核验是否构成对定理的反驳。", "ok": true, "n_attempts": 1, "error_kind": "", "stderr_tail": "", "code_chars": 1969}
 {"skill": "math-theorem-explain-verify", "task": "那它和费马小定理容易混淆的地方具体在哪？", "action": "形式化并排陈述两个定理：FLT 为 ∀n≥3, ∀x,y,z∈Z\\{0}, x^n+y^n≠z^n；费马小定理为对素数 p 与整数 a，若 gcd(a,p)=1 则 a^(p-1)≡1 (mod p)。显式标注定义域（Z vs Z/pZ）、量词结构（全称无解 vs 同余恒等）、指数位置（未知数指数 vs 底数指数）。", "ok": true, "n_attempts": 1, "error_kind": "", "stderr_tail": "", "code_chars": 5134}
 {"skill": "math-concept-formalization-and-verification", "task": "那它和费马小定理容易混淆的地方具体在哪？", "action": "构造边界反例核验前提不可省略：对 FLT 取 n=2 的勾股数 (3,4,5) 验证 3²+4²=5²，确认违反 n≥3 前提故不构成反驳；对小定理取 a=2,p=4（非素数）验证 2³=8≡0 (mod 4)≠1，确认违反 p 素数前提故不构成反驳。", "ok": true, "n_attempts": 2, "error_kind": "", "stderr_tail": "", "code_chars": 2528}
+{"skill": "exam-prep-closed-loop-matrix", "task": "计算机网络原理怎么学", "action": "建立《计算机网络原理》考点矩阵：以考纲/目标院校大纲为研究问题，收集指定教材1本（如谢希仁《计算机网络》或 Kurose《自顶向下方法》）+辅导书1本（如王道/天勤）+近10年真题≥8套，按章节抽取「章节-知识点-题型-出现年份-分值-掌握度1-5」到结构化表。掌握度标尺统一为5=能独立限时做对、1=完全不会。", "ok": true, "n_attempts": 1, "error_kind": "", "stderr_tail": "", "code_chars": 2700}
+{"skill": "exam-prep-closed-loop-matrix", "task": "计算机网络原理怎么学", "action": "排优先级并制定周计划：按优先级分数=章节分值占比×(6−掌握度)降序排列，分值高且掌握度≤3的章节（通常是网络层、传输层）排到前2/3周期，掌握度≥4的章节只做真题抽查；为每章绑定闭环判据。", "ok": true, "n_attempts": 1, "error_kind": "", "stderr_tail": "", "code_chars": 1329}
+{"skill": "exam-prep-closed-loop-matrix", "task": "计算机网络原理怎么学", "action": "建立错题台账并做数据清洗：每次做题记录题号、章节、知识点、题型、对错、用时（分钟）、错因；错因固定为4类（概念不清/计算失误/审题/记忆），禁止自由文本；未记录错因标记为待补而非删除；产出数据字典与清洗审计日志。", "ok": true, "n_attempts": 1, "error_kind": "", "stderr_tail": "", "code_chars": 926}
+{"skill": null, "task": "测试任务", "action": "产数据", "ok": true, "n_attempts": 1, "error_kind": "", "stderr_tail": "", "code_chars": 3}
+{"skill": null, "task": "测试任务", "action": "读数据做分析", "ok": true, "n_attempts": 1, "error_kind": "", "stderr_tail": "", "code_chars": 7}
+{"skill": null, "task": "测试任务", "action": "第一步会失败", "ok": false, "n_attempts": 3, "error_kind": "syntax", "stderr_tail": "SyntaxError: '[' was never closed (line 1)\n1: x = [1,2", "code_chars": 0}
+{"skill": null, "task": "测试任务", "action": "产数据并落盘", "ok": true, "n_attempts": 2, "error_kind": "", "stderr_tail": "", "code_chars": 3}
+{"skill": null, "task": "测试任务", "action": "产数据", "ok": true, "n_attempts": 1, "error_kind": "", "stderr_tail": "", "code_chars": 3}
+{"skill": null, "task": "测试任务", "action": "第二步写坏文件", "ok": false, "n_attempts": 3, "error_kind": "syntax", "stderr_tail": "SyntaxError: '[' was never closed (line 1)\n1: x = [1,2", "code_chars": 0}
+{"skill": null, "task": "测试任务", "action": "产数据并落盘 clean.csv", "ok": true, "n_attempts": 1, "error_kind": "", "stderr_tail": "", "code_chars": 3}
+{"skill": null, "task": "测试任务", "action": "产共享数据", "ok": true, "n_attempts": 1, "error_kind": "", "stderr_tail": "", "code_chars": 5}
+{"skill": null, "task": "测试任务", "action": "分支B加工", "ok": true, "n_attempts": 1, "error_kind": "", "stderr_tail": "", "code_chars": 5}
+{"skill": null, "task": "测试任务", "action": "分支C加工", "ok": true, "n_attempts": 1, "error_kind": "", "stderr_tail": "", "code_chars": 5}
+{"skill": null, "task": "测试任务", "action": "汇总D", "ok": true, "n_attempts": 1, "error_kind": "", "stderr_tail": "", "code_chars": 5}
+{"skill": null, "task": "测试任务", "action": "产共享数据", "ok": false, "n_attempts": 3, "error_kind": "syntax", "stderr_tail": "SyntaxError: '[' was never closed (line 1)\n1: x = [1,2", "code_chars": 0}
+{"skill": null, "task": "测试任务", "action": "产数据", "ok": true, "n_attempts": 1, "error_kind": "", "stderr_tail": "", "code_chars": 3}
+{"skill": null, "task": "测试任务", "action": "产数据", "ok": true, "n_attempts": 2, "error_kind": "", "stderr_tail": "", "code_chars": 3}
+{"skill": null, "task": "测试任务", "action": "读数据做分析", "ok": true, "n_attempts": 1, "error_kind": "", "stderr_tail": "", "code_chars": 7}
+{"skill": null, "task": "测试任务", "action": "读数据做分析", "ok": true, "n_attempts": 1, "error_kind": "", "stderr_tail": "", "code_chars": 3}

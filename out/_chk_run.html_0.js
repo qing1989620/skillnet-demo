@@ -1,198 +1,4 @@
-<!DOCTYPE html>
-<html lang="zh-CN" data-page="run">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<title>SkillNet · 运行回放</title>
-<style>
-  /* 视觉原则：technical / precise / quiet / trustworthy / dense but legible
-     —— 不使用霓虹渐变、玻璃拟态、彩色 KPI 卡；状态色有语义。 */
-  /* Agent 最终回复：与 Mission Control 一致的收尾卡 */
-  .ai-reply{margin:18px 0 4px;background:#fff;border:1px solid #d8e2ea;border-radius:8px;
-    padding:18px 22px 16px;box-shadow:0 1px 3px rgba(26,58,92,.05)}
-  .ai-reply .rp-head{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;
-    color:#1a3a5c;letter-spacing:.5px;padding-bottom:9px;border-bottom:1px solid var(--line)}
-  .ai-reply .rp-head i{width:7px;height:7px;border-radius:50%;background:#24557a;
-    box-shadow:0 0 0 3px rgba(36,85,122,.12)}
-  .ai-reply .rp-meta{margin-left:auto;font-weight:400;color:var(--ink3);font-size:11px}
-  .ai-reply .rp-body{font-size:13px;line-height:1.9;color:var(--ink);margin-top:10px}
-  .ai-reply .rp-body h5{font-size:12.5px;color:#24557a;margin:10px 0 3px}
-  .ai-reply .rp-body p{margin:6px 0}
-  .ai-reply .rp-body ul,.ai-reply .rp-body ol{margin:6px 0 6px 20px}
-  .ai-reply .rp-body li{margin:2px 0}
-  .ai-reply .rp-body code{font:12px/1.6 var(--mono);background:var(--panel2);padding:1px 5px;
-    border-radius:3px;color:#24557a}
-  .ai-reply .rp-body pre{background:var(--panel2);border:1px solid var(--line);border-radius:5px;
-    padding:10px 12px;margin:7px 0;overflow:auto;font:12px/1.65 var(--mono);color:var(--ink2)}
-  .ai-reply .rp-body table{width:100%;border-collapse:collapse;margin:9px 0;font-size:12.5px}
-  .ai-reply .rp-body th{background:var(--panel2);color:#24557a;text-align:left;padding:6px 10px;
-    border-bottom:2px solid var(--line);font-weight:700}
-  .ai-reply .rp-body td{padding:5px 10px;border-bottom:1px solid var(--line);vertical-align:top}
-  .ai-reply .rp-body blockquote{margin:9px 0;padding:8px 14px;border-left:3px solid #c9d8e6;
-    background:#f8fafc;color:var(--ink2);border-radius:0 4px 4px 0}
-  :root{
-    /* 浅色（与 Mission Control / 既有页面一致的视觉语言） */
-    --bg:#fbfaf8; --panel:#ffffff; --panel2:#f4f6f8; --line:#e3e8ee;
-    --ink:#22303e; --ink2:#5b6b7c; --ink3:#8a97a4;
-    --ok:#2e7d4f; --warn:#b0781a; --bad:#a8433a; --info:#1f5f9e; --run:#b0781a;
-    --mono:"Cascadia Mono",Consolas,"Courier New",monospace;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html,body{height:100%}
-  body{background:var(--bg);color:var(--ink);font:13px/1.6 "Microsoft YaHei","PingFang SC",sans-serif;
-       display:flex;flex-direction:column;height:100vh;overflow:hidden}
 
-  /* ---------- Header ---------- */
-  header{flex:0 0 auto;border-bottom:1px solid var(--line);background:var(--panel);padding:10px 16px;box-shadow:0 1px 0 rgba(34,48,62,.03);
-         display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
-  .h-left{display:flex;align-items:center;gap:12px;min-width:0}
-  .badge{font:600 11px/1 var(--mono);letter-spacing:.4px;padding:5px 9px;border-radius:3px;
-         border:1px solid currentColor;white-space:nowrap}
-  .st-COMPLETED{color:var(--ok)} .st-PARTIAL{color:var(--warn)} .st-FAILED{color:var(--bad)}
-  .st-RUNNING,.st-EXECUTING,.st-RETRIEVING,.st-ORCHESTRATING,.st-VERIFYING,.st-EVOLVING{color:var(--info)}
-  .st-CANCELLED,.st-INTERRUPTED{color:var(--ink3)}
-  .st-BUDGET_EXCEEDED{color:var(--warn)} .st-CREATED{color:var(--ink3)}
-  .task{font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .rid{font:400 11px/1 var(--mono);color:var(--ink3);margin-top:2px}
-  .h-right{display:flex;align-items:center;gap:16px;font:12px/1.5 var(--mono);color:var(--ink2)}
-  .kv b{color:var(--ink);font-weight:600}
-  .bar{width:88px;height:4px;background:#e9eef3;border-radius:2px;overflow:hidden;display:inline-block;vertical-align:middle}
-  .bar i{display:block;height:100%;background:var(--ok);transition:width .4s}
-  .bar.warn i{background:var(--warn)}
-  button{font:600 12px/1 inherit;padding:7px 13px;border-radius:3px;cursor:pointer;
-         background:#fff;color:var(--ink);border:1px solid var(--line)}
-  button:hover{border-color:var(--ink3)}
-  button:disabled{opacity:.45;cursor:not-allowed}
-  button.danger{color:var(--bad);border-color:#e6c9c7}
-
-  /* ---------- 三栏 ---------- */
-  main{flex:1 1 auto;display:grid;grid-template-columns:290px 1fr 400px;min-height:0}
-  .col{min-height:0;display:flex;flex-direction:column;border-right:1px solid var(--line)}
-  .col:last-child{border-right:none;border-left:1px solid var(--line)}
-  .col-h{flex:0 0 auto;padding:9px 14px;border-bottom:1px solid var(--line);
-         font:600 11px/1 var(--mono);letter-spacing:.6px;color:var(--ink2);text-transform:uppercase;
-         display:flex;justify-content:space-between;align-items:center}
-  .col-b{flex:1 1 auto;overflow:auto;padding:12px 14px}
-
-  /* ---------- Graph ---------- */
-  .gnode{border:1px solid var(--line);background:var(--panel);border-radius:4px;padding:9px 11px;
-         margin-bottom:0;cursor:pointer;transition:border-color .18s,background .18s;position:relative}
-  .gnode:hover{border-color:var(--ink3)}
-  .gnode.sel{border-color:var(--info);background:var(--panel2)}
-  .gnode .grow1{display:flex;align-items:center;gap:8px}
-  .dot{width:8px;height:8px;border-radius:50%;background:var(--ink3);flex:0 0 auto}
-  .s-waiting .dot{background:var(--ink3)} .s-running .dot{background:var(--info);animation:pulse 1.1s infinite}
-  .s-verifying .dot{background:var(--warn);animation:pulse 1.1s infinite} .s-passed .dot{background:var(--ok)}
-  .s-retrying .dot{background:var(--warn)} .s-failed .dot{background:var(--bad)} .s-skipped .dot{background:#3a4351}
-  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(31,95,158,.32)}55%{box-shadow:0 0 0 6px rgba(31,95,158,0)}}
-  .gnode .gname{font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .gnode .gmeta{font:11px/1.6 var(--mono);color:var(--ink3);margin-top:3px}
-  .gnode .gskill{display:inline-block;font:11px/1 var(--mono);color:var(--info);
-                 border:1px solid #cfe0ef;background:#f2f7fc;border-radius:3px;padding:2px 6px;margin-top:5px}
-  .gretry{color:var(--warn);font:600 11px var(--mono)}
-  /* 依赖边：标出真实 artifact */
-  .gedge{display:flex;flex-direction:column;align-items:center;padding:3px 0;color:var(--ink3)}
-  .gedge .ln{width:1px;height:12px;background:var(--line)}
-  .gedge .art{font:10.5px/1.4 var(--mono);color:var(--info);border:1px dashed #b9d2e8;border-radius:3px;
-              padding:2px 7px;margin:2px 0;cursor:pointer;background:#f7fafd}
-  .gedge .art:hover{border-style:solid}
-
-  /* ---------- Timeline ---------- */
-  .tl{font:11.5px/1.7 var(--mono)}
-  .ev{display:grid;grid-template-columns:96px 1fr;gap:10px;padding:2px 0;align-items:baseline}
-  .ev .ts{color:var(--ink3)}
-  .ev .msg{color:var(--ink2);word-break:break-word}
-  .ev .msg b{color:var(--ink);font-weight:600}
-  .ev.ok .msg{color:#2e7d4f} .ev.bad .msg{color:#a8433a} .ev.warn .msg{color:#8a5a15}
-  .ev.mile .msg{color:var(--ink);font-weight:600}
-  .ev.new{animation:ins .35s ease}
-  @keyframes ins{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
-
-  /* ---------- Inspector ---------- */
-  .ins-sec{border-bottom:1px solid var(--line);padding:12px 0}
-  .ins-sec:first-child{padding-top:0}
-  .ins-k{font:600 10.5px/1 var(--mono);letter-spacing:.6px;color:var(--ink3);text-transform:uppercase;margin-bottom:7px}
-  .row{display:flex;justify-content:space-between;gap:12px;font:12px/1.8 var(--mono);color:var(--ink2)}
-  .row b{color:var(--ink);font-weight:600}
-  pre{background:#f7f9fb;border:1px solid var(--line);border-radius:3px;padding:9px 11px;
-      font:11px/1.6 var(--mono);color:#2b3846;overflow:auto;max-height:260px;white-space:pre-wrap;word-break:break-word}
-  .chk{display:grid;grid-template-columns:18px 1fr;gap:6px;font:11.5px/1.7 var(--mono);color:var(--ink2)}
-  .chk .m{color:var(--ok)} .chk.bad .m{color:var(--bad)}
-  .layer{border-left:2px solid var(--line);padding-left:10px;margin:9px 0}
-  .layer.l1{border-color:var(--ok)} .layer.l2{border-color:var(--info)} .layer.l3{border-color:var(--warn)}
-  .layer .lh{display:flex;justify-content:space-between;font:600 11.5px/1.6 var(--mono);margin-bottom:5px}
-  .note{font:11.5px/1.6 var(--mono);color:var(--ink2);background:#f7f9fb;border:1px dashed var(--line);
-        border-radius:3px;padding:7px 10px;margin-top:8px}
-  a{color:var(--info);text-decoration:none} a:hover{text-decoration:underline}
-  .empty{color:var(--ink3);font-size:12px;padding:14px 0}
-
-  /* ---------- Mobile（390 单独设计，不缩小桌面） ---------- */
-  @media (max-width:860px){
-    /* 移动端：Run summary 在顶，三栏变 tabs（Timeline / Graph / Verify），
-       Inspector 作为独立 tab；禁止水平溢出。 */
-    html,body{overflow-x:hidden;max-width:100vw}
-    body{overflow-y:auto;height:auto}
-    header{grid-template-columns:1fr;gap:8px;padding:10px 14px}
-    .h-right{flex-wrap:wrap;gap:8px 14px;font-size:11.5px}
-    .bar{width:60px}
-    .task{white-space:normal;overflow:visible}
-    main{display:block;height:auto}
-    .col{border-right:none;border-bottom:1px solid var(--line)}
-    .col:last-child{border-left:none}
-    .col-b{max-height:none;overflow:visible}
-    .tabs{display:flex;gap:6px;padding:8px 14px;border-bottom:1px solid var(--line);background:var(--panel)}
-    .tabs button{flex:1;padding:8px 4px;font-size:11.5px}
-    .col[data-tab]{display:none} .col[data-tab].on{display:flex}
-    .gnode .gname{white-space:normal}
-    pre{max-height:200px}
-    .ev{grid-template-columns:70px 1fr;gap:6px}
-  }
-  .tabs{display:none}
-</style>
-</head>
-<body>
-<header>
-  <div class="h-left">
-    <span class="badge" id="status">LOADING</span>
-    <div style="min-width:0">
-      <div class="task" id="task">…</div>
-      <div class="rid" id="rid"></div>
-    </div>
-  </div>
-  <div class="h-right">
-    <span class="kv">耗时 <b id="elapsed">0.0s</b></span>
-    <span class="kv">成本 <b id="cost">¥0.000</b> / <span id="budget">¥0.20</span>
-      <span class="bar" id="costbar"><i style="width:0%"></i></span></span>
-    <span class="kv">步骤 <b id="stepstat">0/0</b></span>
-    <button id="cancel" class="danger">取消运行</button>
-  </div>
-</header>
-
-<nav class="tabs" id="tabs">
-  <button data-t="graph" class="on">流程</button>
-  <button data-t="timeline">时间线</button>
-  <button data-t="inspect">详情</button>
-</nav>
-
-<main>
-  <section class="col" data-tab="graph">
-    <div class="col-h"><span>执行流程图</span><span id="gcount"></span></div>
-    <div class="col-b" id="graph"><div class="empty">等待方案生成…</div></div>
-  </section>
-
-  <section class="col" data-tab="timeline">
-    <div class="col-h"><span>实时时间线</span><span id="evcount">0 events</span></div>
-    <div class="col-b" id="timeline"><div class="empty">连接事件流中…</div></div>
-  </section>
-
-  <section class="col" data-tab="inspect">
-    <div class="col-h"><span>检查器</span><span id="inswhat">—</span></div>
-    <div class="col-b" id="inspector"><div class="empty">点击左侧流程节点、依赖产物或时间线事件，在此查看详情。</div></div>
-  </section>
-</main>
-
-<script>
 /* ============================================================================
    Live Run —— 全部内容由 SSE 真实事件驱动；**无 fake animation、无 staged delay**。
    设计约束（来自 Round 2 指令）：
@@ -512,9 +318,9 @@ const mdToHtml = md => {
     const pre = x.match(/^\u0000PRE([A-Za-z0-9+/=]*)\u0000$/);
     if (pre) return "<pre>" + decodeURIComponent(escape(atob(pre[1]))) + "</pre>";
     if (/^#{1,4}\s/.test(x)) return "<h5>" + inline(x.replace(/^#{1,4}\s/, "")) + "</h5>";
-    if (x.split("\n").filter(l => l.trim()).length >= 2 &&
-        x.split("\n").filter(l => l.trim()).every(l => /^\|.*\|$/.test(l.trim()))) {
-      const rows = x.split("\n").filter(l => l.trim())
+    if (t.split("\n").filter(l => l.trim()).length >= 2 &&
+        t.split("\n").filter(l => l.trim()).every(l => /^\|.*\|$/.test(l.trim()))) {
+      const rows = t.split("\n").filter(l => l.trim())
         .map(l => l.trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim()));
       const isSep = r => r.every(c => /^:?-{2,}:?$/.test(c));
       const body = rows.slice(isSep(rows[1] || []) ? 2 : 1);
@@ -522,8 +328,8 @@ const mdToHtml = md => {
         "</tr></thead><tbody>" + body.map(r => "<tr>" + r.map(c => `<td>${inline(c)}</td>`).join("") + "</tr>").join("") +
         "</tbody></table>";
     }
-    if (/^>\s?/m.test(x)) {
-      const q = x.split("\n").map(l => l.replace(/^>\s?/, "")).join("<br>");
+    if (/^>\s?/m.test(t)) {
+      const q = t.split("\n").map(l => l.replace(/^>\s?/, "")).join("<br>");
       return `<blockquote>${inline(q)}</blockquote>`;
     }
     if (x.split("\n").every(l => !l.trim() || /^\s*[-*]\s/.test(l)))
@@ -570,32 +376,3 @@ window.__SELFTEST__ = function(){ return {
   "时间线容器": !!document.getElementById("timeline"),
   "检查器容器": !!document.getElementById("inspector")
 }; };
-</script>
-
-<script>
-/* 自检模式（?selftest=1）：收集 JS 运行时错误与关键检查，结果写入 #selftest-out 与标题。 */
-(function(){
-  if (!location.search.includes("selftest=1")) return;
-  var errors = [];
-  window.addEventListener("error", function(e){ errors.push("JS错误: " + (e.message || e.type) + " @" + (e.filename||"") + ":" + (e.lineno||0)); });
-  window.addEventListener("unhandledrejection", function(e){
-    var r = e.reason; errors.push("未处理Promise: " + (r && r.message ? r.message : String(r)).slice(0,200)); });
-  var ce = console.error;
-  console.error = function(){ try { errors.push("console.error: " + Array.prototype.map.call(arguments, String).join(" ").slice(0,200)); } catch(_){} return ce.apply(console, arguments); };
-  setTimeout(function(){
-    var checks = { "页面": document.documentElement.dataset.page || location.pathname,
-                   "DOM可见内容长度": document.body.innerText.length };
-    try { if (typeof window.__SELFTEST__ === "function") Object.assign(checks, window.__SELFTEST__()); }
-    catch (e) { errors.push("自检项抛出: " + (e.message || e)); }
-    var failed = Object.keys(checks).filter(function(k){ return checks[k] === false; });
-    var out = { ok: errors.length === 0 && failed.length === 0, errors: errors, failed: failed, checks: checks };
-    var pre = document.createElement("pre"); pre.id = "selftest-out";
-    pre.style.cssText = "position:fixed;left:-9999px;top:0";
-    pre.textContent = "SELFTEST_JSON=" + JSON.stringify(out);
-    document.body.appendChild(pre);
-    document.title = "SELFTEST_" + (out.ok ? "PASS" : "FAIL");
-  }, 4500);
-})();
-</script>
-</body>
-</html>

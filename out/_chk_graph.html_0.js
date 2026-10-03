@@ -1,98 +1,4 @@
-<!DOCTYPE html>
-<html lang="zh-CN" data-page="graph">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<title>SkillNet-S1 · 技能星图</title>
-<style>
-  :root {
-    --bg0: #070b12; --bg1: #0d1624; --ink: #e6eef7; --dim: #8a9bb0;
-    --line: rgba(140,180,225,.16); --brand: #4a9eff; --evolved: #ff5a4d;
-    --panel: rgba(12,20,32,.92);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; overflow: hidden; }
-  body { background: radial-gradient(1200px 800px at 50% 42%, var(--bg1) 0%, var(--bg0) 70%);
-         color: var(--ink); font-family: "Microsoft YaHei", "PingFang SC", sans-serif; }
-  canvas { display: block; cursor: grab; }
-  canvas.dragging { cursor: grabbing; }
-  canvas.onnode { cursor: pointer; }
 
-  .hud { position: fixed; pointer-events: none; }
-  .tl { top: 20px; left: 24px; }
-  .tl h1 { font-size: 16px; font-weight: 700; letter-spacing: .5px; margin-bottom: 4px; }
-  .tl .sub { font-size: 12px; color: var(--dim); line-height: 1.7; }
-  .tl .sub b { color: var(--ink); font-weight: 600; }
-  .legend { top: 20px; right: 24px; text-align: right; font-size: 11.5px; color: var(--dim); }
-  .legend .row { margin-bottom: 4px; }
-  .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
-  .legend .ln { display: inline-block; width: 22px; height: 0; border-top: 1.5px solid; margin-right: 6px; vertical-align: 3px; }
-
-  .ctrl { position: fixed; bottom: 22px; left: 24px; display: flex; gap: 8px; pointer-events: auto; }
-  .btn { background: rgba(20,32,48,.9); border: 1px solid var(--line); color: var(--ink);
-         font-size: 12px; padding: 6px 14px; border-radius: 999px; cursor: pointer; }
-  .btn:hover { border-color: var(--brand); color: #cfe6ff; }
-  .btn.on { border-color: var(--brand); color: var(--brand); }
-
-  .card { position: fixed; right: 24px; bottom: 22px; width: 360px; max-height: 62vh; overflow: auto;
-          background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
-          padding: 16px 18px; backdrop-filter: blur(10px); display: none; }
-  .card.show { display: block; animation: pop .28s cubic-bezier(.22,.9,.3,1) both; }
-  @keyframes pop { from { opacity: 0; transform: translateY(12px) scale(.98);} to { opacity:1; transform:none; } }
-  .card h3 { font-size: 15px; margin-bottom: 2px; }
-  .card .dom { font-size: 11.5px; color: var(--dim); margin-bottom: 10px; }
-  .card .kv { font-size: 12px; color: var(--dim); line-height: 1.9; }
-  .card .kv b { color: var(--ink); }
-  .card .rel { margin-top: 10px; font-size: 11.5px; }
-  .card .rel span { display: inline-block; border: 1px solid var(--line); border-radius: 999px;
-                    padding: 1px 9px; margin: 2px 4px 2px 0; color: #a9c4dd; }
-  .card .close { position: absolute; top: 12px; right: 14px; cursor: pointer; color: var(--dim); font-size: 16px; }
-  .card .close:hover { color: var(--ink); }
-  .tip { position: fixed; padding: 4px 9px; background: rgba(10,18,30,.95); border: 1px solid var(--line);
-         border-radius: 6px; font-size: 11.5px; color: #cfe0f0; pointer-events: none; display: none; white-space: nowrap; }
-  .load { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
-          font-size: 13px; color: var(--dim); background: var(--bg0); z-index: 9; }
-</style>
-</head>
-<body>
-<div class="load" id="load">正在加载技能图谱…</div>
-<canvas id="cv"></canvas>
-
-<div class="hud tl">
-  <h1>技能星图 · Skill Relation Graph</h1>
-  <div class="sub">
-    <b id="nN">—</b> 个技能 · <b id="nE">—</b> 条类型化关系 ·
-    <b id="nD">—</b> 个领域　|　节点半径 = 实测平均奖励，朱红 = 演化产生的技能<br>
-    拖动节点 / 拖动空白平移 / 滚轮缩放 · 悬停高亮邻域 · 点击查看技能详情
-  </div>
-</div>
-
-<div class="hud legend">
-  <div class="row"><i style="background:#4a9eff"></i>种子技能（按领域着色）</div>
-  <div class="row"><i style="background:var(--evolved)"></i>演化技能（使用中长出来的）</div>
-  <div class="row"><span class="ln" style="border-color:#5fd0a0;border-top-style:solid"></span>depend_on 依赖</div>
-  <div class="row"><span class="ln" style="border-color:#4a9eff;border-top-style:dashed"></span>compose_with 组合</div>
-  <div class="row"><span class="ln" style="border-color:rgba(160,180,210,.5);border-top-style:dotted"></span>similar_to 相似</div>
-</div>
-
-<div class="ctrl">
-  <button class="btn" id="btnReset">重置视角</button>
-  <button class="btn" id="btnPause">暂停物理</button>
-  <button class="btn on" id="btnLabel">显示标签</button>
-  <button class="btn" id="btnEvolved">只看演化技能</button>
-</div>
-
-<div class="card" id="card">
-  <div class="close" onclick="closeCard()">×</div>
-  <h3 id="cName"></h3>
-  <div class="dom" id="cDom"></div>
-  <div class="kv" id="cKv"></div>
-  <div class="rel" id="cRel"></div>
-</div>
-<div class="tip" id="tip"></div>
-
-<script>
 const API = location.port ? location.origin : "http://127.0.0.1:8848";
 const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
 let W = 0, H = 0, DPR = Math.min(2, window.devicePixelRatio || 1);
@@ -447,7 +353,6 @@ window.addEventListener("resize", resize);
   }
   S.edges = data.edges;
   S.byId = Object.fromEntries(S.nodes.map(n => [n.id, n]));
-  window.__GRAPHN__ = S.nodes.length;   // 供自检读取
 
   const doms = [...new Set(S.nodes.map(n => n.domain))];
   doms.forEach((d, i) => domainColor[d] = PALETTE[i % PALETTE.length]);
@@ -465,33 +370,3 @@ window.__SELFTEST__ = function(){ return {
   "canvas存在": !!document.querySelector("canvas"),
   "星图已加载节点": typeof window.__GRAPHN__ === "number" && window.__GRAPHN__ > 0
 }; };
-</script>
-
-<script>
-/* 自检模式（?selftest=1）：收集 JS 运行时错误与关键元素/函数检查，结果写入 #selftest-out 与标题。
-   仅用于自动化审计与回归测试（tools/front_audit.py），不影响正常使用路径。 */
-(function(){
-  if (!location.search.includes("selftest=1")) return;
-  var errors = [];
-  window.addEventListener("error", function(e){ errors.push("JS错误: " + (e.message || e.type) + " @" + (e.filename||"") + ":" + (e.lineno||0)); });
-  window.addEventListener("unhandledrejection", function(e){
-    var r = e.reason; errors.push("未处理Promise: " + (r && r.message ? r.message : String(r)).slice(0,200)); });
-  var ce = console.error;
-  console.error = function(){ try { errors.push("console.error: " + Array.prototype.map.call(arguments, String).join(" ").slice(0,200)); } catch(_){} return ce.apply(console, arguments); };
-  setTimeout(function(){
-    var checks = { "页面": document.documentElement.dataset.page || location.pathname,
-                   "DOM可见内容长度": document.body.innerText.length };
-    try { if (typeof window.__SELFTEST__ === "function") Object.assign(checks, window.__SELFTEST__()); }
-    catch (e) { errors.push("自检项抛出: " + (e.message || e)); }
-    var failed = Object.keys(checks).filter(function(k){ return checks[k] === false; });
-    var out = { ok: errors.length === 0 && failed.length === 0, errors: errors, failed: failed, checks: checks };
-    var pre = document.createElement("pre"); pre.id = "selftest-out";
-    pre.style.cssText = "position:fixed;left:-9999px;top:0";
-    pre.textContent = "SELFTEST_JSON=" + JSON.stringify(out);
-    document.body.appendChild(pre);
-    document.title = "SELFTEST_" + (out.ok ? "PASS" : "FAIL");
-  }, 4000);
-})();
-</script>
-</body>
-</html>
