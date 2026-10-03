@@ -39,6 +39,8 @@ def main() -> None:
     n = 0
     with zipfile.ZipFile(DEST, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
         # 顶层直接放的关键文件
+        # 注意：不包含 QUICKSTART.txt —— 那是 v0.4 时代的旧版快速开始（口径已过时），
+        # 与新版 快速开始.txt 并存会误导使用者；如需历史版本见 git 历史。
         for name in ("快速开始.txt", "README.md", "requirements.txt",
                      "start.bat", "start.sh", "run.py", "server.py", "verify.py",
                      ".env.example", ".gitignore"):
@@ -46,7 +48,8 @@ def main() -> None:
             if src.exists():
                 z.write(src, f"{TOP}/{name}"); n += 1
         # 目录树
-        for d in ("skillnet", "seed", "tasks", "tests", "tools", "web", "docs", "data"):
+        for d in ("skillnet", "seed", "tasks", "tests", "tools", "web", "docs", "data", "bench",
+              "_refs", "config", "report", "scripts"):
             base = ROOT / d
             for p in sorted(base.rglob("*")):
                 if p.is_dir() or excluded(p):
