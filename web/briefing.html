@@ -470,6 +470,51 @@
 
   /* 7) 章节间细分隔（节奏感，避免"一整片白"） */
   section.wrap + section.wrap { border-top: 1px solid rgba(26,58,92,.055); }
+
+  /* ==================== 规格升级 v2（对标 Vercel / Stripe / Mercury 实测截图） ====================
+     从三站截图提炼的硬规格：
+       · 标题极大（60px+）+ 行高 1.05~1.12 + 字距收紧
+       · 留白极充裕（section 上下 90~120px）
+       · 卡片圆角 14~16px、阴影极柔（0 1px 2px → 悬停 0 18px 40px）
+       · 产品截图带浏览器窗口质感（细顶栏 + 三个圆点 + 地址胶囊）
+       · 按钮 pill（999px）                                                */
+
+  /* 2.1 标题规格：更大、更紧、更有分量 */
+  .hero h1 { font-size: clamp(40px, 4.4vw, 62px) !important; line-height: 1.08 !important;
+    letter-spacing: -.02em !important; }
+  section.wrap h2 { font-size: clamp(26px, 2.5vw, 36px) !important; line-height: 1.2 !important;
+    letter-spacing: -.015em !important; }
+  section.wrap .sub { font-size: 15px !important; line-height: 1.75 !important; max-width: 780px; }
+
+  /* 2.2 留白节奏：section 上下拉开（Stripe 实测 ~110px，Vercel ~140px） */
+  section.wrap { padding-top: 92px !important; padding-bottom: 92px !important; }
+
+  /* 2.3 卡片：圆角 14px + 极柔阴影 + 悬停加深 */
+  .pain, .kpi, .uniq .uq, .card, .hm { border-radius: 14px !important; box-shadow: 0 1px 2px rgba(26,58,92,.05) !important; }
+  .pain:hover, .kpi:hover, .uniq .uq:hover, .hm:hover { box-shadow: 0 16px 36px rgba(26,58,92,.10) !important; }
+
+  /* 2.4 按钮：pill（Vercel/Stripe 均用胶囊按钮） */
+  .btn { border-radius: 999px !important; padding: 11px 22px !important; }
+
+  /* 2.5 产品截图卡：浏览器窗口质感（Vercel 放 Notion 界面 / Stripe 放收银台的做法） */
+  .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 26px; }
+  .shot { display: block; text-decoration: none; border: 1px solid var(--line); border-radius: 16px;
+    overflow: hidden; background: #fff; box-shadow: 0 1px 2px rgba(26,58,92,.05);
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+  .shot:hover { transform: translateY(-3px); box-shadow: 0 22px 48px rgba(26,58,92,.13);
+    border-color: #c9d8e6; }
+  .shot-chrome { display: flex; align-items: center; gap: 6px; padding: 10px 14px;
+    border-bottom: 1px solid var(--line); background: #fafbfc; }
+  .shot-chrome i { width: 9px; height: 9px; border-radius: 50%; background: #e0e6ec; display: inline-block; }
+  .shot-chrome i:first-child { background: #e8b0a8; } .shot-chrome i:nth-child(2) { background: #ead4a8; }
+  .shot-chrome i:nth-child(3) { background: #b8d8bd; }
+  .shot-chrome span { margin-left: 10px; font: 11px/1 var(--mono, monospace); color: #9aa7b3;
+    background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; }
+  .shot img { display: block; width: 100%; height: 300px; object-fit: cover; object-position: top; }
+  .shot-cap { padding: 14px 18px 16px; font-size: 12.5px; color: var(--ink2); line-height: 1.7; }
+  .shot-cap b { color: var(--brand); }
+  @media (max-width: 900px) { .shots { grid-template-columns: 1fr; } .shot img { height: 240px; } }
+
 </style>
 </head>
 <body>
@@ -641,6 +686,27 @@
   </section>
 </section>
 
+<!-- ==================== PRODUCT · 真实界面（对标 Vercel/Stripe 的产品截图段） ==================== -->
+<section class="wrap" id="sproduct">
+  <div class="kicker">PRODUCT · 真实界面</div>
+  <h2>不是概念图，是你现在就能打开的界面</h2>
+  <div class="sub">下面每一张截图都直接来自本机正在运行的系统（同一份代码、同一份数据）——
+    可点击进入对应页面亲自操作。技能库 105 项、228 条类型化关系边，全部是实时读数。</div>
+
+  <div class="shots">
+    <a class="shot" href="/dashboard" target="_blank">
+      <div class="shot-chrome"><i></i><i></i><i></i><span>127.0.0.1:8848/dashboard</span></div>
+      <img src="/static/assets/dash.png" alt="完整面板：KPI、技能关系图、领域分布">
+      <div class="shot-cap"><b>完整面板</b>——技能库总览、关系图、领域分布与实验数据；KPI 全部为实时读数</div>
+    </a>
+    <a class="shot" href="/graph" target="_blank">
+      <div class="shot-chrome"><i></i><i></i><i></i><span>127.0.0.1:8848/graph</span></div>
+      <img src="/static/assets/graph.png" alt="技能星图：深色沉浸模式">
+      <div class="shot-cap"><b>技能星图</b>——深色沉浸模式，红点为系统自主演化出的技能；可拖拽、悬停查看详情</div>
+    </a>
+  </div>
+</section>
+
 <!-- ==================== 幕 4 · 对比论文 ==================== -->
 <section class="wrap" id="s4">
   <div class="kicker">COMPARISON · 与 SkillNet 论文逐项对照</div>
@@ -806,7 +872,7 @@
 </section>
 
 <script>
-const PAGE_VER = "2026-10-03j";   // 改版递增：与服务端不一致时自动强制刷新
+const PAGE_VER = "2026-10-03k";   // 改版递增：与服务端不一致时自动强制刷新
 const API = location.port ? location.origin : "http://127.0.0.1:8848";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
