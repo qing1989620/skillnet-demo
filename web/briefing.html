@@ -16,7 +16,7 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: "Microsoft YaHei", "PingFang SC", sans-serif; background: var(--bg); color: var(--ink); line-height: 1.7; }
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
+  .wrap { max-width: var(--page-w); margin: 0 auto; padding: 0 var(--page-pad); }
 
   /* ---------- 顶部状态条 ---------- */
   .topbar { position: sticky; top: 0; z-index: 50;
@@ -217,7 +217,7 @@
   table.vs tr:hover td.ours { background: #e9f2eb; }
 
   /* ---------- 设计 token（单一来源） ---------- */
-  :root { --r-1:4px; --r-2:6px; --r-3:8px; --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:18px;
+  :root { --page-w: 1240px; --page-pad: 32px; --r-1:4px; --r-2:6px; --r-3:8px; --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:18px;
           --dur-1:.15s; --dur-2:.28s; }
   .tabular, .ws-card, .task-summary, .runsum, .ai-reply .rp-body table td { font-variant-numeric: tabular-nums; }
   .sk-wrap { margin-top:10px; display:grid; gap:8px; }
@@ -246,7 +246,7 @@
     outline:2px solid var(--brand2); outline-offset:2px; }
 
   /* ---------- 对话工作台（首页内嵌双栏） ---------- */
-  .wrap.wide { max-width: 1240px; }
+  .wrap.wide { max-width: var(--page-w); }   /* 与全部 section 同宽，左右边缘对齐 */
   .ws { display: grid; grid-template-columns: 264px 1fr; gap: 0; margin-top: 20px;
     border: 1px solid var(--line); border-radius: 8px; background: var(--card); overflow: hidden; }
   .ws-side { border-right: 1px solid var(--line); background: #fcfdfe; padding: 12px;
@@ -372,7 +372,7 @@
       radial-gradient(1100px 480px at 88% -12%, rgba(36,85,122,.08), transparent 62%),
       radial-gradient(800px 380px at -8% 112%, rgba(46,125,79,.05), transparent 55%),
       linear-gradient(180deg, #f5f7fa 0%, var(--bg) 100%); }
-  .hero .hwrap { max-width: 1280px; margin: 0 auto; padding: 0 32px; display: grid; grid-template-columns: 480px 1fr; gap: 48px; align-items: center; }
+  .hero .hwrap { max-width: var(--page-w); margin: 0 auto; padding: 0 var(--page-pad); display: grid; grid-template-columns: 480px 1fr; gap: 48px; align-items: center; }
   .h-kicker { display: flex; align-items: center; gap: 10px; font-size: 12px; letter-spacing: 3px; color: var(--brand2); font-weight: 700; }
   .h-kicker::before { content: ""; width: 28px; height: 2px; background: var(--brand2); }
   h1 { margin: 18px 0 0; font-size: clamp(28px, 2.9vw, 40px); line-height: 1.35; font-weight: 700; color: var(--ink); letter-spacing: .5px; }
@@ -908,7 +908,7 @@
 </section>
 
 <script>
-const PAGE_VER = "2026-10-03m";   // 改版递增：与服务端不一致时自动强制刷新
+const PAGE_VER = "2026-10-03n";   // 改版递增：与服务端不一致时自动强制刷新
 const API = location.port ? location.origin : "http://127.0.0.1:8848";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -2473,7 +2473,17 @@ fillLiveNumbers();
 })();
 
 /* 自检项（仅 selftest 模式读取） */
-window.__SELFTEST__ = function(){ return {
+window.__SELFTEST__ = function(){
+  // 左右边缘一致性：所有主容器的 left/right 必须落在同一条竖线上（±1px）
+  var els = Array.prototype.slice.call(
+    document.querySelectorAll("section.wrap, .hero .hwrap, .topbar .wrap"));
+  var L = els.map(function(e){ return Math.round(e.getBoundingClientRect().left); });
+  var R = els.map(function(e){ return Math.round(e.getBoundingClientRect().right); });
+  var aligned = els.length > 1 && (Math.max.apply(null, L) - Math.min.apply(null, L) <= 1)
+                              && (Math.max.apply(null, R) - Math.min.apply(null, R) <= 1);
+  return {
+  "左右边缘一致": aligned,
+  "容器数量": els.length,
   "HeroNet就绪": typeof window.HeroNet === "object",
   "wsSubmit存在": typeof window.wsSubmit === "function",
   "工作台消息区": !!document.getElementById("ws-msgs"),
