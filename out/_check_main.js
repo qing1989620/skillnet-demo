@@ -1,5 +1,5 @@
 
-const PAGE_VER = "2026-10-03n";   // 改版递增：与服务端不一致时自动强制刷新
+const PAGE_VER = "2026-10-03o";   // 改版递增：与服务端不一致时自动强制刷新
 const API = location.port ? location.origin : "http://127.0.0.1:8848";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));

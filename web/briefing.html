@@ -470,6 +470,12 @@
 
   /* 7) 章节间细分隔（节奏感，避免"一整片白"） */
   section.wrap + section.wrap { border-top: 1px solid rgba(26,58,92,.055); }
+  /* 中段氛围：交替的极淡光晕（左/右交替），让长页面有呼吸与方向感 */
+  section.wrap:nth-of-type(odd) { background: radial-gradient(900px 420px at 4% 0%, rgba(36,85,122,.045), transparent 62%); }
+  section.wrap:nth-of-type(even) { background: radial-gradient(900px 420px at 96% 0%, rgba(46,125,79,.04), transparent 62%); }
+  /* 中段氛围：交替的极淡光晕（左/右交替），让长页面有呼吸与方向感 */
+  section.wrap:nth-of-type(odd) { background: radial-gradient(900px 420px at 4% 0%, rgba(36,85,122,.045), transparent 62%); }
+  section.wrap:nth-of-type(even) { background: radial-gradient(900px 420px at 96% 0%, rgba(46,125,79,.04), transparent 62%); }
 
   /* ==================== 规格升级 v2（对标 Vercel / Stripe / Mercury 实测截图） ====================
      从三站截图提炼的硬规格：
@@ -527,10 +533,12 @@
      可读性保障：图上层叠近白蒙版（左浓右淡），正文对比度不受影响。 */
   body::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
     background: url("/static/assets/bg-grid.jpg") center / cover no-repeat fixed;
-    opacity: .55; }
+    opacity: .85; }                                   /* 提高可见度：原来 .55 几乎看不见 */
+  /* Hero 主视觉：流动墨色（深蓝/青绿/琥珀），左侧留白正对文案区。
+     蒙版从"左浓右透"（.92 → 0），让墨色在右侧真正显出来。 */
   .hero { background-image:
-      linear-gradient(90deg, rgba(251,250,248,.97) 0%, rgba(251,250,248,.86) 42%, rgba(251,250,248,.42) 100%),
-      url("/static/assets/bg-ink.jpg") !important;
+      linear-gradient(100deg, rgba(251,250,248,.94) 0%, rgba(251,250,248,.72) 34%, rgba(251,250,248,.18) 62%, rgba(251,250,248,0) 100%),
+      url("/static/assets/bg-flow.jpg") !important;
     background-size: cover, cover !important;
     background-position: center, center right !important;
     background-repeat: no-repeat, no-repeat !important; }
@@ -543,10 +551,12 @@
      可读性保障：图上层叠近白蒙版（左浓右淡），正文对比度不受影响。 */
   body::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
     background: url("/static/assets/bg-grid.jpg") center / cover no-repeat fixed;
-    opacity: .55; }
+    opacity: .85; }                                   /* 提高可见度：原来 .55 几乎看不见 */
+  /* Hero 主视觉：流动墨色（深蓝/青绿/琥珀），左侧留白正对文案区。
+     蒙版从"左浓右透"（.92 → 0），让墨色在右侧真正显出来。 */
   .hero { background-image:
-      linear-gradient(90deg, rgba(251,250,248,.97) 0%, rgba(251,250,248,.86) 42%, rgba(251,250,248,.42) 100%),
-      url("/static/assets/bg-ink.jpg") !important;
+      linear-gradient(100deg, rgba(251,250,248,.94) 0%, rgba(251,250,248,.72) 34%, rgba(251,250,248,.18) 62%, rgba(251,250,248,0) 100%),
+      url("/static/assets/bg-flow.jpg") !important;
     background-size: cover, cover !important;
     background-position: center, center right !important;
     background-repeat: no-repeat, no-repeat !important; }
@@ -908,7 +918,7 @@
 </section>
 
 <script>
-const PAGE_VER = "2026-10-03n";   // 改版递增：与服务端不一致时自动强制刷新
+const PAGE_VER = "2026-10-03o";   // 改版递增：与服务端不一致时自动强制刷新
 const API = location.port ? location.origin : "http://127.0.0.1:8848";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
