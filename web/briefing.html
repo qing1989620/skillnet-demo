@@ -199,6 +199,35 @@
     border: 1px solid #cfe6d6; border-radius: 6px; font-size: 12.5px; }
   .task-summary .newskill code { background: #fff; padding: 1px 5px; border-radius: 3px;
     font: 11.5px Consolas, monospace; color: #24557a; }
+  /* ---------- 设计 token（单一来源） ---------- */
+  :root { --r-1:4px; --r-2:6px; --r-3:8px; --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:18px;
+          --dur-1:.15s; --dur-2:.28s; }
+  .tabular, .ws-card, .task-summary, .runsum, .ai-reply .rp-body table td { font-variant-numeric: tabular-nums; }
+  .sk-wrap { margin-top:10px; display:grid; gap:8px; }
+  .sk-line { height:11px; border-radius:var(--r-1);
+    background:linear-gradient(90deg,#eef2f6 25%,#e1e8ef 37%,#eef2f6 63%);
+    background-size:400% 100%; animation:sk 1.4s ease infinite; }
+  .sk-line.w60{width:60%} .sk-line.w85{width:85%} .sk-line.w40{width:40%}
+  @keyframes sk { 0%{background-position:100% 50%} 100%{background-position:0 50%} }
+  .cite { display:inline-flex; align-items:center; gap:4px; font:11.5px/1.5 var(--mono,monospace);
+    color:var(--brand2); background:#f2f7fb; border:1px solid #cfe0ee; border-radius:999px;
+    padding:1px 8px; text-decoration:none; transition:background var(--dur-1),border-color var(--dur-1); }
+  .cite:hover { background:#e6f0f8; border-color:var(--brand2); }
+  .cite::before { content:""; width:5px; height:5px; border-radius:50%; background:var(--brand2); }
+  .conf { display:flex; gap:16px; flex-wrap:wrap; align-items:center; margin-top:8px; font-size:12px; color:var(--ink2); }
+  .conf .ci { display:inline-flex; align-items:center; gap:6px; }
+  .conf .ci i { width:8px; height:8px; border-radius:50%; display:inline-block; }
+  .conf .bar { position:relative; width:96px; height:6px; background:var(--soft); border-radius:3px; overflow:hidden; }
+  .conf .bar b { position:absolute; inset:0 auto 0 0; background:var(--ok); border-radius:3px; }
+  .ctx { margin-top:8px; font-size:11.5px; color:#8a97a4; }
+  .ctx > span { cursor:pointer; color:var(--brand2); }
+  .ctx-body { margin-top:6px; padding:8px 11px; background:var(--soft); border-radius:var(--r-2);
+    display:grid; gap:4px; font-size:11.5px; color:var(--ink2); }
+  @keyframes turnIn { from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none} }
+  .ws-turn { animation:turnIn var(--dur-2) ease both; }
+  .evtag:focus-visible, .ws-new:focus-visible, .send:focus-visible, #task:focus-visible {
+    outline:2px solid var(--brand2); outline-offset:2px; }
+
   /* ---------- 对话工作台（首页内嵌双栏） ---------- */
   .wrap.wide { max-width: 1240px; }
   .ws { display: grid; grid-template-columns: 264px 1fr; gap: 0; margin-top: 20px;
@@ -694,7 +723,7 @@
 </section>
 
 <script>
-const PAGE_VER = "2026-10-03f";   // 改版递增：与服务端不一致时自动强制刷新
+const PAGE_VER = "2026-10-03g";   // 改版递增：与服务端不一致时自动强制刷新
 const API = location.port ? location.origin : "http://127.0.0.1:8848";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -927,12 +956,30 @@ function wsResultHTML(fin){
   const nSkip = steps.filter(s => s.status === "skipped").length;
   const cp = (fin.staged || {}).critical_path;
   const cpTxt = cp ? `关键路径 ${cp.steps.map(x => "Step " + (x + 1)).join(" → ")}（${(cp.ms/1000).toFixed(1)}s / 总 ${(fin.duration_ms/1000).toFixed(1)}s）` : "";
-  const sum = `<div style="background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:10px 13px">` +
+  const ret = (fin.retrieval || {}).fabric || {};
+  const decMap = { auto: ["自动执行", "#2e7d4f"], confirm: ["人工确认", "#b0781a"], direct: ["直接回答", "#8a97a4"] };
+  const dec = decMap[ret.decision] || [ret.decision || "—", "#8a97a4"];
+  const confVal = typeof ret.confidence === "number" ? (ret.confidence * 100).toFixed(0) + "%" : "—";
+  const chkOk = steps.reduce((a, s) => a + (s.checks || []).filter(c => c.passed).length, 0);
+  const chkAll = steps.reduce((a, s) => a + (s.checks || []).length, 0);
+  const chkPct = chkAll ? Math.round(chkOk / chkAll * 100) : 0;
+  const histTurn = (wsSess() || { turns: [] }).turns.find(x => x.run_id === fin.run_id) || {};
+  const histN = (histTurn.history || []).length;
+  const ctxBox = histN ? ('<div class="ctx"><span onclick="wsToggleCtx(this)">带入上下文 ' + histN + ' 轮（追问依据） ▾</span><div class="ctx-body" style="display:none">' +
+      (histTurn.history || []).map((h, i) => '<div><b>第 ' + (i + 1) + ' 轮问题：</b>' + esc(h.q || '') + '</div>' +
+        (h.a ? '<div style="color:#8a97a4">其回复摘要：' + esc(String(h.a).slice(0, 160)) + '…</div>' : '')).join("") +
+      '</div></div>') : "";
+  const confBar = `<div class="conf">` +
+    `<span class="ci" title="${esc(ret.decision_reason || "")}"><i style="background:${dec[1]}"></i>检索分流 · ${dec[0]}（相关度 ${confVal} · BM25 ${ret.raw_bm25_top != null ? Number(ret.raw_bm25_top).toFixed(1) : "—"}）</span>` +
+    (chkAll ? `<span class="ci"><i style="background:var(--ok)"></i>程序化验收 ${chkOk}/${chkAll}<span class="bar"><b style="width:${chkPct}%"></b></span>${chkPct}%</span>` : "") +
+    `</div>`;
+  const sum = ctxBox + `<div style="background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:10px 13px">` +
     `<b style="color:var(--brand)">Run Summary</b> · ${fin.status === "COMPLETED" ? "已完成" : fin.status === "PARTIAL" ? "部分完成" : fin.status} · ` +
     `¥${Number(fin.cost_yuan || 0).toFixed(3)} · ${(fin.duration_ms/1000).toFixed(1)}s<br>` +
     `步骤 ${steps.length}：一次通过 <b style="color:var(--ok)">${nDone - nFix}</b> · 修复后成功 <b style="color:#b0781a">${nFix}</b> · 失败 <b style="color:var(--bad)">${nFail}</b> · 跳过 <b>${nSkip}</b>` +
     (cpTxt ? `<br><span style="color:#8a97a4">${cpTxt}</span>` : "") +
-    ` · <a href="/run?id=${encodeURIComponent(fin.run_id)}" target="_blank" style="color:var(--brand2)">完整面板 →</a></div>`;
+    ` · <a href="/run?id=${encodeURIComponent(fin.run_id)}" target="_blank" style="color:var(--brand2)">完整面板 →</a>` +
+    confBar + `</div>`;
   const stepsHtml = steps.map(s => stepCardHTML(s, fin)).join("") || '<div style="color:#8a97a4">无步骤</div>';
   const evTypes = ((fin.events || []).map(e => e.type).join(" → ")) || "（无事件记录）";
   const reply = (fin.staged || {}).final_reply;
@@ -943,8 +990,26 @@ function wsResultHTML(fin){
        <div style="margin-top:10px"><div style="font-size:11px;letter-spacing:2px;color:#8a97a4">── 原始事件序列 ──</div>
        <pre style="white-space:pre-wrap;font:11px/1.6 Consolas,monospace;background:var(--soft);padding:9px 11px;border-radius:4px;margin-top:5px">${esc(evTypes)}</pre></div>
      </div>` +
-    (reply ? replyCardHTML(reply) : "") +
+    (reply ? linkifyArtifacts(replyCardHTML(reply), fin) : "") +
     taskSummaryHTML(fin);
+}
+function linkifyArtifacts(html, fin){
+  const arts = fin.artifacts || [];
+  if (!arts.length) return html;
+  let out = html;
+  for (const a of arts) {
+    const bare = a.name.replace(/^step\d+_/, "");
+    const chip = `<a class="cite" href="${API}/api/runs/${encodeURIComponent(fin.run_id)}/artifacts/${encodeURIComponent(a.name)}" target="_blank" title="打开产物">${esc(bare)}</a>`;
+    out = out.split("`" + bare + "`").join(chip);
+    out = out.split("`" + a.name + "`").join(chip);
+  }
+  return out;
+}
+function wsToggleCtx(el){
+  const d = el.nextElementSibling;
+  const open = d.style.display !== "none";
+  d.style.display = open ? "none" : "grid";
+  el.textContent = el.textContent.replace(open ? "▾" : "▴", open ? "▴" : "▾");
 }
 function wsToggle(el){
   const d = el.nextElementSibling;
@@ -965,7 +1030,9 @@ async function wsSubmit(){
   $("err").style.display = "none";
 
   const history = s.turns.map(t => ({ q: t.q, a: t.reply_digest || "" })).slice(-3);
-  const turn = { q, run_id: null, ts: Date.now(), status: "running", body: wsPhaseBar(s.turns.length) };
+  const turn = { q, run_id: null, ts: Date.now(), status: "running", history,
+                 body: wsPhaseBar(s.turns.length) +
+                       '<div class="sk-wrap"><div class="sk-line w85"></div><div class="sk-line w60"></div><div class="sk-line w40"></div></div>' };
   s.turns.push(turn);
   if (!s.title) s.title = q.slice(0, 34);
   wsSave(); wsRenderList(); wsRenderMsgs();
