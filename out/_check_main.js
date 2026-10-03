@@ -1,5 +1,5 @@
 
-const PAGE_VER = "2026-10-03g";   // 改版递增：与服务端不一致时自动强制刷新
+const PAGE_VER = "2026-10-03h";   // 改版递增：与服务端不一致时自动强制刷新
 const API = location.port ? location.origin : "http://127.0.0.1:8848";
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -198,9 +198,17 @@ function wsRenderMsgs(){
   const host = $("ws-msgs"); if (!host) return;
   const s = wsSess();
   if (!s || !s.turns.length){
-    host.innerHTML = '<div class="ws-empty">在上面输入问题，调用完整 Agent 框架。<br>' +
-      '执行完成后这里会给出：Run Summary · 每一步的执行解释 · AI 回复 · 本次任务总结。<br>' +
-      '同一个对话里可以继续追问，系统会自动带上上下文。</div>';
+    host.innerHTML = '<div class="ws-empty">' +
+      '<div style="font-size:13px;color:var(--ink2);margin-bottom:10px">在上面输入问题，调用完整 Agent 框架</div>' +
+      '<div class="cap-strip">' +
+        '<span><b data-live="skills">—</b>技能资产</span>' +
+        '<span><b data-live="domains">—</b>领域</span>' +
+        '<span><b data-live="edges">—</b>类型化关系边</span>' +
+        '<span><b data-live="evolved">—</b>演化技能</span>' +
+        '<span><b>37</b>项自动化测试</span>' +
+      '</div>' +
+      '<div style="margin-top:12px;font-size:12px">执行完成后这里会给出：Run Summary · 每一步的执行解释 · AI 回复 · 本次任务总结<br>' +
+      '同一个对话里可以继续追问，系统会自动带上上下文</div></div>';
     return;
   }
   host.innerHTML = s.turns.map((t, i) => wsTurnHTML(t, i)).join("");
