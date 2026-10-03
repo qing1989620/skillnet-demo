@@ -923,14 +923,59 @@ class RunReq(BaseModel):
     max_llm_calls: int = Field(default=40, ge=5, le=200)
 
 
-def _compose_final_reply(run: Any, led: Any) -> str:
-    """用**真实运行事实**生成一段自然语言「Agent 最终回复」（Codex 式收尾）。
+def _artifact_digest(run: Any, limit_chars: int = 4200, per_file: int = 900) -> str:
+    """产物**内容**摘录（回复能真正回答问题的关键素材）。
 
-    真实性约束：
-      - prompt 里只放已发生的事（步骤状态/尝试/产物/验收/成本/进化），
-        并明确要求「不得编造数字与结论、失败与跳过必须如实说明」；
-      - 无密钥或调用失败 → 抛错，由调用方兜底（回复是加法，绝不拖垮主流程）。
-    """
+    只喂文件名等于没素材——首版回复沦为执行汇报，就是因为 LLM 手里没有产物内容。
+    CSV 给表头+前几行，文本类给前 N 字符，图片只报元信息；总量封顶免爆 token。"""
+    ws = config.OUT_DIR / "runs" / run.run_id / "artifacts"
+    chunks: list[str] = []
+    total = 0
+    for a in list(run.artifacts)[:10]:
+        p = ws / a.name
+        if not p.is_file():
+            continue
+        ext = p.suffix.lower()
+        if ext in (".png", ".jpg", ".jpeg", ".svg", ".pdf"):
+            chunks.append(f"- {a.name}（图件 {a.bytes / 1024:.1f}KB）")
+            continue
+        try:
+            text = p.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        if ext == ".csv":
+            body = "\n".join([l for l in text.splitlines() if l.strip()][:7])
+        else:
+            body = text[:per_file]
+        snippet = body[:per_file]
+        chunks.append(f"- {a.name}：\n{snippet}")
+        total += len(snippet)
+        if total >= limit_chars:
+            break
+    return "\n".join(chunks) or "（无文本类产物可摘录）"
+
+
+def _stdout_digest(run: Any, per_step: int = 800, limit: int = 3000) -> str:
+    """每步成功执行的真实 stdout 尾部摘录——里面往往是结论与推理本身。"""
+    out: list[str] = []
+    for st in run.steps:
+        ok = [a for a in st.attempts if a.ok]
+        if not ok:
+            continue
+        tail = (ok[-1].stdout or "").strip()
+        if tail:
+            out.append(f"第{st.idx + 1}步（{st.skill or '通用'}）输出摘录：\n{tail[-per_step:]}")
+    return "\n\n".join(out)[:limit] or "（无执行输出）"
+
+
+def _compose_final_reply(run: Any, led: Any) -> str:
+    """用**真实运行事实 + 产物内容**生成「Agent 最终回复」。
+
+    两条硬性设计：
+      1. 回复必须先**直接回答用户的问题本身**（解释类任务=讲解知识；
+         分析类任务=给出结论），再汇报执行与证据——只汇报流程等于没回答；
+      2. prompt 里只放已发生的事（含产物内容摘录与执行输出），
+         并明确禁止编造；失败/跳过如实说明。调用失败由调用方兜底。"""
     st_map = {"done": "完成", "failed": "失败", "skipped": "跳过（上游失败阻断）",
               "running": "执行中", "pending": "等待"}
     step_lines = []
@@ -944,8 +989,9 @@ def _compose_final_reply(run: Any, led: Any) -> str:
         if st.status == "failed" and st.error:
             fixed += f"，错误：{str(st.error)[:100]}"
         step_lines.append(
-            f"- 第{st.idx + 1}步｜技能 {st.skill or '通用'}｜{st_map.get(st.status, st.status)}{fixed}"
-            f"｜{st.n_attempts} 次尝试｜{st.duration_ms / 1000:.1f}s｜验收 {chk}｜产物 {arts}")
+            f"- 第{st.idx + 1}步｜技能 {st.skill or '通用'}｜动作：{st.action[:70]}｜"
+            f"{st_map.get(st.status, st.status)}{fixed}｜{st.n_attempts} 次尝试｜"
+            f"{st.duration_ms / 1000:.1f}s｜验收 {chk}｜产物 {arts}")
     arts_line = "、".join(f"{a.name}（{a.bytes / 1024:.1f}KB）" for a in run.artifacts) or "无"
     judged = (f"语义评审加权 {float(run.judge.get('weighted') or 0):.1f}/10"
               if isinstance(run.judge, dict) and run.judge.get("weighted") is not None else "未产生评审分")
@@ -955,14 +1001,28 @@ def _compose_final_reply(run: Any, led: Any) -> str:
     evo = run.evolution or {}
     evo_line = (f"已蒸馏出新技能 {evo.get('name')}（第 {evo.get('generation')} 代，库规模 {evo.get('library_size')}）"
                 if evo.get("accepted") else "本次未产生通过准入的新技能")
-    prompt = f"""你是 SkillNet 的科研 Agent。下面是一次**刚刚真实完成**的任务运行的完整事实记录。
-请给用户写一段「最终回复」，说清楚：你做了什么、关键结论、遇到问题怎么解决的、交付了什么、下一步建议。
+    prompt = f"""你是 SkillNet 的科研 Agent。下面是一次**刚刚真实完成**的任务运行的全部事实记录
+（含每一步的真实执行输出摘录与产物内容摘录）。请写「最终回复」交给用户。
+
+结构（必须按此顺序，Markdown）：
+
+## 直接回答
+这是回复的主体（占一半以上篇幅）：**用下面的真实素材，把用户问的问题本身讲清楚**。
+- 若任务是在问「是什么/为什么/怎么做」（解释、调研、分析类）：完整讲清概念、关键事实、
+  原理与边界，让没背景的人读完就懂；可以用小标题、列表、表格组织。
+- 若任务是数据/建模类：给出明确结论、关键数字与不确定性，不要只描述流程。
+- 只允许使用给出的素材与常识性定义，**禁止编造数字、结论、文献或未发生的步骤**。
+
+## 执行与证据
+简明汇报：每步做了什么与结果、验收情况（含失败-修复/跳过，如实写）、产物清单（文件名+大小）。
+
+## 下一步建议
+1~3 条具体、可执行的建议（含可复用的技能或可扩展方向）。
 
 硬性要求：
-- 中文，像给同事汇报：专业、直接，禁止客套开场（不要"好的/很高兴/没问题"）
-- Markdown 格式，用小标题或短列表组织，总长 180~320 字
-- **只允许使用下面给出的事实**，禁止编造数字、结论或未发生的步骤
-- 有失败-修复必须写明；有跳过/失败/无产物必须如实说明，不许粉饰
+- 中文，专业直接，禁止客套开场（不要"好的/很高兴/没问题"）
+- 总长 600~1500 字；信息密度高，不要凑字数（内容需要时可更长）
+- 不要复述 prompt 结构名以外的元信息（如"本次运行状态"这类流程词可少用）
 
 【任务】{run.task}
 
@@ -970,6 +1030,12 @@ def _compose_final_reply(run: Any, led: Any) -> str:
 
 【执行图（权威依赖图）】
 {chr(10).join(step_lines) or '- 无可执行步骤'}
+
+【每步真实执行输出摘录（务必用作回答素材）】
+{_stdout_digest(run)}
+
+【产物内容摘录（务必用作回答素材）】
+{_artifact_digest(run)}
 
 【关键路径】{cp_line}
 【交付产物】{arts_line}
@@ -979,9 +1045,9 @@ def _compose_final_reply(run: Any, led: Any) -> str:
 【能力沉淀】{evo_line}
 """
     raw = llm.chat(
-        [{"role": "system", "content": "你是严谨的科研 Agent，只基于给定事实写最终回复，不编造。"},
+        [{"role": "system", "content": "你是严谨的科研 Agent。只基于给定事实与常识性定义写作，不编造数字、文献与结论；解释类任务要把知识本身讲清楚。"},
          {"role": "user", "content": prompt}],
-        role="reporter", temperature=0.3, max_tokens=800)
+        role="reporter", temperature=0.35, max_tokens=2200)
     return (raw or "").strip()
 
 

@@ -578,8 +578,20 @@ def test_final_reply_prompt_carries_real_facts(tmp_path, monkeypatch):
     text = server._compose_final_reply(r, None)
     assert text.startswith("###")
     assert captured["kw"].get("role") == "reporter"
+    assert int(captured["kw"].get("max_tokens") or 0) >= 2000   # 详细回复需要足够输出空间
+    assert int(captured["kw"].get("max_tokens") or 0) >= 2000   # 详细回复需要足够输出空间
     prompt = captured["messages"][1]["content"]
     assert "不得编造" in prompt or "禁止编造" in prompt
+    for kw in ("剂量反应分析", "s-a", "s-b", "step1_shared.csv", "¥0.051", "3210",
+               "自动修复", "8.2", "步骤结果", "不要在回复里写具体终态词",
+               # 加法增强：回复必须带真实素材（否则只能写执行汇报，回答不了问题）
+               "每步真实执行输出摘录", "产物内容摘录", "直接回答", "600~1500 字"):
+        assert kw in prompt, f"prompt 缺少：{kw}" if kw in old else kw
+    for kw in ("剂量反应分析", "s-a", "s-b", "step1_shared.csv", "¥0.051", "3210",
+               "自动修复", "8.2", "步骤结果", "不要在回复里写具体终态词",
+               # 加法增强：回复必须带真实素材（否则只能写执行汇报，回答不了问题）
+               "每步真实执行输出摘录", "产物内容摘录", "直接回答", "600~1500 字"):
+        assert kw in prompt, f"prompt 缺少：{kw}" if kw in old else kw
     for kw in ("剂量反应分析", "s-a", "s-b", "step1_shared.csv", "¥0.051", "3210",
                "自动修复", "8.2", "步骤结果", "不要在回复里写具体终态词"):
         assert kw in prompt, f"prompt 缺少真实事实：{kw}"

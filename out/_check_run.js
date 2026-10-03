@@ -318,6 +318,20 @@ const mdToHtml = md => {
     const pre = x.match(/^\u0000PRE([A-Za-z0-9+/=]*)\u0000$/);
     if (pre) return "<pre>" + decodeURIComponent(escape(atob(pre[1]))) + "</pre>";
     if (/^#{1,4}\s/.test(x)) return "<h5>" + inline(x.replace(/^#{1,4}\s/, "")) + "</h5>";
+    if (t.split("\n").filter(l => l.trim()).length >= 2 &&
+        t.split("\n").filter(l => l.trim()).every(l => /^\|.*\|$/.test(l.trim()))) {
+      const rows = t.split("\n").filter(l => l.trim())
+        .map(l => l.trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim()));
+      const isSep = r => r.every(c => /^:?-{2,}:?$/.test(c));
+      const body = rows.slice(isSep(rows[1] || []) ? 2 : 1);
+      return "<table><thead><tr>" + rows[0].map(c => `<th>${inline(c)}</th>`).join("") +
+        "</tr></thead><tbody>" + body.map(r => "<tr>" + r.map(c => `<td>${inline(c)}</td>`).join("") + "</tr>").join("") +
+        "</tbody></table>";
+    }
+    if (/^>\s?/m.test(t)) {
+      const q = t.split("\n").map(l => l.replace(/^>\s?/, "")).join("<br>");
+      return `<blockquote>${inline(q)}</blockquote>`;
+    }
     if (x.split("\n").every(l => !l.trim() || /^\s*[-*]\s/.test(l)))
       return "<ul>" + x.split("\n").filter(l => l.trim())
         .map(l => "<li>" + inline(l.replace(/^\s*[-*]\s/, "")) + "</li>").join("") + "</ul>";

@@ -25,6 +25,12 @@
     border-radius:3px;color:#24557a}
   .ai-reply .rp-body pre{background:var(--panel2);border:1px solid var(--line);border-radius:5px;
     padding:10px 12px;margin:7px 0;overflow:auto;font:12px/1.65 var(--mono);color:var(--ink2)}
+  .ai-reply .rp-body table{width:100%;border-collapse:collapse;margin:9px 0;font-size:12.5px}
+  .ai-reply .rp-body th{background:var(--panel2);color:#24557a;text-align:left;padding:6px 10px;
+    border-bottom:2px solid var(--line);font-weight:700}
+  .ai-reply .rp-body td{padding:5px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  .ai-reply .rp-body blockquote{margin:9px 0;padding:8px 14px;border-left:3px solid #c9d8e6;
+    background:#f8fafc;color:var(--ink2);border-radius:0 4px 4px 0}
   :root{
     /* 浅色（与 Mission Control / 既有页面一致的视觉语言） */
     --bg:#fbfaf8; --panel:#ffffff; --panel2:#f4f6f8; --line:#e3e8ee;
@@ -506,6 +512,20 @@ const mdToHtml = md => {
     const pre = x.match(/^\u0000PRE([A-Za-z0-9+/=]*)\u0000$/);
     if (pre) return "<pre>" + decodeURIComponent(escape(atob(pre[1]))) + "</pre>";
     if (/^#{1,4}\s/.test(x)) return "<h5>" + inline(x.replace(/^#{1,4}\s/, "")) + "</h5>";
+    if (t.split("\n").filter(l => l.trim()).length >= 2 &&
+        t.split("\n").filter(l => l.trim()).every(l => /^\|.*\|$/.test(l.trim()))) {
+      const rows = t.split("\n").filter(l => l.trim())
+        .map(l => l.trim().replace(/^\||\|$/g, "").split("|").map(c => c.trim()));
+      const isSep = r => r.every(c => /^:?-{2,}:?$/.test(c));
+      const body = rows.slice(isSep(rows[1] || []) ? 2 : 1);
+      return "<table><thead><tr>" + rows[0].map(c => `<th>${inline(c)}</th>`).join("") +
+        "</tr></thead><tbody>" + body.map(r => "<tr>" + r.map(c => `<td>${inline(c)}</td>`).join("") + "</tr>").join("") +
+        "</tbody></table>";
+    }
+    if (/^>\s?/m.test(t)) {
+      const q = t.split("\n").map(l => l.replace(/^>\s?/, "")).join("<br>");
+      return `<blockquote>${inline(q)}</blockquote>`;
+    }
     if (x.split("\n").every(l => !l.trim() || /^\s*[-*]\s/.test(l)))
       return "<ul>" + x.split("\n").filter(l => l.trim())
         .map(l => "<li>" + inline(l.replace(/^\s*[-*]\s/, "")) + "</li>").join("") + "</ul>";
