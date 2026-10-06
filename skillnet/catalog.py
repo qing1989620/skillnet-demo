@@ -245,6 +245,27 @@ class SkillLibrary:
         lib = cls(build_seed_skills())
         p = pathlib.Path(path or config.LIBRARY_FILE)
         if not p.exists():
+            # 克隆仓库后首次运行：library.json 不在版本库（随运行变化），
+            # 用交付基线快照恢复完整技能库（含演化技能），否则会退化成只有种子。
+            base = p.with_name("library.baseline.json")
+            if base.exists():
+                try:
+                    data = json.loads(base.read_text(encoding="utf-8"))
+                    for d in data.get("evolved") or []:
+                        try:
+                            lib.add(Skill.from_dict(d))
+                        except (TypeError, ValueError):
+                            pass
+                    for name, st in (data.get("stats") or {}).items():
+                        s = lib.get(name)
+                        if s is not None and isinstance(st, dict):
+                            s.stats = {**s.stats, **st}
+                    lib.dirty = False
+                    print(f"[catalog] 未找到运行时技能库，已从交付基线恢复："
+                          f"{len(lib)} 个技能（含 {len(data.get('evolved') or [])} 个演化技能）")
+                    return lib
+                except (json.JSONDecodeError, OSError) as exc:
+                    print(f"[catalog] 基线快照损坏，回退到种子技能：{exc}")
             return lib
         try:
             data = json.loads(p.read_text(encoding="utf-8"))

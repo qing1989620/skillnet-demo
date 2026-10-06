@@ -38,5 +38,6 @@ Thumbs.db
 desktop.ini
 
 # ---- 数据快照（由种子目录重新生成）----
-data/
+data/*                     # 运行时技能库（随运行变化，不入版本库）
+!data/library.baseline.json   # 交付基线快照：克隆后用于恢复完整技能库
 .e_*/
