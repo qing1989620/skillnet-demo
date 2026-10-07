@@ -582,6 +582,7 @@
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.8.1-restored2">
 <script src="/static/assets/ui.js?v=0.8.1-restored2"></script>
+<link rel="stylesheet" href="/static/assets/showcase.css?v=20261008.6">
 </head>
 <body>
 
@@ -605,12 +606,11 @@
   <div class="hwrap">
     <div>
       <div class="h-kicker">SKILLNET-S1 · AGENT 技能运维层</div>
-      <h1>让 Agent 的每一项能力，<br>成为<span class="em">真正可运营</span>的资产。</h1>
-      <div class="h-sub">技能不是塞进提示词的一次性文本，而是被<b>检索、选择、执行、验收、进化</b>的运营对象。
-        右侧星图就是当前正在运行的真实技能库——不是插画，是数据。</div>
+      <h1>让一次提问，<br>调动一整个<br><span class="em">能力网络。</span></h1>
+      <div class="h-sub">从找到能力，到协作执行，再到验收与进化。<br>让你看到 Agent <b>如何做成这件事，<br>以及这次经验如何变成下一次的能力。</b></div>
       <div class="h-actions">
-        <a class="btn btn-primary" href="#s3">运行一个真实任务</a>
-        <a class="btn btn-ghost" href="/graph" target="_blank">进入技能星图</a>
+        <a class="btn btn-primary" href="#s3">提出问题，展开内核 ↗</a>
+        <button type="button" class="btn btn-ghost" onclick="Showcase.replay()">回放一次真实任务</button>
       </div>
       <div class="h-metrics">
         <div class="hm first"><div class="n" id="hm-skills">0</div><div class="t">技能资产</div></div>
@@ -627,7 +627,74 @@
       <div class="h-legend" id="netlegend"></div>
     </div>
   </div>
+  <div class="hero-foot"><span>QUESTION → CAPABILITY → EXECUTION → EVIDENCE → EVOLUTION</span><span>右侧每个节点，都是当前技能库中的真实能力 · 可拖拽与探索</span></div>
 </header>
+
+<!-- ==================== 幕 3 · 现场演示（对话式） ==================== -->
+<section class="wrap wide" id="s3">
+  <div class="kicker">THE ENGINE, REVEALED · 内核现场</div>
+  <h2>问一个问题，看见整个框架如何工作。</h2>
+  <div class="sub">能力网络随任务收束为真实执行路径。每一步，都能看见<b>正在做什么、实际证据、为什么有用</b>。可继续追问，也可点击任一阶段检查细节。</div>
+
+  <div class="show-stage" id="show-stage" data-running="false">
+    <div class="show-head">
+      <div class="show-brand"><svg class="show-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M6 8L26 8L16 26Z M6 8L16 15L26 8 M16 15L16 26" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="6" cy="8" r="3" fill="currentColor"/><circle cx="26" cy="8" r="3" fill="currentColor"/><circle cx="16" cy="26" r="3" fill="currentColor"/></svg><div><b>SkillNet · 能力运维现场</b><small>ONE QUESTION. THE WHOLE ENGINE.</small></div></div>
+      <div class="show-controls"><span class="show-badge" id="show-status" role="status">框架待命</span><button type="button" id="show-follow" hidden>跟随当前阶段</button><button type="button" id="show-cancel" hidden>停止运行</button><button type="button" id="show-replay">真实记录回放</button><button type="button" id="show-present">汇报模式</button></div>
+    </div>
+    <div class="show-question"><span>QUESTION</span><p id="show-question-text"></p><a id="show-run-link" hidden target="_blank" rel="noopener"></a></div>
+    <div class="show-grid">
+      <nav class="show-rail" id="show-rail" aria-label="能力生命周期阶段"></nav>
+      <div class="show-center"><div class="show-canvas-head"><span id="show-graph-label">LIVE SKILL NETWORK</span><span id="show-graph-note"></span></div><div class="show-network" id="show-network"></div><div class="show-operation" id="show-operation" hidden></div><div class="show-activity" id="show-activity" aria-label="最近实际运行事件"></div></div>
+      <aside class="show-explain"><div class="show-eyebrow" id="show-phase-tag"></div><h3 id="show-phase-title"></h3><p id="show-phase-doing"></p><div class="show-benefit"><small>带来的价值</small><p id="show-phase-benefit"></p></div><div class="show-facts" id="show-facts"></div></aside>
+    </div>
+    <div class="show-replay-controls" id="show-replay-controls" hidden><span>历史真实事件 · 可暂停与定位</span><button type="button" id="show-pause">暂停回放</button><input type="range" id="show-seek" min="0" max="1" value="0" aria-label="真实记录回放进度"><select id="show-speed" aria-label="回放速度"><option value="1">1×</option><option value="4" selected>4×</option><option value="8">8×</option></select></div>
+    <div class="show-composer" id="show-composer-slot">
+      <div class="ws-composer">
+
+        <div class="inputline">
+          <input id="task" aria-label="研究任务或追问" placeholder="提出一个问题，观察技能如何被选择、执行、验收与沉淀…" onkeydown="if(event.key==='Enter' && !event.isComposing)wsSubmit()">
+          <button class="runbtn" id="run" onclick="wsSubmit()">启动能力网络 ↗</button>
+        </div>
+        <div class="show-prompts"><span>从一个问题开始</span><button type="button" data-show-prompt="stats">数据分析与图表</button><button type="button" data-show-prompt="plan">机器学习方案</button><button type="button" data-show-prompt="follow">结合结果继续追问</button><button type="button" onclick="wsNew()">新建对话</button></div><div class="runhint" id="hint">每次真实调用 DeepSeek，约 20–60 秒；追问自动携带本会话此前问答（最多 3 轮）</div>
+        <div class="errmsg" id="err"></div>
+      </div>
+</div>
+    <div class="show-budget"><span>运行耗时 <b id="show-elapsed">—</b></span><span>模型费用 <b id="show-cost">—</b></span><span id="show-calls">—</span><span id="show-record-note">S1 接入契约已就绪 · 生产联调待验证</span></div>
+    <div class="show-results" id="show-results" hidden></div>
+  </div>
+  <div class="show-output" id="show-output" hidden><div class="show-impact" id="show-impact" aria-label="本次任务的七项内核贡献"></div><article class="show-answer"><h3>回答与本次价值</h3><div id="show-answer-body"></div></article><aside class="show-files"><h3>已经做出来的交付物</h3><div id="show-files-body"></div><a class="show-evidence-link" id="show-evidence-link" target="_blank" rel="noopener">打开完整运行记录 · 代码 / 尝试 / 验收 / 成本 ↗</a></aside></div>
+  <details class="show-history" id="show-history"><summary>对话记录与逐步证据 · 保留上下文，可继续追问</summary>
+
+  <div class="ws">
+    <aside class="ws-side">
+      <button class="ws-new" onclick="wsNew()">+ 新建对话</button>
+      <div class="ws-list" id="ws-list"></div>
+      <div class="ws-foot">
+        历史只记录问题；每问下方「查看执行详情」可展开 Agent 回复与完整执行流程。<br>
+        <a href="/chat" target="_blank">独立工作台</a> · <a href="/graph">技能星图</a> · <a href="/runs" target="_blank">运行中心</a>
+      </div>
+    </aside>
+    <div class="ws-main">
+      <div class="ws-msgs" id="ws-msgs"></div>
+      <div class="ws-composer"><div class="chips" id="chips"></div></div>
+    </div>
+  </div>
+  </details>
+  <div class="show-tools"><button class="btn" id="demo-seven" style="background:#fff;color:var(--brand2);border:1px solid var(--brand2);font-size:12px" onclick="runDemo()">七阶段完整演示（本页）</button><p>原有完整演示、同题对照、代码、文件预览与反馈前后对比均可继续使用。</p></div>
+  <div id="ver-badge" title="当前页面版本；点击可强制刷新" onclick="forceRefresh()"
+       style="position:fixed;right:14px;bottom:14px;z-index:99;font:11px/1 var(--mono,monospace);
+       color:#9aa7b3;background:rgba(255,255,255,.85);border:1px solid var(--line);
+       border-radius:999px;padding:5px 10px;cursor:pointer;backdrop-filter:blur(6px)">
+    版本 <b id="ver-txt" style="color:var(--brand2);font-weight:700"></b> · 点击刷新
+  </div>
+  <!-- 兼容旧单轮渲染路径（实时运行已并入工作台；此处为兜底容器，id 与模板不重复） -->
+  <div id="livebar-legacy" style="display:none"></div>
+  <div class="chat" id="chat" style="max-width:100%"></div>
+</section>
+
+<dialog class="show-preview-dialog" id="show-preview" aria-labelledby="show-preview-title"><header><b id="show-preview-title"></b><button id="show-preview-close" type="button">关闭</button></header><div class="show-preview-body" id="show-preview-body"></div></dialog>
+
+
 
 <!-- ==================== 幕 1 · 问题 ==================== -->
 <section class="wrap" id="s1">
@@ -699,48 +766,6 @@
     <div class="m4"><b>Repo-To-Skill（BAAI 等）</b><span>仓库蒸馏成技能 · 验证门槛</span><span class="cov">缺：闭环与度量体系</span></div>
     <div class="m4"><b>EvoScientist（华为）</b><span>进化管理角色 · 分型记忆</span><span class="cov">缺：技能资产化与检索</span></div>
   </div>
-</section>
-
-<!-- ==================== 幕 3 · 现场演示（对话式） ==================== -->
-<section class="wrap wide" id="s3">
-  <div class="kicker">LIVE DEMO · 对话工作台</div>
-  <h2>像问同事一样问它，还能继续追问</h2>
-  <div class="sub">左栏是会话历史（只记录问题），右栏提问。每次提问都会调用完整 Agent 框架：检索 → 选择 → 编排 → 真实执行 → 验收 → 进化；<b>追问会自动携带本会话上下文</b>。</div>
-
-  <div class="ws">
-    <aside class="ws-side">
-      <button class="ws-new" onclick="wsNew()">+ 新建对话</button>
-      <div class="ws-list" id="ws-list"></div>
-      <div class="ws-foot">
-        历史只记录问题；每问下方「查看执行详情」可展开 Agent 回复与完整执行流程。<br>
-        <a href="/chat" target="_blank">独立工作台</a> · <a href="/graph">技能星图</a> · <a href="/runs" target="_blank">运行中心</a>
-      </div>
-    </aside>
-    <div class="ws-main">
-      <div class="ws-msgs" id="ws-msgs"></div>
-      <div class="ws-composer">
-        <div class="chips" id="chips"></div>
-        <div class="inputline">
-          <input id="task" aria-label="研究任务或追问" placeholder="例如：我有一批肿瘤患者的随访数据，想找出影响预后的因素并构建风险评分" onkeydown="if(event.key==='Enter' && !event.isComposing)wsSubmit()">
-          <button class="runbtn" id="run" onclick="wsSubmit()">发送</button>
-        </div>
-        <div class="runhint" id="hint">每次真实调用 DeepSeek，约 20–60 秒；追问自动携带本会话此前问答（最多 3 轮）</div>
-        <div class="errmsg" id="err"></div>
-        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn" id="demo-seven" style="background:#fff;color:var(--brand2);border:1px solid var(--brand2);font-size:12px" onclick="runDemo()">七阶段完整演示（本页）</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div id="ver-badge" title="当前页面版本；点击可强制刷新" onclick="forceRefresh()"
-       style="position:fixed;right:14px;bottom:14px;z-index:99;font:11px/1 var(--mono,monospace);
-       color:#9aa7b3;background:rgba(255,255,255,.85);border:1px solid var(--line);
-       border-radius:999px;padding:5px 10px;cursor:pointer;backdrop-filter:blur(6px)">
-    版本 <b id="ver-txt" style="color:var(--brand2);font-weight:700"></b> · 点击刷新
-  </div>
-  <!-- 兼容旧单轮渲染路径（实时运行已并入工作台；此处为兜底容器，id 与模板不重复） -->
-  <div id="livebar-legacy" style="display:none"></div>
-  <div class="chat" id="chat" style="max-width:100%"></div>
 </section>
 
 <!-- ==================== 运行中心 ==================== -->
@@ -905,7 +930,7 @@
     <div class="kp"><div class="n"><span data-live="edges">—</span></div><div class="t">类型化关系边 · 图驱动编排</div></div>
     <div class="kp"><div class="n">152</div><div class="t">维任务-技能联合上下文（LinUCB）</div></div>
     <div class="kp"><div class="n">31</div><div class="t">项交付自检（verify.py）</div></div>
-    <div class="kp"><div class="n">176</div><div class="t">项自动化测试（泛化 / 可复现 / 接口安全）</div></div>
+    <div class="kp"><div class="n">186</div><div class="t">项自动化测试（泛化 / 可复现 / 接口安全）</div></div>
     <div class="kp"><div class="n">5</div><div class="t">阶段闭环 API（/api/demo 全链路）</div></div>
     <div class="kp"><div class="n">4</div><div class="t">种跨框架导出格式</div></div>
     <div class="kp"><div class="n">2</div><div class="t">套数据集（dev / held-out 隔离治理）</div></div>
@@ -940,7 +965,7 @@
 </section>
 
 <script>
-const PAGE_VER = "2026-10-07.restored.2";
+const PAGE_VER = "2026-10-08.showcase.9";
 const API = location.origin;
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1092,9 +1117,11 @@ const WS_PHASES = [["retrieval","检索对比"],["ranking","策略选择"],["orc
 
 function wsLoad(){ try { WS_SESSIONS = JSON.parse(localStorage.getItem(WS_KEY) || "[]"); } catch { WS_SESSIONS = []; }
   if (!Array.isArray(WS_SESSIONS)) WS_SESSIONS = []; }
-function wsSave(){ try { localStorage.setItem(WS_KEY, JSON.stringify(WS_SESSIONS)); } catch {} }
+function wsSave(){ try { localStorage.setItem(WS_KEY, JSON.stringify(WS_SESSIONS.map(s => ({...s,
+  turns: s.turns.map(({_fin, _loaded, _loading, body, ...turn}) => turn)})))); } catch {} }
 function wsSess(){ return WS_SESSIONS.find(s => s.id === WS_CUR) || null; }
 function wsNew(){ if (wsBusy || $("task").disabled) return;
+  if (window.Showcase) Showcase.reset();
   const s = { id: "s" + Date.now(), title: "", created: Date.now(), turns: [] };
   WS_SESSIONS.unshift(s); WS_CUR = s.id; wsSave(); wsRenderList(); wsRenderMsgs();
   $("task").focus(); }
@@ -1165,10 +1192,34 @@ async function wsHydrate(i, runId){
     t._loaded = true; t._fin = fin;
     const box = document.getElementById(`wsc-${i}`);
     if (box && wsSess()?.id === s.id) box.innerHTML = wsResultHTML(fin);
+    if (wsSess()?.id === s.id && i === s.turns.length - 1 && !RUN_TERMINAL.has(fin.status)) {
+      await wsResumeExisting(s, t, i, fin);
+    }
   } catch (e) {
     const box = document.getElementById(`wsc-${i}`);
     if (box && wsSess()?.id === s.id) box.innerHTML = '<span style="color:#8a97a4">无法加载该次运行详情（' + esc(e.message || e) + "）</span>";
   } finally { t._loading = false; }
+}
+
+async function wsResumeExisting(session, turn, i, snapshot){
+  if (wsBusy || $("task").disabled) return;
+  wsBusy = true;
+  const btn = $("run"), oldText = btn.textContent;
+  btn.disabled = true; btn.textContent = "恢复运行中…"; $("demo-seven").disabled = true;
+  const box = document.getElementById(`wsc-${i}`);
+  if (box) box.innerHTML = wsPhaseBar(i);
+  if (window.Showcase) { Showcase.start(turn.q, turn.history || []); Showcase.created(turn.run_id); }
+  try {
+    const fin = await wsStream(i, turn.run_id);
+    turn._loaded = true; turn._fin = fin; turn.status = fin.status;
+    turn.reply_digest = String(fin.staged?.final_reply || "").replace(/[#*`>\-]/g, "").slice(0, 400);
+    if (window.Showcase) Showcase.finish(fin);
+    if (box && wsSess()?.id === session.id) box.innerHTML = wsResultHTML(fin);
+    wsSave();
+  } catch (error) {
+    if (window.Showcase) Showcase.fail(error.message || error);
+    if (box) box.innerHTML = '<div style="color:var(--bad)">连接未恢复：' + esc(error.message || error) + "</div>";
+  } finally { wsBusy = false; btn.disabled = false; btn.textContent = oldText; $("demo-seven").disabled = false; }
 }
 
 /* 完整结果：Run Summary + 折叠的逐步解释/原始事件 + AI 回复 + 本次任务总结 */
@@ -1210,7 +1261,7 @@ function wsResultHTML(fin){
   const stepsHtml = steps.map(s => stepCardHTML(s, fin)).join("") || '<div style="color:#8a97a4">无步骤</div>';
   const evTypes = ((fin.events || []).map(e => e.type).join(" → ")) || "（无事件记录）";
   const reply = (fin.staged || {}).final_reply;
-  return sum +
+  return sum + `<button type="button" class="abtn" style="margin-top:10px" data-show-run="${esc(fin.run_id)}">在主舞台查看本次能力闭环 ↗</button>` +
     `<div style="margin-top:10px;font-size:12px;color:var(--brand2);cursor:pointer" onclick="wsToggle(this)">查看执行详情（${steps.length} 步 · 逐步解释与产物） ▾</div>
      <div style="display:none;margin-top:10px;border-top:1px dashed var(--line);padding-top:10px">
        ${stepsHtml}
@@ -1262,6 +1313,7 @@ async function wsSubmit(){
   const turn = { q, run_id: null, ts: Date.now(), status: "running", history,
                  body: wsPhaseBar(s.turns.length) +
                        '<div class="sk-wrap"><div class="sk-line w85"></div><div class="sk-line w60"></div><div class="sk-line w40"></div></div>' };
+  if (window.Showcase) Showcase.start(q, history);
   s.turns.push(turn);
   if (!s.title) s.title = q.slice(0, 34);
   wsSave(); wsRenderList(); wsRenderMsgs();
@@ -1279,10 +1331,12 @@ async function wsSubmit(){
       throw new Error(typeof d.detail === "string" ? d.detail : ("HTTP " + r.status)); }
     const { run_id } = await r.json();
     turn.run_id = run_id; wsSave();
+    if (window.Showcase) Showcase.created(run_id);
     wsSetPhase(i, "retrieval", "run");
     wsSetSub(i, "Run 已创建：" + run_id);
     const fin = await wsStream(i, run_id);
     turn._loaded = true; turn._fin = fin; turn.status = fin.status;
+    if (window.Showcase) Showcase.finish(fin);
     const reply = (fin.staged || {}).final_reply || "";
     turn.reply_digest = reply.replace(/[#*`>\-]/g, "").slice(0, 400);
     const box = document.getElementById(`wsc-${i}`);
@@ -1290,6 +1344,7 @@ async function wsSubmit(){
     wsSave();
   } catch (e) {
     turn.status = "error";
+    if (window.Showcase) Showcase.fail(e.message || e);
     const box = document.getElementById(`wsc-${i}`);
     if (box) box.innerHTML = '<div style="color:var(--bad)">运行失败：' + esc(e.message || e) + "</div>";
     wsSave();
@@ -1341,6 +1396,7 @@ function syncHeroEvent(ev) {
 }
 
 function wsOnEvent(i, ev){
+  if (window.Showcase) Showcase.event(ev);
   syncHeroEvent(ev);
   const t = ev.type || "", d = ev.data || ev, step = ev.step ?? d.step;
   if (t === "retrieval.completed"){ wsSetPhase(i, "retrieval", "done", d.duration_ms); wsSetPhase(i, "ranking", "run");
@@ -1941,7 +1997,7 @@ function handleRunEvent(ev, runId) {
     const sum = $("livesum");
     if (sum) { sum.style.display = "block";
       sum.innerHTML = `<div class="next" style="border-left:3px solid var(--bad)">运行失败：${esc(String(d.reason || d.error || t))}。<a href="/run?id=${encodeURIComponent(runId)}" target="_blank">查看详情</a></div>`; }
-    $("run").disabled = false; $("run").textContent = "发送";
+    $("run").disabled = false; $("run").textContent = "启动能力网络 ↗";
   }
 }
 
@@ -1993,7 +2049,7 @@ function renderLiveFinal(fin) {
     slot.innerHTML = tsHtml;
     sum.appendChild(slot);
   }
-  $("run").disabled = false; $("run").textContent = "发送";
+  $("run").disabled = false; $("run").textContent = "启动能力网络 ↗";
 }
 
 async function loadRunCenter(){
@@ -2029,6 +2085,7 @@ async function loadRunCenter(){
 async function runDemo() {
   const input = $("task"); const q = input.value.trim();
   if (!q || input.disabled || wsBusy) return;
+  if (window.Showcase) Showcase.beforeLegacy();
   input.disabled = true; $("demo-seven").disabled = true; $("run").disabled = true; $("err").style.display = "none";
   addUser(q);
   const bot = addBot();
@@ -2109,16 +2166,16 @@ async function runDemo() {
     rollNum(document.getElementById(`cv-${id}`), r.cost_yuan, 4);
     rollNum(document.getElementById(`tk-${id}`), r.tokens, 0);
     $("lib-n").textContent = r.library_size + " 个技能";
-    $("run").textContent = "发送";
+    $("run").textContent = "启动能力网络 ↗";
   } catch (e) {
-    $("run").textContent = "发送";
+    $("run").textContent = "启动能力网络 ↗";
     const run = bot.querySelector(".tl-item.running");
     if (run) run.className = "tl-item fail";
     const rest = bot.querySelectorAll(".tl-item:not(.done):not(.fail)");
     rest.forEach(x => (x.className = "tl-item fail"));
     $("err").style.display = "block";
     $("err").textContent = "调用失败：" + (e.message || e) + "。若提示 503 请在 .env 配置 DEEPSEEK_API_KEY；若服务未启动先运行 python run.py。";
-  } finally { input.disabled = false; $("demo-seven").disabled = false; $("run").disabled = false; $("run").textContent = "发送"; }
+  } finally { input.disabled = false; $("demo-seven").disabled = false; if (window.Showcase) document.getElementById("show-replay").disabled = false; $("run").disabled = false; $("run").textContent = "启动能力网络 ↗"; }
 }
 
 async function jget2(url, body, t) {
@@ -2146,7 +2203,7 @@ fillLiveNumbers();
   const ctx = cv.getContext("2d");
   const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const PALETTE = ["#24557a", "#2e7d4f", "#b0783a", "#7a4a78", "#38788c", "#8c5a3a", "#5a6e3a", "#4a5a8c", "#a8433a", "#6b7b8c"];
+  const PALETTE = ["#88bde5", "#8dd6bd", "#e2bf88", "#bcb2e7", "#85d6d9", "#d9ab94", "#c2d794", "#9caeed", "#eeaca3", "#aebfd0"];
   let W = 0, H = 0, DPR = 1;
   let nodes = [], edges = [], adj = new Map();     // id -> [{other, type}]
   let alpha = 0, hover = null, drag = null, dragMoved = false, focusSet = null;
@@ -2156,10 +2213,16 @@ fillLiveNumbers();
   function resize() {
     const r = box.getBoundingClientRect();
     DPR = window.devicePixelRatio || 1;
+    const oldW = W, oldH = H;
     W = r.width; H = r.height;
     cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
     if (dagMode) { layoutDagTargets(); dagT = 0; }
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    if (inited) {
+      if (oldW && oldH) nodes.forEach(n => { n.x *= W / oldW; n.y *= H / oldH; });
+      tick.drawn = false;
+      draw();
+    }
   }
   window.addEventListener("resize", () => { resize(); });
 
@@ -2273,6 +2336,10 @@ fillLiveNumbers();
 
   function draw() {
     ctx.clearRect(0, 0, W, H);
+    ctx.strokeStyle = "rgba(151,204,215,.13)"; ctx.lineWidth = .7;
+    for (const scale of [.7, 1]) {
+      ctx.beginPath(); ctx.ellipse(W / 2, H / 2, W * .42 * scale, H * .38 * scale, -.18, 0, Math.PI * 2); ctx.stroke();
+    }
     const dimAll = focusSet !== null;
     // 边
     if (dagMode) { drawDagEdges(); } else for (const e of edges) {
@@ -2281,7 +2348,7 @@ fillLiveNumbers();
       const inF = dimAll && (focusSet.has(e.s) && focusSet.has(e.t));
       let aLine = hot ? 0.85 : (focusSet ? (inF ? 0.5 : 0.05) : 0.14);
       if (focusSet && !inF && !hot) aLine = 0.05;
-      ctx.strokeStyle = hot ? "rgba(36,85,122," + aLine + ")" : "rgba(34,48,62," + aLine + ")";
+      ctx.strokeStyle = hot ? "rgba(156,237,218," + aLine + ")" : "rgba(174,208,232," + aLine + ")";
       ctx.lineWidth = hot ? 1.4 : 0.8;
       ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(t.x, t.y); ctx.stroke();
     }
@@ -2291,8 +2358,9 @@ fillLiveNumbers();
       const dim = (focusSet && !focusSet.has(n.id)) || (hover && hover !== n && !(adj.get(hover.id) || []).includes(n.id));
       const r = 3 + Math.min(7, n.deg * 0.55) + (isH ? 2.2 : 0);
       ctx.globalAlpha = dim ? 0.13 : 1;
+      ctx.shadowBlur = n.ev ? 12 : 6; ctx.shadowColor = colorOf(n.dom);
       ctx.fillStyle = colorOf(n.dom);
-      ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, 6.2832); ctx.fill();
+      ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, 6.2832); ctx.fill(); ctx.shadowBlur = 0;
       if (n.ev) { ctx.strokeStyle = "rgba(201,138,45,.85)"; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(n.x, n.y, r + 2.4, 0, 6.2832); ctx.stroke(); }
       if (isH) { ctx.strokeStyle = "rgba(36,85,122,.9)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(n.x, n.y, r + 5, 0, 6.2832); ctx.stroke(); }
       if (dagMode && dagMode.byNode.has(n)) {   // DAG 节点状态环（真实 Runtime 状态）
@@ -2318,7 +2386,7 @@ fillLiveNumbers();
       if (!show) continue;
       const dim = (focusSet && !focusSet.has(n.id)) || (hover && hover !== n && !(adj.get(hover.id) || []).includes(n.id));
       ctx.globalAlpha = dim ? 0.15 : 0.92;
-      ctx.fillStyle = "#44576b";
+      ctx.fillStyle = "#c7dce9";
       if (n.x > W - 130) { ctx.textAlign = "right"; ctx.fillText(n.id, n.x - 9, n.y); ctx.textAlign = "left"; }
       else ctx.fillText(n.id, n.x + 9, n.y);
       ctx.globalAlpha = 1;
@@ -2554,5 +2622,6 @@ window.__SELFTEST__ = function(){
   }, 4000);
 })();
 </script>
+<script src="/static/assets/showcase.js?v=20261008.9"></script>
 </body>
 </html>

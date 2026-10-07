@@ -1,0 +1,277 @@
+{
+  "run_id": "7356cc57-20261008-011433-2b85",
+  "reason": "Partial execution was admitted by plan-only reward; now quarantined. Execution failure statistics are retained.",
+  "skill": {
+    "name": "descriptive-stats-csv-plot-pipeline",
+    "description": "对分组数值数据做纯描述统计（n、均值、样本标准差），统一舍入后写入 CSV，回读校验，并直接读取同一 CSV 绘制带误差条的均值对比图。适用于需要可复现、无推断、表格与图表同源的统计汇总任务。",
+    "domain": "数据科学与统计分析",
+    "tags": [
+      "描述统计",
+      "样本标准差",
+      "CSV",
+      "回读校验",
+      "误差条",
+      "matplotlib",
+      "可复现"
+    ],
+    "capability": "产出一份经回读校验的 summary.csv 与一张与表格同源的均值对比图 figure.png，全程仅做描述统计。",
+    "inputs": [
+      "分组数值数据（可硬编码或来自本地文件）",
+      "输出目录",
+      "舍入位数（默认4）",
+      "绝对容差（默认0.0001）"
+    ],
+    "outputs": [
+      "summary.csv（列：group,n,mean,std_sample）",
+      "figure.png（均值对比图，误差条为样本标准差，纵轴从0起）",
+      "单文件可复现脚本",
+      "含免责声明的结果说明文本"
+    ],
+    "use_when": [
+      "需要对分组数据做描述性汇总并输出表格",
+      "要求表格与图表数值严格同源",
+      "需要可复现、无推断统计的交付物",
+      "需要回读校验数据完整性"
+    ],
+    "steps": [
+      "在单文件脚本中硬编码或加载分组数据，对每组计算 n=len(x)、mean=statistics.mean(x)、std_sample=statistics.stdev(x)（ddof=1）。",
+      "写入前对所有数值统一 round(x,4)，以 UTF-8、逗号分隔写入 summary.csv，列名固定为 ['group','n','mean','std_sample']。",
+      "用 pandas 回读 summary.csv，断言 list(df.columns)==['group','n','mean','std_sample']、len(df)==2、df.isna().sum().sum()==0，并检查 n 为整数、mean/std_sample 为浮点。",
+      "将回读的 mean/std_sample 与内存写入前的值按绝对容差 0.0001 逐值比对，任一失败则非零退出并打印失败项。",
+      "用 matplotlib 直接读取同一 summary.csv，绘制均值条形图，yerr 引用 CSV 的 std_sample 列，设置 capsize=5、dpi=300、y 轴下限为 0，标注每组 n，添加坐标轴标签与单位，保存为 figure.png。",
+      "做最小化代码审查：grep 脚本确认无 ttest/pvalue/p_value/ci/confidence/effect 等推断统计调用，仅保留 stdev/mean/len。",
+      "撰写 3–5 句结果说明，逐句由 summary.csv 数值支持，强制包含「演示数据」「不可用于科学结论」关键词，无 p 值、置信区间、效应量、显著性、因果表述。"
+    ],
+    "pitfalls": [
+      "误用 ddof=0 计算总体标准差导致 std 偏小，应显式使用 statistics.stdev 或 numpy.std(ddof=1)，并用样本方差公式手工复核。",
+      "浮点长尾未四舍五入导致 CSV 出现长小数、回读比对失败，应在写入前统一 round(x,4)，回读按 0.0001 绝对容差比较，不把舍入误差当错误。",
+      "绘图误差条与 CSV 数值不同源导致图表与表格不一致，yerr 必须直接引用写入 CSV 的同一 std_sample 变量。",
+      "说明文本混入 p 值、显著性、因果等推断性表述，应逐句检查并删除，强制保留「演示数据」「不可用于科学结论」关键词。",
+      "回读校验时未精确匹配表头或未检查空值，导致结构错误未被发现。"
+    ],
+    "verification": [
+      "手工用样本方差公式复核：mean 与 std_sample 与 CSV 数值一致。",
+      "回读断言全部通过且脚本退出码为 0；逐列比较 mean/std_sample 在 0.0001 容差内一致。",
+      "目视核对柱高等于 CSV 的 mean，误差条上下端等于 mean±std_sample，y 轴从 0 起，坐标轴标签与 n 标注完整。",
+      "grep 无推断统计匹配；逐句检查说明文本无推断性表述且含免责声明关键词。"
+    ],
+    "quality": {
+      "safety": {
+        "level": "Good",
+        "reason": "未见危险系统操作或越权指令"
+      },
+      "completeness": {
+        "level": "Good",
+        "reason": "7 个步骤 + 5 条陷阱 + 4 条验证，覆盖完整"
+      },
+      "executability": {
+        "level": "Good",
+        "reason": "7/7 个步骤含具体工具或参数，无模糊表述"
+      },
+      "maintainability": {
+        "level": "Good",
+        "reason": "与 5 个技能建立关联，步骤数适中"
+      },
+      "cost_awareness": {
+        "level": "Good",
+        "reason": "提及资源约束 ['内存']"
+      }
+    },
+    "relations": [
+      [
+        "compose_with",
+        "descriptive-stats-csv-and-plot"
+      ],
+      [
+        "compose_with",
+        "descriptive-stats-csv-summary"
+      ],
+      [
+        "compose_with",
+        "scientific-visualization"
+      ],
+      [
+        "depend_on",
+        "code-helper"
+      ],
+      [
+        "compose_with",
+        "demo-descriptive-stats-summary"
+      ]
+    ],
+    "source": "distill",
+    "origin_task": null,
+    "parent": [
+      "demo-descriptive-stats-summary"
+    ],
+    "generation": 2,
+    "version": 1,
+    "license": "MIT",
+    "compatibility": "",
+    "metadata": {},
+    "allowed_tools": "",
+    "stats": {
+      "pulls": 0.0,
+      "reward_sum": 0.0,
+      "best": 0.0
+    }
+  },
+  "feedback_undo": [
+    {
+      "name": "descriptive-stats-csv-and-plot",
+      "before": {
+        "pulls": 1.0,
+        "reward_sum": 0.9,
+        "best": 0.9,
+        "exec_total": 1,
+        "exec_ok": 0,
+        "exec_fix": 0,
+        "exec_fail": 1,
+        "exec_last_error": "exception"
+      },
+      "after": {
+        "pulls": 0.0,
+        "reward_sum": 0.0,
+        "best": 0.0,
+        "exec_total": 1,
+        "exec_ok": 0,
+        "exec_fix": 0,
+        "exec_fail": 1,
+        "exec_last_error": "exception"
+      }
+    },
+    {
+      "name": "descriptive-stats-csv-and-plot",
+      "before": {
+        "pulls": 1.0,
+        "reward_sum": 0.9,
+        "best": 0.9,
+        "exec_total": 1,
+        "exec_ok": 0,
+        "exec_fix": 0,
+        "exec_fail": 1,
+        "exec_last_error": "exception"
+      },
+      "after": {
+        "pulls": 0.0,
+        "reward_sum": 0.0,
+        "best": 0.0,
+        "exec_total": 1,
+        "exec_ok": 0,
+        "exec_fix": 0,
+        "exec_fail": 1,
+        "exec_last_error": "exception"
+      }
+    },
+    {
+      "name": "scientific-visualization",
+      "before": {
+        "pulls": 23.0,
+        "reward_sum": 18.84,
+        "best": 0.9,
+        "exec_total": 1,
+        "exec_ok": 1,
+        "exec_fix": 1
+      },
+      "after": {
+        "pulls": 22.0,
+        "reward_sum": 17.94,
+        "best": 0.9,
+        "exec_total": 1,
+        "exec_ok": 1,
+        "exec_fix": 1
+      }
+    },
+    {
+      "name": "code-helper",
+      "before": {
+        "pulls": 7.0,
+        "reward_sum": 6.095000000000001,
+        "best": 0.9,
+        "exec_total": 2,
+        "exec_ok": 2,
+        "exec_fix": 1
+      },
+      "after": {
+        "pulls": 6.0,
+        "reward_sum": 5.195,
+        "best": 0.9,
+        "exec_total": 2,
+        "exec_ok": 2,
+        "exec_fix": 1
+      }
+    },
+    {
+      "name": "demo-descriptive-stats-summary",
+      "before": {
+        "pulls": 4.0,
+        "reward_sum": 3.6,
+        "best": 0.9,
+        "exec_total": 2,
+        "exec_ok": 2
+      },
+      "after": {
+        "pulls": 3.0,
+        "reward_sum": 2.7,
+        "best": 0.9,
+        "exec_total": 2,
+        "exec_ok": 2
+      }
+    },
+    {
+      "name": "demo-descriptive-stats-summary",
+      "before": {
+        "pulls": 4.0,
+        "reward_sum": 3.6,
+        "best": 0.9,
+        "exec_total": 2,
+        "exec_ok": 2
+      },
+      "after": {
+        "pulls": 3.0,
+        "reward_sum": 2.7,
+        "best": 0.9,
+        "exec_total": 2,
+        "exec_ok": 2
+      }
+    },
+    {
+      "name": "descriptive-stats-csv-summary",
+      "before": {
+        "pulls": 2.0,
+        "reward_sum": 1.8,
+        "best": 0.9,
+        "exec_total": 2,
+        "exec_ok": 2,
+        "exec_fix": 1
+      },
+      "after": {
+        "pulls": 1.0,
+        "reward_sum": 0.9,
+        "best": 0.9,
+        "exec_total": 2,
+        "exec_ok": 2,
+        "exec_fix": 1
+      }
+    },
+    {
+      "name": "descriptive-stats-csv-summary",
+      "before": {
+        "pulls": 2.0,
+        "reward_sum": 1.8,
+        "best": 0.9,
+        "exec_total": 2,
+        "exec_ok": 2,
+        "exec_fix": 1
+      },
+      "after": {
+        "pulls": 1.0,
+        "reward_sum": 0.9,
+        "best": 0.9,
+        "exec_total": 2,
+        "exec_ok": 2,
+        "exec_fix": 1
+      }
+    }
+  ]
+}

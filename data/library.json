@@ -1,6 +1,6 @@
 {
  "schema_version": 2,
- "saved_at": "2026-10-07 23:26:08",
+ "saved_at": "2026-10-08 01:22:29",
  "evolved": [
   {
    "name": "high-temp-oxidation-coating-recipe-dev",
@@ -2148,9 +2148,9 @@
    "metadata": {},
    "allowed_tools": "",
    "stats": {
-    "pulls": 0.0,
-    "reward_sum": 0.0,
-    "best": 0.0
+    "pulls": 1.0,
+    "reward_sum": 0.9,
+    "best": 0.9
    }
   },
   {
@@ -3755,8 +3755,8 @@
    "metadata": {},
    "allowed_tools": "",
    "stats": {
-    "pulls": 2.0,
-    "reward_sum": 1.8,
+    "pulls": 3.0,
+    "reward_sum": 2.7,
     "best": 0.9,
     "exec_total": 2,
     "exec_ok": 2
@@ -3867,9 +3867,9 @@
    "metadata": {},
    "allowed_tools": "",
    "stats": {
-    "pulls": 0.0,
-    "reward_sum": 0.0,
-    "best": 0.0
+    "pulls": 1.0,
+    "reward_sum": 0.9,
+    "best": 0.9
    }
   },
   {
@@ -3969,6 +3969,228 @@
    "metadata": {},
    "allowed_tools": "",
    "stats": {
+    "pulls": 1.0,
+    "reward_sum": 0.9,
+    "best": 0.9,
+    "exec_total": 4,
+    "exec_ok": 4,
+    "exec_fix": 1
+   }
+  },
+  {
+   "name": "descriptive-stats-csv-and-plot",
+   "description": "对硬编码或本地分组数据做纯描述统计（n、均值、样本标准差），输出固定表头的 summary.csv 与带误差条的均值对比图，并逐值回读校验、撰写含免责声明的说明文本。适用于只需描述统计、禁止推断统计与联网的演示性分析任务。",
+   "domain": "数据科学与统计分析",
+   "tags": [
+    "描述统计",
+    "样本标准差",
+    "CSV输出",
+    "误差条图",
+    "结果校验",
+    "免责声明"
+   ],
+   "capability": "产出一份可精确回读校验的描述统计 CSV、一张与表格同源的均值对比图，以及一段仅含描述性数值的说明文本。",
+   "inputs": [
+    "分组数据（可硬编码在脚本内的列表或字典）",
+    "输出文件名（如 summary.csv、figure.png）",
+    "固定列名约定（如 group,n,mean,std_sample）"
+   ],
+   "outputs": [
+    "summary.csv（固定表头，每组一行）",
+    "figure.png（均值条形图 + 误差条 + n 标注）",
+    "单文件 Python 脚本（无网络与外部文件依赖）",
+    "终端说明文本（含免责声明关键词）"
+   ],
+   "use_when": [
+    "任务要求只做描述统计、明确禁止推断统计",
+    "需要同时交付表格与图表且两者数值必须一致",
+    "要求逐条核对数值与表头、可复现的校验流程",
+    "环境限制不得访问外部网络或读取外部数据文件"
+   ],
+   "steps": [
+    "在单个 Python 脚本内硬编码分组数据（如字典 {组名: [数值列表]}），确保无 open() 读外部数据、无 requests/urllib 网络调用。",
+    "对每组计算 n=len(x)、mean=statistics.mean(x)、std_sample=statistics.stdev(x)（即 ddof=1 的样本标准差）。",
+    "写入前对所有数值统一 round(x,4)，以 encoding='utf-8'、sep=',' 写入 summary.csv，列名固定为 ['group','n','mean','std_sample']。",
+    "用 pandas 回读 summary.csv 做结构断言：行数等于组数、list(df.columns) 精确等于约定列名、n 为整数、mean/std_sample 为浮点、df.isna().sum().sum()==0，并用 df.equals(写入前 DataFrame) 做逐值一致性比较；任一失败则非零退出并打印失败项。",
+    "用 matplotlib 绘制均值条形图，yerr 直接引用写入 CSV 的同一 std_sample 变量，设置 capsize=5、dpi=300、y 轴下限为 0，在每根柱上标注 'n=<组内样本数>'，添加坐标轴标签与单位，保存为 figure.png。",
+    "撰写 3–5 句结果说明，逐句列出各组 n、mean、样本标准差，强制包含「演示数据」与「不可用于科学结论」关键词。",
+    "对说明文本逐句检查并删除任何 p 值、置信区间、效应量、显著性、因果等推断性表述。",
+    "做最小化代码审查：grep 'ttest|pvalue|p_value|ci|confidence|effect' 确认无推断统计调用，仅保留 stdev/mean/len；确认无外部文件读取与网络调用。"
+   ],
+   "pitfalls": [
+    "误用 ddof=0 计算总体标准差导致 std 偏小（如 1.4142 而非 1.5811）——显式使用 statistics.stdev 或 numpy.std(ddof=1)，并用样本方差公式手工复核。",
+    "浮点长尾未四舍五入导致 CSV 出现长小数、回读比对失败——写入前统一 round(x,4)，回读按同精度比较。",
+    "绘图误差条与 CSV 数值不同源导致图表与表格不一致——yerr 必须直接引用写入 CSV 的同一 std_sample 变量。",
+    "说明文本混入 p 值、显著性、因果等推断性表述——逐句检查并删除，强制保留「演示数据」「不可用于科学结论」关键词。",
+    "y 轴未从 0 起导致组间差异被视觉夸大——设置 ylim 下限为 0。"
+   ],
+   "verification": [
+    "手工用样本方差公式复核：方差=Σ(x-mean)²/(n-1)，开方后与 CSV 的 std_sample 一致。",
+    "pandas 回读断言全部为 True 且脚本退出码为 0，逐列比较 mean/std_sample 与内存值完全相等。",
+    "目视核对柱高等于 CSV 的 mean，误差条上下端等于 mean±std_sample，y 轴从 0 起，坐标轴标签与单位完整，n 标注存在。",
+    "grep 检查说明文本与脚本无推断统计关键词，确认数据全部硬编码、无网络与外部文件访问。"
+   ],
+   "quality": {
+    "safety": {
+     "level": "Good",
+     "reason": "未见危险系统操作或越权指令"
+    },
+    "completeness": {
+     "level": "Good",
+     "reason": "8 个步骤 + 5 条陷阱 + 4 条验证，覆盖完整"
+    },
+    "executability": {
+     "level": "Good",
+     "reason": "7/8 个步骤含具体工具或参数，无模糊表述"
+    },
+    "maintainability": {
+     "level": "Good",
+     "reason": "与 3 个技能建立关联，步骤数适中"
+    },
+    "cost_awareness": {
+     "level": "Average",
+     "reason": "未说明资源或耗时约束"
+    }
+   },
+   "relations": [
+    [
+     "compose_with",
+     "descriptive-stats-csv-summary"
+    ],
+    [
+     "compose_with",
+     "scientific-visualization"
+    ],
+    [
+     "similar_to",
+     "demo-descriptive-stats-report"
+    ]
+   ],
+   "source": "distill",
+   "origin_task": null,
+   "parent": [
+    "demo-descriptive-stats-report"
+   ],
+   "generation": 3,
+   "version": 1,
+   "license": "MIT",
+   "compatibility": "",
+   "metadata": {},
+   "allowed_tools": "",
+   "stats": {
+    "pulls": 0.0,
+    "reward_sum": 0.0,
+    "best": 0.0,
+    "exec_total": 2,
+    "exec_ok": 1,
+    "exec_fix": 1,
+    "exec_fail": 1,
+    "exec_last_error": "exception"
+   }
+  },
+  {
+   "name": "descriptive-stats-acceptance-audit",
+   "description": "对已完成的一轮描述统计产物做验收检查必要性审计：逐条还原每个检查防御的错误、判定哪些结论仍不可支持、回放可复现性并给出改进清单。适用于纯描述统计交付后的复核与边界声明。",
+   "domain": "科研数据分析",
+   "tags": [
+    "描述统计",
+    "验收检查",
+    "可复现性",
+    "证据边界",
+    "ddof",
+    "审计"
+   ],
+   "capability": "产出一份验收检查必要性对照表、已支持/未支持结论二分清单、可复现性回放日志与下一步改进清单。",
+   "inputs": [
+    "上一轮描述统计产物（如 summary.csv、figure.png）",
+    "上一轮使用的计算脚本或参数（如 ddof、精度）",
+    "业务指标定义与决策阈值（若有）",
+    "数据来源与抽样框说明（若有）"
+   ],
+   "outputs": [
+    "验收检查→防御错误→后果对照表",
+    "已支持/未支持结论二分清单",
+    "可复现性回放日志（数值比对、表头断言、图像检查）",
+    "下一步改进清单（补证据项+补设计项，含优先级与前置条件）"
+   ],
+   "use_when": [
+    "描述统计交付后需要复核检查项是否冗余或缺失",
+    "需要明确哪些结果不能支撑业务结论",
+    "需要为下一轮分析列出可执行的改进项",
+    "需要验证上一轮产物是否可复现"
+   ],
+   "steps": [
+    "逐条还原验收检查并标注其防御的错误类型：样本量核对、均值核对、样本标准差与 ddof 核对、表头字段名核对、图与表数值一致性核对、数据来源可复现性核对。",
+    "对每条检查指认一个具体的、可复现的错误场景；用 ddof=0 重算标准差并与 ddof=1 结果对比，确认该检查非冗余。",
+    "判定哪些结果仍不能支持业务结论：逐项列出，并注明缺失的证据类型（如无置信区间、无效应量、无抽样框、无业务阈值）。",
+    "对上一轮产物做可复现性回放：用固定脚本重算 n、均值、ddof=1 标准差，与 summary.csv 逐格比对，容差 abs(diff) < 1e-9。",
+    "用 pandas.read_csv 读回并断言列名集合与预期表头完全相等（如 set(df.columns) == {'group','n','mean','std'}）。",
+    "用图像读取库确认 figure.png 存在且尺寸非零，并人工核对图中柱高与表中均值一致。",
+    "列出下一步改进清单，按「补证据」与「补设计」两类组织，每项注明所需新增数据或方法、优先级与前置条件。",
+    "校验改进清单中每项都能追溯到某条「未支持结论」，无孤立改进项。"
+   ],
+   "pitfalls": [
+    "把 ddof=1 与 ddof=0 混淆：误用 ddof=0 会低估样本标准差（如 1.4142 vs 1.5811，约 10.6%），两组同错会掩盖问题；应对：回放脚本中同时计算两种 ddof 并显式断言使用 ddof=1。",
+    "把描述性差异误读为业务结论：小样本且无推断时，任何「A 优于 B」的表述都无证据支撑；应对：在交付物中显式标注「仅描述统计，不构成业务结论」。",
+    "表头或列名漂移导致下游静默取错列：列名与预期不符时读取方可能按位置取列而不报错；应对：用集合断言校验列名，并在回放中打印实际表头。",
+    "图像与表数值脱节：图若由另一份数据或另一次运行生成，柱高可能与表不一致；应对：图与表由同一脚本、同一内存对象生成，并在回放中人工核对柱高与表中均值。",
+    "改进清单出现孤立项：无法对应任何证据缺口的改进项应删除或重新归类。"
+   ],
+   "verification": [
+    "对照表中每条检查都能指认一个具体的、可复现的错误场景。",
+    "用 ddof=0 重算标准差应得与 ddof=1 可区分的值，证明该检查非冗余。",
+    "二分清单中每条「未支持」都能对应到缺失的具体统计量或设计要素；反向检查：若把某条未支持结论写成已支持，是否能被现有产物证伪。",
+    "所有数值比对在 1e-9 容差内一致，表头断言为 True，图像文件非空；任一失败即判定上一轮产物不可信并需重跑。",
+    "改进清单中每项改进都能追溯到某条「未支持结论」，无孤立改进项。"
+   ],
+   "quality": {
+    "safety": {
+     "level": "Good",
+     "reason": "未见危险系统操作或越权指令"
+    },
+    "completeness": {
+     "level": "Good",
+     "reason": "8 个步骤 + 5 条陷阱 + 5 条验证，覆盖完整"
+    },
+    "executability": {
+     "level": "Average",
+     "reason": "6/8 个步骤具体可执行"
+    },
+    "maintainability": {
+     "level": "Good",
+     "reason": "与 3 个技能建立关联，步骤数适中"
+    },
+    "cost_awareness": {
+     "level": "Good",
+     "reason": "提及资源约束 ['样本量', '内存']"
+    }
+   },
+   "relations": [
+    [
+     "compose_with",
+     "scientific-writing"
+    ],
+    [
+     "similar_to",
+     "tabular-ml-baseline"
+    ],
+    [
+     "compose_with",
+     "leakage-guard"
+    ]
+   ],
+   "source": "distill",
+   "origin_task": null,
+   "parent": [
+    "leakage-guard"
+   ],
+   "generation": 1,
+   "version": 1,
+   "license": "MIT",
+   "compatibility": "",
+   "metadata": {},
+   "allowed_tools": "",
+   "stats": {
     "pulls": 0.0,
     "reward_sum": 0.0,
     "best": 0.0
@@ -4015,9 +4237,9 @@
    "best": 0.755
   },
   "scientific-writing": {
-   "pulls": 2.0,
-   "reward_sum": 1.55,
-   "best": 0.775
+   "pulls": 3.0,
+   "reward_sum": 2.45,
+   "best": 0.9
   },
   "venue-template": {
    "pulls": 1.0,
@@ -4025,9 +4247,12 @@
    "best": 0.795
   },
   "scientific-visualization": {
-   "pulls": 21.0,
-   "reward_sum": 17.040000000000003,
-   "best": 0.9
+   "pulls": 22.0,
+   "reward_sum": 17.94,
+   "best": 0.9,
+   "exec_total": 1,
+   "exec_ok": 1,
+   "exec_fix": 1
   },
   "data-cleaning": {
    "pulls": 20.0,
@@ -4062,14 +4287,14 @@
    "best": 0.7
   },
   "tabular-ml-baseline": {
-   "pulls": 46.0,
-   "reward_sum": 42.88500000000002,
+   "pulls": 47.0,
+   "reward_sum": 43.78500000000002,
    "best": 0.95
   },
   "leakage-guard": {
-   "pulls": 2.0,
-   "reward_sum": 1.455,
-   "best": 0.755
+   "pulls": 3.0,
+   "reward_sum": 2.355,
+   "best": 0.9
   },
   "cross-validation-protocol": {
    "pulls": 2.0,
@@ -4077,9 +4302,9 @@
    "best": 0.875
   },
   "model-interpretability": {
-   "pulls": 2.0,
-   "reward_sum": 1.58,
-   "best": 0.875
+   "pulls": 3.0,
+   "reward_sum": 2.48,
+   "best": 0.9
   },
   "differential-expression": {
    "pulls": 2.0,
@@ -4154,8 +4379,8 @@
    "best": 0.775
   },
   "code-helper": {
-   "pulls": 5.0,
-   "reward_sum": 4.295,
+   "pulls": 6.0,
+   "reward_sum": 5.195,
    "best": 0.9,
    "exec_total": 2,
    "exec_ok": 2,
@@ -4220,6 +4445,11 @@
    "reward_sum": 0.8,
    "best": 0.8
   },
+  "missing-data-baseline-modeling": {
+   "pulls": 1.0,
+   "reward_sum": 0.9,
+   "best": 0.9
+  },
   "dose-response-cleaning-ic50-pipeline": {
    "pulls": 2.0,
    "reward_sum": 1.7100000000000002,
@@ -4253,11 +4483,24 @@
    "exec_ok": 1
   },
   "demo-descriptive-stats-summary": {
-   "pulls": 2.0,
-   "reward_sum": 1.8,
+   "pulls": 3.0,
+   "reward_sum": 2.7,
    "best": 0.9,
    "exec_total": 2,
    "exec_ok": 2
+  },
+  "demo-descriptive-stats-report": {
+   "pulls": 1.0,
+   "reward_sum": 0.9,
+   "best": 0.9
+  },
+  "descriptive-stats-csv-summary": {
+   "pulls": 1.0,
+   "reward_sum": 0.9,
+   "best": 0.9,
+   "exec_total": 4,
+   "exec_ok": 4,
+   "exec_fix": 1
   }
  }
 }

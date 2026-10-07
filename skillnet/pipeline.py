@@ -227,7 +227,10 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
                                                  "expected_output": ""}, skill, stack,
                                       mode=mode, carried=carried)
         else:
-            prompt = _fix_prompt(code, step.attempts[-1].stderr, skill, attempt, mode=mode)
+            previous = step.attempts[-1]
+            diagnostic = previous.stderr or (
+                "执行失败，stderr 为空。标准输出中的诊断：\n" + previous.stdout[-1800:])
+            prompt = _fix_prompt(code, diagnostic, skill, attempt, mode=mode)
         _emit(run, "code.generating", step=step.idx, attempt=attempt)
         c0, y0 = _llm_snapshot()
         _t = now_ms()
@@ -245,6 +248,10 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         sync_usage(run, llm.current_ledger())
         check_budget(run)
 
+        # Runtime evidence for the live stage; this is generated code, not a placeholder.
+        _emit(run, "code.generated", step=step.idx, attempt=attempt,
+              code=code[:24000], chars=len(code), truncated=len(code) > 24000)
+
         # 本地语法预检
         import ast as _ast
         _t = now_ms()
@@ -259,6 +266,7 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         if _syntax_err is None:
             _t = now_ms()
             remaining_seconds = max(1, run.budget.max_seconds - run.duration_ms // 1000)
+            _emit(run, "sandbox.started", step=step.idx, attempt=attempt)
             result = sandbox.run_python(code, timeout=min(90, remaining_seconds), keep_dir=True,
                                         workdir=workdir)
             step.stages[f"sandbox_try{attempt}_ms"] = now_ms() - _t
@@ -280,7 +288,8 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
             truncated=_looks_truncated(result.get("stderr") or "", code))
         step.attempts.append(at)
         _emit(run, "step.attempt", step=step.idx, attempt=attempt, ok=at.ok,
-              error_kind=at.error_kind, duration_ms=at.duration_ms)
+              error_kind=at.error_kind, duration_ms=at.duration_ms,
+              stdout=at.stdout[-2000:], stderr=at.stderr[-1000:])
         if at.ok:
             break
         if attempt < max_attempts:
@@ -308,9 +317,11 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
                        sha256=_sha256_file(dst), from_step=step.idx)
         step.artifacts.append(art)
         run.artifacts.append(art)
-        _emit(run, "artifact.created", step=step.idx, name=name, bytes=art.bytes)
+        _emit(run, "artifact.created", step=step.idx, name=name, bytes=art.bytes,
+              sha256=art.sha256, kind=art.kind)
 
     # ---- L1 确定性检查 + L2 技能断言 ----
+    _emit(run, "verification.started", step=step.idx)
     _t = now_ms()
     l1 = checks_mod.run_checks(paths, result)
     l2 = checks_mod.checks_from_skill(getattr(skill, "verification", []) or [], paths) if skill else []
@@ -322,7 +333,8 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
     check_budget(run)
     if not result.get("ok"):
         step.status = STEP_FAILED
-        step.error = (step.attempts[-1].stderr or "")[-400:]
+        step.error = (step.attempts[-1].stderr or
+                      "执行失败，stderr 为空。标准输出：\n" + step.attempts[-1].stdout)[-1200:]
         step.verify_skip_reason = "执行未成功，无法进行产物验收"
     elif skill is None:
         step.verify_skip_reason = "该步骤未关联技能，无验收标准"
@@ -350,6 +362,9 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
             step.verify_skip_reason = "产物未通过任何确定性检查，且无 L3 验收结果"
     for c in step.checks:
         _emit(run, "check.result", step=step.idx, name=c.name, passed=c.passed, detail=c.detail)
+    for v in step.verifications:
+        _emit(run, "verification.result", step=step.idx,
+              item=v.item, passed=v.passed, evidence=v.evidence, layer=v.layer)
 
     step.ended_at_ms = now_ms()
     # 执行记账（沿用 executor 的记录逻辑，保持技能统计一致）

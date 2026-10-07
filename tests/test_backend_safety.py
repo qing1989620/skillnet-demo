@@ -541,6 +541,46 @@ def test_worker_abstains_from_invalid_scores_but_keeps_valid_score_feedback(
         assert not loaded.evolution["skipped"]
 
 
+@pytest.mark.parametrize("gate", ["execution", "checks", "semantic"])
+def test_valid_plan_score_cannot_reward_failed_or_rejected_execution(routed_workflow, monkeypatch, gate):
+    _, store, _ = routed_workflow
+    run = make_run()
+    store.save(run)
+    updates, admissions = [], []
+    server.STATE["agent"] = SimpleNamespace(run=lambda *a, **k: SimpleNamespace(
+        response={"steps": [{"action": "compute", "skill": "input-data"}]}, trajectory=[]))
+    monkeypatch.setattr(server, "_bandit", lambda: SimpleNamespace(
+        rank=lambda task, names: [(name, 1., .5, .5) for name in names],
+        update=lambda *args: updates.append(args)))
+    monkeypatch.setattr(server, "score_plan", lambda *a: {
+        "weighted": 9., "score_valid": True, "coverage_valid": False})
+    monkeypatch.setattr(server, "SkillEvolver", lambda *a: SimpleNamespace(
+        distill=lambda *a, **k: admissions.append(k), summary=lambda: {"records": []}))
+    monkeypatch.setattr(server, "persist_library", lambda: None)
+    monkeypatch.setattr(server, "_compose_final_reply", lambda *a: "public demo")
+
+    def execute(run, *args, **kwargs):
+        step = runtime.RunStep(idx=0, action="compute", skill="input-data", status=runtime.STEP_DONE)
+        if gate == "execution":
+            step.status = runtime.STEP_FAILED
+        elif gate == "checks":
+            step.checks = [runtime.ProgrammaticCheck("CSV schema", False, "missing column")]
+        else:
+            step.verifications = [runtime.VerificationResult("required report", False, "missing evidence")]
+        run.steps = [step]
+
+    monkeypatch.setattr(pipeline, "execute_run", execute)
+    server._run_worker(run.run_id, server.RunReq(task=run.task))
+    result = store.load(run.run_id)
+    assert not updates and not admissions
+    assert result.judge["weighted"] == 9., "plan evaluation remains valid and independently visible"
+    assert result.evolution["skipped"] and not result.evolution["accepted"]
+    assert result.staged["learning_gate"]["eligible"] is False
+    assert all(not f["nudged"] for f in result.feedback)
+    event = next(e for e in result.events if e.type == "judge.completed")
+    assert event.data["weighted"] == 9. and event.data["reward"] is None
+
+
 def test_explicit_evolution_does_not_admit_unrated_trajectory(api, monkeypatch):
     client, _ = api
     monkeypatch.setattr(server, "require_llm", lambda: None)

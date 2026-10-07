@@ -18,11 +18,12 @@ Agent Skills 的官方定义把技能视为**可执行的程序性知识**：技
 - 不主动授予网络能力（但**无法在内核层面阻断**——本沙箱面向可信模型产出的
   分析代码，不是对抗性代码的隔离工具；生产环境应换容器/虚拟机级隔离，
   本模块 docstring 与 README 均已标注该边界）；
-- 产物只收集工作目录内的新文件。
+- 产物只收集工作目录内新增或内容改变的文件。
 """
 from __future__ import annotations
 
 import os
+import hashlib
 import pathlib
 import re
 import shutil
@@ -41,6 +42,29 @@ ARTIFACT_EXTS = {".png", ".jpg", ".jpeg", ".svg", ".pdf", ".csv", ".txt",
                  ".json", ".md", ".html", ".xlsx", ".npy"}
 
 MAX_OUTPUT_CHARS = 6000
+
+
+def _artifact_files(root: pathlib.Path):
+    """Use relative paths, so same basenames in different folders remain distinct."""
+    for p in sorted(root.rglob("*")):
+        if not p.is_file() or p.is_symlink() or not p.resolve().is_relative_to(root):
+            continue
+        rel = p.relative_to(root)
+        if p.name == "main.py" or ".mpl" in rel.parts or "__pycache__" in rel.parts:
+            continue
+        if p.suffix.lower() in ARTIFACT_EXTS:
+            yield rel.as_posix(), p
+
+
+def _fingerprint(path: pathlib.Path) -> tuple[int, str] | None:
+    try:
+        digest = hashlib.sha256()
+        with path.open("rb") as file:
+            for chunk in iter(lambda: file.read(65536), b""):
+                digest.update(chunk)
+        return path.stat().st_size, digest.hexdigest()
+    except OSError:
+        return None
 
 
 def _clean_env(workdir: pathlib.Path) -> dict[str, str]:
@@ -73,7 +97,7 @@ def run_python(code: str, timeout: int = 90, keep_dir: bool = False,
       stdout/stderr  截断后的输出文本
       returncode
       duration  秒
-      artifacts [{name, bytes, path}]  运行期间在工作目录新生成的文件
+      artifacts [{name, bytes, path}]  运行期间新生成或内容改变的文件
       error_kind "timeout" | "exception" | "import" | ""（便于上层给修复提示）
       workdir   工作目录（keep_dir=True 时保留，便于人工复核）
     """
@@ -82,7 +106,7 @@ def run_python(code: str, timeout: int = 90, keep_dir: bool = False,
     tmp.mkdir(parents=True, exist_ok=True)
     script = tmp / "main.py"
     script.write_text(code, encoding="utf-8")
-    before = {p.name for p in tmp.iterdir()}
+    before = {rel: _fingerprint(p) for rel, p in _artifact_files(tmp)}
 
     t0 = time.time()
     try:
@@ -102,18 +126,15 @@ def run_python(code: str, timeout: int = 90, keep_dir: bool = False,
         err = f"执行超时（超过 {timeout}s 被强制终止）"
     duration = round(time.time() - t0, 2)
 
-    # 收集新产生的产物文件（排除脚本自身与缓存）
+    # A downstream step can intentionally overwrite an input (e.g. corrected CSV).
+    # Compare content, not only names or mtime: copied inputs must not be counted,
+    # while edited versions must be registered under this step's provenance.
     artifacts: list[dict[str, Any]] = []
-    for p in sorted(tmp.rglob("*")):
-        if (not p.is_file() or p.is_symlink() or not p.resolve().is_relative_to(tmp)
-                or p.name in before or p.name == "main.py"):
+    for rel, p in _artifact_files(tmp):
+        fingerprint = _fingerprint(p)
+        if fingerprint is None or (rel in before and fingerprint == before[rel]):
             continue
-        if ".mpl" in p.parts or "__pycache__" in p.parts:
-            continue
-        if p.suffix.lower() not in ARTIFACT_EXTS:
-            continue
-        rel = p.relative_to(tmp).as_posix()
-        artifacts.append({"name": rel, "bytes": p.stat().st_size, "path": str(p)})
+        artifacts.append({"name": rel, "bytes": fingerprint[0], "path": str(p)})
 
     out_t = out[-MAX_OUTPUT_CHARS:] if len(out) > MAX_OUTPUT_CHARS else out
     err_t = err[-MAX_OUTPUT_CHARS:] if len(err) > MAX_OUTPUT_CHARS else err

@@ -1254,6 +1254,10 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
             BUS.publish(run, "retrieval.completed",
                         selected=res.get("selected") or [], decision=res.get("decision"),
                         confidence=res.get("confidence"), raw_bm25_top=res.get("raw_bm25_top"),
+                        modes={m: {key: run.retrieval[m].get(key) for key in
+                                   ("selected", "components", "decision", "decision_reason",
+                                    "degraded", "degraded_reason", "confidence_kind")}
+                               for m in MODES},
                         duration_ms=run.staged["retrieval_ms"])
             pipeline.sync_usage(run, led)
             checkpoint()
@@ -1269,7 +1273,8 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
             ]
             run.staged["ranking_ms"] = int((time.time() - t0) * 1000)
             BUS.publish(run, "ranking.completed", rows=len(run.ranking),
-                        top=run.ranking[0]["name"] if run.ranking else None)
+                        top=run.ranking[0]["name"] if run.ranking else None,
+                        entries=run.ranking, duration_ms=run.staged["ranking_ms"])
 
             # 3) 编排
             t0 = time.time()
@@ -1287,6 +1292,8 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                         skills=run.skills, order=orch.get("skills") or [],
                         workflow=len(orch.get("workflow") or []),
                         edges=orch["workflow"],
+                        source=run.staged["orchestration"]["source"],
+                        degraded=run.staged["orchestration"]["degraded"],
                         duration_ms=run.staged["orchestration_ms"])
             checkpoint()
             store.save(run)
@@ -1333,6 +1340,21 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
             j = _judge_evidence(score_plan(run.task, run.plan, []))
             run.judge = j
             reward = _judge_reward(j)
+            # A good plan is not proof of a successful execution. Do not feed an
+            # incomplete/failed or rejected execution into positive learning.
+            learning_skip = "评审不可用，未更新反馈" if reward is None else ""
+            if reward is not None:
+                if not run.steps or any(s.status != runtime.STEP_DONE for s in run.steps):
+                    learning_skip = "真实执行未完整完成，未更新反馈或进行技能准入"
+                elif any(not c.passed for s in run.steps for c in s.checks
+                         if c.name != "产生至少一个文件产物"):
+                    learning_skip = "实际产物检查未全部通过，未更新反馈或进行技能准入"
+                elif any(not v.passed for s in run.steps for v in s.verifications):
+                    learning_skip = "技能语义验收存在未通过项，未更新反馈或进行技能准入"
+                if learning_skip:
+                    reward = None
+            run.staged["learning_gate"] = {"eligible": reward is not None,
+                                           "skip_reason": learning_skip}
             adopted = [s for s in run.skills if s]
             before_rows = {x["name"]: x["exploit"] for x in run.ranking}
             if reward is not None:
@@ -1347,12 +1369,13 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                  "exploit_after": after.get(n, before_rows.get(n, 0.0)),
                  "delta": round(after.get(n, before_rows.get(n, 0.0)) - before_rows.get(n, 0.0), 4),
                  "nudged": reward is not None and n in adopted,
-                 "skip_reason": "评审不可用，未更新反馈" if reward is None else ""}
+                 "skip_reason": learning_skip}
                 for n in adopted
             ]
-            BUS.publish(run, "judge.completed", weighted=j.get("weighted") if reward is not None else None,
+            BUS.publish(run, "judge.completed", weighted=j.get("weighted") if j.get("score_valid", True) else None,
                         coverage=j.get("coverage"), reward=round(reward, 4) if reward is not None else None,
-                        score_valid=j.get("score_valid", True), coverage_valid=j.get("coverage_valid", True))
+                        score_valid=j.get("score_valid", True), coverage_valid=j.get("coverage_valid", True),
+                        learning_eligible=reward is not None, skip_reason=learning_skip)
             run.status = "EVOLVING"
             evolver = SkillEvolver(lib())
             new_skill = (evolver.distill(run.task, getattr(arun, "trajectory", []) or [],
@@ -1380,10 +1403,12 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                 "library_size": len(lib()),
                 "records": evolver.summary().get("records", []),
                 "skipped": reward is None,
-                "skip_reason": "评审不可用，未进行技能准入" if reward is None else "",
+                "skip_reason": learning_skip,
             }
             BUS.publish(run, "evolution.proposed", accepted=run.evolution["accepted"],
-                        name=run.evolution["name"], library_size=run.evolution["library_size"])
+                        name=run.evolution["name"], library_size=run.evolution["library_size"],
+                        generation=run.evolution["generation"], feedback=run.feedback,
+                        skipped=run.evolution["skipped"], skip_reason=run.evolution["skip_reason"])
             run.staged["judge_evolve_ms"] = int((time.time() - t0) * 1000)
             pipeline.sync_usage(run, led)
 

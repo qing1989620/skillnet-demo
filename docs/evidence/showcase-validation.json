@@ -1,0 +1,155 @@
+{
+  "generated_at": "2026-10-08T01:42:29+08:00",
+  "page_version": "2026-10-08.showcase.9",
+  "automated_checks": {
+    "pytest_passed": 186,
+    "delivery_self_checks_passed": 31,
+    "front_render_checks_passed": 5,
+    "web_scripts_checked": 16,
+    "original_seven_stage_flow": "passed",
+    "showcase_reducer_dag_and_csv": "passed",
+    "full_audit": {
+      "generated_at": "2026-10-08T01:41:51+0800",
+      "issues": [],
+      "endpoint_status": {
+        "/": 200,
+        "/chat": 200,
+        "/graph": 200,
+        "/dashboard": 200,
+        "/runs": 200,
+        "/run": 200,
+        "/api/health": 200,
+        "/api/graph": 200,
+        "/api/stats": 200,
+        "/api/tasks": 200,
+        "/api/capabilities": 200,
+        "/api/results": 200,
+        "/api/skills": 200,
+        "/api/runs?limit=5": 200
+      },
+      "runs_checked": 3
+    }
+  },
+  "public_replay": {
+    "run_id": "7356cc57-20261008-012151-3b64",
+    "task": "仅使用公开演示数据，不联网：A组[1,2,3,4,5]，B组[2,3,4,5,6]。完成3步真实执行：①计算n、均值、样本标准差(ddof=1)，统一保留4位小数，写入summary.csv；②回读校验表头group,n,mean,std_sample、2组、无空值，核对数值时使用绝对容差0.0001，不把舍入误差当错误；③直接读取同一CSV绘制均值对比图figure.png，误差条注明样本标准差，纵轴从0开始。所有步骤采用相同的舍入规则，只做描述统计，不进行推断。",
+    "status": "COMPLETED",
+    "duration_ms": 43360,
+    "cost_yuan": 0.1485,
+    "llm_calls": 12,
+    "tokens": 41961,
+    "step_stats": {
+      "total": 3,
+      "done": 3,
+      "failed": 0,
+      "skipped": 0,
+      "retried": 1
+    },
+    "program_checks": {
+      "passed": 27,
+      "total": 27
+    },
+    "semantic_verifications": {
+      "passed": 10,
+      "total": 12,
+      "unconfirmed": [
+        {
+          "item": "目视核对柱高等于 CSV 的 mean，误差条上下端等于 mean±std_sample，y 轴从 0 起，坐标轴标签与单位完整，n 标注存在。",
+          "passed": false,
+          "evidence": "产物中未见 figure.png 图像内容",
+          "layer": "llm"
+        },
+        {
+          "item": "grep 检查说明文本与脚本无推断统计关键词，确认数据全部硬编码、无网络与外部文件访问。",
+          "passed": false,
+          "evidence": "产物中未见 grep 检查结果",
+          "layer": "llm"
+        }
+      ]
+    },
+    "plan_score": 9.0,
+    "learning_gate": {
+      "eligible": false,
+      "skip_reason": "技能语义验收存在未通过项，未更新反馈或进行技能准入"
+    },
+    "feedback_updates": 0,
+    "new_skill_admitted": false,
+    "artifacts": [
+      {
+        "name": "step3_figure.png",
+        "bytes": 75180,
+        "sha256": "aef9bb5969c14346bdfca778996de419f7cc6848663e7776492fbd41cb409066",
+        "matches_registered_sha256": true,
+        "from_step": 2
+      },
+      {
+        "name": "step3_summary.csv",
+        "bytes": 57,
+        "sha256": "4ccbce35d78f3722316f05681d7bd1546bdd5bd58310c329906bbac176b37241",
+        "matches_registered_sha256": true,
+        "from_step": 2
+      },
+      {
+        "name": "step2_figure.png",
+        "bytes": 25889,
+        "sha256": "d134c594797ce73c90ae7ebb9212c26164925440cd85258e9763ebb25338217a",
+        "matches_registered_sha256": true,
+        "from_step": 1
+      },
+      {
+        "name": "step1_figure.png",
+        "bytes": 30203,
+        "sha256": "9e8ece74d6671375be0a9509515f61d64b6eb983429913774c413c5bfb5b3592",
+        "matches_registered_sha256": true,
+        "from_step": 0
+      }
+    ],
+    "replay_has_new_model_calls": false
+  },
+  "conversation_and_recovery": {
+    "followup_run_id": "13356c85-20261008-010606-09a9",
+    "status": "COMPLETED",
+    "history_turns": 1,
+    "browser_reload_resumed_same_run_without_new_post": true
+  },
+  "browser_qa": {
+    "desktop_viewport": [
+      1440,
+      1000
+    ],
+    "desktop_presentation_stage_bottom_px": 944.4,
+    "desktop_horizontal_overflow": false,
+    "mobile_viewport": [
+      390,
+      844
+    ],
+    "mobile_horizontal_overflow": false,
+    "mobile_sibling_nodes_overlap": false,
+    "actual_csv_preview": "A/B, n=5, mean=3.0/4.0, std_sample=1.5811",
+    "actual_png_preview_native_size": [
+      1800,
+      1500
+    ],
+    "png_preview_fits_dialog": true,
+    "escape_closes_preview_and_exits_presentation": true,
+    "replay_pause_seek_resume": "passed",
+    "screenshots": [
+      "screenshots/showcase-hero-desktop.jpg",
+      "screenshots/showcase-stage-desktop.jpg",
+      "screenshots/showcase-deliverables.jpg",
+      "screenshots/showcase-hero-mobile.jpg",
+      "screenshots/showcase-mobile-stage.jpg"
+    ]
+  },
+  "learning_correction": {
+    "quarantined_run": "7356cc57-20261008-011433-2b85",
+    "reason": "Old plan-only learning admitted an experience whose execution failed; that admission and its positive policy update were reversed. Actual execution failure counters remain.",
+    "archive": "quarantined-failed-admission.json",
+    "regression_cases": [
+      "incomplete execution",
+      "failed program check",
+      "failed semantic verification"
+    ]
+  },
+  "integration_boundary": "S1 client and integration contract are implemented; real S1 production API, permissions, environment and container isolation remain unverified."
+}
