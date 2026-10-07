@@ -19,7 +19,10 @@ out/adapters/
 out/verify_seed/
 out/verify_adapters/
 out/shots/
-out/demo_artifacts/   # 运行时产物（每次执行生成，不入库）
+# Runtime artifacts are kept locally; selected evidence is saved under docs/.
+out/demo_artifacts/
+out/runs/*
+.audit-tmp*/
 out/tmp/
 out/_last_llm_raw.txt
 out/_js_check.js
@@ -42,6 +45,7 @@ Thumbs.db
 desktop.ini
 
 # ---- 数据快照（由种子目录重新生成）----
-data/*                     # 运行时技能库（随运行变化，不入版本库）
-!data/library.baseline.json   # 交付基线快照：克隆后用于恢复完整技能库
+# Runtime library, except the tracked delivery baseline.
+data/*
+!data/library.baseline.json
 .e_*/

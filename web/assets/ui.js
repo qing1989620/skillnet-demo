@@ -2,6 +2,7 @@
    to this browser tab and are never appended to URLs or persisted in localStorage. */
 (function () {
   "use strict";
+  const reduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   const TOKEN_KEY = "skillnet_connection_token";
   const nativeFetch = window.fetch.bind(window);
   const storage = {
@@ -47,6 +48,10 @@
     }
     return response.json();
   }
+  function qualityLabel(value) {
+    const level = value && typeof value === "object" ? value.level : value;
+    return (typeof level === "string" || typeof level === "number") && level !== "" ? String(level) : "—";
+  }
   function toast(message) {
     document.getElementById("ui-toast")?.remove();
     const el = document.createElement("div"); el.id = "ui-toast"; el.className = "ui-toast";
@@ -63,7 +68,7 @@
         <p>服务启用访问保护时，在此填写访问令牌。令牌仅保存在当前浏览器标签页的会话中；关闭标签页后清除。</p>
         <label for="ui-token">访问令牌</label><input id="ui-token" type="password" autocomplete="off" spellcheck="false" placeholder="未启用访问保护时可留空">
         <div class="ui-dialog-status" id="ui-token-status" role="status"></div>
-        <div class="ui-dialog-actions"><button type="button" class="ui-btn ui-btn-secondary" id="ui-token-clear">清除</button><button class="ui-btn ui-btn-secondary" value="cancel">关闭</button><button type="button" class="ui-btn" id="ui-token-save">保存并验证</button></div></form>`;
+        <div class="ui-dialog-actions"><button type="button" class="ui-btn ui-btn-secondary" id="ui-token-clear">清除</button><button class="ui-btn ui-btn-secondary" value="cancel">关闭</button><button type="button" class="ui-btn ui-btn-primary" id="ui-token-save">保存并验证</button></div></form>`;
       document.body.appendChild(dialog);
       dialog.addEventListener("click", event => { if (event.target === dialog) { const r = dialog.getBoundingClientRect(); if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) dialog.close(); } });
       dialog.querySelector("#ui-token-clear").addEventListener("click", () => {
@@ -119,7 +124,60 @@
   function productNav(active) {
     return `<nav class="ui-product-nav" aria-label="产品导航">${[["/","产品概览","briefing"],["/chat","科研工作台","chat"],["/runs","运行中心","dashboard"],["/graph","技能图谱","graph"]].map(([href,label,page]) => `<a href="${href}"${page === active ? ' aria-current="page"' : ""}>${label}</a>`).join("")}<button class="ui-settings-btn" type="button" data-connection-settings>连接设置</button></nav>`;
   }
+  /* Original c491d8c interactions, retained alongside connection safety. */
+  function initProgress() {
+    if (document.getElementById("ui-progress")) return;
+    const bar = document.createElement("div"); bar.id = "ui-progress"; bar.setAttribute("aria-hidden", "true");
+    document.body.appendChild(bar);
+    let raf = 0;
+    function update() {
+      raf = 0; const root = document.documentElement, max = root.scrollHeight - root.clientHeight;
+      const progress = max > 0 ? Math.min(1, Math.max(0, root.scrollTop / max)) : 0;
+      bar.style.width = (progress * 100).toFixed(2) + "%";
+    }
+    window.addEventListener("scroll", () => { if (!raf) raf = requestAnimationFrame(update); }, {passive:true});
+    window.addEventListener("resize", update, {passive:true});
+    update();
+  }
+  let revealObserver = null;
+  const revealSeen = new WeakSet();
+  const revealSelector = "section.wrap > .kicker, section.wrap > h2, section.wrap > .sub, .pain, .kpi, .uq, .shot, .hm, .paper, .ui-card, table.vs, .ws, .shots, section.wrap > .card, .ui-reveal";
+  function initReveal(root) {
+    if (reduce || !("IntersectionObserver" in window)) return;
+    root = root || document;
+    if (!revealObserver) revealObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const element = entry.target, index = parseInt(element.dataset.stagger || "0", 10);
+        setTimeout(() => { if (element.isConnected) element.classList.add("is-in"); }, Math.min(index * 60, 300));
+        revealObserver.unobserve(element);
+      });
+    }, {rootMargin:"0px 0px -8% 0px", threshold:.08});
+    const elements = Array.from(root.querySelectorAll(revealSelector));
+    if (root.matches && root.matches(revealSelector)) elements.unshift(root);
+    elements.forEach(element => {
+      if (revealSeen.has(element) || element.classList.contains("is-in")) return;
+      revealSeen.add(element); element.classList.add("ui-reveal");
+      const siblings = element.parentNode ? Array.from(element.parentNode.children).filter(child => child.classList && child.matches(revealSelector)) : [element];
+      element.dataset.stagger = Math.min(Math.max(0, siblings.indexOf(element)), 5);
+      revealObserver.observe(element);
+    });
+  }
+  let glowReady = false;
+  function initGlow() {
+    if (reduce || glowReady) return;
+    glowReady = true;
+    document.addEventListener("pointermove", event => {
+      const element = event.target && event.target.closest ? event.target.closest(".hm, .shot, .ui-glow, .pain, .kpi") : null;
+      if (!element) return;
+      const rect = element.getBoundingClientRect(); if (!rect.width || !rect.height) return;
+      element.classList.add("ui-glow");
+      element.style.setProperty("--mx", ((event.clientX-rect.left)/rect.width*100).toFixed(1)+"%");
+      element.style.setProperty("--my", ((event.clientY-rect.top)/rect.height*100).toFixed(1)+"%");
+    }, {passive:true});
+  }
   function boot() {
+    initProgress(); initReveal(); initGlow();
     document.addEventListener("click", event => { if (event.target.closest("[data-connection-settings]")) connectionSettings(); });
     const interactive = ".gnode[data-step], .art[data-art], .ev, .list .row[data-n]";
     function enhance(root) {
@@ -127,14 +185,14 @@
       root.querySelectorAll("input,textarea,select").forEach(el => { if (!el.getAttribute("aria-label") && !el.labels?.length) el.setAttribute("aria-label", el.placeholder || el.id || "输入项"); });
     }
     enhance(document);
-    const observer = new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(node => { if (node.nodeType === 1) { enhance(node); if (node.matches(interactive)) { node.tabIndex = 0; node.setAttribute("role", "button"); } } })));
+    const observer = new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(node => { if (node.nodeType === 1) { enhance(node); initReveal(node); if (node.matches(interactive)) { node.tabIndex = 0; node.setAttribute("role", "button"); } } })));
     observer.observe(document.body, { subtree: true, childList: true });
     document.addEventListener("keydown", event => {
       if ((event.key === "Enter" || event.key === " ") && event.target.matches(interactive)) { event.preventDefault(); event.target.click(); }
     });
   }
-  window.UI = { fetch: apiFetch, json, esc, toast, errorHTML, consumeSSE, connectionSettings, getToken: storage.get,
+  window.UI = { fetch: apiFetch, json, esc, qualityLabel, toast, errorHTML, consumeSSE, connectionSettings, getToken: storage.get,
     setToken: value => storage.set(String(value || "").trim()), productNav, mark,
-    reveal: function () {}, progress: function () {} };
+    reveal: initReveal, progress: initProgress, glow: initGlow };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
 })();

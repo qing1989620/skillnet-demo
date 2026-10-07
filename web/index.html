@@ -5,7 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SkillNet-S1 · 立理 S1 科研技能生态原型</title>
 <style>
-
+  :root{
+    --paper:#f7f6f3; --panel:#ffffff; --ink:#1f1d1a; --ink-2:#585349;
+    --ink-3:#8b857a; --line:#e5e1da; --line-2:#efece6;
+    --accent:#9c3d2e; --accent-soft:#f3e8e5;
+    --jade:#3d5a52; --jade-soft:#e8eeec;
+    --gold:#8a6a2f; --gold-soft:#f4efe3;
+    --radius:3px;
+    --sans:"Inter","Helvetica Neue","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono","Cascadia Mono",Consolas,"Microsoft YaHei",monospace;
+  }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
   body{
@@ -124,8 +133,8 @@
   footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);
     font-size:11.5px;color:var(--ink-3);line-height:1.9}
 </style>
-<link rel="stylesheet" href="/static/assets/ui.css?v=0.8.0">
-<script src="/static/assets/ui.js?v=0.8.0"></script>
+<link rel="stylesheet" href="/static/assets/ui.css?v=0.8.1-restored2">
+<script src="/static/assets/ui.js?v=0.8.1-restored2"></script>
 </head>
 <body>
 <div class="app">
@@ -133,7 +142,7 @@
   <header>
     <div id="developer-product-nav" style="display:flex;align-items:center;gap:16px;margin-bottom:26px"></div>
     <div class="brand">
-      <a href="/" style="font-size:13px;color:#2d6d57;text-decoration:none;border:1px solid #b9d2e8;border-radius:999px;padding:3px 14px;margin-right:10px">← 汇报演示模式</a>
+      <a href="/" style="font-size:13px;color:#24557a;text-decoration:none;border:1px solid #b9d2e8;border-radius:999px;padding:3px 14px;margin-right:10px">← 汇报演示模式</a>
       <h1>SkillNet-S1</h1>
       <span class="sub">立理 S1 科研技能生态原型 · Skill Retrieval / Evolution / RL</span>
     </div>
@@ -456,7 +465,7 @@ function renderGraph(){
     nodes.forEach(n => { pos[n.id][0] += (cx-mx)*0.03; pos[n.id][1] += (cy-my)*0.03; });
   }
   const maxR = Math.max(...nodes.map(n=>n.mean_reward||0), 0.01);
-  const color = {depend_on:'#2d6d57', compose_with:'#2d6d57', similar_to:'#c9c2b6', belong_to:'#c9c2b6'};
+  const color = {depend_on:'#9c3d2e', compose_with:'#3d5a52', similar_to:'#c9c2b6', belong_to:'#c9c2b6'};
   const svg = [];
   svg.push(`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">`);
   edges.forEach(e => {
@@ -470,10 +479,10 @@ function renderGraph(){
     const r = 4 + (n.mean_reward||0)/maxR*5;
     const isEvo = n.source !== 'seed';
     svg.push(`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}"
-      fill="${isEvo ? '#2d6d57' : '#2d6d57'}" opacity="${isEvo?0.95:0.72}">
+      fill="${isEvo ? '#9c3d2e' : '#3d5a52'}" opacity="${isEvo?0.95:0.72}">
       <title>${esc(n.id)}\n领域：${esc(n.domain)}\n来源：${n.source} · G${n.generation}\n实测奖励：${num(n.mean_reward,3)}（${n.pulls} 次）</title></circle>`);
     if(r > 7) svg.push(`<text x="${(x+r+3).toFixed(1)}" y="${(y+3).toFixed(1)}" font-size="7.5"
-      fill="#728078" font-family="monospace">${esc(n.id).slice(0,22)}</text>`);
+      fill="#8b857a" font-family="monospace">${esc(n.id).slice(0,22)}</text>`);
   });
   svg.push('</svg>');
   $('#graph').innerHTML = svg.join('') + `
@@ -940,9 +949,9 @@ function statusBar(health){
     + (health.evolved ? `（其中 ${health.evolved} 个为进化产生）` : '')
     + (health.token_required ? '　·　已启用访问令牌' : '');
   document.body.insertAdjacentHTML('afterbegin', `
-    <div style="background:${on?'#eaf3ee':'#f4efe3'};
+    <div style="background:${on?'#e8eeec':'#f4efe3'};
                 border-bottom:1px solid ${on?'#cfded9':'#e3d9c0'};
-                color:${on?'#2d6d57':'#8a6a2f'};
+                color:${on?'#3d5a52':'#8a6a2f'};
                 font-size:12.5px;padding:9px 32px;letter-spacing:.02em">
       <strong>${on?'已接入模型':'未配置模型密钥'}</strong>
       ｜${lib}　·　${on
@@ -965,7 +974,7 @@ async function boot(){
     initSkills(); taskOptions();
   }catch(e){
     document.body.insertAdjacentHTML('afterbegin',
-      `<div style="padding:16px 32px;background:#eaf3ee;color:#2d6d57;font-size:13px">
+      `<div style="padding:16px 32px;background:#f3e8e5;color:#9c3d2e;font-size:13px">
        无法连接后端：${esc(e.message)}　请先运行 <code>python run.py</code></div>`);
   }
 }

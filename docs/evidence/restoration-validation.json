@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-07",
+  "design_reference": "c491d8c",
+  "backend_tests": {
+    "passed": 176,
+    "failed": 0,
+    "warnings": 1
+  },
+  "verification": {
+    "passed": 31,
+    "failed": 0
+  },
+  "frontend_render": {
+    "passed": 5,
+    "failed": 0
+  },
+  "web_scripts": {
+    "passed": 15,
+    "failed": 0
+  },
+  "homepage_flow": {
+    "passed": true,
+    "covers": [
+      "SSE reconnect and sequence deduplication",
+      "HTTP authorization errors",
+      "plan before DAG event order",
+      "live graph events",
+      "invalid review scores",
+      "registered artifact filenames",
+      "responsive DAG targets",
+      "seven original stages"
+    ]
+  },
+  "http_audit": {
+    "P0": 0,
+    "P1": 0,
+    "P2": 0,
+    "source": "out/audit/audit_20261007_234255.json"
+  },
+  "live_readonly_check": {
+    "capability_requests": 3,
+    "statistics_unchanged": true
+  },
+  "browser": {
+    "desktop_width": 1440,
+    "mobile_width": 390,
+    "homepage_selftest": true,
+    "no_horizontal_page_overflow": true
+  },
+  "evidence": {
+    "seven_stage_screenshot": "screenshots/restored-demo-seven-full.jpg",
+    "real_run": "restored-real-run.json"
+  },
+  "limits": [
+    "S1 production integration remains unverified",
+    "Seven-stage screenshot predates the textual-filename fix; the fix is covered by offline boundary tests",
+    "Trusted-code sandbox is not an adversarial isolation boundary"
+  ]
+}

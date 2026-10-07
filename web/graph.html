@@ -6,12 +6,16 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <title>SkillNet-S1 · 技能星图</title>
 <style>
-
+  :root {
+    --bg0: #070b12; --bg1: #0d1624; --ink: #e6eef7; --dim: #8a9bb0;
+    --line: rgba(140,180,225,.16); --brand: #4a9eff; --evolved: #ff5a4d;
+    --panel: rgba(12,20,32,.92);
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; overflow: hidden; }
   body { background: radial-gradient(1200px 800px at 50% 42%, var(--bg1) 0%, var(--bg0) 70%);
          color: var(--ink); font-family: "Microsoft YaHei", "PingFang SC", sans-serif; }
-  canvas { display: block; cursor: grab; touch-action:none; }
+  canvas { display: block; cursor: grab; touch-action: none; }
   canvas.dragging { cursor: grabbing; }
   canvas.onnode { cursor: pointer; }
 
@@ -50,9 +54,18 @@
   .load { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
           font-size: 13px; color: var(--dim); background: var(--bg0); z-index: 9; }
 
+  /* 深色底：AI 生成的星图星座背景（裁水印 + 压缩），极淡叠在 canvas 之下，
+     为深色沉浸页提供纵深，不干扰节点与连线辨识。 */
+  body::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background: url("/static/assets/bg-dark.jpg") center / cover no-repeat fixed;
+    opacity: .42; }
+  body > * { position: relative; z-index: 1; }
+
+  :root { --bg-img: url("/static/assets/bg-dark.jpg"); --bg-op: .42; }
+  /* 移除 graph 页原有的局部背景定义（改由共享层统一控制） */
 </style>
-<link rel="stylesheet" href="/static/assets/ui.css?v=0.8.0">
-<script src="/static/assets/ui.js?v=0.8.0"></script>
+<link rel="stylesheet" href="/static/assets/ui.css?v=0.8.1-restored2">
+<script src="/static/assets/ui.js?v=0.8.1-restored2"></script>
 </head>
 <body>
 <div class="load" id="load">正在加载技能图谱…</div>
@@ -61,10 +74,10 @@
 <div class="graph-search"><label class="ui-sr-only" for="graph-q">搜索并选择技能</label><input id="graph-q" type="search" placeholder="搜索技能或领域…" autocomplete="off"><div class="graph-search-results" id="graph-results"></div></div>
 
 <div class="hud tl">
-  <h1>技能图谱 <span style="font-size:12px;font-weight:400;color:var(--dim);margin-left:10px">Knowledge graph</span></h1>
+  <h1>技能星图 · Skill Relation Graph</h1>
   <div class="sub">
     <b id="nN">—</b> 个技能 · <b id="nE">—</b> 条类型化关系 ·
-    <b id="nD">—</b> 个领域　|　节点半径 = 实测平均奖励，暖橙 = 演化产生的技能<br>
+    <b id="nD">—</b> 个领域　|　节点半径 = 实测平均奖励，朱红 = 演化产生的技能<br>
     拖动节点 / 拖动空白平移 / 滚轮缩放 · 悬停高亮邻域 · 点击查看技能详情
   </div>
 </div>
@@ -242,16 +255,25 @@ function draw() {
     const [x, y] = toScreen(n.x, n.y);
     if (x < -60 || y < -60 || x > W + 60 || y > H + 60) continue;
     const evolved = n.source !== "seed";
-    const base = evolved ? "#dfa476" : (domainColor[n.domain] || "#4a9eff");
+    const base = evolved ? "#ff5a4d" : (domainColor[n.domain] || "#4a9eff");
     const isFocus = focus && n.id === focus.id;
     const inNeigh = !focus || neigh.has(n.id);
     // 呼吸
-    const pulse = 1;
+    const pulse = reducedMotion ? 1 : 1 + Math.sin(S.t * 1.6 + (n.x + n.y) * 0.01) * 0.05;
     const r = n.r * v.k * (isFocus ? 1.5 : pulse);
 
     ctx.globalAlpha = inNeigh ? 1 : 0.16;
-    ctx.fillStyle = base;
-    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+    // 光晕
+    const glow = ctx.createRadialGradient(x, y, 0, x, y, r * (isFocus ? 6 : 3.4));
+    glow.addColorStop(0, base + (isFocus ? "66" : "3a"));
+    glow.addColorStop(1, "transparent");
+    ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(x, y, r * (isFocus ? 6 : 3.4), 0, 6.2832); ctx.fill();
+    // 实心球
+    const g2 = ctx.createRadialGradient(x - r * .3, y - r * .3, 0, x, y, r);
+    g2.addColorStop(0, "#ffffff"); g2.addColorStop(.35, base); g2.addColorStop(1, base + "cc");
+    ctx.fillStyle = g2;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill();
     // 选中环
     if (isFocus) {
       ctx.strokeStyle = base; ctx.lineWidth = 1.6; ctx.globalAlpha = .9;
@@ -389,7 +411,7 @@ function selectNode(n) {
   document.getElementById("cKv").innerHTML =
     `平均奖励 <b>${(n.mean_reward || 0).toFixed(3)}</b>　·　被调用 <b>${n.pulls || 0}</b> 次<br>`
     + execLine
-    + `质量：安全性 <b>${esc(q.safety || "—")}</b> · 完整性 <b>${esc(q.completeness || "—")}</b> · 可执行性 <b>${esc(q.executability || "—")}</b>`;
+    + `质量：安全性 <b>${esc(UI.qualityLabel(q.safety))}</b> · 完整性 <b>${esc(UI.qualityLabel(q.completeness))}</b> · 可执行性 <b>${esc(UI.qualityLabel(q.executability))}</b>`;
   const rels = n.relations || [];
   document.getElementById("cRel").innerHTML = rels.length
     ? "关联技能：" + rels.map(r => `<span>${esc(r[0])} → ${esc(r[1])}</span>`).join("")
@@ -446,7 +468,7 @@ window.addEventListener("resize", resize);
   try {
     data = await UI.json(API + "/api/graph");
   } catch (e) {
-    document.getElementById("load").innerHTML = `<div style="text-align:center;padding:24px">${esc(e.message)}<br><a href="/graph" style="display:inline-block;margin-top:16px;color:#c2e4cd">重新加载 →</a></div>`;
+    document.getElementById("load").innerHTML = `<div style="text-align:center;padding:24px">${esc(e.message)}<br><a href="/graph" style="display:inline-block;margin-top:16px;color:#a5cfff">重新加载 →</a></div>`;
     return;
   }
   // 技能详情（质量/关系）在 /api/skills 里

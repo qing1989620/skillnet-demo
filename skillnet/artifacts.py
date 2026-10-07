@@ -290,10 +290,17 @@ def safe_filename(name: str, kind: str) -> str:
     base = str(name or "").strip().replace("\\", "/").split("/")[-1]
     base = re.sub(r"[^\w\u4e00-\u9fff.\-]+", "-", base, flags=re.UNICODE).strip("-._") or "deliverable"
     ext = _KIND_EXT.get(kind, ".md")
-    stem, _, old = base.rpartition(".")
-    if not stem or len(old) > 5:            # 无扩展名或扩展名异常
-        base = base + ext
-    return base[:80]
+    stem, dot, old = base.rpartition(".")
+    allowed = {"doc": {"md", "txt"}, "code": {"py"}, "table": {"csv"}}
+    if dot and old.lower() in allowed.get(kind, {"md"}):
+        ext = "." + old.lower()
+        base = stem
+    elif stem and len(old) <= 5:
+        base = stem
+    # This generator returns UTF-8 text, so a model-supplied .png/.pdf/.xlsx
+    # must never be advertised as a binary artifact. Real binary files are
+    # collected separately from the execution sandbox.
+    return base[:80 - len(ext)] + ext
 
 
 def generate_deliverables(task: str, plan: dict[str, Any], skills: list[str],
@@ -359,11 +366,12 @@ def generate_deliverables(task: str, plan: dict[str, Any], skills: list[str],
         kind = str(d.get("kind") or "doc").lower()
         kind = kind if kind in _KIND_EXT else "doc"
         fname = safe_filename(str(d.get("name") or f"deliverable_{len(files) + 1}"), kind)
+        body = content if content.endswith("\n") else content + "\n"
         files.append({
             "name": fname,
             "kind": f"方案交付物（{kind}）",
-            "body": content if content.endswith("\n") else content + "\n",
-            "bytes": len(content.encode("utf-8")),
+            "body": body,
+            "bytes": len(body.encode("utf-8")),
             "note": str(d.get("note") or ""),
             "declared_as": str(d.get("name") or ""),
         })

@@ -1579,9 +1579,11 @@ def capabilities() -> dict[str, Any]:
     from skillnet import adapters
     from skillnet.retriever import (AUTO_EXECUTE_THRESHOLD,
                                     MANUAL_CONFIRM_THRESHOLD)
-    from skillnet.schema import QUALITY_DIMENSIONS
+    from skillnet.schema import QUALITY_DIMENSIONS, Skill
 
-    lib_ = lib()
+    # The capability proof performs a synthetic feedback update. Use detached
+    # skills so reading this endpoint cannot train or dirty the live library.
+    lib_ = SkillLibrary([Skill.from_dict(s.to_dict()) for s in lib()])
     groups: dict[str, list[str]] = defaultdict(list)
     for s in lib_:
         groups[s.domain].append(s.name)

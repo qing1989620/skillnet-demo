@@ -6,7 +6,12 @@
 <title>SkillNet · 对话工作台</title>
 <style>
   /* 视觉语言与 Mission Control 一致：浅色、克制、数据优先，不使用 emoji */
-
+  :root{
+    --bg:#fbfaf8; --panel:#fff; --soft:#f4f6f8; --line:#e3e8ee;
+    --ink:#22303e; --ink2:#5b6b7c; --ink3:#8a97a4;
+    --brand:#1a3a5c; --brand2:#24557a; --ok:#2e7d4f; --warn:#b0781a; --bad:#a8433a;
+    --mono:"Cascadia Mono",Consolas,"Courier New",monospace;
+  }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
   body{display:flex;background:var(--bg);color:var(--ink);
@@ -27,7 +32,7 @@
   .sitem{padding:10px 12px;border-radius:6px;cursor:pointer;border:1px solid transparent;
     transition:background .15s,border-color .15s}
   .sitem:hover{background:var(--soft)}
-  .sitem.on{background:#edf5ef;border-color:#cadbce}
+  .sitem.on{background:#f2f7fb;border-color:#c9d8e6}
   .sitem .t{font-size:12.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;
     white-space:nowrap}
   .sitem .m{font-size:11px;color:var(--ink3);margin-top:3px;display:flex;gap:8px}
@@ -78,7 +83,7 @@
   .stepcard .body{margin-top:6px;display:grid;gap:3px}
   .stepcard pre{white-space:pre-wrap;font:11px/1.6 var(--mono);background:var(--soft);
     padding:8px 10px;border-radius:4px;margin-top:3px;max-height:220px;overflow:auto}
-  .ai-reply{margin-top:16px;background:#fff;border:1px solid #dce5df;border-radius:8px;
+  .ai-reply{margin-top:16px;background:#fff;border:1px solid #d8e2ea;border-radius:8px;
     padding:18px 22px 16px;box-shadow:0 1px 3px rgba(26,58,92,.05)}
   .ai-reply .rp-head{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;
     color:var(--brand);letter-spacing:.5px;padding-bottom:10px;border-bottom:1px solid var(--line)}
@@ -91,13 +96,13 @@
   .ai-reply .rp-body ul,.ai-reply .rp-body ol{margin:7px 0 7px 20px}
   .ai-reply .rp-body code{font:12px/1.6 var(--mono);background:var(--soft);padding:1px 5px;
     border-radius:3px;color:var(--brand2)}
-  .ai-reply .rp-body pre{background:#f5f8f5;border:1px solid var(--line);border-radius:5px;
+  .ai-reply .rp-body pre{background:#f6f8fa;border:1px solid var(--line);border-radius:5px;
     padding:10px 12px;margin:8px 0;overflow:auto;font:12px/1.65 var(--mono);color:var(--ink2)}
   .ai-reply .rp-body table{width:100%;border-collapse:collapse;margin:10px 0;font-size:12.5px}
   .ai-reply .rp-body th{background:var(--soft);color:var(--brand2);text-align:left;
     padding:6px 10px;border-bottom:2px solid var(--line)}
   .ai-reply .rp-body td{padding:5px 10px;border-bottom:1px solid var(--line);vertical-align:top}
-  .ai-reply .rp-body blockquote{margin:10px 0;padding:8px 14px;border-left:3px solid #cadbce;
+  .ai-reply .rp-body blockquote{margin:10px 0;padding:8px 14px;border-left:3px solid #c9d8e6;
     background:#f8fafc;color:var(--ink2);border-radius:0 4px 4px 0}
   .task-summary{margin-top:14px;background:#fbfcfd;border:1px solid #dbe4ec;border-left:4px solid var(--ok);
     border-radius:8px;padding:18px 22px 16px}
@@ -150,20 +155,20 @@
     .composer{padding:12px 14px}
   }
 </style>
-<link rel="stylesheet" href="/static/assets/ui.css?v=0.8.0">
-<script src="/static/assets/ui.js?v=0.8.0"></script>
+<link rel="stylesheet" href="/static/assets/ui.css?v=0.8.1-restored2">
+<script src="/static/assets/ui.js?v=0.8.1-restored2"></script>
 </head>
 <body>
 
 <aside class="side">
   <div class="side-head">
-    <div class="brand"><i></i>SkillNet / 科研工作台<span>研究会话 · 仅保存在本机</span></div>
+    <div class="brand"><i></i>SkillNet 对话工作台<span>会话仅存本机</span></div>
     <button class="newbtn" onclick="newSession()">+ 新建对话</button>
   </div>
   <div class="slist" id="slist"></div>
   <div class="side-foot">
-    会话记录问题与运行引用。执行产物、验收结果与成本保存在运行中心。<br>
-    <a href="/runs">查看运行记录 →</a>
+    历史只记录<b>问题</b>；每问之下的「查看执行详情」可展开 Agent 回复与完整流程。<br>
+    <a href="/">返回首页</a> · <a href="/graph">技能星图</a> · <a href="/dashboard">完整面板</a> · <a href="/runs">运行记录</a>
   </div>
 </aside>
 
@@ -171,6 +176,7 @@
   <div class="topbar">
     <button class="mobile-sessions-btn" id="sessions-toggle" aria-label="打开会话历史" aria-expanded="false">☰</button>
     <b id="sess-title">新对话</b>
+    <span class="hint" id="sess-hint">提问后会调用完整 Agent 框架：检索 → 选择 → 编排 → 真实执行 → 验收 → 进化</span>
     <span class="sp"></span>
     <a id="last-run" href="#" target="_blank" style="display:none">完整面板 →</a>
     <span id="product-nav" style="display:contents"></span>
@@ -179,13 +185,13 @@
   <div class="composer">
     <div class="chips" id="chips"></div>
     <div class="inputrow">
-      <textarea id="q" aria-label="研究任务" placeholder="描述你的研究任务，例如：清洗实验数据、比较两组差异并生成图表…"></textarea>
+      <textarea id="q" aria-label="研究任务" placeholder="输入问题或任务，Enter 发送 · Shift+Enter 换行。可连续追问，系统会自动带上本对话的上下文"></textarea>
       <button class="send" id="send" onclick="submitQ()">发送</button>
       <button class="btn ghost" id="cancel-active" style="display:none">停止</button>
     </div>
     <div class="foot">
-      <span>Enter 发送 · Shift + Enter 换行</span>
-      <span>单次预算 ¥1.00 · 最多 3 个执行步骤 · 上下文保留最近 3 轮</span>
+      <span>每次真实调用模型；成本与 Token 实时记账</span>
+      <span>追问会自动携带本会话此前问答（最多 3 轮）· Enter 发送，Shift+Enter 换行</span>
     </div>
   </div>
 </main>
@@ -198,9 +204,9 @@ document.getElementById("product-nav").innerHTML = UI.productNav("chat");
 const PHASES = [["retrieval","检索对比"],["ranking","策略选择"],["orchestration","任务编排"],
                 ["dag","DAG 收束"],["plan","研究方案"],["exec","真实执行"],["final","验收与进化"]];
 const CHIPS = [
-  "分析剂量-反应实验并生成图表",
-  "比较两组实验数据，报告效应量与置信区间",
-  "清洗含缺失值的数据并建立基线预测模型"
+  "解释一下费马大定理",
+  "对一批剂量-存活率实验数据做清洗并做剂量-反应分析",
+  "分析学生考试成绩，找出薄弱环节并给出复习建议表"
 ];
 
 /* ---------- 基础工具 ---------- */
@@ -265,7 +271,7 @@ function openSession(id){ if (busy) return; CUR = id; renderSidebar(); renderMai
 function renderSidebar(){
   const host = document.getElementById("slist");
   if (!SESSIONS.length){
-    host.innerHTML = '<div style="padding:14px;font-size:12px;color:#728078;line-height:1.9">还没有对话。<br>点上方「新建对话」开始。</div>';
+    host.innerHTML = '<div style="padding:14px;font-size:12px;color:#8a97a4;line-height:1.9">还没有对话。<br>点上方「新建对话」开始。</div>';
     return;
   }
   host.innerHTML = SESSIONS.map(s => `
@@ -285,7 +291,9 @@ function renderMain(){
   if (last){ link.style.display = ""; link.href = `/run?id=${encodeURIComponent(last.run_id)}`; }
   else link.style.display = "none";
   if (!s || !s.turns.length){
-    host.innerHTML = `<div class="chat-welcome"><div class="welcome-mark">${UI.mark}</div><div class="ui-kicker">Research workspace</div><h1>让研究任务，成为可复用的能力。</h1><p>描述你想解决的问题。SkillNet 将检索与编排技能、执行任务，并保留每一步的产物与验收证据。</p><div class="welcome-flow"><span>检索能力</span>→<span>执行研究</span>→<span>验收产物</span>→<span>沉淀技能</span></div></div>`;
+    host.innerHTML = '<div class="empty">在上方输入问题，调用完整 Agent 框架。<br>' +
+      '执行完成后这里会给出：AI 回复 · 每一步的执行解释 · 本次任务总结（SkillNet 的角色与技能库成长）。<br>' +
+      '同一个对话里可以继续追问，系统会自动带上上下文。</div>';
     return;
   }
   host.innerHTML = s.turns.map((t, i) => turnHTML(t, i)).join("");
@@ -316,9 +324,9 @@ const setSub = (i, txt) => { const el = document.getElementById(`ph-sub-${i}`) |
 
 /* 步骤明细（含时间轴条） */
 function stepCardHTML(s, fin, i){
-  const map = { done:["完成","#2e7d4f"], failed:["失败","#a8433a"], skipped:["已跳过","#728078"],
-                running:["执行中","#2d6d57"], pending:["等待","#728078"] };
-  const pair = map[s.status] || [s.status, "#728078"];
+  const map = { done:["完成","#2e7d4f"], failed:["失败","#a8433a"], skipped:["已跳过","#8a97a4"],
+                running:["执行中","#24557a"], pending:["等待","#8a97a4"] };
+  const pair = map[s.status] || [s.status, "#8a97a4"];
   const fixed = s.status === "done" && (s.n_attempts || 1) > 1;
   const L = [];
   L.push(`<div><b>做什么：</b>${esc(s.action || "")}</div>`);
@@ -331,8 +339,8 @@ function stepCardHTML(s, fin, i){
     L.push(`<div style="margin-left:14px"><b>程序化验收：</b>${ok}/${s.checks.length} 通过${ok < s.checks.length ? ` — 未通过：${s.checks.filter(c => !c.passed).slice(0,3).map(c => esc(c.name)).join("、")}` : ""}</div>`);
   }
   if ((s.artifacts || []).length) L.push(`<div style="margin-left:14px"><b>产出物：</b>${s.artifacts.map(a => `<a href="${API}/api/runs/${encodeURIComponent(fin.run_id)}/artifacts/${encodeURIComponent(a.name)}" target="_blank" style="color:var(--brand2)">${esc(a.name)}</a>（${(a.bytes/1024).toFixed(1)} KB）`).join("、")}</div>`);
-  if ((s.inputs || []).length) L.push(`<div style="margin-left:14px;color:#728078">读取的上游产物：${esc(s.inputs.join("、"))}</div>`);
-  if (s.status === "skipped" && s.verify_skip_reason) L.push(`<div style="margin-left:14px;color:#728078">${esc(s.verify_skip_reason)}</div>`);
+  if ((s.inputs || []).length) L.push(`<div style="margin-left:14px;color:#8a97a4">读取的上游产物：${esc(s.inputs.join("、"))}</div>`);
+  if (s.status === "skipped" && s.verify_skip_reason) L.push(`<div style="margin-left:14px;color:#8a97a4">${esc(s.verify_skip_reason)}</div>`);
   if (s.status === "failed" && s.error) L.push(`<div style="margin-left:14px;color:var(--bad)">最终错误：${esc(String(s.error).slice(0,200))}</div>`);
   const okAtt = (s.attempts || []).filter(a => a.ok).slice(-1)[0];
   if (okAtt && (okAtt.stdout || "").trim()) L.push(`<div style="margin-left:14px"><b>输出摘要：</b><pre>${esc(okAtt.stdout.slice(-800))}</pre></div>`);
@@ -342,7 +350,7 @@ function stepCardHTML(s, fin, i){
   if (t0 && s.started_at_ms && s.duration_ms > 0){
     const left = Math.max(0, Math.min(99, (s.started_at_ms - t0) / total * 100));
     const w = Math.max(1, Math.min(100 - left, s.duration_ms / total * 100));
-    L.push(`<div style="margin-left:14px"><div style="position:relative;height:6px;background:var(--soft);border-radius:3px;overflow:hidden"><div style="position:absolute;left:${left}%;width:${w}%;height:100%;background:${pair[1]};opacity:.72"></div></div><div style="font-size:10.5px;color:#728078;margin-top:2px">时间轴：第 ${((s.started_at_ms - t0)/1000).toFixed(1)}s 开始（占 ${w.toFixed(0)}%）</div></div>`);
+    L.push(`<div style="margin-left:14px"><div style="position:relative;height:6px;background:var(--soft);border-radius:3px;overflow:hidden"><div style="position:absolute;left:${left}%;width:${w}%;height:100%;background:${pair[1]};opacity:.72"></div></div><div style="font-size:10.5px;color:#8a97a4;margin-top:2px">时间轴：第 ${((s.started_at_ms - t0)/1000).toFixed(1)}s 开始（占 ${w.toFixed(0)}%）</div></div>`);
   }
   return `<div class="stepcard" style="border-left-color:${pair[1]}">
     <div class="sh"><b>Step ${s.idx+1} · ${esc(s.skill || "通用")}</b><span style="color:${pair[1]}">${pair[0]}${fixed ? "（修复后成功）" : ""}</span></div>
@@ -366,7 +374,7 @@ function taskSummaryHTML(fin){
       `${k} <b class="up">${v > 0 ? "+" : ""}${v}</b>`).join(" · ") || "—"}</td></tr>`).join("");
   const news = (imp.new_skills || []).map(n =>
     `<div class="newskill"><b style="color:var(--ok)">新增技能：<code>${esc(n.name)}</code></b>` +
-    `<span style="color:#728078"> · 第 ${n.generation} 代 · 领域 ${esc(n.domain || "—")}` +
+    `<span style="color:#8a97a4"> · 第 ${n.generation} 代 · 领域 ${esc(n.domain || "—")}` +
     (n.parents && n.parents.length ? ` · 衍生自 ${esc(n.parents.join("、"))}` : "") + `</span>` +
     (n.capability ? `<div style="margin-top:5px;color:var(--ink2)">${esc(n.capability)}</div>` : "") + `</div>`).join("");
   return `<div class="task-summary">
@@ -403,7 +411,7 @@ function resultHTML(fin){
     `${fin.status === "COMPLETED" ? "已完成" : fin.status === "PARTIAL" ? "部分完成" : fin.status} · ` +
     `¥${Number(fin.cost_yuan || 0).toFixed(3)} · ${(fin.duration_ms/1000).toFixed(1)}s<br>` +
     `步骤 ${steps.length}：一次通过 <b style="color:var(--ok)">${nDone - nFix}</b> · 修复后成功 <b style="color:var(--warn)">${nFix}</b> · 失败 <b style="color:var(--bad)">${nFail}</b> · 跳过 <b>${nSkip}</b>` +
-    (cpTxt ? `<br><span style="color:#728078">${cpTxt}</span>` : "") +
+    (cpTxt ? `<br><span style="color:#8a97a4">${cpTxt}</span>` : "") +
     ` · <a href="/run?id=${encodeURIComponent(fin.run_id)}" target="_blank">完整面板 →</a></div>`;
   const reply = (fin.staged || {}).final_reply;
   return sum +
@@ -413,7 +421,7 @@ function resultHTML(fin){
          <button type="button" class="on" onclick="dtab(this,'steps')">每一步执行</button>
          <button type="button" onclick="dtab(this,'raw')">原始事件</button>
        </div>
-       <div class="dsec on" data-sec="steps">${steps.map(s => stepCardHTML(s, fin)).join("") || "<div style='color:#728078'>无步骤</div>"}</div>
+       <div class="dsec on" data-sec="steps">${steps.map(s => stepCardHTML(s, fin)).join("") || "<div style='color:#8a97a4'>无步骤</div>"}</div>
        <div class="dsec" data-sec="raw"><pre style="max-height:280px;overflow:auto;font:11px/1.6 var(--mono);background:var(--soft);padding:10px;border-radius:4px">${esc(((fin.events || []).map(e => e.type).join(" → ")) || "（无事件记录）")}</pre></div>
      </div>` +
     (reply ? replyCardHTML(reply) : "") +

@@ -1,6 +1,6 @@
 {
  "schema_version": 2,
- "saved_at": "2026-10-07 18:35:14",
+ "saved_at": "2026-10-07 23:26:08",
  "evolved": [
   {
    "name": "high-temp-oxidation-coating-recipe-dev",
@@ -3755,6 +3755,220 @@
    "metadata": {},
    "allowed_tools": "",
    "stats": {
+    "pulls": 2.0,
+    "reward_sum": 1.8,
+    "best": 0.9,
+    "exec_total": 2,
+    "exec_ok": 2
+   }
+  },
+  {
+   "name": "demo-descriptive-stats-report",
+   "description": "对硬编码的演示分组数据计算样本均值与样本标准差，输出对照CSV、带误差条的条形图PNG及含免责声明的结果说明，并做回读断言校验。适用于仅用演示数据、不访问外部网络的描述性统计交付场景。",
+   "domain": "科研数据分析",
+   "tags": [
+    "描述性统计",
+    "样本标准差",
+    "ddof=1",
+    "CSV输出",
+    "matplotlib误差条",
+    "演示数据",
+    "结果校验"
+   ],
+   "capability": "从内存中的分组数值产出一份可解析的统计对照CSV、一张带样本量标注与误差条的条形图，以及一段仅含可核验数值的描述文本。",
+   "inputs": [
+    "分组名称与对应的数值列表（硬编码在脚本内）",
+    "输出文件名与路径",
+    "精度要求（小数位数）",
+    "绘图样式参数（dpi、figsize、capsize）"
+   ],
+   "outputs": [
+    "summary.csv（列：group,n,mean,std_sample）",
+    "barplot.png（含误差条与n标注的条形图）",
+    "单文件Python脚本",
+    "终端结果说明文本（含免责声明）"
+   ],
+   "use_when": [
+    "需要用演示数据快速生成分组描述性统计对照表",
+    "需要同时交付CSV与可视化图并保证二者数值同源",
+    "需要避免推断性结论、仅做可核验的数值陈述"
+   ],
+   "steps": [
+    "编写单文件Python脚本，在脚本内硬编码各分组数值列表，不读取任何外部文件或网络资源。",
+    "用statistics.stdev（等价ddof=1）计算每组样本标准差，同时计算n与mean，统一round到4位小数。",
+    "将结果写入summary.csv，固定列名['group','n','mean','std_sample']，UTF-8编码、逗号分隔。",
+    "用pandas以encoding='utf-8'回读CSV，断言行数等于组数、列名精确匹配、n为整数、mean/std_sample为浮点、无NaN。",
+    "用matplotlib绘制分组均值条形图，yerr传入同源std_sample，设置capsize=5、统一error_kw线宽、dpi=300、y轴从0起。",
+    "在每根柱上标注'n=样本量'，添加坐标轴标签与单位。",
+    "撰写3–5句结果说明，逐句列出n、mean、样本标准差，强制包含'演示数据'与'不可用于科学结论'关键词。",
+    "逐句检查说明文本，删除任何p值、置信区间、效应量、显著性、因果或推断性表述。"
+   ],
+   "pitfalls": [
+    "误用总体标准差（ddof=0）导致数值系统性偏小：必须显式使用statistics.stdev或numpy.std(ddof=1)。",
+    "浮点长尾写入CSV导致回读比对失败：写入前统一round到4位，回读时按同精度比较。",
+    "CSV编码或分隔符不当导致pandas回读失败：固定UTF-8与逗号分隔，并在回读时断言列名与行数。",
+    "说明文本混入推断性表述（p值、显著性、因果）：逐句检查并删除，仅保留可由CSV数值直接支持的描述。",
+    "绘图误差条与CSV数值不同源：yerr必须直接引用写入CSV的同一std_sample变量。",
+    "y轴不从0起导致视觉夸大组间差异：强制设置y轴下限为0。"
+   ],
+   "verification": [
+    "手工核对均值：各组数值求和除以n，确认与CSV中mean一致。",
+    "手工核对样本标准差：计算样本方差后开方，确认与CSV中std_sample一致。",
+    "回读断言：df.shape[0]等于组数，list(df.columns)精确等于['group','n','mean','std_sample']，df.isna().sum().sum()==0。",
+    "回读后与写入前内存结果逐值比较（df.equals或逐列比较）。",
+    "目视核对柱高等于CSV的mean，误差条上下端等于mean±std_sample。",
+    "逐句检查说明文本，确认无推断性表述且免责声明关键词存在。"
+   ],
+   "quality": {
+    "safety": {
+     "level": "Good",
+     "reason": "未见危险系统操作或越权指令"
+    },
+    "completeness": {
+     "level": "Good",
+     "reason": "8 个步骤 + 6 条陷阱 + 6 条验证，覆盖完整"
+    },
+    "executability": {
+     "level": "Average",
+     "reason": "6/8 个步骤具体可执行"
+    },
+    "maintainability": {
+     "level": "Good",
+     "reason": "与 3 个技能建立关联，步骤数适中"
+    },
+    "cost_awareness": {
+     "level": "Good",
+     "reason": "提及资源约束 ['样本量', '内存']"
+    }
+   },
+   "relations": [
+    [
+     "compose_with",
+     "demo-descriptive-stats-summary"
+    ],
+    [
+     "compose_with",
+     "scientific-visualization"
+    ],
+    [
+     "depend_on",
+     "xlsx"
+    ]
+   ],
+   "source": "distill",
+   "origin_task": null,
+   "parent": [
+    "demo-descriptive-stats-summary"
+   ],
+   "generation": 2,
+   "version": 1,
+   "license": "MIT",
+   "compatibility": "",
+   "metadata": {},
+   "allowed_tools": "",
+   "stats": {
+    "pulls": 0.0,
+    "reward_sum": 0.0,
+    "best": 0.0
+   }
+  },
+  {
+   "name": "descriptive-stats-csv-summary",
+   "description": "对硬编码或本地分组数值数据做纯描述统计（n、均值、样本标准差），输出固定列名的 summary.csv 并回读校验；适用于只需描述统计、禁止推断统计与联网的轻量分析任务。",
+   "domain": "数据分析",
+   "tags": [
+    "描述统计",
+    "样本标准差",
+    "ddof=1",
+    "summary.csv",
+    "pandas回读校验",
+    "无推断统计"
+   ],
+   "capability": "产出一个含 group,n,mean,std_sample 列的 summary.csv、对应单文件 Python 脚本，以及带免责声明的结果说明文本。",
+   "inputs": [
+    "分组数值数据（可硬编码或来自本地文件）",
+    "输出路径与文件名（默认 summary.csv）",
+    "小数位精度（默认 4 位）"
+   ],
+   "outputs": [
+    "summary.csv（列：group,n,mean,std_sample）",
+    "单文件 Python 脚本（无网络/外部依赖）",
+    "终端结果说明文本（含免责声明）"
+   ],
+   "use_when": [
+    "任务只要求描述统计，明确排除推断统计",
+    "数据量小、可硬编码或本地读取，且禁止联网",
+    "需要固定结构、可被下游程序回读的统计汇总文件"
+   ],
+   "steps": [
+    "编写单文件 Python 脚本，将各组数据硬编码为列表（或从本地文件读取），不访问网络、不读外部未声明文件。",
+    "对每组计算 n=len(x)、mean=statistics.mean(x)、样本标准差=statistics.stdev(x)（等价 numpy.std(x, ddof=1)），显式使用 ddof=1。",
+    "写入前统一 round(x, 4)，避免浮点长尾；以 UTF-8、逗号分隔写入 summary.csv，列名固定为 group,n,mean,std_sample。",
+    "做最小化代码审查：grep 脚本中 'ttest|pvalue|p_value|ci|confidence|effect'，确认无推断统计调用，仅保留 stdev/mean/len。",
+    "用 pandas 回读 summary.csv 做结构断言：行数等于组数、列名完全等于 ['group','n','mean','std_sample']、n 为整数、mean/std_sample 为浮点、isna().sum()==0；任一失败则非零退出并打印失败项。",
+    "撰写 3–5 句结果说明，逐句由 summary.csv 数值支持，并强制包含免责声明关键词（如「演示数据」「不可用于科学结论」）。"
+   ],
+   "pitfalls": [
+    "误用 ddof=0 计算总体标准差，导致 std 偏小（如应为 1.5811 却得 1.4142）——必须显式 ddof=1 或 statistics.stdev。",
+    "浮点长尾未四舍五入，CSV 出现 1.5811388300841898 之类长尾——写入前统一 round(x, 4)。",
+    "CSV 编码或分隔符不当导致 pandas 回读失败——固定 UTF-8 与逗号分隔，并用 pandas 回读断言。",
+    "越界输出推断统计（p 值、显著性、因果）——通过代码审查与逐句检查，发现即删除。",
+    "结果说明缺少免责声明或出现因果/显著性表述——强制关键词检查并逐句核对。"
+   ],
+   "verification": [
+    "手工核对均值与样本标准差：样本方差=Σ(x-mean)²/(n-1)，样本标准差=sqrt(样本方差)，与脚本输出比对。",
+    "grep 脚本确认无 ttest/p 值/置信区间/效应量等推断统计调用。",
+    "pandas 回读断言：行数、列名、dtype、无 NaN 全部通过；失败则非零退出。",
+    "逐句检查结果说明：无 p 值、无显著性结论、无因果表述，且含免责声明关键词。"
+   ],
+   "quality": {
+    "safety": {
+     "level": "Good",
+     "reason": "未见危险系统操作或越权指令"
+    },
+    "completeness": {
+     "level": "Good",
+     "reason": "6 个步骤 + 5 条陷阱 + 4 条验证，覆盖完整"
+    },
+    "executability": {
+     "level": "Good",
+     "reason": "6/6 个步骤含具体工具或参数，无模糊表述"
+    },
+    "maintainability": {
+     "level": "Good",
+     "reason": "与 3 个技能建立关联，步骤数适中"
+    },
+    "cost_awareness": {
+     "level": "Average",
+     "reason": "未说明资源或耗时约束"
+    }
+   },
+   "relations": [
+    [
+     "compose_with",
+     "code-helper"
+    ],
+    [
+     "compose_with",
+     "xlsx"
+    ],
+    [
+     "similar_to",
+     "demo-descriptive-stats-summary"
+    ]
+   ],
+   "source": "distill",
+   "origin_task": null,
+   "parent": [
+    "demo-descriptive-stats-summary"
+   ],
+   "generation": 2,
+   "version": 1,
+   "license": "MIT",
+   "compatibility": "",
+   "metadata": {},
+   "allowed_tools": "",
+   "stats": {
     "pulls": 0.0,
     "reward_sum": 0.0,
     "best": 0.0
@@ -3811,8 +4025,8 @@
    "best": 0.795
   },
   "scientific-visualization": {
-   "pulls": 20.0,
-   "reward_sum": 16.140000000000004,
+   "pulls": 21.0,
+   "reward_sum": 17.040000000000003,
    "best": 0.9
   },
   "data-cleaning": {
@@ -3928,11 +4142,11 @@
    "best": 0.78
   },
   "xlsx": {
-   "pulls": 1.0,
-   "reward_sum": 0.9,
+   "pulls": 3.0,
+   "reward_sum": 2.7,
    "best": 0.9,
-   "exec_total": 1,
-   "exec_ok": 1
+   "exec_total": 2,
+   "exec_ok": 2
   },
   "doc-coauthoring": {
    "pulls": 1.0,
@@ -3940,11 +4154,12 @@
    "best": 0.775
   },
   "code-helper": {
-   "pulls": 3.0,
-   "reward_sum": 2.495,
+   "pulls": 5.0,
+   "reward_sum": 4.295,
    "best": 0.9,
-   "exec_total": 1,
-   "exec_ok": 1
+   "exec_total": 2,
+   "exec_ok": 2,
+   "exec_fix": 1
   },
   "interview": {
    "pulls": 1.0,
@@ -4036,6 +4251,13 @@
    "best": 0.82,
    "exec_total": 1,
    "exec_ok": 1
+  },
+  "demo-descriptive-stats-summary": {
+   "pulls": 2.0,
+   "reward_sum": 1.8,
+   "best": 0.9,
+   "exec_total": 2,
+   "exec_ok": 2
   }
  }
 }
