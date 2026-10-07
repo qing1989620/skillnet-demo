@@ -9,6 +9,7 @@ import json
 import os
 import pathlib
 import threading
+import tempfile
 import time
 from typing import Any
 
@@ -219,6 +220,10 @@ class SkillLibrary:
     # ------------------------------------------------------------------
     def save(self, path=None) -> str:
         """原子落盘：先写临时文件再 `os.replace`，避免写一半被读到或进程中断损坏文件。"""
+        with self._lock:
+            return self._save_locked(path)
+
+    def _save_locked(self, path=None) -> str:
         p = pathlib.Path(path or config.LIBRARY_FILE)
         snapshot = self.all()
         payload = {
@@ -233,9 +238,18 @@ class SkillLibrary:
         }
         text = json.dumps(payload, ensure_ascii=False, indent=1)
         p.parent.mkdir(parents=True, exist_ok=True)
-        tmp = p.with_name(p.name + ".tmp")
-        tmp.write_text(text, encoding="utf-8")
-        os.replace(tmp, p)
+        tmp = None
+        try:
+            with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=p.parent,
+                                             suffix=".tmp", delete=False) as f:
+                tmp = pathlib.Path(f.name)
+                f.write(text)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(tmp, p)
+        finally:
+            if tmp is not None:
+                tmp.unlink(missing_ok=True)
         self.dirty = False
         return str(p)
 

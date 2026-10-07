@@ -23,7 +23,7 @@ if not defined PY_EXE (
 echo       使用解释器: !PY_EXE!
 
 echo [2/4] 检查并安装依赖（首次运行约 1-2 分钟）...
-!PY_EXE! -c "import fastapi, uvicorn, httpx, pydantic, numpy" >nul 2>&1
+!PY_EXE! -c "import fastapi, uvicorn, httpx, pydantic, numpy, pandas, matplotlib, openpyxl" >nul 2>&1
 if not !errorlevel! equ 0 (
     !PY_EXE! -m pip install -r requirements.txt
     if not !errorlevel! equ 0 (

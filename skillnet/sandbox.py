@@ -105,7 +105,8 @@ def run_python(code: str, timeout: int = 90, keep_dir: bool = False,
     # 收集新产生的产物文件（排除脚本自身与缓存）
     artifacts: list[dict[str, Any]] = []
     for p in sorted(tmp.rglob("*")):
-        if not p.is_file() or p.name in before or p.name == "main.py":
+        if (not p.is_file() or p.is_symlink() or not p.resolve().is_relative_to(tmp)
+                or p.name in before or p.name == "main.py"):
             continue
         if ".mpl" in p.parts or "__pycache__" in p.parts:
             continue
@@ -156,7 +157,7 @@ def available_stack() -> dict[str, str]:
     """探测沙箱内可用的第三方库版本，供提示词约束生成代码。"""
     import importlib
     out: dict[str, str] = {}
-    for name in ("numpy", "matplotlib", "scipy", "pandas", "sympy", "sklearn", "statsmodels"):
+    for name in ("numpy", "matplotlib", "scipy", "pandas", "openpyxl", "sympy", "sklearn", "statsmodels"):
         try:
             mod = importlib.import_module(name)
             out[name] = getattr(mod, "__version__", "?")

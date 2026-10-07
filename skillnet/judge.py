@@ -5,6 +5,7 @@
 """
 from __future__ import annotations
 
+import math
 from typing import Any
 
 from .llm import chat_json
@@ -23,6 +24,18 @@ WEIGHTS = {
 }
 
 
+def _failed_evaluation(points: list[str], invalid_fields: list[str]) -> dict[str, Any]:
+    """Keep the legacy numeric shape while making unusable evidence explicit."""
+    return {
+        "scores": {key: 0.0 for key in RUBRIC}, "weighted": 0.0,
+        "coverage": 0.0 if points else None, "covered": [], "n_points": len(points),
+        "comment": "评审未返回有效结构，当前分数不可作为实测奖励。",
+        "degraded": True, "score_valid": False, "coverage_valid": False,
+        "invalid_fields": invalid_fields,
+        "degraded_reason": "invalid evaluation contract: " + ", ".join(invalid_fields),
+    }
+
+
 def score_plan(
     task: str, plan: dict[str, Any], reference_points: list[str] | None = None
 ) -> dict[str, Any]:
@@ -32,10 +45,22 @@ def score_plan(
     专业操作要点：常见陷阱 + 验证清单），还会计算**要点覆盖率**——
     这是比纯主观打分更客观的指标，用来衡量方案是否真的包含专业操作性知识。
     """
+    pts = reference_points or []
+    if not isinstance(pts, list) or any(not isinstance(p, str) for p in pts):
+        return _failed_evaluation([], ["reference_points"])
+    if not isinstance(plan, dict):
+        return _failed_evaluation(pts, ["plan"])
     steps = plan.get("steps") or []
+    if not isinstance(steps, list):
+        return _failed_evaluation(pts, ["plan.steps"])
+    for key in ("risks", "artifacts"):
+        if not isinstance(plan.get(key) or [], list):
+            return _failed_evaluation(pts, [f"plan.{key}"])
     body = []
     for i, st in enumerate(steps, 1):
         if isinstance(st, dict):
+            if not isinstance(st.get("key_params") or [], list):
+                return _failed_evaluation(pts, [f"plan.steps[{i}].key_params"])
             body.append(
                 f"{i}. [{(st.get('skill') or 'manual')}] {st.get('action','')} "
                 f"| 参数: {', '.join(map(str, st.get('key_params') or []))[:240]} "
@@ -52,7 +77,6 @@ def score_plan(
     )
 
     dims = "\n".join(f"- {k}：{v}" for k, v in RUBRIC.items())
-    pts = reference_points or []
     pts_block = ""
     if pts:
         listed = "\n".join(f"P{i}: {p}" for i, p in enumerate(pts, 1))
@@ -83,23 +107,40 @@ def score_plan(
         max_tokens=600,
         default={},
     )
+    if not isinstance(out, dict):
+        return _failed_evaluation(pts, ["response"])
     scores: dict[str, float] = {}
+    invalid_fields: list[str] = []
     for k in RUBRIC:
-        try:
-            scores[k] = float(out.get(k, 0))
-        except (TypeError, ValueError):
+        value = out.get(k)
+        if (isinstance(value, (int, float)) and not isinstance(value, bool)
+                and 0 <= value <= 10 and math.isfinite(value)):
+            scores[k] = float(value)
+        else:
             scores[k] = 0.0
+            invalid_fields.append(k)
+    score_valid = not invalid_fields
     total = sum(scores[k] * WEIGHTS[k] for k in RUBRIC)
 
     covered_ids: list[int] = []
-    for x in out.get("covered") or []:
-        try:
-            i = int(x)
-        except (TypeError, ValueError):
-            continue
-        if 1 <= i <= len(pts):
+    raw_covered = out.get("covered", [])
+    coverage_valid = True
+    if not isinstance(raw_covered, list) or (pts and "covered" not in out):
+        raw_covered = []
+        invalid_fields.append("covered")
+        coverage_valid = False
+    for i in raw_covered:
+        if isinstance(i, int) and not isinstance(i, bool) and 1 <= i <= len(pts):
             covered_ids.append(i)
+        else:
+            if "covered" not in invalid_fields:
+                invalid_fields.append("covered")
+            coverage_valid = False
     coverage = len(set(covered_ids)) / len(pts) if pts else None
+    comment = out.get("comment", "")
+    if not isinstance(comment, str):
+        comment = ""
+        invalid_fields.append("comment")
 
     return {
         "scores": scores,
@@ -107,7 +148,12 @@ def score_plan(
         "coverage": round(coverage, 4) if coverage is not None else None,
         "covered": sorted(set(covered_ids)),
         "n_points": len(pts),
-        "comment": str(out.get("comment", ""))[:300],
+        "comment": comment[:300],
+        "degraded": bool(invalid_fields),
+        "score_valid": score_valid,
+        "coverage_valid": coverage_valid,
+        "invalid_fields": invalid_fields,
+        "degraded_reason": "invalid evaluation contract: " + ", ".join(invalid_fields) if invalid_fields else "",
     }
 
 

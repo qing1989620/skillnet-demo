@@ -9,20 +9,20 @@
   /* 视觉原则：technical / precise / quiet / trustworthy / dense but legible
      —— 不使用霓虹渐变、玻璃拟态、彩色 KPI 卡；状态色有语义。 */
   /* Agent 最终回复：与 Mission Control 一致的收尾卡 */
-  .ai-reply{margin:18px 0 4px;background:#fff;border:1px solid #d8e2ea;border-radius:8px;
+  .ai-reply{margin:18px 0 4px;background:#fff;border:1px solid #dce5df;border-radius:8px;
     padding:18px 22px 16px;box-shadow:0 1px 3px rgba(26,58,92,.05)}
   .ai-reply .rp-head{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;
-    color:#1a3a5c;letter-spacing:.5px;padding-bottom:9px;border-bottom:1px solid var(--line)}
-  .ai-reply .rp-head i{width:7px;height:7px;border-radius:50%;background:#24557a;
+    color:#182f25;letter-spacing:.5px;padding-bottom:9px;border-bottom:1px solid var(--line)}
+  .ai-reply .rp-head i{width:7px;height:7px;border-radius:50%;background:#2d6d57;
     box-shadow:0 0 0 3px rgba(36,85,122,.12)}
   .ai-reply .rp-meta{margin-left:auto;font-weight:400;color:var(--ink3);font-size:11px}
   .ai-reply .rp-body{font-size:13px;line-height:1.9;color:var(--ink);margin-top:10px}
-  .ai-reply .rp-body h5{font-size:12.5px;color:#24557a;margin:10px 0 3px}
+  .ai-reply .rp-body h5{font-size:12.5px;color:#2d6d57;margin:10px 0 3px}
   .ai-reply .rp-body p{margin:6px 0}
   .ai-reply .rp-body ul,.ai-reply .rp-body ol{margin:6px 0 6px 20px}
   .ai-reply .rp-body li{margin:2px 0}
   .ai-reply .rp-body code{font:12px/1.6 var(--mono);background:var(--panel2);padding:1px 5px;
-    border-radius:3px;color:#24557a}
+    border-radius:3px;color:#2d6d57}
   /* 回复区：三栏下方的独立整宽区块（不进入 grid），高度自适应，超过 40vh 才滚动 */
   #ai-reply-wrap{flex:0 0 auto;max-height:40vh;overflow:auto;background:#fff;
     border-top:1px solid var(--line)}
@@ -31,18 +31,12 @@
   .ai-reply .rp-body pre{background:var(--panel2);border:1px solid var(--line);border-radius:5px;
     padding:10px 12px;margin:7px 0;overflow:auto;font:12px/1.65 var(--mono);color:var(--ink2)}
   .ai-reply .rp-body table{width:100%;border-collapse:collapse;margin:9px 0;font-size:12.5px}
-  .ai-reply .rp-body th{background:var(--panel2);color:#24557a;text-align:left;padding:6px 10px;
+  .ai-reply .rp-body th{background:var(--panel2);color:#2d6d57;text-align:left;padding:6px 10px;
     border-bottom:2px solid var(--line);font-weight:700}
   .ai-reply .rp-body td{padding:5px 10px;border-bottom:1px solid var(--line);vertical-align:top}
-  .ai-reply .rp-body blockquote{margin:9px 0;padding:8px 14px;border-left:3px solid #c9d8e6;
+  .ai-reply .rp-body blockquote{margin:9px 0;padding:8px 14px;border-left:3px solid #cadbce;
     background:#f8fafc;color:var(--ink2);border-radius:0 4px 4px 0}
-  :root{
-    /* 浅色（与 Mission Control / 既有页面一致的视觉语言） */
-    --bg:#fbfaf8; --panel:#ffffff; --panel2:#f4f6f8; --line:#e3e8ee;
-    --ink:#22303e; --ink2:#5b6b7c; --ink3:#8a97a4;
-    --ok:#2e7d4f; --warn:#b0781a; --bad:#a8433a; --info:#1f5f9e; --run:#b0781a;
-    --mono:"Cascadia Mono",Consolas,"Courier New",monospace;
-  }
+
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%}
   body{background:var(--bg);color:var(--ink);font:13px/1.6 "Microsoft YaHei","PingFang SC",sans-serif;
@@ -120,14 +114,14 @@
   .ins-k{font:600 10.5px/1 var(--mono);letter-spacing:.6px;color:var(--ink3);text-transform:uppercase;margin-bottom:7px}
   .row{display:flex;justify-content:space-between;gap:12px;font:12px/1.8 var(--mono);color:var(--ink2)}
   .row b{color:var(--ink);font-weight:600}
-  pre{background:#f7f9fb;border:1px solid var(--line);border-radius:3px;padding:9px 11px;
+  pre{background:#f5f8f5;border:1px solid var(--line);border-radius:3px;padding:9px 11px;
       font:11px/1.6 var(--mono);color:#2b3846;overflow:auto;max-height:260px;white-space:pre-wrap;word-break:break-word}
   .chk{display:grid;grid-template-columns:18px 1fr;gap:6px;font:11.5px/1.7 var(--mono);color:var(--ink2)}
   .chk .m{color:var(--ok)} .chk.bad .m{color:var(--bad)}
   .layer{border-left:2px solid var(--line);padding-left:10px;margin:9px 0}
   .layer.l1{border-color:var(--ok)} .layer.l2{border-color:var(--info)} .layer.l3{border-color:var(--warn)}
   .layer .lh{display:flex;justify-content:space-between;font:600 11.5px/1.6 var(--mono);margin-bottom:5px}
-  .note{font:11.5px/1.6 var(--mono);color:var(--ink2);background:#f7f9fb;border:1px dashed var(--line);
+  .note{font:11.5px/1.6 var(--mono);color:var(--ink2);background:#f5f8f5;border:1px dashed var(--line);
         border-radius:3px;padding:7px 10px;margin-top:8px}
   a{color:var(--info);text-decoration:none} a:hover{text-decoration:underline}
   .empty{color:var(--ink3);font-size:12px;padding:14px 0}
@@ -155,11 +149,13 @@
   }
   .tabs{display:none}
 </style>
-<link rel="stylesheet" href="/static/assets/ui.css">
+<link rel="stylesheet" href="/static/assets/ui.css?v=0.8.0">
+<script src="/static/assets/ui.js?v=0.8.0"></script>
 </head>
 <body>
 <header>
   <div class="h-left">
+    <a class="run-home-link" href="/runs" aria-label="返回运行中心">←</a>
     <span class="badge" id="status">LOADING</span>
     <div style="min-width:0">
       <div class="task" id="task">…</div>
@@ -171,6 +167,8 @@
     <span class="kv">成本 <b id="cost">¥0.000</b> / <span id="budget">¥0.20</span>
       <span class="bar" id="costbar"><i style="width:0%"></i></span></span>
     <span class="kv">步骤 <b id="stepstat">0/0</b></span>
+    <span class="stream-state" id="stream-state" role="status">正在读取记录</span>
+    <button class="ui-settings-btn" data-connection-settings>连接设置</button>
     <button id="cancel" class="danger">取消运行</button>
   </div>
 </header>
@@ -182,7 +180,7 @@
 </nav>
 
 <main>
-  <section class="col" data-tab="graph">
+  <section class="col on" data-tab="graph">
     <div class="col-h"><span>执行流程图</span><span id="gcount"></span></div>
     <div class="col-b" id="graph"><div class="empty">等待方案生成…</div></div>
   </section>
@@ -207,7 +205,7 @@
      **绝不出现 "RESULT CORRECT"**（无 ground truth 时不允许声称结果正确）；
    - 产物依赖必须可见（点击边看 lineage：SHA256/大小/来源步骤）。
    ============================================================================ */
-const API = location.port ? location.origin : "http://127.0.0.1:8848";
+const API = location.origin;
 const QS = new URLSearchParams(location.search);
 const RUN_ID = QS.get("id") || localStorage.getItem("last_run") || "";
 // 截图/审计模式：不建立 SSE 长连接（否则无头浏览器的虚拟时钟无法结束，
@@ -227,30 +225,48 @@ let RUN = null;          // 最近一次 /api/runs/{id}
 let EVENTS = [];         // 收到的全部事件
 let SELECTED = null;     // {kind:"step"|"artifact"|"attempt", idx?, name?}
 const T0 = Date.now();
+const TERMINAL = ["COMPLETED","FAILED","PARTIAL","CANCELLED","INTERRUPTED","BUDGET_EXCEEDED"];
+let streamController = null, refreshPending = null, refreshTimer = null, replyText = "";
+const received = new Set();
+function acceptEvent(event) {
+  const key = event.seq != null ? `seq:${event.seq}` : JSON.stringify(event);
+  if(received.has(key))return; received.add(key); EVENTS.push(event); appendEvent(event); reactTo(event);
+}
 
 /* ---------- SSE ---------- */
-function subscribe(){
-  const es = new EventSource(`${API}/api/runs/${encodeURIComponent(RUN_ID)}/stream`);
-  es.onmessage = e => {
-    let ev; try { ev = JSON.parse(e.data); } catch { return; }
-    if (ev.type === "end" || ev.type === "run.finished") {
-      setTimeout(() => { es.close(); refresh(); }, 120);
+async function subscribe(){
+  let retry = 1000;
+  while (!STATIC_MODE && RUN && !TERMINAL.includes(RUN.status)) {
+    streamController = new AbortController();
+    $("stream-state").textContent = "实时连接中";
+    try {
+      const after = EVENTS.reduce((seq,event)=>Math.max(seq,event.seq||0),0);
+      await UI.consumeSSE(`${API}/api/runs/${encodeURIComponent(RUN_ID)}/stream?after=${after}`,ev=>{
+        if(!ev.type)return;
+        if(PERF.ttfe == null)PERF.ttfe = Date.now()-PERF.t0;
+        if(PERF.ttfm == null && ["retrieval.completed","orchestration.completed"].includes(ev.type))PERF.ttfm = Date.now()-PERF.t0;
+        acceptEvent(ev); retry = 1000;
+      },streamController.signal);
+    } catch(error) {
+      if(error.name === "AbortError")return;
+      $("stream-state").textContent = "连接中断 · 正在恢复";
+      if(error.status === 401 || error.status === 403){UI.toast(error.message);return;}
     }
-    if (ev.type) {
-      if (PERF.ttfe == null) PERF.ttfe = Date.now() - PERF.t0;
-      if (PERF.ttfm == null && (ev.type === "retrieval.completed" || ev.type === "orchestration.completed"))
-        PERF.ttfm = Date.now() - PERF.t0;
-      EVENTS.push(ev); appendEvent(ev); reactTo(ev);
-    }
-  };
-  es.addEventListener("end", () => { es.close(); refresh(); });
-  es.onerror = () => { es.close(); setTimeout(refresh, 400); };
+    await refresh();
+    if(RUN && TERMINAL.includes(RUN.status))break;
+    await new Promise(resolve=>setTimeout(resolve,retry)); retry=Math.min(15000,retry*2);
+  }
+  $("stream-state").textContent = "已同步完整记录";
 }
+window.addEventListener("pagehide",()=>streamController?.abort());
 
 /* ---------- Header ---------- */
 async function refresh(){
-  try { RUN = await (await fetch(`${API}/api/runs/${encodeURIComponent(RUN_ID)}`)).json(); } catch { return; }
-  if (RUN.detail) return;
+  if(refreshPending)return refreshPending;
+  refreshPending = UI.json(`${API}/api/runs/${encodeURIComponent(RUN_ID)}`);
+  try { RUN = await refreshPending; }
+  catch(error) { $("stream-state").textContent="同步失败";if(!RUN){$("timeline").innerHTML=UI.errorHTML(error);$("task").textContent="无法读取执行记录";$("cancel").disabled=true;}return; }
+  finally { refreshPending=null; }
   $("status").textContent = ({"COMPLETED":"已完成","PARTIAL":"部分完成","FAILED":"失败","RUNNING":"运行中",
         "EXECUTING":"执行中","RETRIEVING":"检索中","ORCHESTRATING":"编排中","VERIFYING":"验收中","EVOLVING":"进化中",
         "CANCELLED":"已取消","INTERRUPTED":"已中断","CREATED":"已创建","BUDGET_EXCEEDED":"超出预算"}[RUN.status] || RUN.status);
@@ -259,15 +275,18 @@ async function refresh(){
   $("rid").textContent = RUN.run_id || "";
   $("stepstat").textContent = `${(RUN.step_stats||{}).done||0}/${(RUN.step_stats||{}).total||0}`;
   $("budget").textContent = "¥" + (RUN.budget?.max_cost_yuan ?? 0.2).toFixed(2);
+  if(!SELECTED && RUN.steps?.length)SELECTED={kind:"step",idx:RUN.steps[0].idx};
   renderGraph(); renderTimelineMeta();
   if (SELECTED) renderInspector();
-  const done = ["COMPLETED","FAILED","PARTIAL","CANCELLED","INTERRUPTED","BUDGET_EXCEEDED"].includes(RUN.status);
+  const done = TERMINAL.includes(RUN.status);
   $("cancel").disabled = done;
+  const final = RUN.staged?.final_reply;
+  if(final && final !== replyText){replyText=final;renderReply(final);}
+  tickHeader();
 }
 function tickHeader(){
   if (!RUN) return;
-  const ended = RUN.ended_at_ms || (RUN.status === "COMPLETED" ? RUN.started_at_ms : 0);
-  const ms = ended ? (RUN.ended_at_ms - RUN.started_at_ms) : (Date.now() - (RUN.started_at_ms || Date.now()));
+  const ms = TERMINAL.includes(RUN.status) ? (RUN.duration_ms ?? Math.max(0,(RUN.ended_at_ms||RUN.started_at_ms)-(RUN.started_at_ms||0))) : Date.now()-(RUN.started_at_ms||Date.now());
   $("elapsed").textContent = fmtMs(ms);
   if (RUN.cost_yuan != null){
     $("cost").textContent = "¥" + Number(RUN.cost_yuan).toFixed(3);
@@ -316,14 +335,13 @@ function renderGraph(){
     }
   });
   host.innerHTML = parts.join("");
-  if (PERF.ttfv == null && RUN.steps.length) {
+  if (!STATIC_MODE && !TERMINAL.includes(RUN.status) && PERF.ttfv == null && RUN.steps.length) {
     PERF.ttfv = Date.now() - PERF.t0;
     // 上报（落盘到 Run，供审计）：一次 per page load
-    fetch(`${API}/api/runs/${encodeURIComponent(RUN_ID)}`, {method:"GET"}).then(()=>{});
     try {
-      const ev = {ts_ms: Date.now(), type: "perf.ttfv", data: {ttfe: PERF.ttfe, ttfm: PERF.ttfm, ttfv: PERF.ttfv}};
+      const data = Object.fromEntries(Object.entries({ttfe:PERF.ttfe,ttfm:PERF.ttfm,ttfv:PERF.ttfv}).filter(([,value])=>typeof value === "number" && Number.isFinite(value) && value >= 0));
       fetch(`${API}/api/runs/${encodeURIComponent(RUN_ID)}/perf`, {
-        method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(ev)
+        method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({data})
       }).catch(()=>{});
     } catch {}
   }
@@ -411,9 +429,7 @@ function updateEvCount(){ $("evcount").textContent = EVENTS.length + " events"; 
 function reactTo(ev){
   if (ev.type === "step.started" || ev.type === "step.completed" || ev.type === "artifact.created"
       || ev.type === "check.result" || ev.type === "step.attempt") {
-    fetch(`${API}/api/runs/${encodeURIComponent(RUN_ID)}`).then(r=>r.json()).then(d=>{
-      RUN = d; renderGraph(); tickHeader(); if (SELECTED) renderInspector();
-    }).catch(()=>{});
+    clearTimeout(refreshTimer);refreshTimer=setTimeout(refresh,120);
   }
   if (ev.type === "run.finished") refresh();
 }
@@ -494,10 +510,9 @@ function artifactHtml(sel){
 
 /* ---------- Cancel ---------- */
 $("cancel").onclick = async () => {
-  if (!confirm("请求取消该 Run？将在当前步骤检查点退出（不会硬杀沙箱进程）。")) return;
   $("cancel").disabled = true;
-  await fetch(`${API}/api/runs/${encodeURIComponent(RUN_ID)}/cancel`, {method:"POST"});
-  setTimeout(refresh, 600);
+  try { await UI.json(`${API}/api/runs/${encodeURIComponent(RUN_ID)}/cancel`, {method:"POST"});UI.toast("已请求取消，执行将在检查点退出。");setTimeout(refresh,600); }
+  catch(error){UI.toast(error.message);$("cancel").disabled=false;}
 };
 /* ---------- Tabs（移动端） ---------- */
 document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
@@ -560,17 +575,18 @@ function renderReply(text){
 
 /* ---------- boot ---------- */
 (async function boot(){
-  if (!RUN_ID){ document.body.innerHTML = '<div style="padding:24px;font:13px monospace;color:#9aa8b8">缺少 run id —— 请从 Mission Control 启动一次 Run。</div>'; return; }
+  if (!RUN_ID){ $("task").textContent="尚未选择运行记录";$("status").textContent="待选择";$("timeline").innerHTML='<div class="ui-empty">请从运行中心选择一条任务。<a href="/runs">查看运行记录 →</a></div>';$("cancel").disabled=true;return; }
   await refresh();
+  if(!RUN)return;
   // 先回放已发生的事件（刷新页面后时间线不空）
   try {
-    const evs = (RUN.events || []);
+    const evs = (RUN.events || []); EVENTS = []; received.clear();
     CHECK_AGGR.clear(); $("timeline").innerHTML = "";
-    evs.forEach(appendEvent);
+    evs.forEach(ev=>{const key=ev.seq != null ? `seq:${ev.seq}`:JSON.stringify(ev);received.add(key);EVENTS.push(ev);appendEvent(ev);});
     updateEvCount();
   } catch {}
-  if (!STATIC_MODE) subscribe();
-  else { $("cancel").disabled = true; }
+  if (!STATIC_MODE && !TERMINAL.includes(RUN.status)) subscribe();
+  else { $("stream-state").textContent="已同步完整记录";if(STATIC_MODE)$("cancel").disabled=true; }
   tickHeader();
   // 历史 run 复查：回复已落盘则直接渲染
   try { if (RUN.staged && RUN.staged.final_reply) renderReply(RUN.staged.final_reply); } catch {}
@@ -620,6 +636,6 @@ window.__SELFTEST__ = function(){
   }, 4500);
 })();
 </script>
-<script src="/static/assets/ui.js" defer></script>
+
 </body>
 </html>

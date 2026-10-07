@@ -31,10 +31,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
+import re
+import tempfile
 import threading
 import time
 import uuid
 from dataclasses import asdict, dataclass, field
+from collections import deque
 from pathlib import Path
 from typing import Any
 
@@ -206,6 +210,7 @@ class TraceEvent:
     type: str
     step: int | None = None
     data: dict[str, Any] = field(default_factory=dict)
+    seq: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -280,6 +285,7 @@ class Run:
             "staged": self.staged, "budget": self.budget.to_dict(),
             "cost_yuan": round(self.cost_yuan, 4), "tokens": self.tokens,
             "llm_calls": self.llm_calls,
+            "cancel_requested": self.cancel_requested,
             "duration_ms": self.duration_ms,
             "started_at_ms": self.started_at_ms, "ended_at_ms": self.ended_at_ms,
             "error": self.error,
@@ -304,7 +310,7 @@ class EventBus:
         self._lock = threading.Lock()
 
     def subscribe(self, run_id: str):
-        q: list[TraceEvent] = []
+        q = deque(maxlen=2048)
         with self._lock:
             self._subs.setdefault(run_id, []).append(q)
         return q
@@ -314,11 +320,19 @@ class EventBus:
             subs = self._subs.get(run_id) or []
             if q in subs:
                 subs.remove(q)
+            if not subs:
+                self._subs.pop(run_id, None)
+
+    def replay(self, run: Run, after: int = 0) -> list[TraceEvent]:
+        """在发布锁下读取事件快照；游标同时适用于存量回放和实时轮询。"""
+        with self._lock:
+            return [ev for ev in run.events if ev.seq > after]
 
     def publish(self, run: Run, type_: str, *, step: int | None = None, **data: Any) -> TraceEvent:
-        ev = TraceEvent(ts_ms=now_ms(), type=type_, step=step, data=data)
-        run.events.append(ev)
         with self._lock:
+            seq = run.events[-1].seq + 1 if run.events else 1
+            ev = TraceEvent(ts_ms=now_ms(), type=type_, step=step, data=data, seq=seq)
+            run.events.append(ev)
             for q in self._subs.get(run.run_id, []):
                 q.append(ev)
         return ev
@@ -346,7 +360,10 @@ class RunStore:
         with self._lock:
             if run_id in self._mem:
                 return self._mem[run_id]
-        return self.load(run_id)
+            run = self.load(run_id)
+            if run is not None:
+                self._mem[run_id] = run
+            return run
 
     def sweep_interrupted(self) -> int:
         """启动时清理僵尸 Run：非终态（进程被杀留下的）标记为 INTERRUPTED。
@@ -362,12 +379,13 @@ class RunStore:
                 continue
             if d.get("status") in TERMINAL:
                 continue
-            d["status"] = "INTERRUPTED"
+            d["status"] = STATUS_INTERRUPTED
             d["error"] = d.get("error") or "进程中断（启动时清扫）"
+            d["ended_at_ms"] = now_ms()
             try:
-                f.write_text(json.dumps(d, ensure_ascii=False, indent=1), encoding="utf-8")
+                self.save(self._from_dict(d))
                 n += 1
-            except OSError:
+            except (OSError, ValueError, TypeError):
                 pass
         return n
 
@@ -388,8 +406,8 @@ class RunStore:
             for rid, r in self._mem.items():
                 if task_fp and r.task_fp != task_fp:
                     continue
-                if rid not in seen:
-                    seen[rid] = self._summary(r.to_dict(with_events=False))
+                # 内存是正在执行的最新状态；磁盘是最近一次检查点，不能覆盖它。
+                seen[rid] = self._summary(r.to_dict(with_events=False))
         return sorted(seen.values(), key=lambda x: x.get("started_at_ms", 0), reverse=True)[:limit]
 
     @staticmethod
@@ -407,22 +425,45 @@ class RunStore:
 
     # ---- 磁盘 ----
     def save(self, run: Run) -> Path:
-        self.put(run)
-        p = self.root / f"{run.run_id}.json"
-        tmp = p.with_suffix(".json.tmp")
-        tmp.write_text(json.dumps(run.to_dict(), ensure_ascii=False, indent=1), encoding="utf-8")
-        tmp.replace(p)
+        p = self._path(run.run_id)
+        with self._lock:
+            self._mem[run.run_id] = run
+            # 同一 Run 的 worker/取消/性能上报可并发保存。唯一临时文件和串行替换
+            # 防止写坏 JSON、覆盖尚未完成的写入，或因共用 .tmp 导致 FileNotFound。
+            tmp: Path | None = None
+            try:
+                with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8",
+                                                 dir=self.root, suffix=".tmp", delete=False) as f:
+                    tmp = Path(f.name)
+                    json.dump(run.to_dict(), f, ensure_ascii=False, indent=1)
+                    f.flush()
+                    os.fsync(f.fileno())
+                os.replace(tmp, p)
+            finally:
+                if tmp is not None:
+                    tmp.unlink(missing_ok=True)
         return p
 
+    def _path(self, run_id: str) -> Path:
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9-]{0,95}", run_id):
+            raise ValueError("非法的 run_id")
+        return self.root / f"{run_id}.json"
+
     def load(self, run_id: str) -> Run | None:
-        p = self.root / f"{run_id}.json"
+        try:
+            p = self._path(run_id)
+        except ValueError:
+            return None
         if not p.exists():
             return None
         try:
             d = json.loads(p.read_text(encoding="utf-8"))
         except (OSError, ValueError):
             return None
-        return self._from_dict(d)
+        try:
+            return self._from_dict(d)
+        except (TypeError, ValueError, KeyError):
+            return None
 
     @staticmethod
     def _from_dict(d: dict[str, Any]) -> Run:
@@ -442,9 +483,15 @@ class RunStore:
         run.cost_yuan = d.get("cost_yuan") or 0.0
         run.tokens = d.get("tokens") or 0
         run.llm_calls = d.get("llm_calls") or 0
+        run.cancel_requested = bool(d.get("cancel_requested"))
+        run.budget = Budget(**{k: v for k, v in (d.get("budget") or {}).items()
+                              if k in Budget.__dataclass_fields__})
         run.started_at_ms = d.get("started_at_ms") or now_ms()
         run.ended_at_ms = d.get("ended_at_ms") or 0
         run.events = [TraceEvent(**e) for e in (d.get("events") or []) if isinstance(e, dict)]
+        for seq, ev in enumerate(run.events, 1):
+            if not ev.seq:
+                ev.seq = seq                  # 兼容尚未持久化 SSE 游标的历史记录
         for sd in (d.get("steps") or []):
             st = RunStep(idx=sd.get("idx", 0), action=sd.get("action", ""), skill=sd.get("skill"))
             st.status = sd.get("status", STEP_PENDING)
@@ -473,7 +520,7 @@ class RunStore:
     def delete(self, run_id: str) -> bool:
         with self._lock:
             self._mem.pop(run_id, None)
-        p = self.root / f"{run_id}.json"
+        p = self._path(run_id)
         if p.exists():
             p.unlink()
             return True
@@ -487,13 +534,17 @@ class BudgetExceeded(RuntimeError):
     pass
 
 
+class RunCancelled(BudgetExceeded):
+    """取消与额度超限使用不同终态，但兼容既有预算检查点。"""
+
+
 def check_budget(run: Run) -> None:
     """在关键节点调用（每次 LLM 调用前后、每步执行前）。超限抛 BudgetExceeded。"""
-    if run.cost_yuan > run.budget.max_cost_yuan:
-        raise BudgetExceeded(f"成本超限：¥{run.cost_yuan:.4f} > ¥{run.budget.max_cost_yuan}")
-    if run.llm_calls > run.budget.max_llm_calls:
-        raise BudgetExceeded(f"模型调用超限：{run.llm_calls} > {run.budget.max_llm_calls}")
+    if run.cancel_requested:
+        raise RunCancelled("运行已被取消")
+    if run.cost_yuan >= run.budget.max_cost_yuan:
+        raise BudgetExceeded(f"成本已达上限：¥{run.cost_yuan:.4f} / ¥{run.budget.max_cost_yuan}")
+    if run.llm_calls >= run.budget.max_llm_calls:
+        raise BudgetExceeded(f"模型调用已达上限：{run.llm_calls} / {run.budget.max_llm_calls}")
     if run.duration_ms > run.budget.max_seconds * 1000:
         raise BudgetExceeded(f"耗时超限：{run.duration_ms/1000:.1f}s > {run.budget.max_seconds}s")
-    if run.cancel_requested:
-        raise BudgetExceeded("运行已被取消")

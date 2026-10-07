@@ -10,6 +10,7 @@ import ast
 import json
 import pathlib
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -18,7 +19,7 @@ import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 BASE = "http://127.0.0.1:8848"
-NODE = r"C:\Users\qing\.workbuddy\binaries\node\versions\22.22.2-3\node.exe"
+NODE = shutil.which("node")
 
 issues: list[dict] = []
 def add(sev: str, area: str, msg: str, detail: str = "") -> None:
@@ -45,6 +46,8 @@ def static_checks() -> None:
         except SyntaxError as e:
             add("P0", "静态", f"Python 语法错误 {p.relative_to(ROOT)}", str(e))
     # JS 语法（HTML 内联脚本）
+    if not NODE:
+        add("P1", "静态", "无法验证 JS：未找到 Node.js")
     for p in sorted((ROOT / "web").glob("*.html")):
         t = p.read_text(encoding="utf-8")
         scripts = re.findall(r"<script(?![^>]*src)[^>]*>(.*?)</script>", t, re.S)
@@ -52,9 +55,10 @@ def static_checks() -> None:
             fp = ROOT / "out" / "_audit_js.js"
             fp.parent.mkdir(parents=True, exist_ok=True)
             fp.write_text(s, encoding="utf-8")
-            r = subprocess.run([NODE, "--check", str(fp)], capture_output=True, text=True)
-            if r.returncode != 0:
-                add("P0", "静态", f"JS 语法错误 {p.name} script#{i}", r.stderr[:300])
+            if NODE:
+                r = subprocess.run([NODE, "--check", str(fp)], capture_output=True, text=True)
+                if r.returncode != 0:
+                    add("P0", "静态", f"JS 语法错误 {p.name} script#{i}", r.stderr[:300])
         # 重复 id
         ids = re.findall(r'\bid="([^"]+)"', t)
         dup = {x for x in ids if ids.count(x) > 1}

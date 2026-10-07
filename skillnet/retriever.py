@@ -98,6 +98,7 @@ class RetrievalResult:
             "candidates": [c.__dict__ for c in self.candidates],
             "trace": self.trace,
             "confidence": self.confidence,
+            "confidence_kind": "heuristic_relevance_not_probability",
             "raw_bm25_top": self.raw_bm25_top,
             "fusion_score": self.fusion_score,
             "decision": self.decision,
@@ -186,7 +187,7 @@ class Retriever:
         ranked = sorted(score_map.items(), key=lambda kv: -kv[1])
         # 保序记录候选来源，并只保留仍存在于库中的技能（演化中可能被淘汰）
         ranked = [(n, s) for n, s in ranked if self.lib.get(n)][:pool]
-        chan_map = self._channel_map(query, bm25_hits, pool)
+        chan_map = self._channel_map(query, bm25_hits, pool, multi=mode != MODE_BM25)
 
         # ---- 关系图扩展（Fabric 的 relation expansion）----
         graph_ran = False
@@ -227,7 +228,7 @@ class Retriever:
                     tail = [c for c in cands if c.name not in rank_of]
                     cands = []
                     for i, c in enumerate(head + tail, 1):
-                        c.rerank_score = 1.0 - (rank_of.get(c.name, 99) / max(1, len(rank_of)))
+                        c.rerank_score = (1.0 - rank_of[c.name] / max(1, len(rank_of))) if c.name in rank_of else None
                         c.rank = i
                         cands.append(c)
                     res.trace.append(f"LLM 重排 {len(rank_of)} 条候选")
@@ -316,11 +317,13 @@ class Retriever:
         return hits[:top_k]
 
     def _channel_map(
-        self, query: str, bm25_hits: list[tuple[str, float]], pool: int
+        self, query: str, bm25_hits: list[tuple[str, float]], pool: int, *, multi: bool = True
     ) -> dict[str, list[str]]:
         out: dict[str, list[str]] = {}
         for n, _ in bm25_hits:
             out.setdefault(n, []).append("bm25")
+        if not multi:
+            return out
         for n, _ in self.vec.search(query, top_k=pool):
             out.setdefault(n, []).append("vector")
         for n, _ in self._structural_hits(query, top_k=pool):
@@ -384,7 +387,7 @@ class Retriever:
         )
         if isinstance(out, list):
             valid = {n for n in names}
-            return [str(x) for x in out if str(x) in valid]
+            return list(dict.fromkeys(x for x in out if isinstance(x, str) and x in valid))
         return []
 
     # ------------------------------------------------------------------
@@ -432,19 +435,41 @@ class Retriever:
             max_tokens=900,
             default={},
         )
+        from .orchestrator import Orchestrator
+
         valid = set(names)
-        skills = [s for s in (out.get("skills") or []) if s in valid][:k]
-        wf = [
-            e
-            for e in (out.get("workflow") or [])
-            if isinstance(e, list) and len(e) == 2 and e[0] in valid and e[1] in valid
-        ]
+        reasons = []
+        if not isinstance(out, dict):
+            out = {}
+            reasons.append("Explorer returned a non-object response")
+        raw_skills = out.get("skills")
+        if not isinstance(raw_skills, list):
+            skills = names[:k]
+            reasons.append("Explorer skills unavailable; used retrieved candidates")
+        else:
+            skills = list(dict.fromkeys(s for s in raw_skills if isinstance(s, str) and s in valid))[:k]
+            invalid = sum(1 for s in raw_skills if not isinstance(s, str) or s not in valid)
+            if invalid:
+                reasons.append(f"ignored {invalid} invalid Explorer skill(s)")
+            if raw_skills and not skills:
+                skills = names[:k]
+                reasons.append("Explorer selected no valid skills; used retrieved candidates")
+        # Edges are constrained to the final selected nodes, not the larger Wiki.
+        # Preserve known prerequisites if a proposed edge would form a cycle.
+        orchestration = Orchestrator(self.lib).merge_workflow(skills, out.get("workflow"))
+        if orchestration["degraded_reason"]:
+            reasons.append(orchestration["degraded_reason"])
         return {
             "query": query,
             "wiki_size": len(cards),
             "skills": skills,
-            "workflow": wf,
-            "reason": out.get("reason", ""),
+            "workflow": orchestration["workflow"],
+            "order": orchestration["skills"],
+            "cycles_broken": orchestration["cycles_broken"],
+            "source": orchestration["source"],
+            "degraded": bool(reasons),
+            "degraded_reason": "; ".join(reasons),
+            "reason": out.get("reason", "") if isinstance(out.get("reason", ""), str) else "",
             "retrieval_trace": r.trace,
         }
 

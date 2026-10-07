@@ -1,6 +1,6 @@
 {
  "schema_version": 2,
- "saved_at": "2026-10-03 16:32:26",
+ "saved_at": "2026-10-07 18:35:14",
  "evolved": [
   {
    "name": "high-temp-oxidation-coating-recipe-dev",
@@ -3654,6 +3654,111 @@
     "reward_sum": 0.0,
     "best": 0.0
    }
+  },
+  {
+   "name": "demo-descriptive-stats-summary",
+   "description": "对给定的演示性分组数据用单个 Python 步骤计算样本量、均值与样本标准差，输出 summary.csv 和带免责声明的简短说明。适用于仅做描述统计、不进行推断、且数据为演示用途的场景。",
+   "domain": "统计分析",
+   "tags": [
+    "描述统计",
+    "样本标准差",
+    "ddof=1",
+    "summary.csv",
+    "演示数据",
+    "免责声明"
+   ],
+   "capability": "产出一份包含每组样本量、均值和样本标准差的 CSV 文件及一段明确声明数据不可用于科学结论的简短说明。",
+   "inputs": [
+    "分组数据（每组一个数值列表，硬编码或本地提供）",
+    "输出文件名（默认 summary.csv）",
+    "小数保留位数（默认 4 位）"
+   ],
+   "outputs": [
+    "summary.csv（列：group,n,mean,std_sample）",
+    "终端打印的结果说明文本（含免责声明）",
+    "单文件 Python 脚本"
+   ],
+   "use_when": [
+    "任务只要求描述性统计（n、均值、样本标准差）",
+    "数据为演示或占位数据，不能用于推断",
+    "禁止访问外部网络或外部文件",
+    "需要输出可被标准工具读取的 CSV"
+   ],
+   "steps": [
+    "编写单个 Python 脚本，硬编码各组数据列表，不读取任何外部文件或网络。",
+    "用 statistics.stdev 或 numpy.std(ddof=1) 计算样本标准差，显式设置 ddof=1。",
+    "计算每组 n、mean、std_sample，均值与标准差统一四舍五入到 4 位小数。",
+    "将结果写入 summary.csv，列名固定为 ['group','n','mean','std_sample']，UTF-8 编码，逗号分隔，纯数值无公式。",
+    "用 pandas 回读 summary.csv，断言行数等于组数、列名完全匹配、n 为整数、mean/std_sample 为浮点、无 NaN。",
+    "仅做描述性核对，不执行 t 检验、不计算 p 值、效应量或置信区间。",
+    "撰写 3–5 句结果说明，列出各组 n、mean、样本标准差，并强制包含免责声明关键词：演示数据、不可用于科学结论。",
+    "逐句检查说明文本，确保每句均可由 summary.csv 数值直接支持，且不含推断或因果表述。"
+   ],
+   "pitfalls": [
+    "误用总体标准差（ddof=0）导致数值偏小，必须显式设置 ddof=1。",
+    "直接打印浮点数产生长尾小数，应统一四舍五入到 4 位后再写入 CSV。",
+    "CSV 编码或分隔符不当导致回读失败，应使用 UTF-8 与逗号分隔并用 pandas 校验。",
+    "把演示数据当作真实实验结论进行推断，应在说明中强制加入免责声明且不输出任何检验结果。",
+    "输出中包含 p 值、显著性结论或因果表述，应逐句检查并删除。"
+   ],
+   "verification": [
+    "手工核对每组 n、mean、样本标准差与预期值一致。",
+    "用 pandas 回读 summary.csv，断言行数、列名、数据类型与无空值均通过。",
+    "确认输出中不含 p 值、置信区间、效应量或显著性结论。",
+    "确认结果说明包含免责声明关键词且每句可由 CSV 数值直接支持。"
+   ],
+   "quality": {
+    "safety": {
+     "level": "Good",
+     "reason": "未见危险系统操作或越权指令"
+    },
+    "completeness": {
+     "level": "Good",
+     "reason": "8 个步骤 + 5 条陷阱 + 4 条验证，覆盖完整"
+    },
+    "executability": {
+     "level": "Good",
+     "reason": "7/8 个步骤含具体工具或参数，无模糊表述"
+    },
+    "maintainability": {
+     "level": "Good",
+     "reason": "与 3 个技能建立关联，步骤数适中"
+    },
+    "cost_awareness": {
+     "level": "Good",
+     "reason": "提及资源约束 ['样本量']"
+    }
+   },
+   "relations": [
+    [
+     "compose_with",
+     "code-helper"
+    ],
+    [
+     "compose_with",
+     "xlsx"
+    ],
+    [
+     "similar_to",
+     "statistical-testing"
+    ]
+   ],
+   "source": "distill",
+   "origin_task": null,
+   "parent": [
+    "code-helper"
+   ],
+   "generation": 1,
+   "version": 1,
+   "license": "MIT",
+   "compatibility": "",
+   "metadata": {},
+   "allowed_tools": "",
+   "stats": {
+    "pulls": 0.0,
+    "reward_sum": 0.0,
+    "best": 0.0
+   }
   }
  ],
  "stats": {
@@ -3706,14 +3811,14 @@
    "best": 0.795
   },
   "scientific-visualization": {
-   "pulls": 19.0,
-   "reward_sum": 15.240000000000004,
-   "best": 0.875
+   "pulls": 20.0,
+   "reward_sum": 16.140000000000004,
+   "best": 0.9
   },
   "data-cleaning": {
-   "pulls": 19.0,
-   "reward_sum": 15.365000000000004,
-   "best": 0.875,
+   "pulls": 20.0,
+   "reward_sum": 16.265000000000004,
+   "best": 0.9,
    "exec_total": 7,
    "exec_ok": 7
   },
@@ -3726,11 +3831,11 @@
    "exec_fix": 3
   },
   "statistical-testing": {
-   "pulls": 12.0,
-   "reward_sum": 9.59,
-   "best": 0.875,
-   "exec_total": 1,
-   "exec_ok": 1
+   "pulls": 13.0,
+   "reward_sum": 10.49,
+   "best": 0.9,
+   "exec_total": 2,
+   "exec_ok": 2
   },
   "causal-inference": {
    "pulls": 3.0,
@@ -3743,8 +3848,8 @@
    "best": 0.7
   },
   "tabular-ml-baseline": {
-   "pulls": 45.0,
-   "reward_sum": 41.93500000000002,
+   "pulls": 46.0,
+   "reward_sum": 42.88500000000002,
    "best": 0.95
   },
   "leakage-guard": {
@@ -3822,15 +3927,24 @@
    "reward_sum": 0.78,
    "best": 0.78
   },
+  "xlsx": {
+   "pulls": 1.0,
+   "reward_sum": 0.9,
+   "best": 0.9,
+   "exec_total": 1,
+   "exec_ok": 1
+  },
   "doc-coauthoring": {
    "pulls": 1.0,
    "reward_sum": 0.775,
    "best": 0.775
   },
   "code-helper": {
-   "pulls": 2.0,
-   "reward_sum": 1.5950000000000002,
-   "best": 0.8
+   "pulls": 3.0,
+   "reward_sum": 2.495,
+   "best": 0.9,
+   "exec_total": 1,
+   "exec_ok": 1
   },
   "interview": {
    "pulls": 1.0,

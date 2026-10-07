@@ -9,23 +9,28 @@
 from __future__ import annotations
 
 import json
+import asyncio
 import logging
+import mimetypes
+import math
 import os
 import secrets
 import re
 import threading
 import time
 from urllib.parse import quote
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
 
-from fastapi import Body, Depends, FastAPI, Header, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.responses import (FileResponse, JSONResponse, Response,
                                StreamingResponse)
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from skillnet import config, llm
+from skillnet import config, llm, runtime
+from skillnet.integration import integration_manifest
 from skillnet.adapters import export_all
 from skillnet.agent import ResearchAgent, STYLE_BARE, STYLE_CARDS, STYLE_GUIDED
 from skillnet.artifacts import (collect_execution_artifacts, generate_deliverables,
@@ -35,6 +40,7 @@ from skillnet import pipeline
 from skillnet.runtime import (BUS, STEP_DONE, STEP_FAILED, STATUS_BUDGET_EXCEEDED,
                               STATUS_CANCELLED, STATUS_COMPLETED, STATUS_FAILED,
                               STATUS_PARTIAL, Budget, Run, RunStore, TERMINAL,
+                              BudgetExceeded, RunCancelled,
                               new_run_id, now_ms, task_fingerprint)
 from skillnet.bandit import SharedLinUCB
 from skillnet.catalog import SkillLibrary
@@ -53,10 +59,18 @@ log = logging.getLogger("skillnet.server")
 ROOT = Path(__file__).resolve().parent
 WEB_DIR = ROOT / "web"
 
+@asynccontextmanager
+async def _lifespan(application: FastAPI):
+    _startup()
+    _startup_sweep()
+    yield
+
+
 app = FastAPI(
     title="SkillNet-S1",
-    version="0.2.0",
+    version="0.8.0",
     description="面向科研 Agent 的技能运维层：技能本体 / 混合检索 / 上下文老虎机 / 技能进化",
+    lifespan=_lifespan,
 )
 
 STATE: dict[str, Any] = {}
@@ -64,9 +78,11 @@ _STATE_LOCK = threading.RLock()
 
 # 可选的访问令牌。默认不启用（本地演示）；一旦设置，消耗额度与写盘的接口需要带令牌。
 ACCESS_TOKEN = os.environ.get("SKILLNET_TOKEN", "").strip()
+MAX_ACTIVE_RUNS = max(1, min(32, int(os.environ.get("SKILLNET_MAX_ACTIVE_RUNS", "4"))))
+_RUN_SLOTS = threading.BoundedSemaphore(MAX_ACTIVE_RUNS)
+_RUN_THREADS: dict[str, threading.Thread] = {}
 
 
-@app.on_event("startup")
 def _startup() -> None:
     # 技能库 = 种子技能（代码提供）+ 演化技能（落盘）+ 学习到的统计，三层叠加。
     # 不直接用 build_seed_skills()，否则每次重启都会丢掉已有的进化成果。
@@ -108,14 +124,10 @@ def refresh_runtime() -> None:
         STATE["retriever"] = Retriever(cur).build()
         STATE["orchestrator"] = Orchestrator(cur)
         STATE["agent"] = ResearchAgent(cur)
-        # 策略层重建，但继承已积累的反馈（A/b 矩阵）——技能库刷新不能把学习清零
+        # 只刷新编码器，保留共享学习器对象；运行中请求持有的引用仍能更新它。
         old_b = STATE.get("bandit")
         if old_b is not None:
-            nb = SharedLinUCB(cur, alpha=old_b.alpha)
-            nb.A = old_b.A.copy()
-            nb.b = old_b.b.copy()
-            nb.n_updates = old_b.n_updates
-            STATE["bandit"] = nb
+            old_b.rebind(cur)
         else:
             STATE["bandit"] = None
 
@@ -129,7 +141,8 @@ def persist_library() -> None:
         log.error("技能库落盘失败：%s", exc)
 
 
-def require_token(x_skillnet_token: str | None = Header(default=None)) -> None:
+def require_token(x_skillnet_token: str | None = Header(default=None),
+                  authorization: str | None = Header(default=None)) -> None:
     """可选访问令牌。
 
     默认不启用；设置环境变量 `SKILLNET_TOKEN` 后，所有会消耗模型额度或写盘的接口
@@ -138,7 +151,10 @@ def require_token(x_skillnet_token: str | None = Header(default=None)) -> None:
     """
     if not ACCESS_TOKEN:
         return
-    if not x_skillnet_token or not secrets.compare_digest(x_skillnet_token, ACCESS_TOKEN):
+    supplied = x_skillnet_token
+    if not supplied and authorization and authorization.lower().startswith("bearer "):
+        supplied = authorization[7:].strip()
+    if not supplied or not secrets.compare_digest(supplied.encode("utf-8"), ACCESS_TOKEN.encode("utf-8")):
         raise HTTPException(401, "缺少或错误的 X-SkillNet-Token 请求头")
 
 
@@ -175,7 +191,6 @@ def _ui_version() -> str:
         return "0"
 
 
-@app.on_event("startup")
 def _startup_sweep() -> None:
     """服务启动即清扫非终态 Run（进程重启留下的），避免"永远在跑"的假象。"""
     try:
@@ -192,12 +207,32 @@ async def _no_cache_html(request: Any, call_next: Any) -> Any:
 
     背景：曾出现「改了但用户看到的还是旧版」——因为 HTML 被浏览器缓存，
     页面内自愈脚本要等 boot() 执行才生效，首次加载仍可能是旧的。"""
+    supplied_id = request.headers.get("X-Request-ID", "")
+    request_id = supplied_id if re.fullmatch(r"[A-Za-z0-9_.\-]{1,80}", supplied_id) else secrets.token_hex(12)
+    request.state.request_id = request_id
+    started = time.perf_counter()
     resp = await call_next(request)
+    resp.headers["X-Request-ID"] = request_id
+    resp.headers["X-Content-Type-Options"] = "nosniff"
+    resp.headers["Referrer-Policy"] = "no-referrer"
+    elapsed_ms = int((time.perf_counter() - started) * 1000)
+    if resp.status_code >= 500 or elapsed_ms > 5000:
+        log.warning("request_id=%s method=%s path=%s status=%d duration_ms=%d",
+                    request_id, request.method, request.url.path, resp.status_code, elapsed_ms)
     ctype = resp.headers.get("content-type", "")
     if ctype.startswith("text/html"):
         resp.headers["Cache-Control"] = "no-store, must-revalidate"
         resp.headers["Pragma"] = "no-cache"
     return resp
+
+
+@app.exception_handler(llm.LLMError)
+async def _llm_failure(request: Request, exc: llm.LLMError) -> JSONResponse:
+    log.warning("request_id=%s 模型调用失败：%s", getattr(request.state, "request_id", ""), exc)
+    return JSONResponse(status_code=502, content={
+        "detail": "模型服务暂时不可用，请稍后重试。",
+        "request_id": getattr(request.state, "request_id", ""),
+    })
 
 
 @app.get("/api/health")
@@ -212,13 +247,27 @@ def health() -> dict[str, Any]:
         "api_key_configured": bool(config.API_KEY),
         "token_required": bool(ACCESS_TOKEN),
         "ui_version": _ui_version(),
-        "library_path": str(config.LIBRARY_FILE),
+        "library_path": "data/library.json",
+        "runtime": {"active_runs": _active_run_count(),
+                    "max_active_runs": MAX_ACTIVE_RUNS, "deployment": "single-process"},
     }
 
 
 @app.get("/api/stats")
 def stats() -> dict[str, Any]:
     return lib().stats()
+
+
+@app.get("/api/auth/check", dependencies=[Depends(require_token)])
+def auth_check() -> dict[str, Any]:
+    """供连接设置验证令牌：只读，既不消耗模型额度也不改写数据。"""
+    return {"ok": True, "token_required": bool(ACCESS_TOKEN)}
+
+
+@app.get("/api/integrations/s1")
+def s1_integration() -> dict[str, Any]:
+    """公开可核查的 S1 接入契约与验证状态。"""
+    return integration_manifest()
 
 
 @app.get("/api/skills")
@@ -274,17 +323,22 @@ def graph() -> dict[str, Any]:
 # 检索与路由
 # ======================================================================
 class SearchReq(BaseModel):
-    query: str = Field(min_length=1, max_length=4000)
+    query: str = Field(min_length=1, max_length=4000, pattern=r"\S")
     k: int = Field(default=5, ge=1, le=20)
-    modes: list[str] = Field(default_factory=lambda: list(MODES))
+    modes: list[str] = Field(default_factory=lambda: list(MODES), min_length=1, max_length=3)
 
 
 @app.post("/api/search")
-def search(req: SearchReq) -> dict[str, Any]:
+def search(req: SearchReq, x_skillnet_token: str | None = Header(default=None),
+           authorization: str | None = Header(default=None)) -> dict[str, Any]:
     r: Retriever = STATE["retriever"]
     unknown = [m for m in req.modes if m not in MODES]
     if unknown:
         raise HTTPException(422, f"不支持的检索模式 {unknown}；可选 {list(MODES)}")
+    if len(set(req.modes)) != len(req.modes):
+        raise HTTPException(422, "检索模式不可重复")
+    if MODE_FABRIC in req.modes:
+        require_token(x_skillnet_token, authorization)
 
     out: dict[str, Any] = {"query": req.query, "k": req.k, "by_mode": {}}
     for m in req.modes:
@@ -320,13 +374,34 @@ def route(req: RouteReq) -> dict[str, Any]:
     r: Retriever = STATE["retriever"]
     with llm.ledger_scope() as led:
         wiki = r.route_with_wiki(req.query, k=req.k)
-        orch = STATE["orchestrator"].build_from_relations(wiki["skills"])
+        orch = _resolve_orchestration(wiki)
     return {
         **wiki,
-        "workflow": wiki["workflow"] or orch["workflow"],
+        "workflow": orch["workflow"],
         "order": orch["skills"],
         "cost_yuan": round(led.cost_yuan, 5),
     }
+
+
+def _resolve_orchestration(wiki: dict[str, Any], fallback: list[str] | None = None) -> dict[str, Any]:
+    """让路由响应、规划上下文与执行 DAG 使用同一组经过验证的依赖边。"""
+    names = wiki.get("skills") or fallback or []
+    return STATE["orchestrator"].merge_workflow(names, wiki.get("workflow"))
+
+
+def _judge_evidence(evaluation: dict[str, Any]) -> dict[str, Any]:
+    """覆盖率无效表示未知；兼容早期尚未包含 valid 标记的评审记录。"""
+    result = dict(evaluation)
+    if not result.get("coverage_valid", True):
+        result["coverage"] = None
+    return result
+
+
+def _judge_reward(evaluation: dict[str, Any]) -> float | None:
+    """评审降级不是实际的低奖励，不能用其占位分数训练或决定技能准入。"""
+    if not evaluation.get("score_valid", True):
+        return None
+    return float(evaluation.get("weighted") or 0) / 10.0
 
 
 # ======================================================================
@@ -358,7 +433,7 @@ def run_agent(req: RunReq) -> dict[str, Any]:
         )
         run = agent.run(req.task, skills=skills, style=style)
         pts = reference_points_from_skills(lib(), req.gold) if req.gold else []
-        j = score_plan(req.task, run.response, pts)
+        j = _judge_evidence(score_plan(req.task, run.response, pts))
         first = agent.execute_first_step(run) if req.mode in ("hybrid", "fabric") else {}
 
     return {
@@ -401,10 +476,13 @@ def evolve(req: EvolveReq) -> dict[str, Any]:
     with llm.ledger_scope() as led:
         # 先让 Agent 在无技能条件下跑一次，得到用于蒸馏的轨迹
         run = agent.run(req.task, skills=[], style=STYLE_BARE)
-        score = score_plan(req.task, run.response)["weighted"] / 10.0
+        evaluation = _judge_evidence(score_plan(req.task, run.response))
+        score = _judge_reward(evaluation)
 
         new_skill = None
-        if req.op == "distill":
+        if score is None:
+            pass                        # 没有有效评审证据，不能把轨迹视为成功样本入库
+        elif req.op == "distill":
             new_skill = evolver.distill(req.task, run.trajectory, score=score)
         elif req.op == "mutate":
             new_skill = evolver.mutate(
@@ -422,6 +500,8 @@ def evolve(req: EvolveReq) -> dict[str, Any]:
     return {
         "op": req.op,
         "chat_score": score,
+        "evaluation": evaluation,
+        "skip_reason": "评审不可用，未进行技能准入" if score is None else "",
         "accepted": new_skill is not None,
         "new_skill": new_skill.to_dict() if new_skill else None,
         "markdown": new_skill.to_skill_md() if new_skill else None,
@@ -454,14 +534,15 @@ def demo(req: DemoReq) -> dict[str, Any]:
 
 def run_store() -> RunStore:
     """Run 存储（不覆盖历史；落盘 out/runs/）。首次访问时清扫僵尸 Run。"""
-    rs = STATE.get("run_store")
-    if rs is None:
-        rs = RunStore(config.OUT_DIR / "runs")
-        swept = rs.sweep_interrupted()
-        if swept:
-            log.info("清扫 %d 个中断的 Run（非终态 -> INTERRUPTED）", swept)
-        STATE["run_store"] = rs
-    return rs
+    with _STATE_LOCK:
+        rs = STATE.get("run_store")
+        if rs is None:
+            rs = RunStore(config.OUT_DIR / "runs")
+            swept = rs.sweep_interrupted()
+            if swept:
+                log.info("清扫 %d 个中断的 Run（非终态 -> INTERRUPTED）", swept)
+            STATE["run_store"] = rs
+        return rs
 
 
 def _bandit() -> SharedLinUCB:
@@ -470,11 +551,12 @@ def _bandit() -> SharedLinUCB:
     服务重启后从零开始（A=I, b=0），依赖探索机制重新积累——
     这是有意为之：策略参数不持久化，演示状态不污染正式库。
     """
-    b = STATE.get("bandit")
-    if b is None:
-        b = SharedLinUCB(lib(), alpha=0.3)
-        STATE["bandit"] = b
-    return b
+    with _STATE_LOCK:
+        b = STATE.get("bandit")
+        if b is None:
+            b = SharedLinUCB(lib(), alpha=0.3)
+            STATE["bandit"] = b
+        return b
 
 
 def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
@@ -517,14 +599,14 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
 
     # 2) Fabric 路由 + 编排
     wiki = r.route_with_wiki(req.task, k=req.k)
-    orch = STATE["orchestrator"].build_from_relations(wiki["skills"])
+    orch = _resolve_orchestration(wiki, retrieval["fabric"]["selected"])
     stages.append(
         {
             "stage": "任务级 Wiki 路由与编排",
             "detail": {
                 "wiki_size": wiki["wiki_size"],
                 "skills": wiki["skills"],
-                "workflow": wiki["workflow"] or orch["workflow"],
+                "workflow": orch["workflow"],
                 "order": orch["skills"],
                 "reason": wiki["reason"],
             },
@@ -532,10 +614,10 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
     )
 
     # 3) 技能驱动执行 + 盲评
-    skills = wiki["skills"] or retrieval["fabric"]["selected"]
+    skills = orch["skills"]
     run = agent.run(req.task, skills=skills, style=STYLE_GUIDED)
     pts = reference_points_from_skills(lib(), req.gold) if req.gold else []
-    j = score_plan(req.task, run.response, pts)
+    j = _judge_evidence(score_plan(req.task, run.response, pts))
     stages.append(
         {
             "stage": "技能驱动执行与盲评",
@@ -577,10 +659,11 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
     stages.append({"stage": "真实执行（沙箱）", "detail": sandbox_result})
 
     # 3.5) 反馈写回：本次盲评奖励更新共享参数 θ——影响所有技能的下一次预测
-    reward = j["weighted"] / 10.0
+    reward = _judge_reward(j)
     adopted = [s for s in skills if s and s != "manual"]
-    for s in adopted:
-        bandit.update(req.task, s, reward)
+    if reward is not None:
+        for s in adopted:
+            bandit.update(req.task, s, reward)
     after_rows = bandit.rank(req.task, cand) if cand else []
     after_map = {r[0]: (r[2], r[3]) for r in after_rows}
     feedback = []
@@ -592,16 +675,16 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
                 "exploit_before": round(e0, 4),
                 "exploit_after": round(e1, 4),
                 "delta": round(e1 - e0, 4),
-                "nudged": n in adopted,
+                "nudged": reward is not None and n in adopted,
+                "skip_reason": "评审不可用，未更新反馈" if reward is None else "",
             }
         )
 
     # 4) 从执行轨迹蒸馏新技能
     evolver = SkillEvolver(lib())
     before = len(lib())
-    new_skill = evolver.distill(
-        req.task, run.trajectory, score=j["weighted"] / 10.0, parent=skills[:1]
-    )
+    new_skill = (evolver.distill(req.task, run.trajectory, score=reward, parent=skills[:1])
+                 if reward is not None else None)
     if new_skill:
         refresh_runtime()    # 原子替换运行时对象
         persist_library()    # 落盘，重启后演化成果不丢
@@ -611,7 +694,8 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
             "stage": "反馈回流与轨迹蒸馏",
             "detail": {
                 "feedback": feedback,
-                "reward": round(reward, 4),
+                "reward": round(reward, 4) if reward is not None else None,
+                "skip_reason": "评审不可用，未更新反馈或进行技能准入" if reward is None else "",
                 "adopted": adopted,
                 "accepted": new_skill is not None,
                 "name": new_skill.name if new_skill else None,
@@ -862,16 +946,23 @@ def execute_one(req: CompareReq) -> Any:
     return result
 
 
-@app.post("/api/runs/{run_id}/perf")
-def run_perf(run_id: str, ev: dict[str, Any] = Body(default={})) -> Any:
+class PerfReq(BaseModel):
+    data: dict[str, float] = Field(default_factory=dict, max_length=12)
+
+
+@app.post("/api/runs/{run_id}/perf", dependencies=[Depends(require_token)])
+def run_perf(run_id: str, ev: PerfReq) -> Any:
     """记录前端性能指标（TTFE/TTFM/TTFV），存入 Run.events 供审计。"""
     run = run_store().get(run_id)
     if run is None:
         raise HTTPException(404, "Run 不存在")
-    ev = dict(ev or {})
-    ev["type"] = "perf.frontend"
-    ev["ts_ms"] = int(time.time() * 1000)
-    run.events.append(runtime.TraceEvent(**{k: ev.get(k) for k in ("ts_ms", "type", "step", "data")}))
+    if (len(json.dumps(ev.data)) > 2048
+            or any(not re.fullmatch(r"[A-Za-z0-9_]{1,32}", k) for k in ev.data)
+            or any(not math.isfinite(v) or v < 0 or v > 1e9 for v in ev.data.values())):
+        raise HTTPException(422, "非法的性能指标")
+    if sum(e.type == "perf.frontend" for e in run.events) >= 12:
+        return {"ok": True, "note": "本次运行的性能采样已完成"}
+    BUS.publish(run, "perf.frontend", **ev.data)
     run_store().save(run)
     return {"ok": True}
 
@@ -892,6 +983,20 @@ def skill_raw(name: str) -> Any:
     return {"name": name, "source": "library", "content": s.to_skill_md()}
 
 
+def _artifact_response(target: Path, name: str, download: bool = False) -> Response:
+    media = mimetypes.guess_type(target.name)[0] or "application/octet-stream"
+    if target.suffix.lower() == ".md":
+        media = "text/markdown"
+    headers = {"X-Content-Type-Options": "nosniff",
+               "Content-Security-Policy": "sandbox; default-src 'none'; img-src data:; style-src 'unsafe-inline'; font-src data:;"}
+    # 生成的 HTML/SVG 可包含任意脚本。独立 opaque origin + 禁止脚本/连接，
+    # 防止预览产物读取主站存储、带令牌请求 API 或跳转父页面。
+    if download:
+        fallback = re.sub(r"[^A-Za-z0-9_.\-]", "_", name) or "artifact"
+        headers["Content-Disposition"] = f'attachment; filename="{fallback}"; filename*=UTF-8\'\'{quote(name)}'
+    return FileResponse(target, media_type=media, headers=headers)
+
+
 @app.get("/api/artifact/{slug}/{fname}")
 def artifact(slug: str, fname: str, download: int = 0) -> Any:
     """产物文件预览/下载。
@@ -904,41 +1009,25 @@ def artifact(slug: str, fname: str, download: int = 0) -> Any:
     # 文件名允许中文（交付物名由模型生成，含中文是常态）；只禁止路径分隔符、
     # 控制字符与相对路径标记——真正的越界防护靠下面的 resolve 前缀校验。
     if (not fname or len(fname) > 80 or fname in (".", "..")
-            or re.search(r"[/\\\x00-\x1f]", fname)):
+            or re.search(r"[/\\:\x00-\x1f\x7f]", fname)):
         raise HTTPException(400, "非法的产物文件名")
     base = (config.OUT_DIR / "demo_artifacts" / slug).resolve()
     target = (base / fname).resolve()
     if base not in target.parents or not target.is_file():
         raise HTTPException(404, "产物不存在")
-    # 图片类产物必须按二进制读（先前的纯文本读取会把 PNG 读坏）
-    if target.suffix.lower() in (".png", ".jpg", ".jpeg", ".svg", ".gif"):
-        media = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
-                 ".svg": "image/svg+xml", ".gif": "image/gif"}[target.suffix.lower()]
-        headers = {}
-        if download:
-            headers["Content-Disposition"] = (
-                f"attachment; filename=\"{target.suffix.lstrip('.')}artifact\"; "
-                f"filename*=UTF-8''{quote(fname)}")
-        return Response(content=target.read_bytes(), media_type=media, headers=headers)
-    media = ("text/html; charset=utf-8" if fname.endswith(".html")
-             else "text/markdown; charset=utf-8" if fname.endswith(".md")
-             else "text/plain; charset=utf-8")
-    headers = {}
-    if download:
-        # 中文文件名必须用 RFC 5987 的 filename*，并且 ASCII 兜底名不能为空
-        ascii_fallback = re.sub(r"[^A-Za-z0-9_.\-]", "_", fname) or "artifact"
-        headers["Content-Disposition"] = (
-            f"attachment; filename=\"{ascii_fallback}\"; "
-            f"filename*=UTF-8''{quote(fname)}")
-    return Response(content=target.read_text(encoding="utf-8", errors="replace"),
-                    media_type=media, headers=headers)
+    return _artifact_response(target, fname, bool(download))
 
 
 # ======================================================================
 # Run Runtime：运行实体、事件流、取消、预算
 # ======================================================================
+class HistoryTurn(BaseModel):
+    q: str = Field(min_length=1, max_length=6000, pattern=r"\S")
+    a: str = Field(default="", max_length=8000)
+
+
 class RunReq(BaseModel):
-    task: str = Field(min_length=1, max_length=6000)
+    task: str = Field(min_length=1, max_length=6000, pattern=r"\S")
     k: int = Field(default=5, ge=1, le=15)
     max_steps: int = Field(default=3, ge=1, le=8)
     max_cost_yuan: float = Field(default=1.0, gt=0, le=20)
@@ -946,7 +1035,7 @@ class RunReq(BaseModel):
     max_llm_calls: int = Field(default=40, ge=5, le=200)
     # 追问上下文：同一会话此前轮次的 [{q, a}]（a 为上一轮回复摘要）。
     # 只用于规划阶段与最终回复，不污染检索（检索必须用当前问题本身）。
-    history: list[dict[str, Any]] = Field(default_factory=list, max_length=20)
+    history: list[HistoryTurn] = Field(default_factory=list, max_length=20)
 
 
 def _artifact_digest(run: Any, limit_chars: int = 4200, per_file: int = 900) -> str:
@@ -1063,7 +1152,9 @@ def _compose_final_reply(run: Any, led: Any) -> str:
             f"{st.duration_ms / 1000:.1f}s｜验收 {chk}｜产物 {arts}")
     arts_line = "、".join(f"{a.name}（{a.bytes / 1024:.1f}KB）" for a in run.artifacts) or "无"
     judged = (f"语义评审加权 {float(run.judge.get('weighted') or 0):.1f}/10"
-              if isinstance(run.judge, dict) and run.judge.get("weighted") is not None else "未产生评审分")
+              if isinstance(run.judge, dict) and run.judge.get("weighted") is not None
+              and run.judge.get("score_valid", True)
+              else "未获得有效评分，未用于反馈或技能准入")
     cp = (run.staged or {}).get("critical_path") or {}
     cp_line = (f"关键路径 {' → '.join('步骤' + str(i + 1) for i in cp.get('steps', []))}"
                f"（{cp.get('ms', 0) / 1000:.1f}s）" if cp.get("steps") else "未计算")
@@ -1096,6 +1187,7 @@ def _compose_final_reply(run: Any, led: Any) -> str:
 - 提到产物文件时**用反引号包裹文件名**（如 `result.csv`）——前端会渲染成可点击的产物芯片，
   让读者能直接打开核对（没有这一步，读者只能看到文件名文字，点不开）
 - 不要复述 prompt 结构名以外的元信息（如"本次运行状态"这类流程词可少用）
+- 正文不要报告总成本、总 Token 或总耗时：下方累计值尚未包含本次报告生成，最终值由界面的结构化运行指标展示。
 
 【任务】{run.task}
 
@@ -1113,7 +1205,7 @@ def _compose_final_reply(run: Any, led: Any) -> str:
 【关键路径】{cp_line}
 【交付产物】{arts_line}
 【验收与评审】{judged}
-【运行事实】总时长 {run.duration_ms / 1000:.1f}s · 成本 ¥{float(run.cost_yuan or 0):.3f} · Token {run.tokens} · 步骤结果：完成 {sum(1 for s in run.steps if s.status == 'done')} · 失败 {sum(1 for s in run.steps if s.status == 'failed')} · 跳过 {sum(1 for s in run.steps if s.status == 'skipped')}
+【报告生成前累计（不是最终运行总额）】耗时 {run.duration_ms / 1000:.1f}s · 成本 ¥{float(run.cost_yuan or 0):.3f} · Token {run.tokens} · 步骤结果：完成 {sum(1 for s in run.steps if s.status == 'done')} · 失败 {sum(1 for s in run.steps if s.status == 'failed')} · 跳过 {sum(1 for s in run.steps if s.status == 'skipped')}
 （注意：此刻 Run 的终态判定尚未执行，不要在回复里写具体终态词，按上述步骤结果如实描述）
 【能力沉淀】{evo_line}
 """
@@ -1131,12 +1223,19 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
     if run is None:
         return
     led = llm.UsageLedger()
-    lib_before_snapshot = _skill_snapshot(lib())
-    lib_size_before = len(lib())
-    evolved_before = sum(1 for s in lib() if s.source != "seed")
+    lib_before_snapshot: dict[str, dict[str, Any]] = {}
+    lib_size_before = 0
+    evolved_before = 0
     new_skill_records: list[dict[str, Any]] = []
+    def checkpoint() -> None:
+        pipeline.sync_usage(run, led)
+        runtime.check_budget(run)
     try:
-        with llm.ledger_scope(led):
+        lib_before_snapshot = _skill_snapshot(lib())
+        lib_size_before = len(lib())
+        evolved_before = sum(1 for s in lib() if s.source != "seed")
+        with llm.ledger_scope(led), llm.guard_scope(checkpoint):
+            checkpoint()
             r = STATE["retriever"]
             # 1) 检索（三档对照，取 fabric 作为主链路）
             t0 = time.time()
@@ -1157,6 +1256,8 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                         confidence=res.get("confidence"), raw_bm25_top=res.get("raw_bm25_top"),
                         duration_ms=run.staged["retrieval_ms"])
             pipeline.sync_usage(run, led)
+            checkpoint()
+            store.save(run)
 
             # 2) 策略排序
             t0 = time.time()
@@ -1172,22 +1273,30 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
 
             # 3) 编排
             t0 = time.time()
-            wiki = r.route_with_wiki(run.task, k=req.k)
-            orch = STATE["orchestrator"].build_from_relations(wiki["skills"])
             run.status = "ORCHESTRATING"
-            run.skills = wiki["skills"] or fabric_selected
+            wiki = r.route_with_wiki(run.task, k=req.k)
+            orch = _resolve_orchestration(wiki, fabric_selected)
+            run.skills = orch["skills"]
+            run.staged["orchestration"] = {
+                "order": run.skills, "workflow": orch["workflow"],
+                "source": wiki.get("source", orch.get("source", "")),
+                "degraded": bool(wiki.get("degraded") or orch.get("degraded")),
+            }
             run.staged["orchestration_ms"] = int((time.time() - t0) * 1000)
             BUS.publish(run, "orchestration.completed",
                         skills=run.skills, order=orch.get("skills") or [],
                         workflow=len(orch.get("workflow") or []),
+                        edges=orch["workflow"],
                         duration_ms=run.staged["orchestration_ms"])
+            checkpoint()
+            store.save(run)
 
             # 4) 方案
             t0 = time.time()
             agent = STATE["agent"]
             # 追问上下文：把此前轮次的问题与上一轮回复摘要拼进规划输入（检索仍只用当前问题）
             plan_task = run.task
-            hist = [h for h in (req.history or []) if isinstance(h, dict) and h.get("q")]
+            hist = [h.model_dump() for h in req.history]
             if hist:
                 tail = hist[-3:]
                 ctx_lines = []
@@ -1206,6 +1315,8 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
             BUS.publish(run, "plan.created", steps=len(run.plan.get("steps") or []),
                         approach=(run.plan.get("approach") or "")[:200],
                         duration_ms=run.staged["planning_ms"])
+            checkpoint()
+            store.save(run)
 
             # 5) 多步真实执行（编排 workflow = 权威执行图，DAG = Runtime）
             t0 = time.time()
@@ -1214,35 +1325,43 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                                  max_steps=req.max_steps,
                                  workflow=orch.get("workflow") or None)
             run.staged["execution_ms"] = int((time.time() - t0) * 1000)
+            checkpoint()
+            store.save(run)
 
             # 6) 盲评 + 反馈回流 + 蒸馏
             t0 = time.time()
-            j = score_plan(run.task, run.plan, [])
+            j = _judge_evidence(score_plan(run.task, run.plan, []))
             run.judge = j
-            reward = float(j.get("weighted") or 0) / 10.0
+            reward = _judge_reward(j)
             adopted = [s for s in run.skills if s]
             before_rows = {x["name"]: x["exploit"] for x in run.ranking}
-            for s in adopted:
-                try:
-                    b.update(run.task, s, reward)
-                except Exception:
-                    pass
+            if reward is not None:
+                for s in adopted:
+                    try:
+                        b.update(run.task, s, reward)
+                    except Exception:
+                        pass
             after = {n: e for n, _p, e, _x in b.rank(run.task, adopted)}
             run.feedback = [
                 {"name": n, "exploit_before": before_rows.get(n, 0.0),
                  "exploit_after": after.get(n, before_rows.get(n, 0.0)),
                  "delta": round(after.get(n, before_rows.get(n, 0.0)) - before_rows.get(n, 0.0), 4),
-                 "nudged": n in adopted}
+                 "nudged": reward is not None and n in adopted,
+                 "skip_reason": "评审不可用，未更新反馈" if reward is None else ""}
                 for n in adopted
             ]
-            BUS.publish(run, "judge.completed", weighted=j.get("weighted"),
-                        coverage=j.get("coverage"), reward=round(reward, 4))
+            BUS.publish(run, "judge.completed", weighted=j.get("weighted") if reward is not None else None,
+                        coverage=j.get("coverage"), reward=round(reward, 4) if reward is not None else None,
+                        score_valid=j.get("score_valid", True), coverage_valid=j.get("coverage_valid", True))
             run.status = "EVOLVING"
             evolver = SkillEvolver(lib())
-            new_skill = evolver.distill(run.task, getattr(arun, "trajectory", []) or [],
-                                        score=reward, parent=adopted[:1])
+            new_skill = (evolver.distill(run.task, getattr(arun, "trajectory", []) or [],
+                                         score=reward, parent=adopted[:1])
+                         if reward is not None else None)
             if new_skill:
                 refresh_runtime()
+            # 即使本次没有新技能，真实反馈更新也需要落盘。
+            if new_skill or adopted:
                 persist_library()
             if new_skill is not None:
                 new_skill_records.append({
@@ -1260,6 +1379,8 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                 "capability": (getattr(new_skill, "capability", "") or "")[:200],
                 "library_size": len(lib()),
                 "records": evolver.summary().get("records", []),
+                "skipped": reward is None,
+                "skip_reason": "评审不可用，未进行技能准入" if reward is None else "",
             }
             BUS.publish(run, "evolution.proposed", accepted=run.evolution["accepted"],
                         name=run.evolution["name"], library_size=run.evolution["library_size"])
@@ -1287,15 +1408,29 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
         # 注意：必须在 finalize_status **之前**发布 run.reply —— 否则 Run 已成终态，
         # SSE 流会在"终态且事件发完"时立即 end，回复事件永远送不到前端（实测踩过）。
         try:
-            reply = _compose_final_reply(run, led)
+            # 报告阶段也要留在本 Run 的账本与守卫里；否则 reporter 成本会记进
+            # 进程级默认账本，且取消/预算耗尽后仍产生额外模型请求。
+            with llm.ledger_scope(led), llm.guard_scope(checkpoint):
+                checkpoint()
+                reply = _compose_final_reply(run, led)
             if reply:
                 run.staged["final_reply"] = reply
                 BUS.publish(run, "run.reply", text=reply)
+        except BudgetExceeded:
+            raise
         except Exception as exc:
             run.staged["final_reply_error"] = f"{type(exc).__name__}: {exc}"
         pipeline.sync_usage(run, led)
+        checkpoint()
         pipeline.finalize_status(run)
+    except BudgetExceeded as exc:
+        run.status = STATUS_CANCELLED if isinstance(exc, RunCancelled) else STATUS_BUDGET_EXCEEDED
+        run.error = str(exc)
+        run.ended_at_ms = now_ms()
+        BUS.publish(run, "run.cancelled" if isinstance(exc, RunCancelled) else "run.budget_exceeded",
+                    reason=run.error, cost=run.cost_yuan)
     except Exception as exc:                       # 任何异常都要落到 Run 上
+        log.exception("run_id=%s 后台执行失败", run.run_id)
         run.status = STATUS_FAILED
         run.error = f"{type(exc).__name__}: {exc}"
         run.ended_at_ms = int(time.time() * 1000)
@@ -1304,6 +1439,8 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
         # 兜底必须自身绝对安全：任何一行抛错都会让 Run 永久停在非终态（实测踩过）
         try:
             pipeline.sync_usage(run, led)
+            for art in run.artifacts:
+                art.url = f"/api/runs/{run.run_id}/artifacts/{quote(art.name)}"
         except Exception:
             pass
         try:
@@ -1311,32 +1448,59 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                 pipeline.finalize_status(run)
             if not run.error and run.status == STATUS_FAILED:
                 run.error = "运行异常终止（见服务日志）"
-            store.save(run)
         except Exception as exc:            # 落盘都失败时，至少把错误写进内存对象
             run.error = f"收尾失败：{type(exc).__name__}: {exc}"
         try:
             BUS.publish(run, "run.finished", status=run.status, duration_ms=run.duration_ms,
                         cost=run.cost_yuan, tokens=run.tokens,
                         steps=run.step_stats(), artifacts=len(run.artifacts))
+            store.save(run)          # run.finished 必须一并持久化，重启后仍可正确回放
         except Exception:
-            pass
+            log.exception("run_id=%s 运行终态保存失败", run.run_id)
+
+
+def _active_run_count() -> int:
+    with _STATE_LOCK:
+        return sum(t.is_alive() for t in _RUN_THREADS.values())
+
+
+def _bounded_run_worker(run_id: str, req: RunReq) -> None:
+    try:
+        _run_worker(run_id, req)
+    finally:
+        with _STATE_LOCK:
+            _RUN_THREADS.pop(run_id, None)
+        _RUN_SLOTS.release()
 
 
 @app.post("/api/runs", dependencies=[Depends(require_token)])
 def create_run(req: RunReq) -> Any:
     """创建并**后台执行**一个 Run，立即返回 run_id（前端随后订阅事件流）。"""
     require_llm()
+    if not _RUN_SLOTS.acquire(blocking=False):
+        raise HTTPException(429, "当前运行已达到并发上限，请稍后提交。", headers={"Retry-After": "10"})
     fp = task_fingerprint(req.task)
     run = Run(run_id=new_run_id(fp), task=req.task, task_fp=fp, model=config.MODEL)
     run.budget = Budget(max_cost_yuan=req.max_cost_yuan, max_llm_calls=req.max_llm_calls,
                         max_seconds=req.max_seconds, max_attempts_per_step=3)
-    run_store().save(run)
-    threading.Thread(target=_run_worker, args=(run.run_id, req), daemon=True).start()
-    return {"run_id": run.run_id, "status": run.status, "task_fp": fp}
+    try:
+        run_store().save(run)
+        thread = threading.Thread(target=_bounded_run_worker, args=(run.run_id, req),
+                                  name=f"run-{run.run_id}", daemon=True)
+        with _STATE_LOCK:
+            _RUN_THREADS[run.run_id] = thread
+        thread.start()
+    except Exception:
+        with _STATE_LOCK:
+            _RUN_THREADS.pop(run.run_id, None)
+        _RUN_SLOTS.release()
+        raise
+    return {"run_id": run.run_id, "status": runtime.STATUS_CREATED, "task_fp": fp}
 
 
 @app.get("/api/runs")
-def list_runs(limit: int = 50, task_fp: str | None = None) -> Any:
+def list_runs(limit: int = Query(default=50, ge=1, le=200),
+              task_fp: str | None = Query(default=None, max_length=64)) -> Any:
     """Run 列表（不覆盖历史；同任务用 task_fp 分组）。"""
     return {"runs": run_store().list_recent(limit=limit, task_fp=task_fp)}
 
@@ -1359,50 +1523,48 @@ def cancel_run(run_id: str) -> Any:
         return {"run_id": run_id, "status": run.status, "note": "已终止，无需取消"}
     run.cancel_requested = True
     BUS.publish(run, "run.cancel_requested")
+    run_store().save(run)
     return {"run_id": run_id, "status": "CANCEL_REQUESTED"}
 
 
 @app.get("/api/runs/{run_id}/stream")
-def stream_run(run_id: str) -> Any:
+async def stream_run(run_id: str, request: Request,
+                     after: int = Query(default=0, ge=0)) -> Any:
     """SSE 事件流：实时推送该 Run 的 TraceEvent（支持断线重连回放已落盘事件）。"""
     store = run_store()
     run = store.get(run_id)
     if run is None:
         raise HTTPException(404, "Run 不存在")
+    last_id = request.headers.get("Last-Event-ID", "")
+    if last_id:
+        if not last_id.isdigit() or len(last_id) > 12:
+            raise HTTPException(400, "非法的事件游标")
+        after = max(after, int(last_id))
 
-    def gen():
-        import json as _json
-        sent = 0
-        # 先回放已落盘事件（重连场景）
-        for ev in list(run.events):
-            yield f"data: {_json.dumps(ev.to_dict(), ensure_ascii=False)}\n\n"
-            sent += 1
-        q = BUS.subscribe(run_id)
-        try:
-            idle = 0
-            while True:
-                if q:
-                    ev = q.pop(0)
-                    yield f"data: {_json.dumps(ev.to_dict(), ensure_ascii=False)}\n\n"
-                    sent += 1
-                    idle = 0
-                    continue
-                cur = store.get(run_id)
-                if cur is not None and cur.status in TERMINAL and len(cur.events) <= sent:
+    async def gen():
+        cursor = after
+        heartbeat_at = time.monotonic()
+        while True:
+            # 回放与实时均使用同一游标快照：发布发生在 yield 期间，也会在下次
+            # 轮询补上；无「回放完成 → 注册订阅」之间的事件丢失窗口。
+            for ev in BUS.replay(run, cursor):
+                yield f"id: {ev.seq}\ndata: {json.dumps(ev.to_dict(), ensure_ascii=False)}\n\n"
+                cursor = ev.seq
+            with _STATE_LOCK:
+                worker_alive = run_id in _RUN_THREADS
+            if run.status in TERMINAL and not BUS.replay(run, cursor):
+                if not worker_alive or any(e.type == "run.finished" and e.seq <= cursor for e in run.events):
                     yield "event: end\ndata: {}\n\n"
                     break
-                time.sleep(0.15)
-                idle += 1
-                if idle % 200 == 0:              # 心跳，防代理超时断开
-                    yield ": keep-alive\n\n"
-                if idle > 4000:                  # 兜底：10 分钟无事件则结束
-                    yield "event: end\ndata: {}\n\n"
-                    break
-        finally:
-            BUS.unsubscribe(run_id, q)
+            if await request.is_disconnected():
+                break
+            if time.monotonic() - heartbeat_at >= 15:
+                yield ": keep-alive\n\n"
+                heartbeat_at = time.monotonic()
+            await asyncio.sleep(0.15)             # 长连接不占用同步请求线程池
 
     return StreamingResponse(gen(), media_type="text/event-stream",
-                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
+                             headers={"Cache-Control": "no-cache, no-transform", "X-Accel-Buffering": "no"})
 
 
 @app.get("/api/capabilities")
@@ -1483,35 +1645,23 @@ def run_artifact(run_id: str, name: str, download: int = 0) -> Any:
     ③ 仍找不到 → 404 并列出实际可用的产物名（可诊断，不是黑盒报错）。"""
     if not re.fullmatch(r"[A-Za-z0-9\-]{8,64}", run_id) and not re.fullmatch(r"[0-9a-zA-Z\-]{10,64}", run_id):
         raise HTTPException(400, "非法的 run_id")
-    if not name or len(name) > 120 or re.search(r"[/\\\x00-\x1f]", name):
+    if not name or len(name) > 120 or name in (".", "..") or re.search(r"[/\\:\x00-\x1f\x7f]", name):
         raise HTTPException(400, "非法的文件名")
     base = (config.OUT_DIR / "runs" / run_id / "artifacts").resolve()
     target = (base / name).resolve()
     if base not in target.parents or not target.is_file():
         if base.is_dir():
             stem = re.sub(r"^step\d+_", "", name)
-            for cand in sorted(base.glob(f"*_{stem}")):
-                if cand.is_file() and base in cand.resolve().parents:
+            for cand in sorted(base.iterdir()):
+                if (re.sub(r"^step\d+_", "", cand.name) == stem
+                        and cand.is_file() and base in cand.resolve().parents):
                     target = cand.resolve()
                     break
     if base not in target.parents or not target.is_file():
         avail = sorted(p.name for p in base.glob("*"))[:20] if base.is_dir() else []
         hint = f"；可用产物：{avail}" if avail else "；该 Run 没有落盘产物"
         raise HTTPException(404, f"产物不存在（请求名 {name}）{hint}")
-    if target.suffix.lower() in (".png", ".jpg", ".jpeg", ".svg"):
-        media = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
-                 ".svg": "image/svg+xml"}[target.suffix.lower()]
-        return Response(content=target.read_bytes(), media_type=media)
-    media = ("text/html; charset=utf-8" if target.suffix == ".html"
-             else "text/markdown; charset=utf-8" if target.suffix in (".md", ".csv")
-             else "text/plain; charset=utf-8")
-    headers = {}
-    if download:
-        ascii_fallback = re.sub(r"[^A-Za-z0-9_.\-]", "_", name) or "artifact"
-        headers["Content-Disposition"] = (f"attachment; filename=\"{ascii_fallback}\"; "
-                                          f"filename*=UTF-8''{quote(name)}")
-    return Response(content=target.read_text(encoding="utf-8", errors="replace"),
-                    media_type=media, headers=headers)
+    return _artifact_response(target, target.name, bool(download))
 
 
 @app.get("/api/config")

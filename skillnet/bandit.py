@@ -43,7 +43,9 @@ from __future__ import annotations
 
 import math
 import random
+import threading
 import zlib
+from functools import wraps
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -62,6 +64,15 @@ DOMAIN_DIM = 24       # 领域 one-hot（当前 17 个领域，留余量）
 INTERACTION_DIM = 3
 META_DIM = 5
 CTX_DIM = EMB_DIM * 2 + DOMAIN_DIM + INTERACTION_DIM + META_DIM      # 152
+
+
+def _locked(method):
+    """Numpy 运算会释放 GIL：评分、反馈与参数快照必须共享同一把锁。"""
+    @wraps(method)
+    def call(self, *args, **kwargs):
+        with self._lock:
+            return method(self, *args, **kwargs)
+    return call
 
 # 关于 DOMAIN_DIM 的存在理由（实测得来，不是想当然）：
 # 词袋计数向量**全部非负**，在 128 维下任意两个技能的余弦相似度都会「集中」在
@@ -253,6 +264,7 @@ class SharedLinUCB:
         dim: int = CTX_DIM,
         seed: int = 17,
     ) -> None:
+        self._lock = threading.RLock()
         self.lib = lib
         self.alpha = alpha
         self.dim = dim
@@ -265,6 +277,7 @@ class SharedLinUCB:
 
     # ------------------------------------------------------------------
     @property
+    @_locked
     def theta(self) -> np.ndarray:
         return np.linalg.solve(self.A, self.b)
 
@@ -277,6 +290,7 @@ class SharedLinUCB:
         return self.encoder.encode(task, s, extra)
 
     # ------------------------------------------------------------------
+    @_locked
     def score(
         self, task: str, name: str, extra: dict[str, float] | None = None
     ) -> tuple[float, float, float]:
@@ -288,6 +302,7 @@ class SharedLinUCB:
         explore = float(self.alpha * math.sqrt(max(0.0, float(phi @ A_inv_phi))))
         return exploit + explore, exploit, explore
 
+    @_locked
     def select(
         self,
         task: str,
@@ -309,6 +324,7 @@ class SharedLinUCB:
                 }
         return best, info
 
+    @_locked
     def rank(
         self,
         task: str,
@@ -326,6 +342,7 @@ class SharedLinUCB:
         rows.sort(key=lambda r: -r[1])
         return rows
 
+    @_locked
     def update(
         self,
         task: str,
@@ -344,7 +361,9 @@ class SharedLinUCB:
             s.stats["pulls"] = s.stats.get("pulls", 0) + 1
             s.stats["reward_sum"] = s.stats.get("reward_sum", 0) + reward
             s.stats["best"] = max(s.stats.get("best", 0.0), reward)
+            self.lib.dirty = True
 
+    @_locked
     def log(
         self,
         rnd: int,
@@ -357,10 +376,18 @@ class SharedLinUCB:
     ) -> None:
         self.history.append(Pull(rnd, name, predicted, reward, reason, exploration, task))
 
+    @_locked
     def invalidate(self, name: str | None = None) -> None:
         self.encoder.invalidate(name)
 
+    @_locked
+    def rebind(self, lib: SkillLibrary) -> None:
+        """刷新编码器，保留共享学习器本身，运行中持有它的请求不会丢失反馈。"""
+        self.lib = lib
+        self.encoder = ContextEncoder(lib, self.dim)
+
     # ------------------------------------------------------------------
+    @_locked
     def best_by_actual(self, candidates: list[str] | None = None) -> Skill | None:
         """按历史实测平均奖励返回最佳技能（COBRA-Skills 的最终输出规则）。
         注意：**不是**按预测分数选。预测只用于安排评估顺序。"""
@@ -372,6 +399,7 @@ class SharedLinUCB:
         scored.sort(key=lambda kv: (-kv[1].mean_reward, -kv[1].stats.get("pulls", 0)))
         return scored[0][1]
 
+    @_locked
     def snapshot(self) -> dict[str, Any]:
         return {
             "policy": self.name,
@@ -400,6 +428,7 @@ class SharedLinUCB:
         }
 
     # ---- 持久化（共享参数很小，直接存）----
+    @_locked
     def state_dict(self) -> dict[str, Any]:
         return {
             "policy": self.name,
@@ -410,6 +439,7 @@ class SharedLinUCB:
             "n_updates": self.n_updates,
         }
 
+    @_locked
     def load_state(self, st: dict[str, Any]) -> None:
         if not st or st.get("dim") != self.dim:
             return

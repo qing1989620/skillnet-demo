@@ -57,20 +57,42 @@ class SkillEvolver:
     # 准入检查（SkillNet 的 filtering / deduplication）
     # ------------------------------------------------------------------
     def _admit(self, raw: dict[str, Any], op: str, parents: list[str]) -> Skill | None:
+        if not isinstance(raw, dict):
+            self.records.append(EvolveRecord(op, "<invalid>", False, "结构校验失败：技能必须是 JSON 对象"))
+            return None
+        # JSON parsing does not establish a skill contract. In particular a
+        # string 'steps' used to be iterated into individual-character steps.
+        for key in ("name", "description", "domain", "capability"):
+            if key in raw and not isinstance(raw[key], str):
+                self.records.append(EvolveRecord(op, "<invalid>", False, f"结构校验失败：{key} 必须是字符串"))
+                return None
+        for key in ("steps", "tags", "inputs", "outputs", "use_when", "pitfalls", "verification"):
+            value = raw.get(key, [])
+            if not isinstance(value, list) or any(not isinstance(item, str) for item in value):
+                self.records.append(EvolveRecord(op, "<invalid>", False, f"结构校验失败：{key} 必须是字符串数组"))
+                return None
+        relations = raw.get("relations", [])
+        if not isinstance(relations, list) or any(
+            not isinstance(item, dict) or not isinstance(item.get("target"), str)
+            or not isinstance(item.get("type", "compose_with"), str) for item in relations
+        ):
+            self.records.append(EvolveRecord(op, "<invalid>", False, "结构校验失败：relations 必须是合法关系对象数组"))
+            return None
+
         name = str(raw.get("name", "")).strip().lower().replace("_", "-")
         name = re.sub(r"[^a-z0-9\-]", "-", name).strip("-")
         name = re.sub(r"-{2,}", "-", name)
         if not name:
             self.records.append(EvolveRecord(op, "<invalid>", False, "技能名为空"))
             return None
-        if not NAME_RE.match(name):
-            self.records.append(EvolveRecord(op, name, False, "技能名不符合 kebab-case"))
+        if not NAME_RE.fullmatch(name) or len(name) > 64:
+            self.records.append(EvolveRecord(op, name, False, "技能名不符合 kebab-case 或超过 64 字符"))
             return None
         if name in self.lib.skills:
             self.records.append(EvolveRecord(op, name, False, "与已有技能重名"))
             return None
 
-        steps = [s for s in (raw.get("steps") or []) if str(s).strip()]
+        steps = list(dict.fromkeys(s.strip() for s in raw.get("steps", []) if s.strip()))
         if len(steps) < 3:
             self.records.append(
                 EvolveRecord(op, name, False, f"步骤过少（{len(steps)} 条），判定为不完整")
@@ -136,6 +158,11 @@ class SkillEvolver:
                 [self.lib.skills[p].generation for p in parents if p in self.lib.skills] or [0]
             ) + 1,
         )
+
+        issues = skill.validate()
+        if issues:
+            self.records.append(EvolveRecord(op, name, False, "技能契约校验失败：" + "; ".join(issues)))
+            return None
 
         # 五维质量用启发式规则评估，每个维度带理由。
         # 早先版本在这里统一写 "Average"，导致 quality_score() 的先验退化成常数，

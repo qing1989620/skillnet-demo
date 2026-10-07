@@ -40,22 +40,29 @@ function mkEl(id) {
   return el;
 }
 const mockDocument = {
+  readyState: 'loading',
+  addEventListener() {},
+  getElementById: (id) => mkEl('#' + id),
   querySelector: (s) => mkEl(s),
   querySelectorAll: () => [],
   body: { insertAdjacentHTML() {} },
 };
 const mockFetch = async () => ({ ok: true, json: async () => ({}) });
+// Load the actual shared helpers; defer DOM boot while testing render functions.
+const mockWindow = {fetch: mockFetch};
+new Function('document', 'window', fs.readFileSync(path.join(ROOT, 'web', 'assets', 'ui.js'), 'utf8'))(mockDocument, mockWindow);
+const mockUI = mockWindow.UI;
 
 // 去掉自动启动，避免测试时发起真实网络请求
 const patched = code.replace(/^boot\(\);\s*$/m, '');
 
 const factory = new Function(
-  'document', 'fetch', 'window',
+  'document', 'fetch', 'window', 'UI',
   patched + `
   return {renderGraph, renderMeta, renderDomains, renderQuality, renderPipeline,
           renderRefs, recallOf, esc, pct, num};`
 );
-const api = factory(mockDocument, mockFetch, {});
+const api = factory(mockDocument, mockFetch, {}, mockUI);
 
 const graph = loadJSON('graph.json');
 const stats = loadJSON('stats.json');
@@ -74,14 +81,14 @@ function t(name, fn) {
 
 t('渲染函数全套执行（注入真实数据）', () => {
   const run = new Function(
-    'document', 'fetch', 'window',
+    'document', 'fetch', 'window', 'UI',
     patched
     + '\nGRAPH = ' + JSON.stringify(graph) + ';\n'
     + 'STATS = ' + JSON.stringify(stats) + ';\n'
     + 'renderMeta(); renderDomains(); renderQuality(); renderPipeline(); renderRefs(); renderGraph();\n'
     + 'return 1;'
   );
-  run(mockDocument, mockFetch, {});
+  run(mockDocument, mockFetch, {}, mockUI);
   const svg = captured['#graph'] || '';
   if (!svg.includes('<svg ')) throw new Error('未生成 SVG');
   const circles = (svg.match(/<circle/g) || []).length;

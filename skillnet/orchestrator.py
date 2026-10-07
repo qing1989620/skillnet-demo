@@ -76,21 +76,70 @@ class Orchestrator:
             max_tokens=700,
             default={},
         )
+        if not isinstance(out, dict):
+            out = {}
+        result = self.merge_workflow(names, out.get("workflow"))
+        result["reason"] = out.get("reason", "") if isinstance(out.get("reason", ""), str) else ""
+        return result
+
+    def merge_workflow(self, names: list[str], proposed: Any) -> dict[str, Any]:
+        """Validate model edges while preserving the established dependency DAG.
+
+        Model output is untrusted even when it parses as JSON. Invalid members
+        must not crash a request, introduce unknown nodes, or displace a known
+        prerequisite to accommodate a new model edge.
+        """
+        base = self.build_from_relations(names)
         valid = set(base["skills"])
-        wf = [
-            [a, b]
-            for a, b in (out.get("workflow") or [])
-            if a in valid and b in valid and a != b
-        ]
-        merged = {tuple(e) for e in base["workflow"]} | {tuple(e) for e in wf}
-        # 去掉会形成环的边
-        merged = self._break_cycles(valid, merged)
-        order = self._toposort(valid, merged)
+        malformed = 0
+        edges: set[tuple[str, str]] = set()
+        if not isinstance(proposed, list):
+            malformed = 1
+        else:
+            for edge in proposed:
+                if (not isinstance(edge, (list, tuple)) or len(edge) != 2
+                        or not all(isinstance(n, str) for n in edge)
+                        or edge[0] not in valid or edge[1] not in valid
+                        or edge[0] == edge[1]):
+                    malformed += 1
+                    continue
+                edges.add(tuple(edge))
+
+        kept = {tuple(e) for e in base["workflow"]}
+        adj: dict[str, set[str]] = {n: set() for n in valid}
+        for a, b in kept:
+            adj[a].add(b)
+
+        rejected: list[list[str]] = []
+        for a, b in sorted(edges - kept):
+            pending, seen = [b], set()
+            while pending:
+                node = pending.pop()
+                if node in seen:
+                    continue
+                seen.add(node)
+                pending.extend(adj[node] - seen)
+            if a in seen:
+                rejected.append([a, b])
+                continue
+            kept.add((a, b))
+            adj[a].add(b)
+
+        reasons = []
+        if malformed:
+            reasons.append(f"ignored {malformed} invalid model workflow item(s)")
+        if rejected:
+            reasons.append(f"rejected {len(rejected)} model edge(s) conflicting with dependencies")
+        if base["cycles_broken"]:
+            reasons.append("existing relation cycles were broken")
         return {
-            "skills": order,
-            "workflow": [list(e) for e in sorted(merged)],
-            "source": "relations+llm",
-            "reason": out.get("reason", ""),
+            "skills": self._toposort(valid, kept),
+            "workflow": [list(e) for e in sorted(kept)],
+            "source": "relations+llm" if isinstance(proposed, list) else "relations",
+            "cycles_broken": base["cycles_broken"] + rejected,
+            "invalid_edges": malformed,
+            "degraded": bool(reasons),
+            "degraded_reason": "; ".join(reasons),
         }
 
     # ------------------------------------------------------------------

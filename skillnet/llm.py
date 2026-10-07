@@ -13,7 +13,7 @@ import re
 import threading
 import time
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Callable
 
 import httpx
 
@@ -30,7 +30,8 @@ class UsageLedger:
     prompt_tokens: int = 0
     completion_tokens: int = 0
     by_role: dict[str, dict[str, float]] = field(default_factory=dict)
-    _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
+    parent: UsageLedger | None = field(default=None, repr=False)
+    _lock: threading.RLock = field(default_factory=threading.RLock, repr=False)
 
     def record(self, role: str, pt: int, ct: int) -> None:
         with self._lock:
@@ -44,15 +45,22 @@ class UsageLedger:
             slot["prompt"] += pt
             slot["completion"] += ct
             slot["cost"] += pt / 1e6 * config.PRICE_IN + ct / 1e6 * config.PRICE_OUT
+        if self.parent is not None:
+            self.parent.record(role, pt, ct)
 
     @property
     def cost_yuan(self) -> float:
-        return (
-            self.prompt_tokens / 1e6 * config.PRICE_IN
-            + self.completion_tokens / 1e6 * config.PRICE_OUT
-        )
+        with self._lock:
+            return (
+                self.prompt_tokens / 1e6 * config.PRICE_IN
+                + self.completion_tokens / 1e6 * config.PRICE_OUT
+            )
 
     def snapshot(self) -> dict[str, Any]:
+        with self._lock:
+            return self._snapshot()
+
+    def _snapshot(self) -> dict[str, Any]:
         return {
             "calls": self.calls,
             "prompt_tokens": self.prompt_tokens,
@@ -84,6 +92,25 @@ LEDGER = UsageLedger()
 _CTX: contextvars.ContextVar["UsageLedger | None"] = contextvars.ContextVar(
     "skillnet_ledger", default=None
 )
+_GUARD: contextvars.ContextVar[Callable[[], None] | None] = contextvars.ContextVar(
+    "skillnet_llm_guard", default=None
+)
+
+
+@contextlib.contextmanager
+def guard_scope(guard: Callable[[], None]):
+    """运行级取消/预算检查，覆盖检索、规划、执行、验收和报告里的嵌套调用。"""
+    token = _GUARD.set(guard)
+    try:
+        yield
+    finally:
+        _GUARD.reset(token)
+
+
+def _check_guard() -> None:
+    guard = _GUARD.get()
+    if guard is not None:
+        guard()
 
 
 def current_ledger() -> UsageLedger:
@@ -114,17 +141,28 @@ class LLMError(RuntimeError):
 
 
 _client: httpx.Client | None = None
+_client_lock = threading.Lock()
 
 
 def _get_client() -> httpx.Client:
     global _client
-    if _client is None:
-        _client = httpx.Client(
-            base_url=config.BASE_URL,
-            headers={"Authorization": f"Bearer {config.API_KEY}"},
-            timeout=httpx.Timeout(180.0, connect=20.0),
-        )
-    return _client
+    with _client_lock:
+        if _client is None:
+            _client = httpx.Client(
+                base_url=config.BASE_URL,
+                headers={"Authorization": f"Bearer {config.API_KEY}"},
+                timeout=httpx.Timeout(180.0, connect=20.0),
+                limits=httpx.Limits(max_connections=16, max_keepalive_connections=8),
+            )
+        return _client
+
+
+def close_client() -> None:
+    global _client
+    with _client_lock:
+        if _client is not None:
+            _client.close()
+            _client = None
 
 
 def chat(
@@ -148,11 +186,19 @@ def chat(
         "stream": False,
     }
     last_err: Exception | None = None
-    for attempt in range(retries):
+    for attempt in range(max(1, retries)):
+        _check_guard()                   # 守卫异常不进入网络重试，取消不会额外消耗额度
         try:
             resp = _get_client().post("/chat/completions", json=payload)
             if resp.status_code >= 400:
-                raise LLMError(f"HTTP {resp.status_code}: {resp.text[:300]}")
+                last_err = LLMError(f"模型服务返回 HTTP {resp.status_code}")
+                # 身份、权限、请求参数错误不会因重试恢复，也不暴露上游响应正文。
+                if resp.status_code not in (408, 429) and resp.status_code < 500:
+                    raise last_err
+                if attempt < retries - 1:
+                    time.sleep(1.5 * (attempt + 1))
+                    continue
+                break
             data = resp.json()
             usage = data.get("usage") or {}
             current_ledger().record(
@@ -160,12 +206,15 @@ def chat(
                 int(usage.get("prompt_tokens", 0)),
                 int(usage.get("completion_tokens", 0)),
             )
-            return data["choices"][0]["message"]["content"] or ""
-        except Exception as exc:  # noqa: BLE001
+            content = data["choices"][0]["message"]["content"] or ""
+        except (httpx.TransportError, ValueError, KeyError, IndexError, TypeError) as exc:
             last_err = exc
             if attempt < retries - 1:
                 time.sleep(1.5 * (attempt + 1))
-    raise LLMError(f"LLM 调用失败: {last_err}")
+            continue
+        _check_guard()                   # 记账后检查；已产生的用量在取消/超限时仍保留
+        return content
+    raise LLMError(f"LLM 调用失败: {type(last_err).__name__ if last_err else '未知错误'}")
 
 
 _JSON_BLOCK = re.compile(r"```(?:json)?\s*(.*?)```", re.S)

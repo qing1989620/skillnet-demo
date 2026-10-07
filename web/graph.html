@@ -6,16 +6,12 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <title>SkillNet-S1 · 技能星图</title>
 <style>
-  :root {
-    --bg0: #070b12; --bg1: #0d1624; --ink: #e6eef7; --dim: #8a9bb0;
-    --line: rgba(140,180,225,.16); --brand: #4a9eff; --evolved: #ff5a4d;
-    --panel: rgba(12,20,32,.92);
-  }
+
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; overflow: hidden; }
   body { background: radial-gradient(1200px 800px at 50% 42%, var(--bg1) 0%, var(--bg0) 70%);
          color: var(--ink); font-family: "Microsoft YaHei", "PingFang SC", sans-serif; }
-  canvas { display: block; cursor: grab; }
+  canvas { display: block; cursor: grab; touch-action:none; }
   canvas.dragging { cursor: grabbing; }
   canvas.onnode { cursor: pointer; }
 
@@ -54,27 +50,21 @@
   .load { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
           font-size: 13px; color: var(--dim); background: var(--bg0); z-index: 9; }
 
-  /* 深色底：AI 生成的星图星座背景（裁水印 + 压缩），极淡叠在 canvas 之下，
-     为深色沉浸页提供纵深，不干扰节点与连线辨识。 */
-  body::before { content: ""; position: fixed; inset: 0; z-index: 0; pointer-events: none;
-    background: url("/static/assets/bg-dark.jpg") center / cover no-repeat fixed;
-    opacity: .42; }
-  body > * { position: relative; z-index: 1; }
-
-  :root { --bg-img: url("/static/assets/bg-dark.jpg"); --bg-op: .42; }
-  /* 移除 graph 页原有的局部背景定义（改由共享层统一控制） */
 </style>
-<link rel="stylesheet" href="/static/assets/ui.css">
+<link rel="stylesheet" href="/static/assets/ui.css?v=0.8.0">
+<script src="/static/assets/ui.js?v=0.8.0"></script>
 </head>
 <body>
 <div class="load" id="load">正在加载技能图谱…</div>
-<canvas id="cv"></canvas>
+<canvas id="cv" role="img" aria-label="技能关系图谱。可通过搜索选择技能，并在详情卡片中阅读关联关系。"></canvas>
+<header class="graph-nav" id="graph-nav"></header>
+<div class="graph-search"><label class="ui-sr-only" for="graph-q">搜索并选择技能</label><input id="graph-q" type="search" placeholder="搜索技能或领域…" autocomplete="off"><div class="graph-search-results" id="graph-results"></div></div>
 
 <div class="hud tl">
-  <h1>技能星图 · Skill Relation Graph</h1>
+  <h1>技能图谱 <span style="font-size:12px;font-weight:400;color:var(--dim);margin-left:10px">Knowledge graph</span></h1>
   <div class="sub">
     <b id="nN">—</b> 个技能 · <b id="nE">—</b> 条类型化关系 ·
-    <b id="nD">—</b> 个领域　|　节点半径 = 实测平均奖励，朱红 = 演化产生的技能<br>
+    <b id="nD">—</b> 个领域　|　节点半径 = 实测平均奖励，暖橙 = 演化产生的技能<br>
     拖动节点 / 拖动空白平移 / 滚轮缩放 · 悬停高亮邻域 · 点击查看技能详情
   </div>
 </div>
@@ -88,14 +78,16 @@
 </div>
 
 <div class="ctrl">
+  <button class="btn" id="btnZoomOut" aria-label="缩小图谱">−</button>
+  <button class="btn" id="btnZoomIn" aria-label="放大图谱">＋</button>
   <button class="btn" id="btnReset">重置视角</button>
-  <button class="btn" id="btnPause">暂停物理</button>
+  <button class="btn" id="btnPause">暂停布局</button>
   <button class="btn on" id="btnLabel">显示标签</button>
   <button class="btn" id="btnEvolved">只看演化技能</button>
 </div>
 
 <div class="card" id="card">
-  <div class="close" onclick="closeCard()">×</div>
+  <button class="close" onclick="closeCard()" type="button" aria-label="关闭技能详情">×</button>
   <h3 id="cName"></h3>
   <div class="dom" id="cDom"></div>
   <div class="kv" id="cKv"></div>
@@ -104,7 +96,10 @@
 <div class="tip" id="tip"></div>
 
 <script>
-const API = location.port ? location.origin : "http://127.0.0.1:8848";
+const API = location.origin;
+const esc = UI.esc;
+document.getElementById("graph-nav").innerHTML = `<a class="ui-wordmark" href="/">${UI.mark}SkillNet <span style="font-weight:400;font-size:12px;letter-spacing:0">/ S1</span></a>${UI.productNav("graph")}`;
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const cv = document.getElementById("cv"), ctx = cv.getContext("2d");
 let W = 0, H = 0, DPR = Math.min(2, window.devicePixelRatio || 1);
 
@@ -113,7 +108,7 @@ const S = {
   nodes: [], edges: [], byId: {},
   view: { x: 0, y: 0, k: 1 }, target: { x: 0, y: 0, k: 1 },
   drag: null, panning: false, hover: null, selected: null,
-  paused: false, showLabel: true, onlyEvolved: false, t: 0,
+  paused: reducedMotion, showLabel: true, onlyEvolved: false, t: 0,
 };
 
 /* ---------------- 颜色 ---------------- */
@@ -122,19 +117,21 @@ const PALETTE = ["#4a9eff","#5fd0a0","#c295f0","#f0b23a","#54c8d8","#e08a5f",
                  "#e0a0a0","#7fc0e8","#b0c46a","#d08ad0","#7ad0a8","#a8b0e0",
                  "#e8c07a","#90d0e0","#c8a0e0","#a0c8d0"];
 let domainColor = {};
+document.getElementById("btnPause").textContent = S.paused ? "继续布局" : "暂停布局";
 
 /* ---------------- 物理 ---------------- */
 const LINK_LEN = { depend_on: 62, compose_with: 92, similar_to: 130 };
 function initPhysics() {
   const cx = 0, cy = 0;
   // 初始布点：按领域分簇，避免全挤在中心
-  const domIdx = {};
+  const domains = [...new Set(S.nodes.map(node=>node.domain))];
+  const domIdx = Object.fromEntries(domains.map((domain,index)=>[domain,index]));
   S.nodes.forEach((n, i) => {
-    const di = domIdx[n.domain] ?? (domIdx[n.domain] = Object.keys(domIdx).length);
+    const di = domIdx[n.domain];
     const ang = (di / Math.max(1, Object.keys(domIdx).length)) * Math.PI * 2;
-    const R = 210 + (i % 7) * 26;
-    n.x = cx + Math.cos(ang) * R + (Math.random() - .5) * 60;
-    n.y = cy + Math.sin(ang) * R + (Math.random() - .5) * 60;
+    const R = 175 + (i % 7) * 20;
+    n.x = cx + Math.cos(ang) * R + Math.sin(i*17.73) * 32;
+    n.y = cy + Math.sin(ang) * R + Math.cos(i*21.34) * 32;
     n.vx = 0; n.vy = 0;
     n.r = 3.4 + Math.min(9, (n.mean_reward || 0) * 11);
     n.fixed = false;
@@ -245,25 +242,16 @@ function draw() {
     const [x, y] = toScreen(n.x, n.y);
     if (x < -60 || y < -60 || x > W + 60 || y > H + 60) continue;
     const evolved = n.source !== "seed";
-    const base = evolved ? "#ff5a4d" : (domainColor[n.domain] || "#4a9eff");
+    const base = evolved ? "#dfa476" : (domainColor[n.domain] || "#4a9eff");
     const isFocus = focus && n.id === focus.id;
     const inNeigh = !focus || neigh.has(n.id);
     // 呼吸
-    const pulse = 1 + Math.sin(S.t * 1.6 + (n.x + n.y) * 0.01) * 0.05;
+    const pulse = 1;
     const r = n.r * v.k * (isFocus ? 1.5 : pulse);
 
     ctx.globalAlpha = inNeigh ? 1 : 0.16;
-    // 光晕
-    const glow = ctx.createRadialGradient(x, y, 0, x, y, r * (isFocus ? 6 : 3.4));
-    glow.addColorStop(0, base + (isFocus ? "66" : "3a"));
-    glow.addColorStop(1, "transparent");
-    ctx.fillStyle = glow;
-    ctx.beginPath(); ctx.arc(x, y, r * (isFocus ? 6 : 3.4), 0, 6.2832); ctx.fill();
-    // 实心球
-    const g2 = ctx.createRadialGradient(x - r * .3, y - r * .3, 0, x, y, r);
-    g2.addColorStop(0, "#ffffff"); g2.addColorStop(.35, base); g2.addColorStop(1, base + "cc");
-    ctx.fillStyle = g2;
-    ctx.beginPath(); ctx.arc(x, y, r, 0, 6.2832); ctx.fill();
+    ctx.fillStyle = base;
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
     // 选中环
     if (isFocus) {
       ctx.strokeStyle = base; ctx.lineWidth = 1.6; ctx.globalAlpha = .9;
@@ -308,6 +296,7 @@ function draw() {
 let FRAMES = 0;
 const FRAME_CAP = new URLSearchParams(location.search).get("frames");   // 供无头截图用
 function loop() {
+  if (document.hidden) { requestAnimationFrame(loop); return; }
   if (!S.paused) { step(); if (FRAME_CAP) step(); }   // 截图模式每帧跑两次物理，加快收敛
   draw();
   FRAMES++;
@@ -331,7 +320,7 @@ function pick(sx, sy) {
   return best;
 }
 
-cv.addEventListener("mousemove", ev => {
+cv.addEventListener("pointermove", ev => {
   const sx = ev.clientX, sy = ev.clientY;
   if (S.drag) {
     const [wx, wy] = toWorld(sx, sy);
@@ -351,17 +340,18 @@ cv.addEventListener("mousemove", ev => {
   if (n) {
     tip.style.display = "block";
     tip.style.left = (sx + 14) + "px"; tip.style.top = (sy + 14) + "px";
-    tip.innerHTML = `<b>${n.id}</b> · ${n.domain} · 平均奖励 ${(n.mean_reward || 0).toFixed(3)}`
+    tip.innerHTML = `<b>${esc(n.id)}</b> · ${esc(n.domain)} · 平均奖励 ${(n.mean_reward || 0).toFixed(3)}`
       + (n.source !== "seed" ? " · 演化技能" : "");
   } else tip.style.display = "none";
 });
 
-cv.addEventListener("mousedown", ev => {
+cv.addEventListener("pointerdown", ev => {
+  cv.setPointerCapture(ev.pointerId);
   const n = pick(ev.clientX, ev.clientY);
   if (n) { S.drag = n; cv.classList.add("dragging"); }
   else { S.panning = true; cv.classList.add("dragging"); }
 });
-window.addEventListener("mouseup", () => {
+window.addEventListener("pointerup", () => {
   if (S.drag) { S.drag.fixed = false; S.drag = null; }
   S.panning = false; cv.classList.remove("dragging");
 });
@@ -399,10 +389,10 @@ function selectNode(n) {
   document.getElementById("cKv").innerHTML =
     `平均奖励 <b>${(n.mean_reward || 0).toFixed(3)}</b>　·　被调用 <b>${n.pulls || 0}</b> 次<br>`
     + execLine
-    + `质量：安全性 <b>${q.safety || "—"}</b> · 完整性 <b>${q.completeness || "—"}</b> · 可执行性 <b>${q.executability || "—"}</b>`;
+    + `质量：安全性 <b>${esc(q.safety || "—")}</b> · 完整性 <b>${esc(q.completeness || "—")}</b> · 可执行性 <b>${esc(q.executability || "—")}</b>`;
   const rels = n.relations || [];
   document.getElementById("cRel").innerHTML = rels.length
-    ? "关联技能：" + rels.map(r => `<span>${r[0]} → ${r[1]}</span>`).join("")
+    ? "关联技能：" + rels.map(r => `<span>${esc(r[0])} → ${esc(r[1])}</span>`).join("")
     : "";
   card.classList.add("show");
 }
@@ -410,6 +400,21 @@ function closeCard() {
   S.selected = null;
   document.getElementById("card").classList.remove("show");
 }
+document.addEventListener("keydown",event=>{if(event.key === "Escape"){closeCard();document.getElementById("graph-results").innerHTML="";}});
+document.getElementById("graph-q").addEventListener("input",event=>{
+  const query=event.target.value.trim().toLowerCase(),host=document.getElementById("graph-results");
+  if(!query){host.innerHTML="";return;}
+  const nodes=S.nodes.filter(node=>(node.id+" "+node.domain).toLowerCase().includes(query)).slice(0,12);
+  host.innerHTML=nodes.map(node=>`<button type="button" data-node="${esc(node.id)}">${esc(node.id)}<span style="display:block;font-size:10px;color:var(--dim);margin-top:3px">${esc(node.domain)}</span></button>`).join("");
+  if(!nodes.length)host.innerHTML='<div style="font-size:12px;color:var(--dim);padding:12px">没有匹配技能</div>';
+  host.querySelectorAll("[data-node]").forEach(button=>button.addEventListener("click",()=>{
+    const node=S.byId[button.dataset.node];if(!node)return;
+    if(S.onlyEvolved && node.source === "seed"){S.onlyEvolved=false;document.getElementById("btnEvolved").classList.remove("on");}
+    S.target.x=-node.x;S.target.y=-node.y;S.target.k=Math.max(.85,S.target.k);selectNode(node);host.innerHTML="";
+  }));
+});
+document.getElementById("btnZoomIn").onclick=()=>S.target.k=Math.min(3.2,S.target.k*1.2);
+document.getElementById("btnZoomOut").onclick=()=>S.target.k=Math.max(.22,S.target.k/1.2);
 
 document.getElementById("btnReset").onclick = () => {
   S.target.x = S.view.x = 0; S.target.y = S.view.y = 0; S.target.k = S.view.k = 1;
@@ -417,7 +422,7 @@ document.getElementById("btnReset").onclick = () => {
 };
 document.getElementById("btnPause").onclick = e => {
   S.paused = !S.paused;
-  e.target.textContent = S.paused ? "继续物理" : "暂停物理";
+  e.target.textContent = S.paused ? "继续布局" : "暂停布局";
   e.target.classList.toggle("on", S.paused);
 };
 document.getElementById("btnLabel").onclick = e => {
@@ -439,22 +444,21 @@ window.addEventListener("resize", resize);
   resize();
   let data;
   try {
-    const r = await fetch(API + "/api/graph");
-    data = await r.json();
+    data = await UI.json(API + "/api/graph");
   } catch (e) {
-    document.getElementById("load").textContent = "加载失败：请确认服务已启动（python run.py）";
+    document.getElementById("load").innerHTML = `<div style="text-align:center;padding:24px">${esc(e.message)}<br><a href="/graph" style="display:inline-block;margin-top:16px;color:#c2e4cd">重新加载 →</a></div>`;
     return;
   }
   // 技能详情（质量/关系）在 /api/skills 里
   let detail = {};
   try {
     const s = await (await fetch(API + "/api/skills")).json();
-    for (const it of (s.skills || [])) detail[it.name] = it;
+    for (const it of (s.items || [])) detail[it.name] = it;
   } catch (e) {}
 
   for (const n of data.nodes) {
     const d = detail[n.id] || {};
-    S.nodes.push({ ...n, quality: d.quality, relations: d.relations });
+    S.nodes.push({ ...n, quality: d.quality, relations: d.relations, stats: d.stats });
   }
   S.edges = data.edges;
   S.byId = Object.fromEntries(S.nodes.map(n => [n.id, n]));
@@ -467,6 +471,7 @@ window.addEventListener("resize", resize);
   document.getElementById("nD").textContent = doms.length;
 
   initPhysics();
+  if(W < 860)S.view.k = S.target.k = .65;
   document.getElementById("load").style.display = "none";
   loop();
 })();
@@ -504,6 +509,6 @@ window.__SELFTEST__ = function(){ return {
   }, 4000);
 })();
 </script>
-<script src="/static/assets/ui.js" defer></script>
+
 </body>
 </html>

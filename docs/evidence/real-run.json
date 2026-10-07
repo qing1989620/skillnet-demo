@@ -1,0 +1,111 @@
+{
+  "run_id": "95228a6c-20261007-183446-4149",
+  "task": "仅使用以下演示数据，不访问外部网络：A组[1,2,3,4,5]，B组[2,3,4,5,6]。用一个Python步骤计算两组样本量、均值和样本标准差，输出summary.csv及简短结果说明，说明这些演示数据不能用于科学结论。",
+  "status": "COMPLETED",
+  "model": "deepseek-chat",
+  "budget": {
+    "max_cost_yuan": 0.5,
+    "max_llm_calls": 30,
+    "max_seconds": 180,
+    "max_attempts_per_step": 3
+  },
+  "cost_yuan": 0.1041,
+  "tokens": 32061,
+  "llm_calls": 12,
+  "duration_ms": 34111,
+  "step_stats": {
+    "total": 3,
+    "done": 3,
+    "failed": 0,
+    "skipped": 0,
+    "retried": 0
+  },
+  "evolution": {
+    "accepted": true,
+    "name": "demo-descriptive-stats-summary",
+    "generation": 1,
+    "capability": "产出一份包含每组样本量、均值和样本标准差的 CSV 文件及一段明确声明数据不可用于科学结论的简短说明。",
+    "library_size": 107,
+    "records": [
+      {
+        "op": "distill",
+        "name": "demo-descriptive-stats-summary",
+        "accepted": true,
+        "reason": "G1 新技能入库",
+        "parent": [
+          "code-helper"
+        ]
+      }
+    ]
+  },
+  "validation": {
+    "method": "HTTP download and independent Python statistics recomputation",
+    "inputs": {
+      "A": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "B": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    "expected": {
+      "A": {
+        "n": 5,
+        "mean": 3.0,
+        "std_sample": 1.5811388300841898
+      },
+      "B": {
+        "n": 5,
+        "mean": 4.0,
+        "std_sample": 1.5811388300841898
+      }
+    },
+    "notes": [
+      "Descriptive demonstration data only; no scientific inference.",
+      "Completion does not mean every semantic skill criterion passed.",
+      "This run precedes final reporting-prompt and workflow-consistency fixes."
+    ]
+  },
+  "artifacts": [
+    {
+      "name": "step1_figure.png",
+      "kind": "真实运行产物",
+      "bytes": 19166,
+      "sha256": "01b00e6aee1b8cefe6cac2363bbbc53e0e5f6885afa0e026d512958506d97503",
+      "from_step": 0,
+      "url": "/api/runs/95228a6c-20261007-183446-4149/artifacts/step1_figure.png"
+    },
+    {
+      "name": "step1_summary.csv",
+      "kind": "真实运行产物",
+      "bytes": 84,
+      "sha256": "7a7d4f00b8f430b4501389a222593668eaf9dcd1b1b9c75fa467a89f9ec1e408",
+      "from_step": 0,
+      "url": "/api/runs/95228a6c-20261007-183446-4149/artifacts/step1_summary.csv"
+    },
+    {
+      "name": "step3_figure.png",
+      "kind": "真实运行产物",
+      "bytes": 28509,
+      "sha256": "274bc84a3b1e9f2f2117667a5aa1f699b3e393f1d80c9d78e95fbb1d2c38a4b2",
+      "from_step": 2,
+      "url": "/api/runs/95228a6c-20261007-183446-4149/artifacts/step3_figure.png"
+    },
+    {
+      "name": "step3_summary.csv",
+      "kind": "真实运行产物",
+      "bytes": 142,
+      "sha256": "68fe7a7efc7e1b6d1ea1c5c7a5733730c25846662fa6d136512ca6ec7bd1c7d7",
+      "from_step": 2,
+      "url": "/api/runs/95228a6c-20261007-183446-4149/artifacts/step3_summary.csv"
+    }
+  ]
+}

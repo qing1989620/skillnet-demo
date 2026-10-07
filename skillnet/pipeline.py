@@ -37,7 +37,7 @@ from . import checks as checks_mod
 from . import config, executor, llm, runtime, sandbox
 from .runtime import (
     BUS, STEP_DONE, STEP_FAILED, STEP_PENDING, STEP_RUNNING, STEP_SKIPPED,
-    Artifact, BudgetExceeded, ExecutionAttempt, ProgrammaticCheck, Run, RunStep,
+    Artifact, BudgetExceeded, ExecutionAttempt, ProgrammaticCheck, Run, RunCancelled, RunStep,
     VerificationResult, check_budget, now_ms,
 )
 
@@ -58,18 +58,19 @@ def _sha256_file(p: pathlib.Path) -> str:
                 h.update(chunk)
     except OSError:
         return ""
-    return h.hexdigest()[:16]
+    return h.hexdigest()
 
 
 def sync_usage(run: Run, ledger: Any) -> None:
     """把成本账本的当前值同步进 Run（账本是请求级共享的）。"""
     try:
-        run.cost_yuan = float(ledger.cost_yuan)
-        run.tokens = int(ledger.prompt_tokens + ledger.completion_tokens)
+        while getattr(ledger, "parent", None) is not None:
+            ledger = ledger.parent
         snap = ledger.snapshot() or {}
-        calls = 0
-        for v in (snap.get("by_role") or {}).values():
-            calls += int((v or {}).get("calls") or 0)
+        run.cost_yuan = float(ledger.cost_yuan)
+        run.tokens = int(snap.get("total_tokens", ledger.prompt_tokens + ledger.completion_tokens))
+        calls = int(snap.get("calls", 0)) or sum(
+            int((v or {}).get("calls") or 0) for v in (snap.get("by_role") or {}).values())
         run.llm_calls = calls or run.llm_calls
     except Exception:
         pass
@@ -242,6 +243,7 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         step.stages["llm_cost_yuan"] = round(
             float(step.stages.get("llm_cost_yuan", 0)) + (y1 - y0), 5)
         sync_usage(run, llm.current_ledger())
+        check_budget(run)
 
         # 本地语法预检
         import ast as _ast
@@ -256,7 +258,8 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         step.stages["syntax_check_ms"] = step.stages.get("syntax_check_ms", 0) + (now_ms() - _t)
         if _syntax_err is None:
             _t = now_ms()
-            result = sandbox.run_python(code, timeout=90, keep_dir=True,
+            remaining_seconds = max(1, run.budget.max_seconds - run.duration_ms // 1000)
+            result = sandbox.run_python(code, timeout=min(90, remaining_seconds), keep_dir=True,
                                         workdir=workdir)
             step.stages[f"sandbox_try{attempt}_ms"] = now_ms() - _t
         else:
@@ -294,7 +297,7 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
     paths: list[pathlib.Path] = []
     for a in (result.get("artifacts") or []):
         src = pathlib.Path(a.get("path") or "")
-        if not src.is_file():
+        if not src.is_file() or not src.resolve().is_relative_to(workspace.resolve()):
             continue
         name = f"step{step.idx + 1}_{src.name}"
         dst = art_dir / name
@@ -315,6 +318,8 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
     step.stages["verify_det_ms"] = now_ms() - _t
 
     # ---- L3 技能验收（LLM，仅对非 machine-readable 条目）----
+    sync_usage(run, llm.current_ledger())
+    check_budget(run)
     if not result.get("ok"):
         step.status = STEP_FAILED
         step.error = (step.attempts[-1].stderr or "")[-400:]
@@ -326,6 +331,7 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         items = [v for v in (skill.verification or [])
                  if not checks_mod.parse_assertions([v])]
         if items:
+            c0, y0 = _llm_snapshot()
             _t = now_ms()
             raw_v = _verify_with_skill(skill, run.task, step.action, code,
                                        result.get("stdout") or "",
@@ -381,25 +387,33 @@ def _run_steps_graph(run: Run, workspace: pathlib.Path, lib: Any,
     budget_hit: BudgetExceeded | None = None
     max_workers = max(1, min(3, len(run.steps)))
 
-    def _in_ctx(fn: Any, st: RunStep) -> Any:
-        # 每个任务独立 copy_context()：Context 对象不可被多线程同时进入，
-        # 但拷贝出的新 Context 携带同一份账本引用（成本随线程正确记账）
-        return contextvars.copy_context().run(fn, st)
-
     def _dispatchable() -> list[int]:
         return [i for i in sorted(remaining) if not remaining[i]]
 
-    def _worker(st: RunStep) -> str:
+    def _worker(st: RunStep) -> str | BudgetExceeded:
         with lock:
             conc["cur"] += 1
             conc["max"] = max(conc["max"], conc["cur"])
         try:
-            up = [a.name for a in run.artifacts]
-            run_step(run, st, lib, workspace, budget, up,
-                     max_attempts=budget.max_attempts_per_step)
+            ancestors: set[int] = set()
+            def collect(idx: int) -> None:
+                for pred in by_idx[idx].depends_on:
+                    if pred not in ancestors:
+                        ancestors.add(pred)
+                        collect(pred)
+            collect(st.idx)
+            up = [a.name for a in run.artifacts if a.from_step in ancestors]
+            # 每步保留自己的增量明细，同时向 Run 父账本汇总。并行兄弟步骤
+            # 不能用共享总额的前后差值计费，那会把彼此调用计入各自步骤。
+            with llm.ledger_scope(llm.UsageLedger(parent=llm.current_ledger())):
+                run_step(run, st, lib, workspace, budget, up,
+                         max_attempts=budget.max_attempts_per_step)
             return "done"
         except BudgetExceeded as exc:
-            return f"budget:{exc}"
+            st.status = STEP_SKIPPED
+            st.verify_skip_reason = str(exc)
+            st.ended_at_ms = now_ms()
+            return exc
         except Exception as exc:                  # 单步异常不应终止整个 run
             st.status = STEP_FAILED
             st.error = f"{type(exc).__name__}: {exc}"
@@ -414,18 +428,27 @@ def _run_steps_graph(run: Run, workspace: pathlib.Path, lib: Any,
         inflight: dict[Any, RunStep] = {}
         while True:
             if budget_hit is None:
-                for idx in _dispatchable():
-                    remaining.pop(idx)
-                    st = by_idx[idx]
-                    inflight[ex.submit(_in_ctx, _worker, st)] = st
+                try:
+                    sync_usage(run, llm.current_ledger())
+                    check_budget(run)
+                except BudgetExceeded as exc:
+                    budget_hit = exc
+                if budget_hit is None:
+                    for idx in _dispatchable():
+                        remaining.pop(idx)
+                        st = by_idx[idx]
+                        # 必须在父线程快照；在 pool worker 内 copy_context() 会复制
+                        # 空上下文，让并行步骤的 token 误记到全局账本并绕过预算。
+                        ctx = contextvars.copy_context()
+                        inflight[ex.submit(ctx.run, _worker, st)] = st
             if not inflight:
                 break
             done, _ = wait(set(inflight), return_when=FIRST_COMPLETED)
             for fut in done:
                 st = inflight.pop(fut)
                 outcome = fut.result()
-                if outcome.startswith("budget:"):
-                    budget_hit = BudgetExceeded(outcome.split(":", 1)[1])
+                if isinstance(outcome, BudgetExceeded):
+                    budget_hit = outcome
                     continue
                 if st.status == STEP_FAILED:
                     skipped = _mark_downstream_skipped(run, st.idx, st.error)
@@ -440,9 +463,15 @@ def _run_steps_graph(run: Run, workspace: pathlib.Path, lib: Any,
                         ds.discard(st.idx)
 
     if budget_hit is not None:
-        run.status = runtime.STATUS_BUDGET_EXCEEDED
+        run.status = runtime.STATUS_CANCELLED if isinstance(budget_hit, RunCancelled) else runtime.STATUS_BUDGET_EXCEEDED
         run.error = str(budget_hit)
-        _emit(run, "run.budget_exceeded", reason=run.error, cost=run.cost_yuan)
+        for st in run.steps:
+            if st.status == STEP_PENDING:
+                st.status = STEP_SKIPPED
+                st.verify_skip_reason = run.error
+        _emit(run, "run.cancelled" if isinstance(budget_hit, RunCancelled) else "run.budget_exceeded",
+              reason=run.error, cost=run.cost_yuan)
+        raise budget_hit
     if conc["max"] > 1:
         run.staged["max_concurrency"] = conc["max"]
     run.staged["scheduler"] = "dag-parallel" if conc["max"] > 1 else "dag-serial"
@@ -543,7 +572,7 @@ def execute_run(run: Run, lib: Any, workspace: pathlib.Path,
     # 终态必须由 pipeline.finalize_status() 在最后统一判定——早先在这里定终态，
     # 会被后续阶段（EVOLVING）覆盖成非终态，落盘时被误判为 PARTIAL（实测踩过）。
     if run.status != runtime.STATUS_BUDGET_EXCEEDED:   # 预算状态不被覆盖
-        run.status = runtime.STATUS_VERIFYING if failed == 0 else runtime.STATUS_PARTIAL
+        run.status = runtime.STATUS_VERIFYING
     _emit(run, "execution.finished", done=done, failed=failed,
           duration_ms=run.duration_ms, artifacts=len(run.artifacts))
     return run

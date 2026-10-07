@@ -1,0 +1,88 @@
+{
+  "date": "2026-10-07",
+  "environment": {
+    "os": "Windows",
+    "python": "3.12.10",
+    "node": "24.15.0"
+  },
+  "checks": [
+    {
+      "command": "python -m pytest tests -q",
+      "result": "passed",
+      "count": 173,
+      "warnings": 1,
+      "paid_model_calls": 0
+    },
+    {
+      "command": "python verify.py",
+      "result": "passed",
+      "count": 31,
+      "paid_model_calls": 0
+    },
+    {
+      "command": "node tools/front_check.js",
+      "result": "passed",
+      "count": 5
+    },
+    {
+      "command": "node tools/check_web.js",
+      "result": "passed",
+      "scripts": 12
+    },
+    {
+      "command": "python tools/selfcheck.py",
+      "result": "passed",
+      "count": 18
+    },
+    {
+      "command": "python tools/full_audit.py",
+      "result": "passed",
+      "P0": 0,
+      "P1": 0,
+      "P2": 0
+    },
+    {
+      "command": "real HTTP SkillNetClient health/search/load",
+      "result": "passed",
+      "hits": 3
+    },
+    {
+      "command": "independent statistics and artifact digest verification",
+      "result": "passed",
+      "rows": 2,
+      "artifacts": 4
+    }
+  ],
+  "browser": {
+    "widths": [
+      1440,
+      390
+    ],
+    "pages": [
+      "/",
+      "/chat",
+      "/runs",
+      "/run",
+      "/graph",
+      "/dashboard"
+    ],
+    "no_javascript_errors": true,
+    "no_document_horizontal_overflow": true,
+    "interactions": [
+      "preview search",
+      "skill contract dialog",
+      "connection dialog and read-only validation",
+      "real budgeted run",
+      "mobile replay tabs",
+      "mobile run cards",
+      "conversation hydration race"
+    ]
+  },
+  "limitations": [
+    "S1 production connection unverified",
+    "Docker build not tested: Docker unavailable",
+    "AOCI semantic index is pending",
+    "Model execution remains trusted single-process prototype"
+  ],
+  "real_run": "95228a6c-20261007-183446-4149"
+}
