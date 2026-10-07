@@ -337,8 +337,12 @@ def test_dag_parallel_branch_and_artifact_flow(tmp_path, monkeypatch):
     assert "shared.csv" in s[1].inputs and "shared.csv" in s[2].inputs
     assert "out_b.csv" in s[3].inputs and "out_c.csv" in s[3].inputs
     cp = r.staged.get("critical_path") or {}
-    assert cp.get("ms", 0) > 600            # A(~100ms) + max(B,C)(≈0.5s) + D，跨 3 步
-    assert len(cp.get("steps") or []) >= 3
+    # A and D startup time varies by OS. Check the actual longest dependency
+    # path instead of assuming a Windows-specific minimum wall-clock overhead.
+    paths = [[0, 1, 3], [0, 2, 3]]
+    durations = [max(0, x.ended_at_ms - x.started_at_ms) for x in s]
+    assert cp.get("steps") in paths
+    assert cp.get("ms") == max(sum(durations[i] for i in path) for path in paths)
 
 
 def test_dag_critical_failure_blocks_all_downstream(tmp_path, monkeypatch):
@@ -403,8 +407,12 @@ def test_dag_parallel_branch_and_artifact_flow(tmp_path, monkeypatch):
     assert "shared.csv" in s[1].inputs and "shared.csv" in s[2].inputs
     assert "out_b.csv" in s[3].inputs and "out_c.csv" in s[3].inputs
     cp = r.staged.get("critical_path") or {}
-    assert cp.get("ms", 0) > 600            # A(~100ms) + max(B,C)(≈0.5s) + D，跨 3 步
-    assert len(cp.get("steps") or []) >= 3
+    # A and D startup time varies by OS. Check the actual longest dependency
+    # path instead of assuming a Windows-specific minimum wall-clock overhead.
+    paths = [[0, 1, 3], [0, 2, 3]]
+    durations = [max(0, x.ended_at_ms - x.started_at_ms) for x in s]
+    assert cp.get("steps") in paths
+    assert cp.get("ms") == max(sum(durations[i] for i in path) for path in paths)
 
 
 def test_dag_critical_failure_blocks_all_downstream(tmp_path, monkeypatch):
