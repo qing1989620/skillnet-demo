@@ -72,6 +72,8 @@ def promote(candidate_path: Path, report_path: Path, library) -> Skill:
                 raise ValueError('Missing completed frozen run evidence')
             if arm == 'after' and not any(s.skill == skill.name for s in run.steps):
                 raise ValueError('Candidate was not used by the evaluated run')
+            if arm == 'after' and run.staged.get('evaluated_skill_sha256') != candidate['sha256']:
+                raise ValueError('Run did not record this exact candidate content')
             workspace = config.OUT_DIR / 'runs' / run_id
             for artifact in run.artifacts:
                 path = (workspace / 'artifacts' / artifact.name).resolve()

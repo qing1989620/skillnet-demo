@@ -36,7 +36,7 @@ python tools/import_community_skills.py
 ## 后端改变
 
 - 规划声明 `depends_on / input_files / output_files / verification`。调度按真实文件生产者建立依赖；相同 Skill 的连续动作不会被误当作并行根节点。必要验收失败阻断下游，预算截断保留依赖闭包，并列出未执行动作。
-- 验收按步骤职责缩小范围，读取完整生成代码和真实文件事实；CSV 包含实际列、行数与样本，文本内容有截断标记。无法确认的语义要求记录为 `unknown`。验收失败与执行异常均可触发预算内修复，保存原因、每次代码和差异，再复验。
+- 规划前观察用户明确提供的 CSV：实际行数、列、空值及完全重复行，不凭空设定清洗后行数。验收按步骤职责缩小范围，读取完整生成代码、不可变输入与实际产物事实；无法确认的语义要求记录为 `unknown`。原值投影与排序可声明 `csv_projection`，服务端逐格比较原始输入和实际输出，不能把两边都舍入后自证正确。验收失败与执行异常均可触发预算内修复，保存原因、每次代码和差异，再复验。
 - 追问携带登记文件、逻辑名、来源 Run、版本及 SHA-256；不以聊天摘要替代文件。签名 API 与实际文件读写的回归覆盖版本传递、篡改和跨身份访问。
 - 新经验进入候选区。晋级必须对应同一候选哈希、至少 2 个冻结任务及 4 组真实执行，不能回退且必须有正增益；晋级时重新核验物理产物与独立算术 oracle。没有测到提升就保持候选。
 - SQLite 队列提供原子领取、租约、取消和检查点；独立 worker 与 API 可分别启动。API 重启不会误终止外部 worker 的任务；失去 worker 租约时标记中断，保留已完成证据，避免静默重复收费。当前限制为单主机、一个库写入 worker。
@@ -44,13 +44,21 @@ python tools/import_community_skills.py
 
 ## 可核查的验证
 
-本地 Windows / Python 3.12：225 项 pytest 通过；`verify.py` 31/31 通过；六页面共 17 段脚本及全部现有前端逻辑检查通过。测试不需要模型余额。
+本地 Windows / Python 3.12：228 项 pytest 通过；`verify.py` 31/31 通过；六页面共 17 段脚本及全部现有前端逻辑检查通过。回归测试不需要模型余额。GitHub Actions 另覆盖 Linux / Windows、Python 3.11 / 3.12，以及真实 Docker 执行。
 
 真实经营对照使用相同的公开模拟订单、3 步计划、预算和独立数值检查，分别执行无技能、背景技能、契约技能。三组均完成且得分 1.0，成本分别为 ¥0.069214、¥0.075962、¥0.076194。**这道题没有区分出质量增益**，不能据此声称契约模式更优，也不能证明管理层报告洞察质量。
 
-原始报告：[真实执行对照](../out/execution-benchmark-1791446421.json)。四份公开运行及产物有 [指纹清单](evidence/scale-upgrade-files.json)，克隆后仍可回放和核对。
+原始报告：[真实执行对照](../out/execution-benchmark-1791446421.json)。14 份公开运行及其产物共 68 个文件有 [指纹清单](evidence/scale-upgrade-files.json)，克隆后仍可回放和核对。
+
+充值后的完整在线经营演示 `b5492bb7-20261008-174014-44aa` 实际完成 3 步：15 行模拟订单清洗为 12 行，产出清洗表、月度汇总、SVG 与报告。26/26 必要检查、16/16 语义要求通过；独立算术 oracle 23/23 通过。SDK 随后携带同一汇总文件的版本和 SHA-256，完成 `02f80093-20261008-175420-f527` 追问：毛利率原值与排序经服务端直接核对，10/10 必要检查、6/6 语义要求通过。两次实际费用合计 ¥0.2927。见 [业务及追问证据](../out/business-followup-evidence.json)。这些检查不评价管理建议的洞察质量。
+
+本轮保留失败事实：最初规划把 15 行误数为 14 行；另一次追问把毛利率舍入后自证正确，模型误判通过。分别补上输入观察值和独立原值检查后重跑上述合格记录，没有修改旧记录的状态或产物。
+
+候选 `simulated-order-data-pipeline` 经 2 道冻结任务 × 2 次重复，完成 4 组学习前后配对（8 次真实执行），实际费用 ¥0.622936。所有前后分数均为 1.0，平均差 0；物理产物、独立算术分数及候选内容指纹重新核验后，调用真实晋级门得到拒绝，库和候选状态均未改变。见 [配对报告](../out/execution-benchmark-1791453374.json)、[晋级决定](../out/learning-promotion-evidence.json)、[被测候选](evidence/candidates/simulated-order-data-pipeline.json)。这是已完成的负面评测，不是学习增益证明。CLI 评测的在途检查点使用单独目录，完成后才发布到运行中心，避免 API 重启误判其状态。
 
 独立 API + worker 的真实任务测试通过：排队后重启 API、执行期间再次重启 API、队列取消无模型调用、签名用户不能查看或下载其他用户产物、终态 SSE 回放。任务实际成本 ¥0.0454，8/8 必要检查、3/3 语义要求通过。报告：[部署实测](../out/deployment-smoke.json)。这是本机接入契约实测，不是 S1 线上联调。
+
+Docker 在 [Linux CI](https://github.com/qing1989620/skillnet-demo/actions/runs/37758639881) 中使用项目实际执行适配器通过实机验证：非 root UID 1001、零 capabilities、no-new-privileges、只读根目录、禁网、不传宿主凭据、768 MiB / 2 CPU / 64 PID 限制、连续两步真实文件传递及超时终止。见 [容器证据](../out/docker-smoke.json)。Linux worker 须使用拥有共享工作目录的非 root 账号；禁止通过放宽目录权限解决挂载写入。这不是渗透测试，也没有验证 Windows Docker。
 
 语义检索采用固定提交的 multilingual-e5-small ONNX。8 条开发查询用于暴露并校准旧融合权重，另加 4 条冻结留出查询。稠密配置权重为 0.35 / 0.55 / 0.10，词法回退保留 0.70 / 0.20 / 0.10。12 条查询的 Hit@10：词法 50%、稠密与新混合均 100%；留出部分见 [原始报告](../out/chinese-retrieval-evaluation.json)。样本很小，人工相关标签不穷尽，不能外推为总体召回率。[旧权重结果](../out/chinese-retrieval-before-calibration.json) 一并保留。
 
@@ -64,16 +72,18 @@ python run.py --no-browser
 
 模型文件约 136 MB，不提交进仓库；下载脚本固定 revision 并记录文件哈希。未安装模型时使用明确标记的词法回退。`SKILLNET_ENCODER=dense` 可要求缺失时直接失败；`SKILLNET_ENCODER=lexical` 显式选择词法模式。
 
-首页保留原有三步历史回放；新增「新版内核记录 · 1 步真实执行」展示检索至候选区的真实完整记录。经营案例可在输入区选择；也可直接在运行中心查看上述三个真实经营对照。
+首页默认「回放一次真实任务」展示本轮完整经营月报；可展开长问题、暂停、调速、定位阶段并预览真实文件。「沿用同一文件追问」展示原值检查与版本传递。原有三步科研回放、1 步内核记录和七阶段完整演示均保留。经营案例可在输入区选择；内核实验室展示配对评测与未晋级原因。
 
 外部 worker 部署及签名示例见 [S1 接入文档](s1-integration.md)。`tools/deployment_smoke.py` 使用单独数据目录与 8849 端口，运行真实模型任务，单次预算 ¥0.60；它会清理自己启动的服务进程。
 
 ## 尚待外部条件完成
 
-1. 新融合配置下的完整在线经营演示已实际完成清洗和汇总；第三步模型返回 HTTP 402，记录保持 `PARTIAL`，没有假报完成。补充模型余额后需重跑完整经营演示与在线追问；跨轮文件传递的本地契约测试已通过。
-2. 候选晋级机制已实现，但没有产生“冻结任务质量确实提升”的新证据；不宣称越用越好已获实证。
-3. 缺少 S1 后端契约、测试账户及部署凭据，线上接入仍为 `production_connection_verified=false`。
-4. Docker 命令、限制及失败禁止降级已实现；本机没有 Docker，尚未实际启动容器。宿主子进程模式仅适用于受控演示，不能视为恶意代码隔离。
+1. 缺少 S1 后端契约、测试账户及部署配置，线上接入仍为 `production_connection_verified=false`。公开首页可访问不等于 SSO、权限和业务附件链路已联调。
+2. 配对评测已完成，但两道题的前后分数没有差异，候选继续隔离。仍没有“越用越好”的实证，不能将负面评测改写成有效学习。
+3. Linux Docker 实测已通过；本机没有 Docker，Windows Docker 与公司部署环境仍须分别验收。宿主子进程模式仅适用于受控演示。
 
 ![手机首页](evidence/screenshots/home-mobile.jpg)
 ![技能详情溯源](evidence/screenshots/skill-provenance.jpg)
+![完整经营任务的内核现场](evidence/screenshots/business-engine.png)
+![真实 SVG 产物预览](evidence/screenshots/business-chart.png)
+![跨轮原始文件与独立检查](evidence/screenshots/followup-source-check.png)

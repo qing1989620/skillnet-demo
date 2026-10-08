@@ -581,11 +581,11 @@
   }
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=20261008.14"></script>
+<script src="/static/assets/ui.js?v=20261008.18"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=20261008.14"></script>
-<link rel="stylesheet" href="/static/assets/showcase.css?v=20261008.6">
-<link rel="stylesheet" href="/static/assets/refinement.css?v=20261008.14">
+<script src="/static/assets/product.js?v=20261008.18"></script>
+<link rel="stylesheet" href="/static/assets/showcase.css?v=20261008.18">
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261008.18">
 </head>
 <body>
 
@@ -644,7 +644,7 @@
       <div class="show-brand"><svg class="show-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M6 8L26 8L16 26Z M6 8L16 15L26 8 M16 15L16 26" fill="none" stroke="currentColor" stroke-width="1"/><circle cx="6" cy="8" r="3" fill="currentColor"/><circle cx="26" cy="8" r="3" fill="currentColor"/><circle cx="16" cy="26" r="3" fill="currentColor"/></svg><div><b>SkillNet · 能力运维现场</b><small>ONE QUESTION. THE WHOLE ENGINE.</small></div></div>
       <div class="show-controls"><span class="show-badge" id="show-status" role="status">框架待命</span><button type="button" id="show-follow" hidden>跟随当前阶段</button><button type="button" id="show-cancel" hidden>停止运行</button><button type="button" id="show-replay">真实记录回放</button><button type="button" id="show-present">汇报模式</button></div>
     </div>
-    <div class="show-question"><span>QUESTION</span><p id="show-question-text"></p><a id="show-run-link" hidden target="_blank" rel="noopener"></a></div>
+    <div class="show-question" id="show-question"><span>QUESTION</span><p id="show-question-text"></p><button type="button" id="show-question-toggle" aria-expanded="false" aria-controls="show-question-text" hidden>展开问题</button><a id="show-run-link" hidden target="_blank" rel="noopener"></a></div>
     <div class="show-grid">
       <nav class="show-rail" id="show-rail" aria-label="能力生命周期阶段"></nav>
       <div class="show-center"><div class="show-canvas-head"><span id="show-graph-label">LIVE SKILL NETWORK</span><span id="show-graph-note"></span></div><div class="show-network" id="show-network"></div><div class="show-operation" id="show-operation" hidden></div><div class="show-activity" id="show-activity" aria-label="最近实际运行事件"></div></div>
@@ -683,7 +683,7 @@
     </div>
   </div>
   </details>
-  <div class="show-tools"><button class="btn" type="button" data-show-run="7c29f741-20261008-163216-a4ef">新版内核记录 · 1 步真实执行</button><button class="btn" id="demo-seven" style="background:#fff;color:var(--brand2);border:1px solid var(--brand2);font-size:12px" onclick="runDemo()">七阶段完整演示（本页）</button><p>原有完整演示、同题对照、代码、文件预览与反馈前后对比均可继续使用。</p></div>
+  <div class="show-tools"><button class="btn" type="button" data-show-run="b5492bb7-20261008-174014-44aa">经营月报 · 3 步真实执行</button><button class="btn" type="button" data-show-run="02f80093-20261008-175420-f527">沿用同一文件追问 · 原值已核验</button><button class="btn" type="button" data-show-run="7356cc57-20261008-012151-3b64">历史科研任务 · 3 步回放</button><button class="btn" type="button" data-show-run="7c29f741-20261008-163216-a4ef">新版内核记录 · 1 步真实执行</button><button class="btn" id="demo-seven" style="background:#fff;color:var(--brand2);border:1px solid var(--brand2);font-size:12px" onclick="runDemo()">七阶段完整演示（本页）</button><p>原有完整演示、同题对照、代码、文件预览与反馈前后对比均可继续使用。</p></div>
   <div id="ver-badge" title="当前页面版本；点击可强制刷新" onclick="forceRefresh()"
        style="position:fixed;right:14px;bottom:14px;z-index:99;font:11px/1 var(--mono,monospace);
        color:#9aa7b3;background:rgba(255,255,255,.85);border:1px solid var(--line);
@@ -968,7 +968,7 @@
 </section>
 
 <script>
-const PAGE_VER = "2026-10-08.upgrade.14";
+const PAGE_VER = "2026-10-08.upgrade.18";
 const API = location.origin;
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -2611,6 +2611,6 @@ window.__SELFTEST__ = function(){
   }, 4000);
 })();
 </script>
-<script src="/static/assets/showcase.js?v=20261008.14"></script>
+<script src="/static/assets/showcase.js?v=20261008.18"></script>
 </body>
 </html>

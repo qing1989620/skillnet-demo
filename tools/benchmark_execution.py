@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 import sys
 import time
+import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
@@ -35,9 +36,13 @@ def execute(case, library, mode, skill_name, budget):
     run = runtime.Run(run_id=runtime.new_run_id(runtime.task_fingerprint(case['task'])),task=case['task'],task_fp=runtime.task_fingerprint(case['task']))
     run.budget=runtime.Budget(max_cost_yuan=budget,max_seconds=600,max_llm_calls=40)
     run.staged['execution_mode']=mode
+    if library.get(skill_name):
+        from skillnet.governance import fingerprint
+        run.staged['evaluated_skill_sha256']=fingerprint(library.get(skill_name))
     run.plan=plan(skill_name)
-    workspace=config.OUT_DIR/'runs'/run.run_id
-    store=runtime.RunStore(config.OUT_DIR/'runs')
+    # In-flight CLI evaluations must not be swept by API restart recovery.
+    workspace=config.OUT_DIR/'evaluation_runs'/run.run_id
+    store=runtime.RunStore(config.OUT_DIR/'evaluation_runs')
     run._checkpoint_writer=lambda:store.save(run)
     ledger=llm.UsageLedger()
     def guard():
@@ -51,6 +56,10 @@ def execute(case, library, mode, skill_name, budget):
     run.staged['independent_evaluation']=result
     run.staged['learning_gate']={'eligible':False,'skip_reason':'冻结评测任务不更新生产反馈与技能库'}
     store.save(run)
+    published=config.OUT_DIR/'runs'
+    published.mkdir(parents=True,exist_ok=True)
+    shutil.copytree(workspace/'artifacts',published/run.run_id/'artifacts',dirs_exist_ok=True)
+    runtime.RunStore(published).save(run)  # Publish the terminal record atomically, after its files.
     return dict(run_id=run.run_id,score=result['score'],oracle=result,cost_yuan=run.cost_yuan,
                 status=run.status,acceptance=run.staged['acceptance'])
 
@@ -71,7 +80,11 @@ def main():
     candidate=None
     if args.candidate:
         candidate=json.loads(args.candidate.read_text(encoding='utf-8'))
-        skill=Skill.from_dict(candidate['skill']);library.add(skill)
+        from skillnet.governance import fingerprint
+        skill=Skill.from_dict(candidate['skill'])
+        if candidate.get('state')!='candidate' or fingerprint(skill)!=candidate.get('sha256'):
+            raise ValueError('Candidate state or content has changed; no model calls made')
+        library.add(skill)
         report['candidate_sha256']=candidate['sha256']
     for case in selected:
         for repeat in range(args.repeats):

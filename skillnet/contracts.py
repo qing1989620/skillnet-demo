@@ -85,7 +85,73 @@ def file_evidence(paths: list[Path]) -> list[dict]:
     return facts
 
 
-def contract_checks(contract: dict, paths: list[Path], carried: list[str]) -> list[dict]:
+def projection_check(spec: dict, inputs: dict[str, Path], outputs: dict[str, Path]) -> dict:
+    """Compare immutable source bytes with a CSV projection, independently of generated assertions."""
+    from decimal import Decimal, InvalidOperation
+    label = 'CSV 原值投影与排序'
+    try:
+        if not isinstance(spec, dict) or spec.get('kind') != 'csv_projection':
+            raise ValueError('未知数据检查类型')
+        keys, columns = spec['keys'], spec['columns']
+        if any(not isinstance(v,list) or not v or len(v)>32 or any(not isinstance(k,str) for k in v) for v in (keys,columns)):
+            raise ValueError('键和列必须为非空字符串数组')
+        names = keys + columns
+        if len(set(names)) != len(names):
+            raise ValueError('键或列重复')
+        tolerance = Decimal(str(spec.get('atol',1e-9)))
+        if not tolerance.is_finite() or not 0 <= tolerance <= Decimal('0.000001'):
+            raise ValueError('原值投影容差必须在 0 到 1e-6 之间')
+        def read(path):
+            if path.stat().st_size > 16*1024*1024:
+                raise ValueError('CSV 超过检查大小限制')
+            with path.open(encoding='utf-8-sig',newline='') as stream:
+                reader=csv.DictReader(stream,strict=True);rows=[]
+                if not reader.fieldnames or len(set(reader.fieldnames))!=len(reader.fieldnames):
+                    raise ValueError('CSV 表头缺失或重复')
+                for row in reader:
+                    if len(rows)>=50000:raise ValueError('CSV 超过检查行数限制')
+                    if None in row or any(value is None for value in row.values()):
+                        raise ValueError('CSV 行宽与表头不一致')
+                    rows.append(row)
+            return reader.fieldnames, rows
+        src_header, src = read(inputs[spec['input_file']])
+        dst_header, dst = read(outputs[spec['output_file']])
+        if not set(names) <= set(src_header or []) or dst_header != names:
+            raise ValueError('投影列名或顺序不匹配')
+        def keyed(rows):
+            result={tuple(row[k] for k in keys):row for row in rows}
+            if len(result)!=len(rows):raise ValueError('投影键重复')
+            return result
+        before, after = keyed(src), keyed(dst)
+        if set(before)!=set(after):raise ValueError('投影丢失或增加记录')
+        for key, row in before.items():
+            for col in columns:
+                left,right=row[col],after[key][col]
+                try:
+                    a,b=Decimal(left),Decimal(right)
+                except InvalidOperation:
+                    if left!=right:raise ValueError(f'{key} {col} 文本值改变')
+                else:
+                    if not a.is_finite() or not b.is_finite() or abs(a-b)>tolerance:
+                        raise ValueError(f'{key} {col} 原值 {left}，输出 {right}，超出容差 {tolerance}')
+        sort_by=spec.get('sort_by')
+        if sort_by:
+            if sort_by not in names or type(spec.get('ascending',True)) is not bool:
+                raise ValueError('排序配置无效')
+            raw_order=[row[sort_by] for row in dst]
+            try:
+                order=[Decimal(value) for value in raw_order]
+                if any(not v.is_finite() for v in order):raise ValueError('排序值非有限数')
+            except InvalidOperation:
+                order=raw_order
+            if order!=sorted(order,reverse=not spec.get('ascending',True)):
+                raise ValueError('排序不满足契约')
+        return dict(name=label,passed=True,detail=f'{len(dst)} 行逐格对照不可变输入，容差 {tolerance}')
+    except (KeyError,TypeError,ValueError,OSError,UnicodeError,csv.Error,InvalidOperation) as exc:
+        return dict(name=label,passed=False,detail=str(exc)[:500])
+
+
+def contract_checks(contract: dict, paths: list[Path], carried: list[str], *, input_paths: dict[str, Path] | None = None) -> list[dict]:
     results = []
     outputs = contract.get('output_files') or []
     for name in outputs:
@@ -94,6 +160,12 @@ def contract_checks(contract: dict, paths: list[Path], carried: list[str]) -> li
     for name in contract.get('input_files') or []:
         results.append(dict(name=f'输入版本：{name}', passed=name in carried,
                             detail='已携带已登记版本' if name in carried else '缺少输入，禁止重新编造数据'))
+    specs=contract.get('data_checks',[])
+    if not isinstance(specs,list) or len(specs)>8:
+        results.append(dict(name='数据检查配置',passed=False,detail='必须为最多 8 项的数组'))
+    else:
+        for spec in specs:
+            results.append(projection_check(spec,input_paths or {},{p.name:p for p in paths}))
     return results
 
 

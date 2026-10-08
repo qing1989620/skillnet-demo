@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
-const {createState,reduceEvent,dagLayout,parseCSV,esc}=require('../web/assets/showcase.js');
+const {createState,reduceEvent,dagLayout,parseCSV,stepEvidenceHTML,esc}=require('../web/assets/showcase.js');
 let s=createState('public demo','live');
 let seq=0;
 const emit=(type,data={},step=null)=>reduceEvent(s,{seq:++seq,type,data,step,ts_ms:1000+seq*100});
@@ -69,6 +69,13 @@ const candidateState=createState('candidate gate');
 reduceEvent(candidateState,{seq:1,type:'evolution.proposed',data:{accepted:false,candidate:{state:'pending_frozen_evaluation'}}});
 assert.equal(candidateState.evolution.accepted,false);
 assert.ok(candidateState.logs.at(-1).text.includes('候选区'));
+const followup=JSON.parse(fs.readFileSync(path.join(__dirname,'../out/runs/02f80093-20261008-175420-f527.json'),'utf8'));
+const detail=stepEvidenceHTML(followup.steps[0]);
+assert.match(detail,/必要检查 10\/10/);
+assert.match(detail,/CSV 原值投影与排序/);
+assert.match(detail,new RegExp(followup.steps[0].input_artifacts[0].sha256));
+assert.ok(detail.indexOf('CSV 原值投影与排序')<detail.indexOf('查看实际执行代码'));
+assert.doesNotMatch(stepEvidenceHTML({action:'<script>',checks:[{name:'<img>',detail:'<iframe>'}]}),/<script>|<img>|<iframe>/);
 for(const a of latestRun.artifacts){
   const bytes=fs.readFileSync(path.join(__dirname,'../out/runs',latestRun.run_id,'artifacts',a.name));
   assert.equal(require('node:crypto').createHash('sha256').update(bytes).digest('hex'),a.sha256,'shipped replay artifact must match actual registered content');

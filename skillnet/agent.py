@@ -30,6 +30,7 @@ _RESP_SCHEMA = """{
      "depends_on": [0],
      "input_files": ["上游真实文件名；第一步没有则空数组"],
      "output_files": ["本步生成的真实文件名；验证步骤可以为空"],
+     "data_checks": [],
      "verification": ["只验收本步职责，必须引用实际产物的可验证判据"],
      "check": "怎么判断这一步做对了"}
   ],
@@ -183,6 +184,10 @@ class ResearchAgent:
             "6. input_files/output_files 写具体路径名；verification 只包含本步负责的验收，别把后续绘图要求放到清洗步骤。\n"
             "验收中的行数、去重数量和合计应由实际输入计算并回读比较；不要心算后把未经证实的常数写成验收目标。"
             "保留用户给出的明确数值要求；不得为了满足你自己推算的数字删改有效数据。\n"
+            "仅选择已有 CSV 的部分列并排序、要求原值不变时，必须添加 data_checks："
+            "[{\"kind\":\"csv_projection\",\"input_file\":\"输入名.csv\",\"output_file\":\"输出名.csv\","
+            "\"keys\":[\"唯一键列\"],\"columns\":[\"保留值列\"],\"atol\":1e-9,\"sort_by\":\"排序列\",\"ascending\":true}]。"
+            "聚合、舍入或变更数值的步骤不要声明原值投影。\n"
             "7. 控制篇幅，直接输出 JSON，不要写解释性文字。\n\n"
             f"严格输出 JSON：\n{_RESP_SCHEMA}"
         )

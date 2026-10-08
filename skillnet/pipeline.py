@@ -100,7 +100,7 @@ def build_steps(plan: dict[str, Any], workflow: list[list[str]] | None = None) -
     for i, st in enumerate(steps_plan):
         s = st if isinstance(st, dict) else {"action": str(st)}
         step = RunStep(idx=i, action=str(s.get("action") or ""), skill=s.get("skill") or None)
-        step.contract = {k: s[k] for k in ('input_files', 'output_files', 'verification', 'expected_output', 'check') if k in s}
+        step.contract = {k: s[k] for k in ('input_files', 'output_files', 'data_checks', 'verification', 'expected_output', 'check') if k in s}
         step.dependency_reason = '方案顺序兜底'
         step.depends_on = [i - 1] if i > 0 else []
         out.append(step)
@@ -340,14 +340,16 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         attempt_paths = [pathlib.Path(a.get('path') or '') for a in result.get('artifacts', [])]
         attempt_paths = [p for p in attempt_paths if p.is_file() and p.resolve().is_relative_to(workspace.resolve())]
         attempt_checks = checks_mod.run_checks(attempt_paths, result)
-        attempt_checks += contracts.contract_checks(step.contract, attempt_paths, carried)
+        immutable_inputs = {orig:workspace / 'artifacts' / aname for aname,orig in carry_pairs}
+        attempt_checks += contracts.contract_checks(step.contract, attempt_paths, carried, input_paths=immutable_inputs)
         if skill:
             attempt_checks += checks_mod.checks_from_skill(skill.verification, attempt_paths)
         attempt_verifications = []
         if at.ok and skill and any(not checks_mod.parse_assertions([v]) for v in skill.verification):
             t_verify = now_ms()
             attempt_verifications = _verify_with_skill(skill, run.task, step.action, code,
-                result.get('stdout') or '', [p.name for p in attempt_paths], artifact_paths=attempt_paths)
+                result.get('stdout') or '', [p.name for p in attempt_paths], artifact_paths=attempt_paths,
+                input_paths=list(immutable_inputs.values()))
             step.stages['verify_sem_ms'] = step.stages.get('verify_sem_ms', 0) + now_ms() - t_verify
         failures = [c['name'] + ': ' + c['detail'] for c in attempt_checks if not c['passed'] and c.get('required', True)]
         failures += [v['item'] + ': ' + v['evidence'] for v in attempt_verifications if v.get('state') == 'failed']

@@ -102,6 +102,7 @@ def _gen_code_prompt(task: str, step: dict[str, Any], skill: Any,
 {libs}
 
 要求：
+0. 当前用户任务和步骤契约优先于参考技能。不得套用与任务冲突的默认舍入、模拟数据或出图要求；原值投影保留源文件精度，仅展示格式可以舍入。
 1. 代码必须自包含、可直接运行，运行后把关键结果 print 出来（可量化的数字，不要只打印"完成"）；
 2. 如涉及数据：**若无真实数据，用合理的模拟数据并在代码注释与输出中明确标注「模拟数据」**——
    绝不允许把模拟结果说成真实实验结论；
@@ -190,7 +191,8 @@ def _extract_code(text: str) -> str:
 
 
 def _verify_with_skill(skill: Any, task: str, action: str, code: str,
-                       stdout: str, files: list[str], *, artifact_paths: list[pathlib.Path] | None = None) -> list[dict[str, Any]]:
+                       stdout: str, files: list[str], *, artifact_paths: list[pathlib.Path] | None = None,
+                       input_paths: list[pathlib.Path] | None = None) -> list[dict[str, Any]]:
     """用技能的验收清单逐条核对产物（技能契约的落地环节）。"""
     if skill is None or not skill.verification:
         return []
@@ -219,6 +221,8 @@ def _verify_with_skill(skill: Any, task: str, action: str, code: str,
 落盘文件：{', '.join(files) if files else '（无）'}
 实际产物证据（由服务端读取，截取部分会注明）：
 {json.dumps(file_evidence(artifact_paths or []), ensure_ascii=False)}
+上游原始文件事实（独立读取已登记版本，而非代码里的重算结果）：
+{json.dumps(file_evidence(input_paths or []), ensure_ascii=False)}
 本步骤职责：{json.dumps(getattr(skill, 'contract_scope', {}), ensure_ascii=False)}
 
 判定要求：
@@ -226,6 +230,7 @@ def _verify_with_skill(skill: Any, task: str, action: str, code: str,
 - 无法判断时 state=unknown；只有证据明确违反要求才是 failed。属于其它步骤职责的要求为 not_applicable。
 - 不要把字符串扫描器自身、注释或字符串常量中的敏感词误判成实际函数调用；要核对调用表达式。
 - 不要只因代码里存在 savefig 就认定图片内容正确；未提供视觉证据时不能臆测。
+- 数值一致性必须对照实际输入与输出；两边同时 round 后得到零偏差不证明原值一致，不得放宽契约容差。
 
 严格输出如下 JSON（顶层键名必须是 checks，不要改名）：
 {{"checks": [{{"item": "清单条目原文", "passed": true, "state": "passed", "evidence": "证据"}}]}}"""

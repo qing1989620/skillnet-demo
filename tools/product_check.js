@@ -26,6 +26,13 @@ assert.match(report,/indistinguishable/);
 assert.match(report,/任务划分须复核/);
 assert.match(report,/逐轮奖励/);
 assert.doesNotMatch(Product.experimentsHTML({exp1_bad:{timestamp:'<script>',summary:{'<img>':{skill_recall:1}}}}),/<script>|<img>/);
+const paired=JSON.parse(fs.readFileSync(path.join(__dirname,'../out/execution-benchmark-1791453374.json'),'utf8'));
+const learningReport=Product.experimentsHTML({paired});
+assert.match(learningReport,/2 道冻结任务 \/ 4 组配对/);
+assert.match(learningReport,/未满足晋级条件 · 保持候选/);
+assert.match(learningReport,/本轮没有测出质量增益/);
+assert.match(learningReport,new RegExp(paired.candidate_sha256));
+assert.doesNotMatch(learningReport,/三组采用相同数据/);
 for(const name of ['briefing','chat','app','run','graph','index']){
   const html=fs.readFileSync(path.join(__dirname,'../web',name+'.html'),'utf8');
   assert.ok(html.includes('/static/assets/product.js'),name+' uses shared evidence');

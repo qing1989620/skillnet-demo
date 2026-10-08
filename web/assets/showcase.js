@@ -8,14 +8,14 @@
     {name:'方案与 DAG',tag:'PLAN → EXECUTION GRAPH',title:'把研究方案变成执行路径',doing:'规划器生成动作，执行引擎再解析真实步骤依赖。图中的每个节点都对应一个可查证的运行步骤。',benefit:'计划可以被逐步执行和追踪，前序文件能进入后序步骤。'},
     {name:'执行与修复',tag:'PYTHON · RETRY · ARTIFACTS',title:'让能力真正产出结果',doing:'生成代码、语法预检、运行 Python；失败后携带错误信息与技能陷阱进行修复，每步最多尝试三次。',benefit:'交付可下载的真实文件，保留失败原因与修复轨迹。'},
     {name:'分层验收',tag:'L1 / L2 · L3 · BLIND JUDGE',title:'完成了，也要知道做得怎样',doing:'执行期间检查文件与技能断言，并记录语义验收；方案评审另行提供反馈信号。完成状态与验收结论分开展示。',benefit:'不把“代码跑完”当成“全部合格”，未通过与不可用结果都可见。'},
-    {name:'反馈与进化',tag:'REWARD → REUSABLE SKILL',title:'让这次经验成为下次的能力',doing:'有效评审且实际执行、验收合格，才更新选择策略并进入技能蒸馏与准入。是否新增能力，以真实准入结果为准。',benefit:'经验可以被复用；未完成、验收不合格或评审不可用时跳过学习，避免污染技能库。'}
+    {name:'反馈与进化',tag:'REWARD → CANDIDATE → EVIDENCE',title:'让经验经过验证，再进入能力库',doing:'实际执行和验收合格后，有效反馈参与策略更新，可复用经验进入候选区。候选还须经过冻结任务配对评测，测出增益才可晋级。',benefit:'保留可复用经验，也拦住没有提升或发生回退的候选；生成技能不等于能力已经提升。'}
   ];
   const esc = x => String(x == null ? '' : x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const arr = x => Array.isArray(x) ? x : [];
   const number = (x, fallback=0) => Number.isFinite(Number(x)) ? Number(x) : fallback;
   const statusName = s => ({COMPLETED:'已完成',PARTIAL:'部分完成',FAILED:'失败',CANCELLED:'已取消',BUDGET_EXCEEDED:'预算已达上限',INTERRUPTED:'运行中断'}[s] || s || '待启动');
   const stepName = s => ({pending:'待执行',running:'执行中',done:'已完成',failed:'失败',skipped:'已跳过'}[s] || '待执行');
-  const PUBLIC_REPLAY_ID='7356cc57-20261008-012151-3b64';
+  const PUBLIC_REPLAY_ID='b5492bb7-20261008-174014-44aa';
   function createState(task='',mode='idle') {
     return {task,mode,id:null,seq:0,phase:0,view:null,phases:PHASES.map(()=> 'pending'),nodes:[],selected:[],ranking:[],retrieval:{},orchestration:{},checks:[],artifacts:[],feedback:[],judge:null,evolution:null,logs:[],started:0,elapsed:0,finished:false,error:'',snapshot:null};
   }
@@ -68,7 +68,7 @@
     const max=Math.max(0,...depths.values()),groups=new Map();
     nodes.forEach(n=>{const d=depths.get(n.idx);if(!groups.has(d))groups.set(d,[]);groups.get(d).push(n.idx);});
     const widest=Math.max(1,...[...groups.values()].map(g=>g.length));
-    const width=narrow?Math.max(360,widest*90+40):640, height=narrow?Math.max(250,(max+1)*94+26):Math.max(250,...[...groups.values()].map(g=>g.length*94+30));
+    const width=narrow?Math.max(360,widest*90+40):640, height=narrow?Math.max(124,(max+1)*94+26):Math.max(250,...[...groups.values()].map(g=>g.length*94+30));
     const boxW=narrow?Math.min(270,(width-40-12*(widest-1))/widest):Math.min(186,570/(max+1));
     const points=new Map();groups.forEach((group,d)=>group.forEach((id,i)=>points.set(id,narrow?{x:(width-group.length*boxW-(group.length-1)*12)/2+i*(boxW+12),y:20+d*94,w:boxW,h:76}:{x:22+(width-44-boxW)*(max?d/max:.5),y:height/(group.length+1)*(i+1)-38,w:boxW,h:76})));
     return {width,height,points};
@@ -79,7 +79,15 @@
     for(let i=0;i<text.length;i++){const c=text[i];if(c==='"'){if(quoted&&text[i+1]==='"'){cell+='"';i++;}else quoted=!quoted;}else if(c===','&&!quoted){row.push(cell);cell='';}else if((c==='\n'||c==='\r')&&!quoted){if(c==='\r'&&text[i+1]==='\n')i++;row.push(cell);rows.push(row);row=[];cell='';}else cell+=c;}
     if(cell||row.length){row.push(cell);rows.push(row);}return rows;
   }
-  const Core={PHASES,createState,reduceEvent,dagLayout,parseCSV,esc};
+  function stepEvidenceHTML(n) {
+    const required=arr(n.checks).filter(c=>c.required!==false),sem=arr(n.verifications);
+    const checks=[...arr(n.checks)].sort((a,b)=>Number(b.required!==false)-Number(a.required!==false)||Number(a.passed)-Number(b.passed)||Number(/原值|输入版本/.test(b.name))-Number(/原值|输入版本/.test(a.name)));
+    const rows=checks.map(c=>`<li class="${c.passed?'pass':'fail'}"><b>${c.passed?'通过':'未通过'} · ${esc(c.name)}${c.required===false?' · 辅助检查':''}</b><p>${esc(c.detail)}</p></li>`).join('');
+    const inputs=arr(n.input_artifacts).map(a=>`<li><b>${esc(a.logical_name||a.name)}</b><p>登记版本 ${esc(a.name)}<br>SHA-256 <code>${esc(a.sha256||'未记录')}</code></p></li>`).join('');
+    const semantics=sem.map(v=>`<li class="${v.passed?'pass':v.state==='unknown'?'unknown':'fail'}"><b>${v.passed?'通过':v.state==='unknown'?'未确认':'未通过'} · ${esc(v.item)}</b><p>${esc(v.evidence)}</p></li>`).join('');
+    return `<article class="show-step-evidence"><p>${esc(n.action||'')}</p><div class="show-step-summary"><span>${esc(stepName(n.status))}</span><span>必要检查 ${required.filter(c=>c.passed).length}/${required.length}</span><span>语义复核 ${sem.filter(v=>v.passed).length}/${sem.length}</span><span>${number(n.n_attempts)} 次尝试</span></div><section><h3>实际输入与文件版本</h3>${inputs?`<ul>${inputs}</ul>`:`<p>${esc(arr(n.inputs).join(' / ')||'本步骤未携带前序文件')}</p>`}</section><section><h3>服务端检查 · 直接核对产物</h3>${rows?`<ul>${rows}</ul>`:'<p>尚无检查结果。</p>'}</section>${semantics?`<details><summary>模型语义复核 · 逐条证据</summary><ul>${semantics}</ul></details>`:''}${n.error?`<section><h3>执行错误</h3><pre>${esc(n.error)}</pre></section>`:''}${n.code?`<details><summary>查看实际执行代码</summary><pre>${esc(n.code)}</pre></details>`:''}${arr(n.attempts).map(a=>`<details><summary>第 ${number(a.n)} 次尝试 · ${a.ok?'代码运行成功':'代码运行失败'}</summary>${a.repair_reason?`<p>修复原因：${esc(a.repair_reason)}</p>`:''}<pre>${esc(a.stdout||'')}${a.stderr?'\n'+esc(a.stderr):''}</pre>${a.code_diff?`<h3>修复差异</h3><pre>${esc(a.code_diff)}</pre>`:''}</details>`).join('')}${!n.attempts&&n.stdout?`<details><summary>运行输出</summary><pre>${esc(n.stdout)}</pre></details>`:''}</article>`;
+  }
+  const Core={PHASES,createState,reduceEvent,dagLayout,parseCSV,stepEvidenceHTML,esc};
   if(typeof module!=='undefined'&&module.exports)module.exports=Core;
   if(!root.document)return;
   const $=id=>document.getElementById(id);
@@ -91,6 +99,7 @@
   function done(i){return state.phases[i]==='done';}
   function renderNetwork() {
     const host=$('show-network'), narrow=host.clientWidth<430;
+    host.dataset.dag=String(state.nodes.length>0);
     if(state.nodes.length){
       const layout=dagLayout(state.nodes,narrow);const edge=[],nodes=[];
       state.nodes.forEach(n=>{const p=layout.points.get(n.idx);arr(n.depends_on).forEach(dep=>{const a=layout.points.get(dep);if(!a)return;const active=n.status==='running';const path=narrow?`M ${a.x+a.w/2},${a.y+a.h} C ${a.x+a.w/2},${a.y+a.h+9} ${p.x+p.w/2},${p.y-9} ${p.x+p.w/2},${p.y}`:`M ${a.x+a.w},${a.y+38} C ${a.x+a.w+20},${a.y+38} ${p.x-20},${p.y+38} ${p.x},${p.y+38}`;edge.push(`<path d="${path}" class="sc-dag-edge ${active?'active':''}" marker-end="url(#sc-arrow)"/>`);});
@@ -134,6 +143,8 @@
     $('show-rail').innerHTML=PHASES.map((p,i)=>`<button type="button" class="show-phase" data-show-phase="${i}" data-state="${state.phases[i]}" aria-pressed="${selected===i}"><i>${state.phases[i]==='done'?'✓':String(i+1).padStart(2,'0')}</i><span>${p.name}<small>${state.phases[i]==='running'?'进行中':state.phases[i]==='done'?'已有真实证据':state.phases[i]==='failed'?'异常':'等待执行'}</small></span></button>`).join('');
     $('show-status').textContent=state.mode==='replay'?`真实记录回放${state.finished?' · 完成':''}`:state.finished?statusName(state.status):state.mode==='live'?'真实运行 · '+PHASES[state.phase].name:'框架待命';
     $('show-question-text').textContent=state.task||'你的问题将驱动整个框架；过程、证据与结果在这里同步展开。';
+    $('show-question-text').title=state.task||'';
+    $('show-question-toggle').hidden=!state.task;
     $('show-run-link').hidden=!state.id;
     if(state.id){$('show-run-link').href='/run?id='+encodeURIComponent(state.id);$('show-run-link').textContent='RUN '+state.id.slice(-13)+' ↗';}
     $('show-phase-tag').textContent=phase.tag;
@@ -233,7 +244,7 @@
   }
   async function inspectStep(idx){let n=state.nodes.find(s=>s.idx===idx);if(!n)return;const id=state.id;const dialog=$('show-preview');$('show-preview-title').textContent=`Step ${idx+1} · ${n.skill||'通用动作'}`;$('show-preview-body').innerHTML='<pre>'+esc(n.action)+'</pre>';dialog.showModal();const generation=++previewGeneration;
     try{if(id&&state.mode!=='replay'){const snap=await safeGet('/api/runs/'+encodeURIComponent(id));if(generation!==previewGeneration||!dialog.open)return;n=arr(snap.steps).find(s=>s.idx===idx)||n;}else if(state.mode==='replay'){const stored=arr(state.snapshot?.steps).find(s=>s.idx===idx);if(n.status==='done'||n.status==='failed')n=stored||n;}
-      const details=['执行动作：'+(n.action||''),'采用技能：'+(n.skill||'通用动作'),'状态：'+stepName(n.status),'前序输入：'+(arr(n.inputs).join(', ')||'无')];if(n.code)details.push('实际代码：\n'+n.code);arr(n.attempts).forEach(a=>details.push(`第 ${a.n} 次尝试：${a.ok?'成功':'失败'}\n${a.stdout||''}\n${a.stderr||''}`));if(!n.attempts&&n.stdout)details.push('运行输出：\n'+n.stdout);arr(n.checks).forEach(c=>details.push(`${c.passed?'PASS':'FAIL'} ${c.name}：${c.detail}`));$('show-preview-body').innerHTML='<pre>'+esc(details.join('\n\n'))+'</pre>';
+      $('show-preview-body').innerHTML=stepEvidenceHTML(n);
     }catch(e){$('show-preview-body').textContent='步骤记录读取失败：'+(e.message||e);}
   }
   function present(){const entering=!document.body.classList.contains('showcase-presenting');if(entering)presentationFocus=document.activeElement;document.body.classList.toggle('showcase-presenting',entering);$('show-present').textContent=entering?'退出汇报模式':'汇报模式';if(!entering&&presentationFocus)presentationFocus.focus();renderNetwork();}
@@ -245,6 +256,7 @@
     if(!$('show-stage'))return;
     $('show-replay').addEventListener('click',()=>loadRecord(PUBLIC_REPLAY_ID,true));
     $('show-present').addEventListener('click',present);$('show-follow').addEventListener('click',()=>{state.view=null;render();});$('show-cancel').addEventListener('click',cancel);
+    $('show-question-toggle').addEventListener('click',e=>{const expanded=e.currentTarget.getAttribute('aria-expanded')!=='true';e.currentTarget.setAttribute('aria-expanded',String(expanded));e.currentTarget.textContent=expanded?'收起问题':'展开问题';$('show-question').classList.toggle('is-expanded',expanded);});
     $('show-pause').addEventListener('click',()=>{if(!replay)return;replay.paused=!replay.paused;clearTimeout(timer);timer=null;render();if(!replay.paused)nextReplay();});
     $('show-speed').addEventListener('change',()=>{if(replay)replay.speed=number($('show-speed').value,4);});$('show-seek').addEventListener('input',e=>seek(e.target.value));
     document.addEventListener('click',e=>{const phase=e.target.closest('[data-show-phase]');if(phase){state.view=number(phase.dataset.showPhase);render();return;}const step=e.target.closest('[data-show-step]');if(step){inspectStep(number(step.dataset.showStep));return;}const artifact=e.target.closest('[data-show-artifact]');if(artifact){preview(artifact.dataset.showArtifact);return;}const record=e.target.closest('[data-show-run]');if(record){loadRecord(record.dataset.showRun);return;}const prompt=e.target.closest('[data-show-prompt]');if(prompt){$('task').value=prompts[prompt.dataset.showPrompt]||'';$('task').focus();}});

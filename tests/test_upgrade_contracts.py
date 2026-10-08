@@ -93,6 +93,27 @@ def test_missing_artifact_type_cannot_silently_pass_assertion():
     assert result and not result[0]['passed']
 
 
+def test_projection_checks_original_values_not_rounded_self_assertions(tmp_path):
+    from skillnet.contracts import projection_check
+    source=tmp_path/'source.csv';target=tmp_path/'risk.csv'
+    source.write_text('month,gross_margin\n2026-03,0.26046511627906976\n2026-02,0.325\n')
+    spec=dict(kind='csv_projection',input_file='source.csv',output_file='risk.csv',
+              keys=['month'],columns=['gross_margin'],atol=1e-9,sort_by='gross_margin',ascending=True)
+    def check():return projection_check(spec,{'source.csv':source},{'risk.csv':target})
+    target.write_text('month,gross_margin\n2026-03,0.2605\n2026-02,0.325\n')
+    assert not check()['passed']
+    target.write_bytes(source.read_bytes())
+    assert check()['passed']
+    target.write_text('month,gross_margin\n2026-03,0.26046511627906976\n2026-03,0.325\n')
+    assert not check()['passed']
+    for malformed in [b'month,gross_margin\n2026-03,0.26046511627906976,extra\n2026-02,0.325\n',
+                      b'month,gross_margin,gross_margin\n2026-03,0.2,0.3\n', b'\xff\xfe\xfd']:
+        target.write_bytes(malformed)
+        assert not check()['passed']
+    spec['input_file']='../unregistered.csv'
+    assert not check()['passed']
+
+
 def test_acceptance_failure_enters_repair_and_records_diff(monkeypatch,tmp_path):
     library=SkillLibrary([Skill('csv-job','write csv','data',verification=['[csv_columns] value'])])
     code=iter(["from pathlib import Path\nPath('data.csv').write_text('wrong\\n1\\n')\nprint('initial')",

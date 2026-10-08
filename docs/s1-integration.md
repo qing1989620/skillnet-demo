@@ -102,6 +102,27 @@ with SkillNetClient(config) as client:
 
 客户端不会自动重试创建和取消请求。创建请求超时意味着服务端可能已经接受任务；调用方应查询或对账，避免再次创建并重复扣费。SSE 客户端能发送 `last_event_id`，实际回放行为以部署版本的事件接口为准；S1 的展示端应按事件 ID 去重。
 
+连续追问应携带真实产物引用，摘要只提供对话背景：
+
+```python
+# current 为同一签名身份已完成的上轮 Run。
+source = next(a for a in current["artifacts"] if a["name"].endswith("monthly_summary.csv"))
+followup = client.create_run(
+    "读取 monthly_summary.csv，保留原值并按毛利率升序生成 risk.csv。",
+    max_steps=1, max_cost_yuan=0.8,
+    history=[{"q": current["task"], "a": "已生成月度汇总。", "run_id": current["run_id"]}],
+    artifact_refs=[{"run_id": current["run_id"], "name": source["name"], "sha256": source["sha256"]}],
+)
+```
+
+`history` 最多 20 项，`artifact_refs` 最多 16 项；后端检查来源身份、登记文件与 SHA-256，再将确切版本传给执行步骤。原值投影与排序契约由服务端独立比较输入和输出。真实 SDK 联调与独立文件核验见 [业务追问证据](../out/business-followup-evidence.json)。复核已发布记录无需模型调用：
+
+```bash
+python tools/business_followup_smoke.py --business-run b5492bb7-20261008-174014-44aa --followup-run 02f80093-20261008-175420-f527
+```
+
+省略已有 Run 参数会新建付费任务，两个预算分别为 ¥1.20 / ¥0.80。此工具验证 SkillNet 服务客户端，不等同于目标 S1 的 SSO 与业务权限联调。
+
 错误通过 `IntegrationError.code` 分类为 `unauthorized`、`forbidden`、`not_found`、`invalid_request`、`rate_limited`、`unavailable`、`timeout`、`transport_error`、`invalid_response`、`response_too_large` 或 `digest_mismatch`，并保留 HTTP 状态与 `X-Request-ID`。错误不会回显上游响应正文、模型密钥或任务内容。连接不会携带服务令牌跟随重定向。
 
 ## 部署与验收
@@ -158,5 +179,7 @@ python -m skillnet.worker
 ```
 
 可用 `SKILLNET_OUT_DIR` 和 `SKILLNET_DATA_DIR` 配置共享的本机目录。宿主进程模式是 `SKILLNET_SANDBOX=process`；Docker 模式不可用时不会回退。已发出的模型请求仍在其调用预算内结束；worker 租约丢失只标记中断并保留检查点，不静默重复收费。
+
+Linux API / worker 使用拥有上述目录的非 root 账号。执行容器沿用该 UID / GID，避免 bind mount 无法写入；root worker 会明确报错，不将目录改为全员可写。Docker 限制已在 Linux CI 中实际验证，包含连续文件传递和超时终止，见 [容器实测](../out/docker-smoke.json)；Windows Docker 与公司环境仍需分别验证。
 
 本机真实测试覆盖排队后 API 重启、执行期间 API 重启、取消、不同签名身份的 Run/产物隔离以及终态 SSE 回放，见 `out/deployment-smoke.json`。这不替代目标 S1 的 SSO、真实项目权限、附件系统及生产网络验收；线上状态仍为未验证。
