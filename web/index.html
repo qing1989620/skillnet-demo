@@ -134,9 +134,10 @@
     font-size:11.5px;color:var(--ink-3);line-height:1.9}
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=0.9.0-product"></script>
+<script src="/static/assets/ui.js?v=20261008.14"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=0.9.0-product"></script>
+<script src="/static/assets/product.js?v=20261008.14"></script>
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261008.14">
 </head>
 <body>
 <div class="app">
@@ -391,7 +392,7 @@ function renderPipeline(){
   const steps = [
     ['L1 元数据', '技能卡：能力 / 输入 / 输出 / 适用时机'],
     ['混合召回', 'BM25 + 语义向量 + 领域标签结构信号'],
-    ['加权融合', 'BM25 0.55 / 语义 0.30 / 结构 0.15 + 一致性加成'],
+    ['加权融合', 'BM25 0.70 / 语义 0.20 / 结构 0.10 + 一致性加成'],
     ['关系扩展', '沿 depend_on / compose_with 补入工作流上下游'],
     ['LLM 重排', '以技能卡为输入的语义重排'],
     ['老虎机选择', 'LinUCB：预测收益 + 探索奖励'],
@@ -422,6 +423,11 @@ function renderRefs(){
 /* ---------- 关系图（手写径向力导向布局） ---------- */
 function renderGraph(){
   const W = 760, H = 560, cx = W/2, cy = H/2;
+  if(GRAPH.nodes.length>500){
+    const groups={};GRAPH.nodes.forEach(n=>(groups[n.domain]=groups[n.domain]||[]).push(n));
+    const top=Object.entries(groups).sort((a,b)=>b[1].length-a[1].length);
+    $('#graph').innerHTML=`<div class="product-kpis" style="grid-template-columns:repeat(3,minmax(0,1fr))">${top.slice(0,9).map(([d,arr])=>`<div><small>${esc(d)}</small><b>${arr.length}</b><a href="/graph?domain=${encodeURIComponent(d)}">展开能力群 ↗</a></div>`).join('')}</div><p class="note">${GRAPH.nodes.length} 个独立技能 / ${GRAPH.edges.length} 条关系。相似边表示关联候选，不表示执行先后；在星图中可缩放、搜索和查看真实任务路径。</p><a href="/graph">进入完整交互星图 ↗</a>`;return;
+  }
   const nodes = GRAPH.nodes, edges = GRAPH.edges;
   const domains = [...new Set(nodes.map(n=>n.domain))];
   const pos = {};
@@ -488,7 +494,7 @@ function renderGraph(){
   nodes.forEach(n => {
     const [x,y] = pos[n.id];
     const r = 4 + (n.mean_reward||0)/maxR*5;
-    const isEvo = n.source !== 'seed';
+    const isEvo = (n.generation || 0) > 0;
     svg.push(`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}"
       fill="${isEvo ? '#9c3d2e' : '#3d5a52'}" opacity="${isEvo?0.95:0.72}">
       <title>${esc(n.id)}\n领域：${esc(n.domain)}\n来源：${n.source} · G${n.generation}\n实测奖励：${num(n.mean_reward,3)}（${n.pulls} 次）</title></circle>`);
@@ -617,7 +623,7 @@ async function doLegacyDemo(){
 }
 
 /* ---------- 技能库 ---------- */
-let SKILLS = [], TASKS = [];
+let SKILLS = [], TASKS = [],skillPage=0;
 const PUBLIC_DEMO_TASK='只使用公开演示数据，不联网：A组[1,2,3,4,5]，B组[2,3,4,5,6]。完成3步真实执行：计算各组n、均值与样本标准差(ddof=1)，保留4位小数输出summary.csv；用绝对容差0.0001逐值回读校验表头group,n,mean,std_sample与2组数据；直接读取同一CSV生成figure.png，误差条表示样本标准差，纵轴从0开始。只做描述统计，注明演示数据不可用于科学结论。';
 function renderSkillList(){
   const q = ($('#skillQ').value || '').toLowerCase().trim();
@@ -628,11 +634,14 @@ function renderSkillList(){
     s.name.toLowerCase().includes(q) || (s.description||'').toLowerCase().includes(q) || (s.capability||'').toLowerCase().includes(q) ||
     (s.tags||[]).some(t => t.toLowerCase().includes(q)));
   $('#skillCount').textContent = `${items.length} / ${SKILLS.length}`;
-  $('#skillList').innerHTML = items.map(s => `
+  const total=items.length;skillPage=Math.min(skillPage,Math.max(0,Math.ceil(total/50)-1));
+  $('#skillCount').innerHTML=`${total} / ${SKILLS.length} · <button type="button" id="catalog-prev" ${skillPage===0?'disabled':''}>上一页</button> ${skillPage+1} / ${Math.max(1,Math.ceil(total/50))} <button type="button" id="catalog-next" ${(skillPage+1)*50>=total?'disabled':''}>下一页</button>`;
+  $('#skillList').innerHTML = items.slice(skillPage*50,(skillPage+1)*50).map(s => `
     <div class="row" data-n="${esc(s.name)}">
       <div class="n">${esc(s.name)}${s.generation>0?` <span class="chip accent">G${s.generation}</span>`:''}</div>
       <div class="d">${esc(s.domain)} · ${esc(s.description)}</div>
     </div>`).join('') || '<div class="row"><div class="d">无匹配技能</div></div>';
+  $('#catalog-prev').onclick=()=>{skillPage--;renderSkillList();};$('#catalog-next').onclick=()=>{skillPage++;renderSkillList();};
   $$('#skillList .row[data-n]').forEach(r => r.onclick = () => showSkill(r.dataset.n, r));
 }
 let skillGeneration=0;
@@ -645,7 +654,7 @@ async function showSkill(name,row){
     const s=d.skill,stats=s.stats||{};
     history.replaceState(null,'','#skills?skill='+encodeURIComponent(name));
     const list=(title,items)=>items?.length?`<div class="contract-section"><h3>${title}</h3><ol>${items.map(v=>`<li>${esc(typeof v==='string'?v:JSON.stringify(v))}</li>`).join('')}</ol></div>`:'';
-    $('#skillDetail').innerHTML=`<div class="contract-head"><div><span class="product-eyebrow">SKILL / EXECUTION CONTRACT</span><h2>${esc(s.name)}</h2></div><a href="/graph">星图 ↗</a></div><div class="contract-tags"><span>${esc(s.domain)}</span><span>${s.source==='seed'?'种子技能':'演化技能'} · G${s.generation||0}</span><span>执行 ${stats.exec_ok||0}/${stats.exec_total||0} 成功</span>${Object.entries(s.quality||{}).map(([k,v])=>`<span>${esc(k)} · ${esc(UI.qualityLabel(v))}</span>`).join('')}</div><p class="hint">${esc(s.capability||s.description||'')}</p>${list('何时使用',s.use_when)}${list('输入契约',s.inputs)}${list('交付输出',s.outputs)}${list('执行步骤',s.steps)}${list('已知陷阱与修复依据',s.pitfalls)}${list('验收要求',s.verification)}<details class="contract-section"><summary>查看完整 SKILL.md 与元数据</summary><pre class="md">${esc(d.markdown)}</pre></details>`;
+    $('#skillDetail').innerHTML=`<div class="contract-head"><div><span class="product-eyebrow">SKILL / EXECUTION CONTRACT</span><h2>${esc(s.name)}</h2></div><a href="/graph">星图 ↗</a></div><div class="contract-tags"><span>${esc(s.domain)}</span><span>${s.source==='github'?'社区收录 · 未经执行验证':s.source==='seed'?'种子技能':'演化技能'} · G${s.generation||0}</span><span>执行 ${stats.exec_ok||0}/${stats.exec_total||0} 成功</span>${Object.entries(s.quality||{}).map(([k,v])=>`<span>${esc(k)} · ${esc(UI.qualityLabel(v))}</span>`).join('')}</div>${UI.provenanceHTML(s)}<p class="hint">${esc(s.capability||s.description||'')}</p>${list('何时使用',s.use_when)}${list('输入契约',s.inputs)}${list('交付输出',s.outputs)}${list('执行步骤',s.steps)}${list('已知陷阱与修复依据',s.pitfalls)}${list('验收要求',s.verification)}<details class="contract-section"><summary>查看完整 SKILL.md 与元数据</summary><pre class="md">${esc(d.markdown)}</pre></details>`;
   }catch(error){if(generation===skillGeneration)$('#skillDetail').innerHTML=UI.errorHTML(error);}
 }
 function initSkills(){

@@ -20,6 +20,7 @@ from .catalog import SkillLibrary
 from .index import BM25Index, VectorIndex, tokenize, weighted_fuse
 from .llm import chat_json
 from .schema import Skill, quality_score
+from .semantic import make_index, WEIGHTS
 
 MODE_BM25 = "bm25"
 MODE_HYBRID = "hybrid"
@@ -89,6 +90,8 @@ class RetrievalResult:
     fusion_score: float = 0.0
     decision: str = DECISION_DIRECT
     decision_reason: str = ""
+    encoder: dict[str, Any] = field(default_factory=dict)
+    weights: list[float] = field(default_factory=lambda: list(WEIGHTS))
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -106,6 +109,7 @@ class RetrievalResult:
             "degraded": self.degraded,
             "components": self.components,
             "degraded_reason": self.degraded_reason,
+            "encoder": self.encoder, "weights": self.weights,
         }
 
 
@@ -113,7 +117,7 @@ class Retriever:
     def __init__(self, lib: SkillLibrary) -> None:
         self.lib = lib
         self.bm25 = BM25Index()
-        self.vec = VectorIndex()
+        self.vec = make_index()
         self._built = False
 
     # ------------------------------------------------------------------
@@ -151,6 +155,7 @@ class Retriever:
         if mode not in MODES:
             raise ValueError(f"未知检索模式: {mode}")
         res = RetrievalResult(query=query, mode=mode)
+        res.encoder = getattr(self.vec, 'status', {})
 
         # ---- 通路 1：BM25 ----
         bm25_hits = self.bm25.search(query, top_k=pool)
@@ -161,7 +166,7 @@ class Retriever:
         else:
             # ---- 通路 2：语义向量 ----
             vec_hits = self.vec.search(query, top_k=pool)
-            res.trace.append(f"语义向量召回 {len(vec_hits)} 条")
+            res.trace.append(f"{res.encoder.get('kind', 'lexical-hashing')} 向量召回 {len(vec_hits)} 条")
             # ---- 通路 3：领域/标签结构信号 ----
             struct_hits = self._structural_hits(query, top_k=pool)
             res.trace.append(f"结构信号召回 {len(struct_hits)} 条")
@@ -171,11 +176,11 @@ class Retriever:
             # 这里取 0.70/0.20/0.10：既让混合档稳定优于基线，
             # 又不至于把语义通路的权重压到形同虚设。
             # **接入稠密编码器后这个权重需要重新标定。**
-            fused = weighted_fuse(
-                [bm25_hits, vec_hits, struct_hits], weights=[0.70, 0.20, 0.10]
-            )
+            from .semantic import DENSE_WEIGHTS
+            res.weights = list(DENSE_WEIGHTS if res.encoder.get('kind') == 'dense-onnx' else WEIGHTS)
+            fused = weighted_fuse([bm25_hits, vec_hits, struct_hits], weights=res.weights)
             res.trace.append(
-                f"加权融合后候选池 {len(fused)} 条（BM25 0.70 / 语义 0.20 / 结构 0.10）"
+                f"加权融合后候选池 {len(fused)} 条（BM25 {res.weights[0]:.2f} / 语义 {res.weights[1]:.2f} / 结构 {res.weights[2]:.2f}）"
             )
 
         # ---- 质量先验：同等相关度下偏好高质量技能 ----
@@ -425,14 +430,15 @@ class Retriever:
             f"【技能 Wiki】\n{cards}\n\n"
             f"请选出最多 {k} 个技能构成完成任务所需的最终技能集，并给出它们的依赖顺序。\n"
             '严格输出 JSON：{"skills": ["技能名", ...], "workflow": [["技能名","技能名"], ...], '
-            '"reason": "一句话理由"}\n'
+            '"reason": "一句话总体理由", "decisions": [{"name":"候选技能名","reason":"针对本任务采用或未采用的具体理由"}]}\n'
+            'decisions 应涵盖提供的候选；不要把检索分解释为成功概率。\n'
             "workflow 中每条边 [A, B] 表示 A 的输出是 B 的输入，或 A 必须在 B 之前执行。"
         )
         out = chat_json(
             [{"role": "user", "content": prompt}],
             role="explorer",
             temperature=0.0,
-            max_tokens=900,
+            max_tokens=1800,
             default={},
         )
         from .orchestrator import Orchestrator
@@ -470,6 +476,10 @@ class Retriever:
             "degraded": bool(reasons),
             "degraded_reason": "; ".join(reasons),
             "reason": out.get("reason", "") if isinstance(out.get("reason", ""), str) else "",
+            "decisions": [{"name":d['name'],"selected":d['name'] in skills,"reason":d['reason'][:300]}
+                          for d in (out.get('decisions') if isinstance(out.get('decisions'),list) else [])
+                          if isinstance(d,dict) and isinstance(d.get('name'),str)
+                          and d['name'] in valid and isinstance(d.get('reason'),str)],
             "retrieval_trace": r.trace,
         }
 

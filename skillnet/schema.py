@@ -118,6 +118,23 @@ class Skill:
             [self.l1_text(), *self.steps, *self.pitfalls, *self.verification]
         )
 
+    def reference_body(self) -> str:
+        """Read attributed community data lazily; never import its executable modules."""
+        if self.source != 'github':
+            return ''
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[1]
+        base = (root / 'seed/community/skills').resolve()
+        package = (root / self.metadata.get('package_path', '')).resolve()
+        if not package.is_relative_to(base):
+            return ''
+        try:
+            raw = (package / 'SKILL.md').read_text(encoding='utf-8-sig')
+        except OSError:
+            return ''
+        match = re.match(r'\A---\s*\n.*?\n---\s*\n(.*)', raw, re.S)
+        return match[1] if match else raw
+
     # ---- 序列化 ----
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
@@ -184,6 +201,9 @@ class Skill:
             lines.append(f"{k}: {json.dumps(v, ensure_ascii=False)}")
         lines.append("---")
         lines.append("")
+        original = self.reference_body()
+        if original:
+            return '\n'.join(lines) + original.rstrip() + '\n'
         lines.append(f"# {self.name}")
         lines.append("")
         lines.append(f"> 领域：{self.domain}　|　来源：{self.source}"

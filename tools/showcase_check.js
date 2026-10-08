@@ -65,6 +65,10 @@ assert.equal(s.artifacts.length,4);
 assert.equal(s.evolution.skipped,true,'semantic failures must remain visible and prevent learning');
 assert.equal(latestRun.staged.learning_gate.eligible,false);
 assert.equal(s.feedback.filter(f=>f.nudged).length,0);
+const candidateState=createState('candidate gate');
+reduceEvent(candidateState,{seq:1,type:'evolution.proposed',data:{accepted:false,candidate:{state:'pending_frozen_evaluation'}}});
+assert.equal(candidateState.evolution.accepted,false);
+assert.ok(candidateState.logs.at(-1).text.includes('候选区'));
 for(const a of latestRun.artifacts){
   const bytes=fs.readFileSync(path.join(__dirname,'../out/runs',latestRun.run_id,'artifacts',a.name));
   assert.equal(require('node:crypto').createHash('sha256').update(bytes).digest('hex'),a.sha256,'shipped replay artifact must match actual registered content');

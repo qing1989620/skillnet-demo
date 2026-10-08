@@ -5,3 +5,6 @@
 * text=auto eol=lf
 # Artifact manifests hash delivered bytes, including CSV line endings.
 out/runs/**/artifacts/** -text whitespace=cr-at-eol
+# Imported reference packages and signed evidence retain their upstream bytes.
+seed/community/skills/** -text
+out/runs/*.json -text

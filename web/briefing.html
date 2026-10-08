@@ -581,10 +581,11 @@
   }
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=0.9.0-product"></script>
+<script src="/static/assets/ui.js?v=20261008.14"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=0.9.0-product"></script>
+<script src="/static/assets/product.js?v=20261008.14"></script>
 <link rel="stylesheet" href="/static/assets/showcase.css?v=20261008.6">
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261008.14">
 </head>
 <body>
 
@@ -615,11 +616,11 @@
         <button type="button" class="btn btn-ghost" onclick="Showcase.replay()">回放一次真实任务</button>
       </div>
       <div class="h-metrics">
-        <div class="hm first"><div class="n" id="hm-skills">0</div><div class="t">技能资产</div></div>
+        <div class="hm first"><div class="n" id="hm-skills">—</div><div class="t">技能资产</div></div>
         <div class="hm-divider"></div>
-        <div class="hm"><div class="n" id="hm-edges">0</div><div class="t">类型化关系</div></div>
-        <div class="hm"><div class="n" id="hm-evolved">0</div><div class="t">已进化技能</div></div>
-        <div class="hm"><div class="n" id="hm-domains">0</div><div class="t">能力领域</div></div>
+        <div class="hm"><div class="n" id="hm-edges">—</div><div class="t">类型化关系</div></div>
+        <div class="hm"><div class="n" id="hm-evolved">—</div><div class="t">已进化技能</div></div>
+        <div class="hm"><div class="n" id="hm-domains">—</div><div class="t">能力领域</div></div>
       </div>
     </div>
     <div class="h-net" id="heroNet">
@@ -682,7 +683,7 @@
     </div>
   </div>
   </details>
-  <div class="show-tools"><button class="btn" id="demo-seven" style="background:#fff;color:var(--brand2);border:1px solid var(--brand2);font-size:12px" onclick="runDemo()">七阶段完整演示（本页）</button><p>原有完整演示、同题对照、代码、文件预览与反馈前后对比均可继续使用。</p></div>
+  <div class="show-tools"><button class="btn" type="button" data-show-run="7c29f741-20261008-163216-a4ef">新版内核记录 · 1 步真实执行</button><button class="btn" id="demo-seven" style="background:#fff;color:var(--brand2);border:1px solid var(--brand2);font-size:12px" onclick="runDemo()">七阶段完整演示（本页）</button><p>原有完整演示、同题对照、代码、文件预览与反馈前后对比均可继续使用。</p></div>
   <div id="ver-badge" title="当前页面版本；点击可强制刷新" onclick="forceRefresh()"
        style="position:fixed;right:14px;bottom:14px;z-index:99;font:11px/1 var(--mono,monospace);
        color:#9aa7b3;background:rgba(255,255,255,.85);border:1px solid var(--line);
@@ -702,7 +703,7 @@
 <section class="wrap" id="s1">
   <div class="kicker">PROBLEM · 为什么需要它</div>
   <h2>Agent 的能力不会自己变好</h2>
-  <div class="sub">三个所有 Agent 产品都会撞上的问题，来自顶会论文的实证，不是我们的想象。</div>
+  <div class="sub">本项目围绕能力供给、执行证据和经验复用展开；以下研究为设计参考，结论各有适用范围。</div>
   <div class="pain3">
     <div class="pain">
       <h4>技能找不准</h4>
@@ -784,9 +785,9 @@
 <section class="wrap" id="sproduct">
   <div class="kicker">PRODUCT · 真实界面</div>
   <h2>不是概念图，是你现在就能打开的界面</h2>
-  <div class="sub">下面每一张截图都直接来自本机正在运行的系统（同一份代码、同一份数据）——
+  <div class="sub">下面是界面示例截图（不作为当前规模的实时读数）——
     可点击进入对应页面亲自操作。当前技能库 <span data-live="skills">—</span> 项、
-    <span data-live="edges">—</span> 条类型化关系边，全部是实时读数（随运行自主增长）。</div>
+    <span data-live="edges">—</span> 条类型化关系边，上述数字实时读取；示例截图保留其拍摄时的状态。</div>
 
   <div class="shots">
     <a class="shot" href="/dashboard" target="_blank">
@@ -816,7 +817,7 @@
     <tr><td>技能进化</td><td class="no3">未涉及</td><td class="ours">四种算子（蒸馏 / 变异 / 交叉 / 再生）+ 质量准入，闭环可现场演示</td><td><button class="evtag" data-ev="evolver">展开</button></td></tr>
     <tr><td>评估体系</td><td class="no3">库级质量评估</td><td class="ours">主客分离双线评估 + 任务集与原始口径溯源 + <b>配对 bootstrap 95% CI</b></td><td><button class="evtag" data-ev="stats">展开</button></td></tr>
     <tr><td>置信度分流</td><td class="no3">未涉及（仅检索排序）</td><td class="ours">Top-1 相关度三档：自动执行 / 人工确认 / 无匹配直答，阈值按 42 条查询实测标定</td><td><button class="evtag" data-ev="gating">展开</button></td></tr>
-    <tr><td>技能库构成</td><td class="no3">单一类型</td><td class="ours"><span data-live="skills">—</span> 个技能 / 51 科研方法 + 24 交付工具（来自开发组另一成员项目）+ <span data-live="evolved">—</span> 演化</td><td><button class="evtag" data-ev="library">展开</button></td></tr>
+    <tr><td>技能库构成</td><td class="no3">本文对照所述配置</td><td class="ours"><span data-live="skills">—</span> 个技能 / 51 科研方法 + 24 交付工具（来自开发组另一成员项目）+ <span data-live="evolved">—</span> 演化</td><td><button class="evtag" data-ev="library">展开</button></td></tr>
     <tr><td>成本核算</td><td class="no3">未核算</td><td class="ours">请求级 Token / 费用账本（contextvar 隔离，跨线程不串账），页面实时可见</td><td><button class="evtag" data-ev="ledger">展开</button></td></tr>
     <tr><td>跨框架互操作</td><td class="no3">未涉及</td><td class="ours">一键导出 Claude Code / Cursor / Gemini / AGENTS 四种落点</td><td><button class="evtag" data-ev="frameworks">展开</button></td></tr>
     <tr><td>可复现工程</td><td class="no3">未开放</td><td class="ours">31 项交付自检 · pytest（不联网）· manifest 数字溯源（git commit / 库哈希 / 数据集哈希）</td><td><button class="evtag" data-ev="repro">展开</button></td></tr>
@@ -838,51 +839,51 @@
 <section class="wrap" id="s5">
   <div class="kicker">DIFFERENTIATION · 凭什么说它更好</div>
   <h2>四种做法放在一起看</h2>
-  <div class="sub">同一个任务、同一个模型，差别只在「技能怎么被用起来」。右侧三张卡是本项目的独有能力，点击可直接跳到真实产物。</div>
+  <div class="sub">下表说明本项目的配置边界，不代表裸模型、RAG 或其它产品的能力上限。历史方案盲评与新的真实执行对照分开展示；真实执行三组共用执行器及数值验收。</div>
 
   <table class="vs dense">
-    <tr><th style="width:13%">能力</th><th style="width:21%">裸模型</th><th style="width:21%">提示词塞技能</th><th style="width:21%">通用向量 RAG</th><th>SkillNet（本项目）</th></tr>
+    <tr><th style="width:13%">能力</th><th style="width:21%">裸模型</th><th style="width:21%">提示词塞技能</th><th style="width:21%">单路向量配置（结构示意）</th><th>SkillNet（本项目）</th></tr>
     <tr><td><b>技能组织</b></td>
-      <td class="no3">无技能概念，能力全在参数记忆里，无法增删查改</td>
-      <td class="no3">平铺文本，整篇塞进上下文；技能之间无结构、无类型</td>
-      <td class="no3">向量库，按语义相似度召回片段；技能被压平成 embedding</td>
+      <td class="no3">该基线不提供外部技能资产</td>
+      <td class="no3">提供技能背景文本，不启用技能关系编排</td>
+      <td class="no3">按向量召回内容；本项目未运行此配置的产物对照</td>
       <td class="ours">类型化关系图：<span data-live="edges">—</span> 条边（依赖 / 组合 / 衍生）<br>技能可组合成 <b>可执行的 DAG</b></td></tr>
     <tr><td><b>检索</b></td>
       <td class="no3">不检索，全部依赖模型参数</td>
       <td class="no3">不检索，技能是否用上取决于上下文长度</td>
-      <td class="no3">单路向量相似度；<b>无关键词兜底、无关系扩展</b>，召回靠语义巧合</td>
+      <td class="no3">本次对照采用单路向量检索；其他 RAG 实现可组合关键词与关系图</td>
       <td class="ours">三档可对照：BM25 关键词 + 语义 + <b>关系图扩展</b><br>置信度分流（自动执行 / 人工确认 / 直答）</td></tr>
     <tr><td><b>真实执行</b></td>
-      <td class="no3">只输出文本；能否运行、能否复现不可知</td>
-      <td class="no3">只输出文本；技能是「描述」不是「可运行契约」</td>
-      <td class="no3">只输出文本；检索到的片段无法被执行</td>
+      <td class="no3">历史实验评方案；新的无技能组同样真实执行</td>
+      <td class="no3">新的背景技能组共用执行器与数值验收</td>
+      <td class="no3">本次 RAG 配置用于检索供给；可另接执行工具</td>
       <td class="ours"><b>沙箱真实运行 Python</b>：产物落盘、跨步传递<br>失败 → 自动修复循环（最多 3 次尝试）</td></tr>
     <tr><td><b>产物验收</b></td>
-      <td class="no3">无验收标准，输出即结果</td>
-      <td class="no3">无验收；模型说完成就算完成</td>
-      <td class="no3">无验收；无法判断召回内容是否可用</td>
-      <td class="ours">技能 <code>verification</code> <b>逐条程序化验收</b>（文件 / 表头 / JSON / 数值范围）+ L3 语义评审</td></tr>
+      <td class="no3">真实执行对照共用独立数值验收</td>
+      <td class="no3">真实执行对照共用独立数值验收</td>
+      <td class="no3">此结构示意未附带产物验收</td>
+      <td class="ours">技能 <code>verification</code> <b>确定性断言与语义复核分别记录</b>（文件 / 表头 / JSON / 数值范围）+ L3 语义评审</td></tr>
     <tr><td><b>选择策略</b></td>
-      <td class="no3">无（每次从头生成，经验不积累）</td>
-      <td class="no3">无排序；给什么用什么</td>
-      <td class="no3">单次相似度排序，<b>无反馈学习</b></td>
+      <td class="no3">该配置不更新技能选择策略</td>
+      <td class="no3">本次背景技能组使用固定供给</td>
+      <td class="no3">此配置按相似度排序，不启用反馈学习</td>
       <td class="ours"><b>Shared LinUCB</b> + 反馈回流：本次成败改变下次排序（泛化 ≈<span data-live="linucb_ratio">1.25</span>×）</td></tr>
     <tr><td><b>技能进化</b></td>
-      <td class="no3">无技能，无从进化</td>
-      <td class="no3">技能靠人工手写与维护，不进则退</td>
-      <td class="no3">索引靠人工更新，库不会自己变好</td>
-      <td class="ours">轨迹蒸馏 + 质量准入（<b>库自己长</b>：当前 <span data-live="skills">—</span>）</td></tr>
+      <td class="no3">该配置不生成技能候选</td>
+      <td class="no3">该配置不生成技能候选</td>
+      <td class="no3">此配置未启用候选生成与晋级</td>
+      <td class="ours">轨迹蒸馏 → 候选隔离 → 冻结任务评测 → 有增益才晋级；社区导入单独计数</td></tr>
     <tr><td><b>效果证明</b></td>
-      <td class="no3">无对照，只能主观感受</td>
-      <td class="no3">只能主观比较两个提示词</td>
-      <td class="no3">只能报召回率，无法证明任务完成得更好</td>
+      <td class="no3">同题真实运行与独立数值检查</td>
+      <td class="no3">同题真实运行与独立数值检查</td>
+      <td class="no3">目前仅为配置示意，暂无此组执行证据</td>
       <td class="ours">有 / 无技能<b>对照实验</b> + 开发 / 冻结任务集 + 配对 bootstrap 95% CI（含负面结果）</td></tr>
   </table>
 
   <div class="uniq" style="grid-template-columns:repeat(3,1fr)">
     <div class="uq">
       <b>产物级技能验收</b>
-      <span>别的方案到「执行」就结束了。我们把技能里的 verification 变成<b>逐条验收标准</b>，
+      <span>本项目在执行之后继续记录验收证据。我们把技能里的 verification 变成<b>逐条验收标准</b>，
       要求验收员引用产物中的具体证据、不得推测——未满足的如实标 FAIL。</span>
       <div style="margin-top:8px;font-size:11.5px;color:var(--brand2)">实测证据：<code>corr(dose,log10(dose))=0.7081，标注高度共线</code></div>
     </div>
@@ -902,7 +903,7 @@
 
   <div class="next" style="border-left:3px solid var(--ok)">
     <b>实测数字（同任务、同模型、同步骤，只改「技能怎么被用」）：</b>
-    运行输出信息量 裸模型 <b>1285</b> 字 / 提示词塞技能 <b>1510</b> 字 / <b>契约模式 2217 字</b>；
+    运行输出字符数（只表示篇幅，不代表质量） 裸模型 <b>1285</b> 字 / 提示词塞技能 <b>1510</b> 字 / <b>契约模式 2217 字</b>；
     产物验收 前两者<b>无标准</b>、契约模式 <b>2/3 条通过且逐条给出证据</b>
     （如「输出标注剂量与 log10 剂量高度共线」）。失败重试时，前两者只能盲试，
     契约模式可以对照技能里记录的已知陷阱定位。
@@ -926,9 +927,9 @@
 <!-- ==================== 幕 6 · 工作量 ==================== -->
 <section class="wrap" id="s6">
   <div class="kicker">EVIDENCE OF WORK · 工作量与工程可信度</div>
-  <h2>数字都是自己长出来的</h2>
+  <h2>每项能力，都有来处与证据</h2>
   <div class="kpi">
-    <div class="kp"><div class="n"><span data-live="skills">—</span></div><div class="t">技能 · <span data-live="domains">—</span> 个领域（科研方法 + 工具交付 + 演化）</div></div>
+    <div class="kp"><div class="n"><span data-live="skills">—</span></div><div class="t">技能 · <span data-live="domains">—</span> 个领域（社区导入 + 原有种子 + 演化）</div></div>
     <div class="kp"><div class="n"><span data-live="edges">—</span></div><div class="t">类型化关系边 · 图驱动编排</div></div>
     <div class="kp"><div class="n">160</div><div class="t">维任务-技能联合上下文（当前 LinUCB 实现）</div></div>
     <div class="kp"><div class="n">31</div><div class="t">项交付自检（verify.py）</div></div>
@@ -967,7 +968,7 @@
 </section>
 
 <script>
-const PAGE_VER = "2026-10-08.product.11";
+const PAGE_VER = "2026-10-08.upgrade.14";
 const API = location.origin;
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1026,7 +1027,7 @@ async function fillLiveNumbers() {
   try {
     const g = await jget(API + "/api/graph", 8000);
     const doms = new Set(g.nodes.map(n => n.domain)).size;
-    const evolved = g.nodes.filter(n => n.source !== "seed").length;
+    const evolved = g.nodes.filter(n => (n.generation || 0) > 0).length;
     const map = { skills: g.nodes.length, domains: doms, edges: g.edges.length, evolved: evolved };
     try {
       CAP = await jget(API + "/api/capabilities", 8000);
@@ -1311,7 +1312,7 @@ async function wsSubmit(){
   btn.disabled = true; btn.textContent = "运行中…";
   $("err").style.display = "none";
 
-  const history = s.turns.map(t => ({ q: t.q, a: t.reply_digest || "" })).slice(-3);
+  const history = s.turns.map(t => ({ q: t.q, a: t.reply_digest || "", run_id:t.run_id||"" })).slice(-3);
   const turn = { q, run_id: null, ts: Date.now(), status: "running", history,
                  body: wsPhaseBar(s.turns.length) +
                        '<div class="sk-wrap"><div class="sk-line w85"></div><div class="sk-line w60"></div><div class="sk-line w40"></div></div>' };
@@ -1445,7 +1446,7 @@ async function boot() {
     }
     $("dot-srv").className = "dot on"; $("srv-txt").textContent = "在线";
     $("dot-key").className = "dot " + (h.api_key_configured ? "on" : "off");
-    $("key-txt").textContent = h.api_key_configured ? "已配置（全功能）" : "未配置（离线模式）";
+    $("key-txt").textContent = h.api_key_configured ? "已配置" : "未配置（离线模式）";
     $("lib-n").textContent = h.skills + " 个技能";
   } catch (e) {
     $("dot-srv").className = "dot off"; $("srv-txt").textContent = "未启动（python run.py）";
@@ -1505,15 +1506,7 @@ function setStage(bot, n, st) {
     pr.style.width = Math.min(100, (doneN / 7) * 100) + "%";
   }
 }
-function rollNum(el, target, dec) {
-  const t0 = performance.now();
-  (function f(now) {
-    const k = Math.max(0, Math.min(1, (now - t0) / 700));
-    const ease = 1 - Math.pow(1 - k, 3);
-    el.textContent = (target * ease).toFixed(dec);
-    if (k < 1) requestAnimationFrame(f);
-  })(t0);
-}
+function rollNum(el, target, dec) { if(el)el.textContent=Number(target).toFixed(dec); }
 const tick = ms => new Promise(r => setTimeout(r, ms));
 
 function sklList(sel, gold) {
@@ -1669,7 +1662,7 @@ async function runCompare(btn) {
         <tr><th>指标</th><th style="width:22%">裸模型</th><th style="width:22%">提示词塞技能</th><th style="width:26%">SkillNet（契约模式）</th></tr>
         <tr><td>运行结果</td>${cell(B.ok, false)}${cell(P.ok, false)}${cell(g.ok + "（" + (execution.metrics.fix || "") + "）", true)}</tr>
         <tr><td>生成代码规模</td>${cell(B.code + " 字", wCode === 2)}${cell(P.code + " 字", wCode === 1)}${cell(g.code + " 字", wCode === 0)}</tr>
-        <tr><td>运行输出信息量</td>${cell(B.out + " 字", wOut === 2)}${cell(P.out + " 字", wOut === 1)}${cell(g.out + " 字", wOut === 0)}</tr>
+        <tr><td>运行输出字符数（只表示篇幅，不代表质量）</td>${cell(B.out + " 字", wOut === 2)}${cell(P.out + " 字", wOut === 1)}${cell(g.out + " 字", wOut === 0)}</tr>
         <tr><td>落盘真实产物</td>${cell(B.files + " 个", wFile === 2)}${cell(P.files + " 个", wFile === 1)}${cell(g.files + " 个", wFile === 0)}</tr>
         <tr><td>产物验收</td>${cell("无", false)}${cell("无", false)}${cell(g.vf, true)}</tr>
         <tr><td>失败时修复依据</td>${cell("盲试", false)}${cell("盲试", false)}${cell("技能已知陷阱", true)}</tr>
@@ -2239,8 +2232,11 @@ fillLiveNumbers();
       ]);
       edges = (g.edges || []).map(e => ({ s: e.source, t: e.target }));
       const domCount = {};
-      nodes = (g.nodes || []).map(n => ({
-        id: n.id, dom: n.domain || "其他", ev: n.source !== "seed" || (n.generation || 0) > 0,
+      const allNodes=g.nodes||[],domainTotals={},groupCounts={};
+      allNodes.forEach(n=>domainTotals[n.domain]=(domainTotals[n.domain]||0)+1);
+      const visibleNodes=allNodes.filter(n=>{const i=groupCounts[n.domain]||0;groupCounts[n.domain]=i+1;return n.source!=='github'||i<12;});
+      nodes = visibleNodes.map(n => ({
+        id: n.id, dom: n.domain || "其他", ev: (n.generation || 0) > 0 || (n.generation || 0) > 0,
         deg: 0, reward: n.mean_reward, pulls: n.pulls || 0,
         x: 0, y: 0, vx: 0, vy: 0, fixed: false
       }));
@@ -2262,16 +2258,16 @@ fillLiveNumbers();
           n.x = cx + (Math.random() - 0.5) * 90; n.y = cy + (Math.random() - 0.5) * 90; domCount[d]++;
         });
       });
-      // 指标数字（editorial count-up）
+      // 只呈现已读取的实际计数。
       const stats = st && typeof st === "object" ? st : {};
       const domN = typeof stats.domains === "number" ? stats.domains
         : (stats.domains && typeof stats.domains === "object" ? Object.keys(stats.domains).length : doms.length);
       const evN = typeof stats.evolved === "number" ? stats.evolved : nodes.filter(n => n.ev).length;
-      window.__NODES__ = nodes.length;        // 供自检读取
-      roll($("hm-skills"), nodes.length); roll($("hm-edges"), edges.length);
+      window.__NODES__ = allNodes.length;        // 供自检读取
+      roll($("hm-skills"), allNodes.length); roll($("hm-edges"), g.edges.length);
       roll($("hm-evolved"), evN); roll($("hm-domains"), domN);
       // 图例：前 5 大领域 + 进化标记
-      const top = Object.entries(domCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      const top = Object.entries(domainTotals).sort((a, b) => b[1] - a[1]).slice(0, 5);
       legendEl.innerHTML = top.map(([d, c]) =>
         `<span><i style="background:${colorOf(d)}"></i>${d} ${c}</span>`).join("")
         + `<span><i class="ev"></i>进化技能 ${evN}</span>`;
@@ -2285,16 +2281,7 @@ fillLiveNumbers();
     }
   }
 
-  function roll(el, target) {
-    if (!el) return;
-    if (REDUCED) { el.textContent = target; return; }
-    const t0 = performance.now(), dur = 950;
-    (function f(t) {
-      const p = Math.max(0, Math.min(1, (t - t0) / dur)), e = 1 - Math.pow(1 - p, 3);
-      el.textContent = Math.round(target * e);
-      if (p < 1) requestAnimationFrame(f);
-    })(t0);
-  }
+  function roll(el, target) { if(el)el.textContent=target; }
 
   function step(dt) {
     if (dagMode) { alpha = 0; return; }       // DAG 形态下物理停用，坐标交给形态迁移
@@ -2624,6 +2611,6 @@ window.__SELFTEST__ = function(){
   }, 4000);
 })();
 </script>
-<script src="/static/assets/showcase.js?v=20261008.9"></script>
+<script src="/static/assets/showcase.js?v=20261008.14"></script>
 </body>
 </html>

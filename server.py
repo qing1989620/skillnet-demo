@@ -37,6 +37,8 @@ from skillnet.artifacts import (collect_execution_artifacts, generate_deliverabl
                                    render_bundle, save_bundle, task_slug)
 from skillnet.executor import execute_step, pick_executable_step
 from skillnet import pipeline
+from skillnet.jobs import JobQueue
+from skillnet.s1_identity import verify as verify_s1_identity
 from skillnet.runtime import (BUS, STEP_DONE, STEP_FAILED, STATUS_BUDGET_EXCEEDED,
                               STATUS_CANCELLED, STATUS_COMPLETED, STATUS_FAILED,
                               STATUS_PARTIAL, Budget, Run, RunStore, TERMINAL,
@@ -81,6 +83,17 @@ ACCESS_TOKEN = os.environ.get("SKILLNET_TOKEN", "").strip()
 MAX_ACTIVE_RUNS = max(1, min(32, int(os.environ.get("SKILLNET_MAX_ACTIVE_RUNS", "4"))))
 _RUN_SLOTS = threading.BoundedSemaphore(MAX_ACTIVE_RUNS)
 _RUN_THREADS: dict[str, threading.Thread] = {}
+WORKER_MODE = os.environ.get('SKILLNET_WORKER_MODE', 'thread')
+S1_SIGNING_KEY = os.environ.get('SKILLNET_S1_SIGNING_KEY', '')
+if S1_SIGNING_KEY and len(S1_SIGNING_KEY) < 32:
+    raise ValueError('SKILLNET_S1_SIGNING_KEY must contain at least 32 characters')
+
+
+def job_queue() -> JobQueue:
+    with _STATE_LOCK:
+        if 'job_queue' not in STATE:
+            STATE['job_queue'] = JobQueue(config.OUT_DIR / 'jobs.sqlite3')
+        return STATE['job_queue']
 
 
 def _startup() -> None:
@@ -194,11 +207,39 @@ def _ui_version() -> str:
 def _startup_sweep() -> None:
     """服务启动即清扫非终态 Run（进程重启留下的），避免"永远在跑"的假象。"""
     try:
+        if WORKER_MODE == 'external':
+            return  # Worker leases, not an API restart, determine interruption.
         n = run_store().sweep_interrupted()
+        job_queue().interrupt_unfinished()
         if n:
             log.info("启动清扫：%d 个中断 Run 标记为 INTERRUPTED", n)
     except Exception as exc:      # 清扫失败不影响服务启动
         log.error("启动清扫失败：%s", exc)
+
+
+@app.middleware("http")
+async def s1_authorization(request: Request, call_next):
+    if S1_SIGNING_KEY and (request.url.path.startswith('/api/runs') or request.url.path == '/api/candidates'):
+        try:
+            body = bytearray()
+            async for chunk in request.stream():
+                body.extend(chunk)
+                if len(body) > 131072:
+                    return JSONResponse(status_code=413, content={'detail':'请求体过大'})
+            request._body = bytes(body)
+            context = verify_s1_identity(S1_SIGNING_KEY, request.method, request.url.path,
+                                         bytes(body), request.headers).to_dict()
+        except ValueError:
+            return JSONResponse(status_code=401, content={'detail':'S1 后端身份签名无效或已过期'})
+        if request.method not in ('GET','HEAD','OPTIONS') and not job_queue().consume_nonce(request.headers['X-S1-Nonce']):
+            return JSONResponse(status_code=409, content={'detail':'重复的 S1 签名请求，请使用新签名'})
+        request.state.s1_identity = context
+        match = re.match(r'^/api/runs/([A-Za-z0-9-]+)(?:/|$)', request.url.path)
+        if match:
+            existing = run_store().get(match[1])
+            if existing is None or existing.staged.get('s1_identity') != context:
+                return JSONResponse(status_code=404, content={'detail':'Run 不存在'})
+    return await call_next(request)
 
 
 @app.middleware("http")
@@ -242,20 +283,44 @@ def health() -> dict[str, Any]:
         "ok": True,
         "version": app.version,
         "skills": len(lib()),
-        "evolved": sum(1 for s in lib() if s.source != "seed"),
+        "evolved": lib().stats()['evolved'],
+        "community_skills": lib().stats()['community'],
+        "encoder": getattr(getattr(STATE.get('retriever'), 'vec', None), 'status', {}),
         "model": config.MODEL,
         "api_key_configured": bool(config.API_KEY),
         "token_required": bool(ACCESS_TOKEN),
         "ui_version": _ui_version(),
         "library_path": "data/library.json",
         "runtime": {"active_runs": _active_run_count(),
-                    "max_active_runs": MAX_ACTIVE_RUNS, "deployment": "single-process"},
+                    "max_active_runs": MAX_ACTIVE_RUNS, "deployment": WORKER_MODE,
+                    "queue": job_queue().snapshot(), "isolation": os.environ.get('SKILLNET_SANDBOX', 'process')},
     }
 
 
 @app.get("/api/stats")
 def stats() -> dict[str, Any]:
     return lib().stats()
+
+
+@app.get('/api/scenarios')
+def business_scenarios():
+    from skillnet.scenarios import scenarios
+    return {'items': [{k:r[k] for k in ('id','title','task','task_sha256')} for r in scenarios()]}
+
+
+@app.get('/api/candidates', dependencies=[Depends(require_token)])
+def learning_candidates(request: Request):
+    rows = []
+    for path in sorted((config.OUT_DIR / 'candidates').glob('*.json')):
+        record = json.loads(path.read_text(encoding='utf-8'))
+        identity = getattr(request.state, 's1_identity', None)
+        if identity:
+            origin = run_store().get(record.get('origin_run_id',''))
+            if origin is None or origin.staged.get('s1_identity') != identity:
+                continue
+        rows.append({'name':record['skill']['name'],'state':record['state'], 'sha256':record['sha256'],
+                     'origin_run_id':record.get('origin_run_id'), 'promotion_policy':record.get('promotion_policy')})
+    return {'items':rows, 'total':len(rows)}
 
 
 @app.get("/api/auth/check", dependencies=[Depends(require_token)])
@@ -271,10 +336,13 @@ def s1_integration() -> dict[str, Any]:
 
 
 @app.get("/api/skills")
-def skills(domain: str | None = None, q: str | None = None) -> dict[str, Any]:
+def skills(domain: str | None = None, q: str | None = None, source: str | None = None,
+           offset: int = Query(default=0, ge=0), limit: int | None = Query(default=None, ge=1, le=500)) -> dict[str, Any]:
     items = lib().all()
     if domain:
         items = [s for s in items if s.domain == domain]
+    if source:
+        items = [s for s in items if (s.source == source if source != 'evolved' else s.generation > 0)]
     if q:
         ql = q.lower()
         items = [
@@ -284,6 +352,7 @@ def skills(domain: str | None = None, q: str | None = None) -> dict[str, Any]:
         ]
     return {
         "total": len(items),
+        "offset": offset, "limit": limit,
         "items": [
             {
                 "name": s.name, "domain": s.domain, "description": s.description,
@@ -292,8 +361,9 @@ def skills(domain: str | None = None, q: str | None = None) -> dict[str, Any]:
                 "source": s.source, "generation": s.generation,
                 "quality": s.quality, "relations": [list(r) for r in s.relations],
                 "stats": s.stats,
+                "provenance": s.metadata if s.source == 'github' else {},
             }
-            for s in sorted(items, key=lambda x: (x.domain, x.name))
+            for s in sorted(items, key=lambda x: (x.domain, x.name))[offset:offset + limit if limit else None]
         ],
     }
 
@@ -487,6 +557,7 @@ def evolve(req: EvolveReq) -> dict[str, Any]:
 
     agent: ResearchAgent = STATE["agent"]
     evolver = SkillEvolver(lib())
+    evolver.candidate_dir = config.OUT_DIR / 'candidates'
 
     with llm.ledger_scope() as led:
         # 先让 Agent 在无技能条件下跑一次，得到用于蒸馏的轨迹
@@ -517,7 +588,8 @@ def evolve(req: EvolveReq) -> dict[str, Any]:
         "chat_score": score,
         "evaluation": evaluation,
         "skip_reason": "评审不可用，未进行技能准入" if score is None else "",
-        "accepted": new_skill is not None,
+        "accepted": False,
+        "candidate": new_skill is not None,
         "new_skill": new_skill.to_dict() if new_skill else None,
         "markdown": new_skill.to_skill_md() if new_skill else None,
         "records": evolver.summary()["records"],
@@ -553,7 +625,7 @@ def run_store() -> RunStore:
         rs = STATE.get("run_store")
         if rs is None:
             rs = RunStore(config.OUT_DIR / "runs")
-            swept = rs.sweep_interrupted()
+            swept = rs.sweep_interrupted() if WORKER_MODE != 'external' else 0
             if swept:
                 log.info("清扫 %d 个中断的 Run（非终态 -> INTERRUPTED）", swept)
             STATE["run_store"] = rs
@@ -700,6 +772,7 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
 
     # 4) 从执行轨迹蒸馏新技能
     evolver = SkillEvolver(lib())
+    evolver.candidate_dir = config.OUT_DIR / 'candidates'
     before = len(lib())
     new_skill = (evolver.distill(req.task, run.trajectory, score=reward, parent=adopted[:1])
                  if reward is not None else None)
@@ -716,7 +789,8 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
                 "reward": round(reward, 4) if reward is not None else None,
                 "skip_reason": learning_skip,
                 "adopted": adopted,
-                "accepted": new_skill is not None,
+                "accepted": False,
+        "candidate": new_skill is not None,
                 "name": new_skill.name if new_skill else None,
                 "generation": new_skill.generation if new_skill else None,
                 "capability": new_skill.capability if new_skill else None,
@@ -814,7 +888,7 @@ def adapters() -> dict[str, Any]:
 @app.get("/api/results")
 def results() -> dict[str, Any]:
     out: dict[str, Any] = {}
-    for f in sorted(config.OUT_DIR.glob("exp*.json")):
+    for f in sorted([*config.OUT_DIR.glob("exp*.json"), *config.OUT_DIR.glob('execution-benchmark-[0-9]*.json')]):
         try:
             out[f.stem] = json.loads(f.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
@@ -1043,6 +1117,13 @@ def artifact(slug: str, fname: str, download: int = 0) -> Any:
 class HistoryTurn(BaseModel):
     q: str = Field(min_length=1, max_length=6000, pattern=r"\S")
     a: str = Field(default="", max_length=8000)
+    run_id: str = Field(default='', max_length=96, pattern=r'^[A-Za-z0-9-]*$')
+
+
+class ArtifactRef(BaseModel):
+    run_id: str = Field(max_length=96, pattern=r'^[A-Za-z0-9-]+$')
+    name: str = Field(min_length=1, max_length=240)
+    sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
 
 
 class RunReq(BaseModel):
@@ -1055,6 +1136,7 @@ class RunReq(BaseModel):
     # 追问上下文：同一会话此前轮次的 [{q, a}]（a 为上一轮回复摘要）。
     # 只用于规划阶段与最终回复，不污染检索（检索必须用当前问题本身）。
     history: list[HistoryTurn] = Field(default_factory=list, max_length=20)
+    artifact_refs: list[ArtifactRef] = Field(default_factory=list, max_length=16)
 
 
 def _artifact_digest(run: Any, limit_chars: int = 4200, per_file: int = 900) -> str:
@@ -1248,17 +1330,21 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
     if run is None:
         return
     led = llm.UsageLedger()
+    run._checkpoint_writer = lambda: store.save(run)
     lib_before_snapshot: dict[str, dict[str, Any]] = {}
     lib_size_before = 0
     evolved_before = 0
     new_skill_records: list[dict[str, Any]] = []
     def checkpoint() -> None:
         pipeline.sync_usage(run, led)
+        if WORKER_MODE == 'external' and job_queue().cancelled(run_id):
+            run.cancel_requested = True
+        store.save(run)
         runtime.check_budget(run)
     try:
         lib_before_snapshot = _skill_snapshot(lib())
         lib_size_before = len(lib())
-        evolved_before = sum(1 for s in lib() if s.source != "seed")
+        evolved_before = sum(1 for s in lib() if s.generation > 0)
         with llm.ledger_scope(led), llm.guard_scope(checkpoint):
             checkpoint()
             r = STATE["retriever"]
@@ -1311,6 +1397,7 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                 "order": run.skills, "workflow": orch["workflow"],
                 "source": wiki.get("source", orch.get("source", "")),
                 "degraded": bool(wiki.get("degraded") or orch.get("degraded")),
+                "reason": wiki.get('reason',''), "decisions": wiki.get('decisions',[]),
             }
             run.staged["orchestration_ms"] = int((time.time() - t0) * 1000)
             BUS.publish(run, "orchestration.completed",
@@ -1318,6 +1405,7 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                         workflow=len(orch.get("workflow") or []),
                         edges=orch["workflow"],
                         source=run.staged["orchestration"]["source"],
+                        reason=wiki.get('reason',''),decisions=wiki.get('decisions',[]),
                         degraded=run.staged["orchestration"]["degraded"],
                         duration_ms=run.staged["orchestration_ms"])
             checkpoint()
@@ -1339,7 +1427,10 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                 plan_task = (run.task + "\n\n【这是同一会话的后续追问，前文如下（请结合前文回答，"
                              "但研究步骤只针对当前问题）】\n" + "\n".join(ctx_lines))
             run.staged["history_turns"] = len(hist)
-            arun = agent.run(plan_task, skills=run.skills, style=STYLE_GUIDED)
+            if req.artifact_refs:
+                plan_task += '\n已携带上一轮的真实文件版本，禁止重新生成原始数据：\n' + '\n'.join(
+                    f"{a.logical_name} (SHA-256 {a.sha256})" for a in run.artifacts if a.kind == '跨轮输入')
+            arun = agent.run(plan_task, skills=run.skills, style=STYLE_GUIDED, max_steps=req.max_steps)
             run.plan = arun.response or {}
             run.status = "EXECUTING"
             run.staged["planning_ms"] = int((time.time() - t0) * 1000)
@@ -1372,7 +1463,7 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                 if not run.steps or any(s.status != runtime.STEP_DONE for s in run.steps):
                     learning_skip = "真实执行未完整完成，未更新反馈或进行技能准入"
                 elif any(not c.passed for s in run.steps for c in s.checks
-                         if c.name != "产生至少一个文件产物"):
+                         if c.required):
                     learning_skip = "实际产物检查未全部通过，未更新反馈或进行技能准入"
                 elif any(not v.passed for s in run.steps for v in s.verifications):
                     learning_skip = "技能语义验收存在未通过项，未更新反馈或进行技能准入"
@@ -1380,7 +1471,7 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                     reward = None
             run.staged["learning_gate"] = {"eligible": reward is not None,
                                            "skip_reason": learning_skip}
-            adopted = [s for s in run.skills if s]
+            adopted = sorted({s.skill for s in run.steps if s.skill and s.status == runtime.STEP_DONE})
             before_rows = {x["name"]: x["exploit"] for x in run.ranking}
             if reward is not None:
                 for s in adopted:
@@ -1403,10 +1494,21 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                         learning_eligible=reward is not None, skip_reason=learning_skip)
             run.status = "EVOLVING"
             evolver = SkillEvolver(lib())
-            new_skill = (evolver.distill(run.task, getattr(arun, "trajectory", []) or [],
+            evolver.candidate_dir = config.OUT_DIR / 'candidates'
+            evolver.origin_run_id = run.run_id
+            execution_trajectory = json.dumps({'task': run.task, 'steps': [
+                {'idx':s.idx,'action':s.action,'skill':s.skill,'contract':s.contract,
+                 'status':s.status,'repairs':[a.repair_reason for a in s.attempts if a.repair_reason],
+                 'checks':[c.to_dict() for c in s.checks if c.required],
+                 'semantic':[v.to_dict() for v in s.verifications],
+                 'files':[{'name':a.logical_name or a.name,'sha256':a.sha256} for a in s.artifacts]}
+                for s in run.steps],
+                'acceptance': pipeline.contracts.acceptance(run)}, ensure_ascii=False)
+            new_skill = (evolver.distill(run.task, execution_trajectory,
                                          score=reward, parent=adopted[:1])
                          if reward is not None else None)
-            if new_skill:
+            is_candidate = bool(new_skill and getattr(new_skill, 'metadata', {}).get('governance_status') == 'candidate')
+            if new_skill and not is_candidate:
                 refresh_runtime()
             # 即使本次没有新技能，真实反馈更新也需要落盘。
             if new_skill or adopted:
@@ -1421,7 +1523,8 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                     "origin_task": (getattr(new_skill, "origin_task", "") or "")[:200],
                 })
             run.evolution = {
-                "accepted": new_skill is not None,
+                "accepted": new_skill is not None and not is_candidate,
+                "candidate": {"name": new_skill.name, "state": "pending_frozen_evaluation"} if is_candidate else None,
                 "name": getattr(new_skill, "name", None),
                 "generation": getattr(new_skill, "generation", 0),
                 "capability": (getattr(new_skill, "capability", "") or "")[:200],
@@ -1431,6 +1534,7 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                 "skip_reason": learning_skip,
             }
             BUS.publish(run, "evolution.proposed", accepted=run.evolution["accepted"],
+                        candidate=run.evolution.get("candidate"),
                         name=run.evolution["name"], library_size=run.evolution["library_size"],
                         generation=run.evolution["generation"], feedback=run.feedback,
                         skipped=run.evolution["skipped"], skip_reason=run.evolution["skip_reason"])
@@ -1450,7 +1554,7 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                 lib_before_snapshot, _skill_snapshot(lib()),
                 list(run.skills or []), new_skill_records,
                 lib_size_before, len(lib()), evolved_before,
-                sum(1 for s in lib() if s.source != "seed"))
+                sum(1 for s in lib() if s.generation > 0))
         except Exception as exc:
             run.staged["skill_impact_error"] = f"{type(exc).__name__}: {exc}"
 
@@ -1516,7 +1620,12 @@ def _active_run_count() -> int:
 
 def _bounded_run_worker(run_id: str, req: RunReq) -> None:
     try:
-        _run_worker(run_id, req)
+        from skillnet.worker import execute_job
+        owner = f'{os.getpid()}-{secrets.token_hex(6)}'
+        job = job_queue().claim(owner, run_id=run_id)
+        if job:
+            job['worker_owner'] = owner
+            execute_job(job_queue(), job, lambda rid, payload: _run_worker(rid, RunReq.model_validate(payload)))
     finally:
         with _STATE_LOCK:
             _RUN_THREADS.pop(run_id, None)
@@ -1524,17 +1633,62 @@ def _bounded_run_worker(run_id: str, req: RunReq) -> None:
 
 
 @app.post("/api/runs", dependencies=[Depends(require_token)])
-def create_run(req: RunReq) -> Any:
+def create_run(req: RunReq, request: Request = None) -> Any:
     """创建并**后台执行**一个 Run，立即返回 run_id（前端随后订阅事件流）。"""
     require_llm()
-    if not _RUN_SLOTS.acquire(blocking=False):
+    if WORKER_MODE != 'external' and not _RUN_SLOTS.acquire(blocking=False):
         raise HTTPException(429, "当前运行已达到并发上限，请稍后提交。", headers={"Retry-After": "10"})
     fp = task_fingerprint(req.task)
     run = Run(run_id=new_run_id(fp), task=req.task, task_fp=fp, model=config.MODEL)
+    identity = getattr(request.state, 's1_identity', None) if request else None
+    if identity:
+        run.staged['s1_identity'] = identity
     run.budget = Budget(max_cost_yuan=req.max_cost_yuan, max_llm_calls=req.max_llm_calls,
                         max_seconds=req.max_seconds, max_attempts_per_step=3)
     try:
+        refs = list(req.artifact_refs)
+        if not refs and req.history and req.history[-1].run_id:
+            previous = run_store().get(req.history[-1].run_id)
+            if previous is None or identity and previous.staged.get('s1_identity') != identity:
+                raise HTTPException(404, '上一轮运行不存在或无权访问')
+            if previous:
+                latest = {}
+                for artifact in sorted(previous.artifacts, key=lambda a:(a.version,a.from_step if a.from_step is not None else -1,a.name)):
+                    if artifact.kind != '跨轮输入' and artifact.sha256:
+                        latest[artifact.logical_name or artifact.name] = artifact
+                refs = [ArtifactRef(run_id=previous.run_id, name=a.name, sha256=a.sha256)
+                        for a in latest.values()][:16]
+        seen_destinations = set()
+        for ref in refs:
+            previous = run_store().get(ref.run_id)
+            if identity and (previous is None or previous.staged.get('s1_identity') != identity):
+                raise HTTPException(404, '跨轮文件不存在')
+            artifact = next((a for a in previous.artifacts if a.name == ref.name), None) if previous else None
+            if not artifact or artifact.sha256 != ref.sha256:
+                raise HTTPException(409, '跨轮文件版本已变化或不存在')
+            origin = config.OUT_DIR / 'runs' / ref.run_id / 'artifacts' / ref.name
+            if not origin.resolve().is_relative_to((config.OUT_DIR / 'runs' / ref.run_id / 'artifacts').resolve()):
+                raise HTTPException(400, '非法的文件引用')
+            if not origin.is_file() or pipeline._sha256_file(origin) != ref.sha256:
+                raise HTTPException(409, '跨轮文件内容校验失败')
+            history_name = 'history_' + ref.run_id[-8:] + '_' + ref.name
+            logical = artifact.logical_name or re.sub(r'^step\d+_', '', artifact.name)
+            if logical in seen_destinations:
+                raise HTTPException(409, '同一逻辑文件存在多个历史版本，请明确选择一个版本')
+            seen_destinations.add(logical)
+            destination = config.OUT_DIR / 'runs' / run.run_id / 'artifacts' / history_name
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            import shutil
+            shutil.copy2(origin, destination)
+            run.artifacts.append(runtime.Artifact(name=destination.name, kind='跨轮输入', bytes=artifact.bytes,
+                sha256=artifact.sha256, logical_name=logical,
+                source_run_id=ref.run_id, version=artifact.version))
+        req.artifact_refs = refs
+        run.staged['history_artifacts'] = [r.model_dump() for r in refs]
         run_store().save(run)
+        job_queue().enqueue(run.run_id, req.model_dump())
+        if WORKER_MODE == 'external':
+            return {"run_id": run.run_id, "status": runtime.STATUS_CREATED, "task_fp": fp, "queued": True}
         thread = threading.Thread(target=_bounded_run_worker, args=(run.run_id, req),
                                   name=f"run-{run.run_id}", daemon=True)
         with _STATE_LOCK:
@@ -1543,13 +1697,14 @@ def create_run(req: RunReq) -> Any:
     except Exception:
         with _STATE_LOCK:
             _RUN_THREADS.pop(run.run_id, None)
-        _RUN_SLOTS.release()
+        if WORKER_MODE != 'external':
+            _RUN_SLOTS.release()
         raise
     return {"run_id": run.run_id, "status": runtime.STATUS_CREATED, "task_fp": fp}
 
 
 @app.get("/api/runs")
-def list_runs(limit: int = Query(default=50, ge=1, le=200),
+def list_runs(request: Request, limit: int = Query(default=50, ge=1, le=200),
               task_fp: str | None = Query(default=None, max_length=64),
               offset: int = Query(default=0, ge=0, le=100000),
               q: str = Query(default="", max_length=200),
@@ -1559,7 +1714,8 @@ def list_runs(limit: int = Query(default=50, ge=1, le=200),
                                 runtime.STATUS_ORCHESTRATING, runtime.STATUS_EXECUTING,
                                 runtime.STATUS_VERIFYING, runtime.STATUS_EVOLVING, *TERMINAL}:
         raise HTTPException(422, "未知的运行状态")
-    return run_store().list_page(limit=limit, offset=offset, task_fp=task_fp, q=q, status=status)
+    return run_store().list_page(limit=limit, offset=offset, task_fp=task_fp, q=q, status=status,
+                                identity=getattr(request.state, 's1_identity', None))
 
 
 @app.get("/api/runs/{run_id}")
@@ -1579,7 +1735,12 @@ def cancel_run(run_id: str) -> Any:
     if run.status in TERMINAL:
         return {"run_id": run_id, "status": run.status, "note": "已终止，无需取消"}
     run.cancel_requested = True
+    job_queue().cancel(run_id)
     BUS.publish(run, "run.cancel_requested")
+    if run.status == runtime.STATUS_CREATED:
+        run.status = STATUS_CANCELLED
+        run.ended_at_ms = now_ms()
+        BUS.publish(run, 'run.cancelled', reason='队列中取消，未执行模型调用')
     run_store().save(run)
     return {"run_id": run_id, "status": "CANCEL_REQUESTED"}
 
@@ -1600,17 +1761,23 @@ async def stream_run(run_id: str, request: Request,
 
     async def gen():
         cursor = after
+        current = run
         heartbeat_at = time.monotonic()
         while True:
+            if WORKER_MODE == 'external':
+                refreshed = store.load(run_id)
+                if refreshed is not None:
+                    # The worker owns mutations; the API observes atomic checkpoints.
+                    current = refreshed
             # 回放与实时均使用同一游标快照：发布发生在 yield 期间，也会在下次
             # 轮询补上；无「回放完成 → 注册订阅」之间的事件丢失窗口。
-            for ev in BUS.replay(run, cursor):
+            for ev in BUS.replay(current, cursor):
                 yield f"id: {ev.seq}\ndata: {json.dumps(ev.to_dict(), ensure_ascii=False)}\n\n"
                 cursor = ev.seq
             with _STATE_LOCK:
                 worker_alive = run_id in _RUN_THREADS
-            if run.status in TERMINAL and not BUS.replay(run, cursor):
-                if not worker_alive or any(e.type == "run.finished" and e.seq <= cursor for e in run.events):
+            if current.status in TERMINAL and not BUS.replay(current, cursor):
+                if not worker_alive or any(e.type == "run.finished" and e.seq <= cursor for e in current.events):
                     yield "event: end\ndata: {}\n\n"
                     break
             if await request.is_disconnected():

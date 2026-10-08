@@ -591,7 +591,9 @@ def test_worker_abstains_from_invalid_scores_but_keeps_valid_score_feedback(
         assert loaded.evolution["skipped"] and loaded.evolution["skip_reason"]
         assert event.data["weighted"] is None
     else:
-        assert updates == [(name, expected_reward) for name in wiki["order"]]
+        # A planned skill that never executed must not receive a success reward.
+        assert updates == [('input-data', expected_reward)]
+        assert not any(name in ('z-analyze', 'z-report') for name, _ in updates)
         assert admissions == [expected_reward]
         assert all(row["nudged"] for row in loaded.feedback)
         assert not loaded.evolution["skipped"]

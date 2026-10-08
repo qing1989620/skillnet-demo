@@ -177,9 +177,18 @@ class SkillEvolver:
             ))
             return None
 
-        self.lib.add(skill)
+        if getattr(self, 'candidate_dir', None):
+            from .governance import quarantine
+            try:
+                quarantine(skill, self.candidate_dir, origin_run_id=getattr(self, 'origin_run_id', ''))
+            except (OSError, ValueError) as exc:
+                self.records.append(EvolveRecord(op, name, False, '候选保存失败：' + type(exc).__name__))
+                return None
+            skill.metadata['governance_status'] = 'candidate'
+        else:
+            self.lib.add(skill)
         self.records.append(
-            EvolveRecord(op, name, True, f"G{skill.generation} 新技能入库", parents)
+            EvolveRecord(op, name, not bool(getattr(self, 'candidate_dir', None)), f"G{skill.generation} 候选待验证" if getattr(self, 'candidate_dir', None) else f"G{skill.generation} 新技能入库", parents)
         )
         return skill
 
@@ -198,7 +207,7 @@ class SkillEvolver:
             "2. 步骤必须是可执行的动作，而不是抽象建议；\n"
             "3. 若轨迹中存在失败与修正，把修正后的做法写进步骤，把失败模式写进 pitfalls。\n\n"
             f"【任务】\n{task}\n\n"
-            f"【执行轨迹】\n{trajectory[:6000]}\n\n"
+            f"【执行轨迹】\n{trajectory[:16000]}\n\n"
             f"【该次执行得分】{score:.2f}（1 分制）\n\n"
             f"严格输出 JSON，字段如下：\n{SKILL_SCHEMA_HINT}"
         )

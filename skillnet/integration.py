@@ -104,9 +104,9 @@ def integration_manifest() -> dict[str, Any]:
         },
         "tools": ["search_skills", "load_skill"],
         "deployment": {
-            "runtime": "single_process",
-            "tenant_authorization": "enforced by S1 backend before forwarding",
-            "execution_isolation": "dedicated worker/container required for untrusted execution",
+            "runtime": "single-host SQLite durable leases; optional independent worker",
+            "tenant_authorization": "signed tenant/user/project context when SKILLNET_S1_SIGNING_KEY is configured",
+            "execution_isolation": "SKILLNET_SANDBOX=docker; fail closed if unavailable",
         },
     }
 
@@ -155,15 +155,18 @@ class SkillNetClient:
     """
 
     def __init__(self, config: ClientConfig | None = None, *,
-                 transport: httpx.BaseTransport | None = None) -> None:
+                 transport: httpx.BaseTransport | None = None, identity=None, signing_key: str = '') -> None:
         self.config = config or ClientConfig()
+        self.identity, self.signing_key = identity, signing_key
         headers = {"Accept": "application/json", "User-Agent": "SkillNet-Integration/1.0"}
         if self.config.token:
             headers["X-SkillNet-Token"] = self.config.token
+        from .s1_identity import S1Auth
         self._http = httpx.Client(
             base_url=self.config.base_url.rstrip("/") + "/",
             headers=headers, timeout=httpx.Timeout(self.config.timeout_seconds, connect=5.0),
             transport=transport, follow_redirects=False, trust_env=False,
+            auth=S1Auth(identity, signing_key) if identity is not None else None,
         )
 
     def __enter__(self) -> SkillNetClient:

@@ -65,9 +65,10 @@
   /* 移除 graph 页原有的局部背景定义（改由共享层统一控制） */
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=0.9.0-product"></script>
+<script src="/static/assets/ui.js?v=20261008.14"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=0.9.0-product"></script>
+<script src="/static/assets/product.js?v=20261008.14"></script>
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261008.14">
 </head>
 <body>
 <div class="load" id="load">正在加载技能图谱…</div>
@@ -81,12 +82,12 @@
   <div class="sub">
     <b id="nN">—</b> 个技能 · <b id="nE">—</b> 条类型化关系 ·
     <b id="nD">—</b> 个领域　|　节点半径 = 实测平均奖励，朱红 = 演化产生的技能<br>
-    拖动节点 / 拖动空白平移 / 滚轮缩放 · 悬停高亮邻域 · 点击查看技能详情
+    概览归并为 7 大类；点击领域或放大展开真实技能。<br>拖动平移 / 滚轮缩放 / 点击技能查看详情
   </div>
 </div>
 
 <div class="hud legend">
-  <div class="row"><i style="background:#4a9eff"></i>种子技能（按领域着色）</div>
+  <div class="row"><i style="background:#4a9eff"></i>按领域着色 · 含社区导入</div>
   <div class="row"><i style="background:var(--evolved)"></i>演化技能（使用中长出来的）</div>
   <div class="row"><span class="ln" style="border-color:#5fd0a0;border-top-style:solid"></span>depend_on 依赖</div>
   <div class="row"><span class="ln" style="border-color:#4a9eff;border-top-style:dashed"></span>compose_with 组合</div>
@@ -137,62 +138,32 @@ document.getElementById("btnPause").textContent = S.paused ? "继续布局" : "�
 
 /* ---------------- 物理 ---------------- */
 const LINK_LEN = { depend_on: 62, compose_with: 92, similar_to: 130 };
-function initPhysics() {
-  const cx = 0, cy = 0;
-  // 初始布点：按领域分簇，避免全挤在中心
-  const domains = [...new Set(S.nodes.map(node=>node.domain))];
-  const domIdx = Object.fromEntries(domains.map((domain,index)=>[domain,index]));
-  S.nodes.forEach((n, i) => {
-    const di = domIdx[n.domain];
-    const ang = (di / Math.max(1, Object.keys(domIdx).length)) * Math.PI * 2;
-    const R = 175 + (i % 7) * 20;
-    n.x = cx + Math.cos(ang) * R + Math.sin(i*17.73) * 32;
-    n.y = cy + Math.sin(ang) * R + Math.cos(i*21.34) * 32;
-    n.vx = 0; n.vy = 0;
-    n.r = 3.4 + Math.min(9, (n.mean_reward || 0) * 11);
-    n.fixed = false;
-  });
+let CLUSTERS=[];
+function clusterDomain(domain){
+  if(['数据分析','生命科学','科研方法','产品与设计','工程与运维','业务与运营','人工智能'].includes(domain))return domain;
+  if(/生物|生命|医学|药物|神经|化学/.test(domain))return '生命科学';
+  if(/数据|统计|数学|因果|金融/.test(domain))return '数据分析';
+  if(/设计|产品|前端/.test(domain))return '产品与设计';
+  if(/人工智能|机器学习|算法/.test(domain))return '人工智能';
+  if(/工程|运维|技能/.test(domain))return '工程与运维';
+  if(/业务|运营|职业|合规/.test(domain))return '业务与运营';
+  return '科研方法';
 }
-
-function step() {
-  const N = S.nodes, E = S.edges;
-  const REP = 1500, DAMP = 0.86, CENTER = 0.006;
-  // 斥力（O(n²)，90 节点无压力）
-  for (let i = 0; i < N.length; i++) {
-    const a = N[i];
-    for (let j = i + 1; j < N.length; j++) {
-      const b = N[j];
-      let dx = b.x - a.x, dy = b.y - a.y;
-      let d2 = dx * dx + dy * dy;
-      if (d2 < 1e-4) { dx = (Math.random() - .5); dy = (Math.random() - .5); d2 = 1; }
-      if (d2 > 90000) continue;                       // 远处不算，省算力
-      const d = Math.sqrt(d2), f = REP / d2;
-      const fx = (dx / d) * f, fy = (dy / d) * f;
-      a.vx -= fx; a.vy -= fy; b.vx += fx; b.vy += fy;
-    }
-  }
-  // 弹簧
-  const src = S.byId;
-  for (const e of E) {
-    const a = src[e.source], b = src[e.target];
-    if (!a || !b || !nodeVisible(a) || !nodeVisible(b) || !GRAPH_FILTER.relations.has(e.type)) continue;
-    const L = LINK_LEN[e.type] || 100;
-    let dx = b.x - a.x, dy = b.y - a.y;
-    const d = Math.max(1, Math.hypot(dx, dy));
-    const f = (d - L) * 0.012;
-    const fx = (dx / d) * f, fy = (dy / d) * f;
-    a.vx += fx; a.vy += fy; b.vx -= fx; b.vy -= fy;
-  }
-  // 中心引力 + 积分
-  for (const n of N) {
-    if (n === S.drag) continue;
-    if (n.fixed) { n.vx = n.vy = 0; continue; }
-    n.vx -= n.x * CENTER; n.vy -= n.y * CENTER;
-    n.vx *= DAMP; n.vy *= DAMP;
-    const lim = 8;
-    n.x += Math.max(-lim, Math.min(lim, n.vx));
-    n.y += Math.max(-lim, Math.min(lim, n.vy));
-  }
+function initPhysics(){
+  const domains=[...new Set(S.nodes.map(n=>S.nodes.length>500?clusterDomain(n.domain):n.domain))].sort();
+  const groups=domains.map(domain=>({domain,nodes:S.nodes.filter(n=>(S.nodes.length>500?clusterDomain(n.domain):n.domain)===domain)}));
+  const spacing=S.nodes.length>500?440:135, cols=3;
+  CLUSTERS=groups.map((g,i)=>({...g,x:(i%cols-1)*spacing,y:(Math.floor(i/cols)-1)*spacing,r:Math.max(90,Math.min(175,70+Math.sqrt(g.nodes.length)*4))}));
+  CLUSTERS.forEach(g=>g.nodes.forEach((n,i)=>{const angle=i*2.399963,r=Math.sqrt((i+.5)/g.nodes.length)*g.r;n.cx=g.x;n.cy=g.y;n.x=g.x+Math.cos(angle)*r;n.y=g.y+Math.sin(angle)*r;n.vx=n.vy=0;n.r=3.4+Math.min(7,(n.mean_reward||0)*8);n.fixed=false;}));
+  if(S.nodes.length>500){S.view.k=S.target.k=Math.min(.55,(W-180)/(cols*spacing),(H-270)/(3*spacing));S.view.x=S.target.x=W>860?170:0;S.view.y=S.target.y=130;}
+}
+function step(){
+ const cell=42,grid=new Map();
+ for(const n of S.nodes){const key=Math.floor(n.x/cell)+','+Math.floor(n.y/cell);if(!grid.has(key))grid.set(key,[]);grid.get(key).push(n);}
+ for(const n of S.nodes){if(n.fixed||n===S.drag)continue;const gx=Math.floor(n.x/cell),gy=Math.floor(n.y/cell);let fx=0,fy=0;
+  for(let x=-1;x<=1;x++)for(let y=-1;y<=1;y++)for(const b of grid.get((gx+x)+','+(gy+y))||[]){if(b===n)continue;let dx=n.x-b.x,dy=n.y-b.y,d2=Math.max(9,dx*dx+dy*dy);fx+=dx*20/d2;fy+=dy*20/d2;}
+  n.vx=(n.vx+fx+(n.cx-n.x)*.008)*.78;n.vy=(n.vy+fy+(n.cy-n.y)*.008)*.78;n.x+=Math.max(-3,Math.min(3,n.vx));n.y+=Math.max(-3,Math.min(3,n.vy));
+ }
 }
 
 /* ---------------- 坐标 ---------------- */
@@ -228,13 +199,19 @@ function draw() {
     }
   }
 
+  const aggregated=S.nodes.length>500&&v.k<.6&&!focus;
+  if(aggregated){
+    for(const g of CLUSTERS){const [x,y]=toScreen(g.x,g.y);const count=g.nodes.filter(nodeVisible).length;if(!count)continue;const radius=Math.max(22,g.r*v.k);const color=domainColor[g.domain]||'#8bcfbe';ctx.fillStyle=color+'18';ctx.strokeStyle=color+'66';ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y,radius,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.textAlign='center';ctx.fillStyle='#edf9fc';ctx.font='600 16px Microsoft YaHei';ctx.fillText(count,x,y-3);ctx.font='12px Microsoft YaHei';ctx.fillStyle='#b2d3d8';ctx.fillText(g.domain,x,y+18);}
+    ctx.textAlign='left';return;
+  }
   // 边
   ctx.lineCap = "round";
   for (const e of S.edges) {
     const a = S.byId[e.source], b = S.byId[e.target];
     if (!a || !b || !nodeVisible(a) || !nodeVisible(b) || !GRAPH_FILTER.relations.has(e.type)) continue;
-    if (S.onlyEvolved && !(a.source !== "seed" && b.source !== "seed")) continue;
+    if (S.onlyEvolved && !((a.generation||0)>0 && (b.generation||0)>0)) continue;
     const [x1, y1] = toScreen(a.x, a.y), [x2, y2] = toScreen(b.x, b.y);
+    if(S.nodes.length>500&&!focus&&e.type==='similar_to')continue;
     const hot = focus && (e.source === focus.id || e.target === focus.id);
     let color, w;
     if (e.type === "depend_on") { color = hot ? "#7dffc0" : "rgba(95,208,160,.42)"; w = hot ? 2.0 : 1.1; }
@@ -257,7 +234,7 @@ function draw() {
     if (!nodeVisible(n)) continue;
     const [x, y] = toScreen(n.x, n.y);
     if (x < -60 || y < -60 || x > W + 60 || y > H + 60) continue;
-    const evolved = n.source !== "seed";
+    const evolved = (n.generation || 0) > 0;
     const base = evolved ? "#ff5a4d" : (domainColor[n.domain] || "#4a9eff");
     const isFocus = focus && n.id === focus.id;
     const inNeigh = !focus || neigh.has(n.id);
@@ -289,11 +266,12 @@ function draw() {
 
   // ---- 标签绘制：屏幕分格占位，聚焦/大节点优先，避免堆叠压字 ----
   if (S.showLabel) {
-    const font = Math.max(9.5, Math.min(13, 11 * v.k));
+    const font = Math.max(12, Math.min(16, 14 * v.k));
     const occupied = [];
     const cand = [];
     for (const n of S.nodes) {
       if (!nodeVisible(n)) continue;
+      if(S.nodes.length>500&&!focus&&v.k<1.15)continue;
       if (n._lx == null) continue;
       if (n._lx < -40 || n._ly < -20 || n._lx > W + 40 || n._ly > H + 20) continue;
       const rank = n._focus ? 0 : (n._in ? 1 : 2);
@@ -329,10 +307,11 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
-const GRAPH_FILTER={domain:'',relations:new Set(['depend_on','compose_with','similar_to']),neighbors:false};
+const GRAPH_FILTER={domain:'',relations:new Set(['depend_on','compose_with','similar_to']),neighbors:false,task:null};
 function nodeVisible(node){
+  if(GRAPH_FILTER.task&&!GRAPH_FILTER.task.has(node.id))return false;
   if(GRAPH_FILTER.domain&&node.domain!==GRAPH_FILTER.domain)return false;
-  if(S.onlyEvolved&&node.source==='seed')return false;
+  if(S.onlyEvolved&&!(node.generation>0))return false;
   if(GRAPH_FILTER.neighbors&&S.selected&&node.id!==S.selected.id&&!S.edges.some(e=>GRAPH_FILTER.relations.has(e.type)&&((e.source===S.selected.id&&e.target===node.id)||(e.target===S.selected.id&&e.source===node.id))))return false;
   return true;
 }
@@ -349,6 +328,7 @@ document.getElementById('graph-neighbors').onchange=event=>{GRAPH_FILTER.neighbo
 /* ---------------- 交互 ---------------- */
 function pick(sx, sy) {
   const [wx, wy] = toWorld(sx, sy);
+  if(S.nodes.length>500&&S.view.k<.6&&!S.selected)return null;
   let best = null, bestD = 1e9;
   const R = 18 / S.view.k;
   for (const n of S.nodes) {
@@ -381,7 +361,7 @@ cv.addEventListener("pointermove", ev => {
     tip.style.display = "block";
     tip.style.left = (sx + 14) + "px"; tip.style.top = (sy + 14) + "px";
     tip.innerHTML = `<b>${esc(n.id)}</b> · ${esc(n.domain)} · 平均奖励 ${(n.mean_reward || 0).toFixed(3)}`
-      + (n.source !== "seed" ? " · 演化技能" : "");
+      + ((n.generation || 0) > 0 ? " · 演化技能" : "");
   } else tip.style.display = "none";
 });
 
@@ -396,6 +376,8 @@ window.addEventListener("pointerup", () => {
   S.panning = false; cv.classList.remove("dragging");
 });
 cv.addEventListener("click", ev => {
+  if(S.nodes.length>500&&S.view.k<.6&&!S.selected){const [x,y]=toWorld(ev.clientX,ev.clientY);const group=CLUSTERS.find(g=>Math.hypot(g.x-x,g.y-y)<Math.max(g.r,40/S.view.k));if(group){S.target.x=-group.x;S.target.y=-group.y;S.target.k=1.2;return;}}
+
   const n = pick(ev.clientX, ev.clientY);
   if (n) { selectNode(n); } else { closeCard(); }
 });
@@ -417,7 +399,7 @@ function selectNode(n) {
   const card = document.getElementById("card");
   document.getElementById("cName").textContent = n.id;
   document.getElementById("cDom").textContent =
-    `${n.domain}　|　${n.source === "seed" ? "种子技能" : "演化技能（G" + (n.generation || 0) + "）"}`;
+    `${n.domain}　|　${n.source === "github" ? "GitHub 社区技能 · 未执行认证" : n.source === "seed" ? "种子技能" : "演化技能（G" + (n.generation || 0) + "）"}`;
   const q = n.quality || {};
   const st = n.stats || {};
   const tot = st.exec_total || 0;
@@ -453,7 +435,7 @@ document.getElementById("graph-q").addEventListener("input",event=>{
   if(!nodes.length)host.innerHTML='<div style="font-size:12px;color:var(--dim);padding:12px">没有匹配技能</div>';
   host.querySelectorAll("[data-node]").forEach(button=>button.addEventListener("click",()=>{
     const node=S.byId[button.dataset.node];if(!node)return;
-    if(S.onlyEvolved && node.source === "seed"){S.onlyEvolved=false;document.getElementById("btnEvolved").classList.remove("on");}
+    if(S.onlyEvolved && !(node.generation>0)){S.onlyEvolved=false;document.getElementById("btnEvolved").classList.remove("on");}
     GRAPH_FILTER.domain='';document.getElementById('graph-domain').value='';
     S.target.x=-node.x;S.target.y=-node.y;S.target.k=Math.max(.85,S.target.k);selectNode(node);host.innerHTML="";
   }));
@@ -513,14 +495,18 @@ window.addEventListener("resize", resize);
   window.__GRAPHN__ = S.nodes.length;   // 供自检读取
 
   const doms = [...new Set(S.nodes.map(n => n.domain))];
-  document.getElementById("graph-domain").insertAdjacentHTML("beforeend",doms.sort().map(d=>`<option>${esc(d)}</option>`).join(""));graphFilterState();
+  document.getElementById("graph-domain").insertAdjacentHTML("beforeend",doms.sort().map(d=>`<option>${esc(d)}</option>`).join(""));
+  const query=new URLSearchParams(location.search),domain=query.get('domain'),runId=query.get('run');
+  if(doms.includes(domain)){GRAPH_FILTER.domain=domain;document.getElementById('graph-domain').value=domain;}
+  if(runId){try{const run=await UI.json('/api/runs/'+encodeURIComponent(runId));GRAPH_FILTER.task=new Set((run.steps||[]).map(s=>s.skill).filter(Boolean));document.querySelector('.hud.tl .sub').insertAdjacentHTML('beforeend',`<br><b>本次任务子图 · ${esc(runId)}</b> · <a href="/graph" style="color:#a3eed9">返回完整网络 ↗</a>`);}catch(error){UI.toast('任务子图读取失败：'+error.message);}}
+  graphFilterState();
   doms.forEach((d, i) => domainColor[d] = PALETTE[i % PALETTE.length]);
   document.getElementById("nN").textContent = S.nodes.length;
   document.getElementById("nE").textContent = S.edges.length;
   document.getElementById("nD").textContent = doms.length;
 
   initPhysics();
-  if(W < 860){S.view.k = S.target.k = .52;S.view.y=S.target.y=90;}
+  if(W < 860&&S.nodes.length<500){S.view.k = S.target.k = .52;S.view.y=S.target.y=90;}
   document.getElementById("load").style.display = "none";
   loop();
 })();

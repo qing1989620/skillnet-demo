@@ -19,7 +19,7 @@ flowchart LR
 
 第一阶段建议只接入 `search_skills` 和 `load_skill` 两个发现工具。S1 保持现有模型、工具和执行流程，SkillNet 提供一层可检索的技能能力。`hybrid` 检索不调用模型；只有 S1 请求某个技能时才读取完整正文。
 
-第二阶段再接入 Run Runtime。S1 保存 `user_id / project_id / conversation_id → run_id` 的权限映射，展示执行事件及验收证据。查询、取消和下载都先检查这个映射，然后转发到 SkillNet。当前 SkillNet 的服务令牌不能提供用户或租户隔离。
+第二阶段再接入 Run Runtime。S1 保存 `user_id / project_id / conversation_id → run_id` 的权限映射，展示执行事件及验收证据。查询、取消和下载都先检查这个映射，然后转发到 SkillNet。服务令牌用于服务级访问；启用下面的签名身份后，SkillNet 会对 Run、产物、列表、跨轮文件和候选进行同一租户/用户/项目检查。S1 仍应在自己的业务权限层验证当前用户可访问的项目。
 
 ## 可运行的技能工具
 
@@ -106,7 +106,7 @@ with SkillNetClient(config) as client:
 
 ## 部署与验收
 
-当前运行状态及事件总线属于单进程服务，应以单个 Uvicorn worker 部署。多进程扩容需要共享任务队列、数据库状态和跨进程事件投递；复制 worker 不能直接提供这些能力。
+默认线程模式使用单个 API 进程。设置 `SKILLNET_WORKER_MODE=external` 时，API 只持久化入队，独立执行进程通过 SQLite 租约领取任务，SSE 读取持久化检查点。当前是单主机、一个技能库写入 worker；进程锁防止第二个写入 worker。API 与 worker 必须共享相同的 out/data 路径。跨主机扩容不在此实现范围内。
 
 当前代码执行使用主机子进程，目录、超时及输出限制不等同于容器或操作系统安全隔离。接入公司业务环境前，将执行 worker 放入独立容器/低权限账号，限制网络、文件系统和资源；S1 的登录会话与业务数据库凭据不应传入模型生成的执行程序。
 
@@ -125,3 +125,38 @@ python -m pytest tests/test_integration.py tests/test_orchestration_contract.py 
 ```
 
 测试使用 `httpx.MockTransport` 验证真实 HTTP 请求格式、工具分发、服务令牌、异常分类、超时不重试、SSE、摘要与正文分离、产物 SHA-256 和大小限制；不会访问 S1 或消耗模型额度。
+
+
+## 签名身份与独立执行（本轮新增）
+
+在 API 与 S1 后端的密钥配置中设置同一个 `SKILLNET_S1_SIGNING_KEY`（至少 32 字符）；不要传给浏览器。签名涵盖方法、路径、正文 SHA-256、时间戳、随机 nonce 和租户/用户/项目 ID，120 秒有效，变更请求的 nonce 被 SQLite 持久化去重。相同签名写请求再次提交返回 409；请求超时后应先对账，不能假定没有创建任务。
+
+```python
+import os
+from skillnet.integration import ClientConfig, SkillNetClient
+from skillnet.s1_identity import S1Context
+
+# ID 由 S1 已认证的后端上下文提供，不接受浏览器自行指定。
+identity = S1Context(tenant="company", user="stable-user-id", project="stable-project-id")
+with SkillNetClient(ClientConfig(token=os.environ["SKILLNET_TOKEN"]),
+                    identity=identity, signing_key=os.environ["SKILLNET_S1_SIGNING_KEY"]) as client:
+    records = client.get_run("known-run-id")
+```
+
+PowerShell 部署示例（两个终端使用同一配置）：
+
+```powershell
+$env:SKILLNET_WORKER_MODE='external'
+$env:SKILLNET_SANDBOX='docker'
+$env:SKILLNET_SANDBOX_IMAGE='skillnet-executor:local'
+# 在密钥存储中另配 SKILLNET_TOKEN、SKILLNET_S1_SIGNING_KEY、DEEPSEEK_API_KEY
+docker build -f deploy/Dockerfile.executor -t skillnet-executor:local .
+# 终端 1
+python -m uvicorn server:app --host 127.0.0.1 --port 8848
+# 终端 2
+python -m skillnet.worker
+```
+
+可用 `SKILLNET_OUT_DIR` 和 `SKILLNET_DATA_DIR` 配置共享的本机目录。宿主进程模式是 `SKILLNET_SANDBOX=process`；Docker 模式不可用时不会回退。已发出的模型请求仍在其调用预算内结束；worker 租约丢失只标记中断并保留检查点，不静默重复收费。
+
+本机真实测试覆盖排队后 API 重启、执行期间 API 重启、取消、不同签名身份的 Run/产物隔离以及终态 SSE 回放，见 `out/deployment-smoke.json`。这不替代目标 S1 的 SSO、真实项目权限、附件系统及生产网络验收；线上状态仍为未验证。

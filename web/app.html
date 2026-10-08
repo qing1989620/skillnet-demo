@@ -115,9 +115,10 @@
   }
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=0.9.0-product"></script>
+<script src="/static/assets/ui.js?v=20261008.14"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=0.9.0-product"></script>
+<script src="/static/assets/product.js?v=20261008.14"></script>
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261008.14">
 </head>
 <body>
 <header>
@@ -170,7 +171,7 @@
     <section class="card">
       <div class="ch"><h2>技能库</h2><span class="m" id="skills-meta"></span></div>
       <input id="q" type="search" aria-label="搜索技能库" placeholder="搜索技能名 / 领域 / 能力…" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:4px;color:var(--ink);padding:9px 11px;font:12.5px inherit;margin-bottom:12px">
-      <div class="product-filter"><select id="skill-domain" aria-label="筛选技能领域"><option value="">全部领域</option></select><select id="skill-source" aria-label="筛选技能来源"><option value="">全部来源</option><option value="seed">种子技能</option><option value="evolved">演化技能</option></select><a href="/graph">在星图中探索技能 ↗</a></div>
+      <div class="product-filter"><select id="skill-domain" aria-label="筛选技能领域"><option value="">全部领域</option></select><select id="skill-source" aria-label="筛选技能来源"><option value="">全部来源</option><option value="seed">种子技能</option><option value="evolved">演化技能</option><option value="github">GitHub 社区技能</option></select><a href="/graph">在星图中探索技能 ↗</a></div>
       <div id="skills-body" class="data-scroll"><div class="empty">加载中…</div></div>
     </section>
   </section>
@@ -309,23 +310,26 @@ $('run-prev').onclick=()=>{runOffset=Math.max(0,runOffset-20);loadRuns();};
 $('run-next').onclick=()=>{runOffset+=20;loadRuns();};
 
 /* ---------- Skills ---------- */
-let SKILLS = [];
+let SKILLS = [],skillOffset=0,skillGeneration=0;
 async function loadSkills(){
-  if (!SKILLS.length){
-    try { SKILLS = (await UI.json(API + "/api/skills")).items || []; } catch(error) { $("skills-body").innerHTML=UI.errorHTML(error);return; }
-  }
-  const q = ($("q").value || "").toLowerCase();
-  if($('skill-domain').options.length===1)$('skill-domain').insertAdjacentHTML('beforeend',[...new Set(SKILLS.map(s=>s.domain))].sort().map(d=>`<option>${esc(d)}</option>`).join(''));
-  const domain=$('skill-domain').value,source=$('skill-source').value;
-  const rows = SKILLS.filter(s => (!q || (s.name+' '+s.domain+' '+(s.capability||'')+' '+(s.description||'')).toLowerCase().includes(q))&&(!domain||s.domain===domain)&&(!source||(source==='seed'?s.source==='seed':s.source!=='seed')));
-  $("skills-meta").textContent = `${rows.length} / ${SKILLS.length} 个技能 · 点击技能阅读完整执行契约`;
+  const generation=++skillGeneration;
+  const q=$('q').value,domain=$('skill-domain').value,source=$('skill-source').value;
+  const params=new URLSearchParams({q,domain,source,offset:skillOffset,limit:60});
+  let page;
+  try{page=await UI.json(API+'/api/skills?'+params);if(generation!==skillGeneration)return;SKILLS=page.items;}catch(error){$('skills-body').innerHTML=UI.errorHTML(error);return;}
+  if($('skill-domain').options.length===1){const stats=await UI.json(API+'/api/stats');$('skill-domain').insertAdjacentHTML('beforeend',Object.keys(stats.domain_distribution||{}).sort().map(d=>`<option>${esc(d)}</option>`).join(''));}
+  const rows=SKILLS;
+  $('skills-meta').textContent=`${skillOffset+ (rows.length?1:0)}–${skillOffset+rows.length} / ${page.total} 个独立 Skill · 来源和验证状态分别可查`;
+  let pager=$('skill-pager');if(!pager){pager=document.createElement('div');pager.id='skill-pager';pager.className='product-pager';$('skills-body').after(pager);}
+  pager.innerHTML=`<button id="skill-prev" ${skillOffset===0?'disabled':''}>上一页</button><span>${Math.floor(skillOffset/60)+1} / ${Math.max(1,Math.ceil(page.total/60))}</span><button id="skill-next" ${skillOffset+rows.length>=page.total?'disabled':''}>下一页</button>`;
+  $('skill-prev').onclick=()=>{skillOffset=Math.max(0,skillOffset-60);loadSkills();};$('skill-next').onclick=()=>{skillOffset+=60;loadSkills();};
   $("skills-body").innerHTML = rows.length ? `<table>
-    <tr><th>Skill</th><th>Domain</th><th>Source</th><th>Exec</th><th>Reward</th><th>Quality</th></tr>
+    <tr><th>技能与用途</th><th>领域</th><th>来源</th><th>执行</th><th>历史奖励</th><th>质量依据</th></tr>
     ${rows.slice(0, 400).map(s => {
       const st = s.stats || {};
       const tot = st.exec_total || 0, ok = st.exec_ok || 0;
-      return `<tr><td style="color:var(--ink)">${`<a href="/dashboard#skills?skill=${encodeURIComponent(s.name)}" style="color:#256a73">${esc(s.name)} ↗</a>`}</td><td>${esc(s.domain)}</td>
-        <td>${s.source === "seed" ? "种子" : `<span style="color:var(--warn)">演化 G${s.generation||1}</span>`}</td>
+      return `<tr><td style="color:var(--ink)"><a href="/dashboard#skills?skill=${encodeURIComponent(s.name)}" style="color:#256a73">${esc(s.name.replace(/^gh-(agentic|scientific|claude)-/,'').replace(/-[a-f0-9]{6}$/,''))} ↗</a><p class="catalog-purpose">${esc((s.description||s.capability||'').slice(0,160))}</p></td><td>${esc(s.domain)}</td>
+        <td>${s.source === "github" ? `<span title="${esc(s.provenance?.repository||'')}">社区收录 · 未验证</span>` : s.source === "seed" ? "种子" : `<span style="color:var(--warn)">演化 G${s.generation||1}</span>`}</td>
         <td>${tot ? `${ok}/${tot}${st.exec_fix?` · fix ${st.exec_fix}`:""}${st.exec_fail?` · <span style="color:var(--bad)">fail ${st.exec_fail}</span>`:""}` : "—"}</td>
         <td>${st.pulls ? Number((st.reward_sum||0)/st.pulls).toFixed(3) : "—"}</td>
         <td style="color:var(--ink3)">${esc(Object.entries(s.quality||{}).map(([k,v])=>`${k.slice(0,4)}:${UI.qualityLabel(v)}`).join(" "))}</td></tr>`;
@@ -333,8 +337,8 @@ async function loadSkills(){
   labelCells('skills-body',['技能','领域','来源','执行记录','平均奖励','质量']);
 }
 function labelCells(id,labels){$(id).querySelectorAll('tr').forEach(row=>row.querySelectorAll('td').forEach((cell,i)=>{cell.dataset.label=labels[i]||'';}));}
-$("q").addEventListener("input", loadSkills);
-$("skill-domain").onchange=loadSkills;$("skill-source").onchange=loadSkills;
+$("q").addEventListener("input",()=>{skillOffset=0;loadSkills();});
+$("skill-domain").onchange=$("skill-source").onchange=()=>{skillOffset=0;loadSkills();};
 
 /* ---------- Evaluations ---------- */
 async function loadEval(){

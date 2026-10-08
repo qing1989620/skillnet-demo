@@ -35,6 +35,7 @@ from typing import Any, Callable
 
 from . import checks as checks_mod
 from . import config, executor, llm, runtime, sandbox
+from . import contracts
 from .runtime import (
     BUS, STEP_DONE, STEP_FAILED, STEP_PENDING, STEP_RUNNING, STEP_SKIPPED,
     Artifact, BudgetExceeded, ExecutionAttempt, ProgrammaticCheck, Run, RunCancelled, RunStep,
@@ -47,6 +48,9 @@ MAX_ATTEMPTS = 3
 
 def _emit(run: Run, type_: str, **data: Any) -> None:
     BUS.publish(run, type_, **data)
+    writer = getattr(run, '_checkpoint_writer', None)
+    if writer and type_ in ('step.started', 'code.generated', 'step.attempt', 'artifact.created', 'step.completed', 'step.retry'):
+        writer()
 
 
 def _sha256_file(p: pathlib.Path) -> str:
@@ -96,25 +100,48 @@ def build_steps(plan: dict[str, Any], workflow: list[list[str]] | None = None) -
     for i, st in enumerate(steps_plan):
         s = st if isinstance(st, dict) else {"action": str(st)}
         step = RunStep(idx=i, action=str(s.get("action") or ""), skill=s.get("skill") or None)
+        step.contract = {k: s[k] for k in ('input_files', 'output_files', 'verification', 'expected_output', 'check') if k in s}
+        step.dependency_reason = '方案顺序兜底'
         step.depends_on = [i - 1] if i > 0 else []
         out.append(step)
 
-    if not workflow:
-        return out
-
-    skill_edges = {(a, b) for a, b in workflow if a != b}
+    skill_edges = {(a, b) for a, b in (workflow or []) if a != b}
     has_incoming = {b for _, b in skill_edges}
     for i, st in enumerate(out):
-        if not st.skill:
+        if not st.skill or not workflow:
             continue                              # 无技能映射 → 维持线性兜底
         graph_deps = [j for j, o in enumerate(out)
                       if j != i and o.skill and (o.skill, st.skill) in skill_edges]
         if graph_deps:
             st.depends_on = sorted(set(graph_deps))
+            st.dependency_reason = '技能编排关系'
         elif st.skill not in has_incoming and i > 0:
             st.depends_on = [i - 1]               # 无入边：保守串行
         else:
-            st.depends_on = []                    # 有入边但映射不到库内步骤 → 图根
+            st.depends_on = [i - 1] if i else []  # 不把未映射的输入错误地当成图根
+
+    producers: dict[str, int] = {}
+    for i, st in enumerate(out):
+        source = steps_plan[i] if isinstance(steps_plan[i], dict) else {}
+        if 'depends_on' in source:
+            deps = source['depends_on']
+            if not isinstance(deps, list) or any(type(d) is not int or d < 0 or d >= i for d in deps):
+                raise ValueError(f'步骤 {i + 1} 的 depends_on 必须指向先前步骤（从 0 开始）')
+            st.depends_on = sorted(set(deps))
+            st.dependency_reason = '步骤显式声明的数据流'
+        inputs = st.contract.get('input_files') or []
+        legacy_files = re.findall(r'[A-Za-z0-9_./-]+\.(?:csv|json|xlsx|parquet|png|pdf)', st.action)
+        needed = {producers[n] for n in (inputs or legacy_files) if n in producers}
+        if needed:
+            st.depends_on = sorted(set(st.depends_on) | needed)
+            st.dependency_reason = '真实文件读写依赖：' + ', '.join(n for n in (inputs or legacy_files) if n in producers)
+        if i and out[i - 1].skill == st.skill and st.skill and 'depends_on' not in source:
+            st.depends_on = sorted(set(st.depends_on) | {i - 1})
+            st.dependency_reason = '同一技能的连续操作，保留前序产物'
+        outputs = st.contract.get('output_files') or re.findall(
+            r'[A-Za-z0-9_./-]+\.(?:csv|json|xlsx|parquet|png|pdf)', str(source.get('expected_output', '')))
+        for name in outputs:
+            producers[name] = i
 
     # 防御：检查环；有环则整体回退线性（编排器已打断环，这里是最后一道闸）
     def _has_cycle() -> bool:
@@ -172,6 +199,7 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
              budget: Any, up_artifacts: list[str], max_attempts: int = MAX_ATTEMPTS,
              mode: str = "contract") -> None:
     skill = lib.get(step.skill) if (step.skill and lib is not None) else None
+    skill = contracts.scoped_skill(skill, step)
     step_dir = workspace / f"step{step.idx + 1}"
     step_dir.mkdir(parents=True, exist_ok=True)
 
@@ -181,13 +209,17 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
     # （实测踩过：s1.inputs 报告成功、沙箱里 FileNotFoundError）。
     carried: list[str] = []
     carry_pairs: list[tuple[str, str]] = []
+    registered = {a.name: a for a in run.artifacts}
     for name in up_artifacts:
         src = workspace / "artifacts" / name
         if not src.is_file():
             continue
         # 关键：恢复原始文件名（workspace 里的展示名带 stepN_ 前缀，但上游代码
         # 是按原名写的——下游沙箱里必须叫原名，否则 "clean.csv" 读不到）
-        orig = re.sub(r"^step\d+_", "", name)
+        orig = (registered[name].logical_name if name in registered and registered[name].logical_name
+                else re.sub(r"^step\d+_", "", name))
+        if pathlib.PurePosixPath(orig).is_absolute() or '..' in pathlib.PurePosixPath(orig).parts or ':' in orig:
+            raise ValueError('非法的输入逻辑路径')
         carry_pairs.append((name, orig))
         carried.append(orig)
     step.inputs = carried
@@ -221,12 +253,15 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         except Exception:
             return 0, 0.0
 
+    repair_reason = ''
+    attempt_checks, attempt_verifications = [], []
     for attempt in range(1, max_attempts + 1):
         check_budget(run)
         # 本 attempt 的沙箱工作目录 + 携带产物落位（cwd=tryN，文件必须在 tryN 里）
         workdir = step_dir / f"try{attempt}"
         workdir.mkdir(parents=True, exist_ok=True)
         for aname, orig in carry_pairs:
+            (workdir / orig).parent.mkdir(parents=True, exist_ok=True)
             if not _copy_retry(workspace / "artifacts" / aname, workdir / orig):
                 raise OSError(f"无法复制上游产物 {aname}，本步未执行")
         if attempt == 1 and carried:
@@ -235,11 +270,12 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         phase = "code_gen" if attempt == 1 else f"repair{attempt - 1}_llm"
         if attempt == 1:
             prompt = _gen_code_prompt(run.task, {"action": step.action, "key_params": [],
-                                                 "expected_output": ""}, skill, stack,
+                                                 "expected_output": step.contract.get('expected_output', '')}, skill, stack,
                                       mode=mode, carried=carried)
+            prompt += '\n本步骤文件契约：' + str(step.contract) + '\n只完成本步职责；缺失约定输入必须报错，禁止重造数据。'
         else:
             previous = step.attempts[-1]
-            diagnostic = _execution_diagnostic(previous.stderr, previous.stdout)
+            diagnostic = _execution_diagnostic(previous.stderr, previous.stdout) + '\n验收修复原因：' + repair_reason
             prompt = _fix_prompt(code, diagnostic, skill, attempt, mode=mode)
         _emit(run, "code.generating", step=step.idx, attempt=attempt)
         c0, y0 = _llm_snapshot()
@@ -291,21 +327,42 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
                       "workdir": str(step_dir)}
             step.stages[f"sandbox_try{attempt}_ms"] = 0
 
+        import difflib
         at = ExecutionAttempt(
             n=attempt, ok=bool(result.get("ok")), stdout=result.get("stdout") or "",
             stderr=result.get("stderr") or "", error_kind=result.get("error_kind") or "",
             duration_ms=int((result.get("duration") or 0) * 1000),
-            truncated=_looks_truncated(result.get("stderr") or "", code))
+            truncated=_looks_truncated(result.get("stderr") or "", code), code=code,
+            repair_reason=repair_reason,
+            code_diff='\n'.join(difflib.unified_diff(step.attempts[-1].code.splitlines(), code.splitlines(),
+                      fromfile=f'try{attempt-1}.py', tofile=f'try{attempt}.py', lineterm='')) if step.attempts else '')
         step.attempts.append(at)
+        attempt_paths = [pathlib.Path(a.get('path') or '') for a in result.get('artifacts', [])]
+        attempt_paths = [p for p in attempt_paths if p.is_file() and p.resolve().is_relative_to(workspace.resolve())]
+        attempt_checks = checks_mod.run_checks(attempt_paths, result)
+        attempt_checks += contracts.contract_checks(step.contract, attempt_paths, carried)
+        if skill:
+            attempt_checks += checks_mod.checks_from_skill(skill.verification, attempt_paths)
+        attempt_verifications = []
+        if at.ok and skill and any(not checks_mod.parse_assertions([v]) for v in skill.verification):
+            t_verify = now_ms()
+            attempt_verifications = _verify_with_skill(skill, run.task, step.action, code,
+                result.get('stdout') or '', [p.name for p in attempt_paths], artifact_paths=attempt_paths)
+            step.stages['verify_sem_ms'] = step.stages.get('verify_sem_ms', 0) + now_ms() - t_verify
+        failures = [c['name'] + ': ' + c['detail'] for c in attempt_checks if not c['passed'] and c.get('required', True)]
+        failures += [v['item'] + ': ' + v['evidence'] for v in attempt_verifications if v.get('state') == 'failed']
+        at.acceptance = {'checks': attempt_checks, 'verifications': attempt_verifications,
+                         'state': 'failed' if failures else 'unknown' if any(v.get('state') == 'unknown' for v in attempt_verifications) else 'passed'}
+        repair_reason = '\n'.join(failures)[:5000] if at.ok else at.stderr[-4000:]
         _emit(run, "step.attempt", step=step.idx, attempt=attempt, ok=at.ok,
               error_kind=at.error_kind, duration_ms=at.duration_ms,
               stdout=at.stdout[-2000:], stderr=at.stderr[-1000:])
-        if at.ok:
+        if at.ok and (not failures or skill is None and not any(step.contract.get(k) for k in ('input_files', 'output_files', 'verification'))):
             break
         if attempt < max_attempts:
             _emit(run, "step.retry", step=step.idx, attempt=attempt,
-                  reason=("输出截断，要求精简重写" if at.truncated else at.error_kind),
-                  hint=(at.stderr or "")[-200:])
+                  reason=("验收失败，修复后复验" if at.ok else "输出截断，要求精简重写" if at.truncated else at.error_kind),
+                  hint=repair_reason[-800:])
 
     step.code = code
     (step_dir / "final_code.py").write_text(code, encoding="utf-8")
@@ -318,13 +375,16 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         src = pathlib.Path(a.get("path") or "")
         if not src.is_file() or not src.resolve().is_relative_to(workspace.resolve()):
             continue
-        name = f"step{step.idx + 1}_{src.name}"
+        logical = src.relative_to(workdir).as_posix()
+        name = f"step{step.idx + 1}_{logical.replace('/', '__')}"
         dst = art_dir / name
         if not _copy_retry(src, dst):
             continue
         paths.append(dst)
         art = Artifact(name=name, kind="真实运行产物", bytes=dst.stat().st_size,
-                       sha256=_sha256_file(dst), from_step=step.idx)
+                       sha256=_sha256_file(dst), from_step=step.idx, logical_name=logical,
+                       source_run_id=run.run_id,
+                       version=1+sum(a.logical_name == logical for a in run.artifacts))
         step.artifacts.append(art)
         run.artifacts.append(art)
         _emit(run, "artifact.created", step=step.idx, name=name, bytes=art.bytes,
@@ -333,9 +393,8 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
     # ---- L1 确定性检查 + L2 技能断言 ----
     _emit(run, "verification.started", step=step.idx)
     _t = now_ms()
-    l1 = checks_mod.run_checks(paths, result)
-    l2 = checks_mod.checks_from_skill(getattr(skill, "verification", []) or [], paths) if skill else []
-    step.checks = [ProgrammaticCheck(**c) for c in (l1 + l2)]
+    step.checks = [ProgrammaticCheck(**c) for c in attempt_checks]
+    step.verifications = [VerificationResult(layer='llm', **v) for v in attempt_verifications]
     step.stages["verify_det_ms"] = now_ms() - _t
 
     # ---- L3 技能验收（LLM，仅对非 machine-readable 条目）----
@@ -352,18 +411,18 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
     else:
         items = [v for v in (skill.verification or [])
                  if not checks_mod.parse_assertions([v])]
-        if items:
+        if items and not step.verifications:
             c0, y0 = _llm_snapshot()
             _t = now_ms()
             raw_v = _verify_with_skill(skill, run.task, step.action, code,
                                        result.get("stdout") or "",
-                                       [p.name for p in paths])
+                                       [p.name for p in paths], artifact_paths=paths)
             step.stages["verify_sem_ms"] = now_ms() - _t
             c1, y1 = _llm_snapshot()
             step.stages["llm_calls"] = step.stages.get("llm_calls", 0) + (c1 - c0)
             step.stages["llm_cost_yuan"] = round(float(step.stages.get("llm_cost_yuan", 0)) + (y1 - y0), 5)
             step.verifications = [VerificationResult(layer="llm", **v) for v in raw_v]
-        else:
+        elif not items:
             step.verify_skip_reason = "该技能的验收条目已全部由程序化断言覆盖（L1/L2）"
         # 执行成功即视为该步完成；验收结果单独记录（不覆盖完成状态），
         # 失败信号由「L1/L2 全部未通过 且 无 L3 验收」体现，供汇总与前端展示。
@@ -371,7 +430,7 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         if step.checks and not any(c.passed for c in step.checks) and not step.verifications:
             step.verify_skip_reason = "产物未通过任何确定性检查，且无 L3 验收结果"
     for c in step.checks:
-        _emit(run, "check.result", step=step.idx, name=c.name, passed=c.passed, detail=c.detail)
+        _emit(run, "check.result", step=step.idx, name=c.name, passed=c.passed, detail=c.detail, required=c.required)
     for v in step.verifications:
         _emit(run, "verification.result", step=step.idx,
               item=v.item, passed=v.passed, evidence=v.evidence, layer=v.layer)
@@ -438,14 +497,15 @@ def _run_steps_graph(run: Run, workspace: pathlib.Path, lib: Any,
                         queue.append(pred)
             # Completion order of parallel siblings must not select file versions.
             # Copy distant producers first; nearest dependency wins, ties by idx.
-            inputs = sorted((a for a in run.artifacts if a.from_step in ancestors),
-                            key=lambda a: (-distances[a.from_step], a.from_step, a.name))
+            inputs = sorted((a for a in run.artifacts if a.from_step in ancestors or a.kind == '跨轮输入'),
+                            key=lambda a: (-distances.get(a.from_step, 1000), a.from_step if a.from_step is not None else -1, a.name))
             up = [a.name for a in inputs]
             # 每步保留自己的增量明细，同时向 Run 父账本汇总。并行兄弟步骤
             # 不能用共享总额的前后差值计费，那会把彼此调用计入各自步骤。
             with llm.ledger_scope(llm.UsageLedger(parent=llm.current_ledger())):
                 run_step(run, st, lib, workspace, budget, up,
-                         max_attempts=budget.max_attempts_per_step)
+                         max_attempts=budget.max_attempts_per_step,
+                         mode=run.staged.get('execution_mode', 'contract'))
             return "done"
         except BudgetExceeded as exc:
             st.status = STEP_SKIPPED
@@ -488,8 +548,10 @@ def _run_steps_graph(run: Run, workspace: pathlib.Path, lib: Any,
                 if isinstance(outcome, BudgetExceeded):
                     budget_hit = outcome
                     continue
-                if st.status == STEP_FAILED:
-                    skipped = _mark_downstream_skipped(run, st.idx, st.error)
+                required_failed = any(not c.passed for c in st.checks if c.required) or any(v.state == 'failed' for v in st.verifications)
+                if st.status == STEP_FAILED or required_failed:
+                    reason = st.error or '上游步骤的必要验收未通过，禁止使用其产物继续执行'
+                    skipped = _mark_downstream_skipped(run, st.idx, reason)
                     for i in skipped:
                         remaining.pop(i, None)
                     if skipped:
@@ -582,6 +644,18 @@ def execute_run(run: Run, lib: Any, workspace: pathlib.Path,
     run.staged["picked_steps"] = picked
 
     all_steps = build_steps(plan, workflow)
+    def closure(i: int) -> set[int]:
+        return {i} | {p for d in all_steps[i].depends_on for p in closure(d)}
+    included: set[int] = set()
+    for i in picked:
+        required = closure(i)
+        if len(included | required) <= max_steps:
+            included |= required
+    picked = sorted(included)
+    run.staged['picked_steps'] = picked
+    run.staged['execution_scope'] = dict(planned=len(all_steps), executed=len(picked), max_steps=max_steps,
+        selected=picked, omitted=[{'idx': i, 'action': s.action, 'reason': '本轮步骤预算；未删除前置依赖以假装完成'}
+                                  for i, s in enumerate(all_steps) if i not in included])
     run.steps = [all_steps[i] for i in picked]
     for new_idx, st in enumerate(run.steps):      # 重排索引，依赖经 picked 映射到新下标
         st.idx = new_idx
@@ -638,5 +712,6 @@ def finalize_status(run: Run) -> str:
         else:
             final = runtime.STATUS_FAILED
     run.status = final
+    run.staged['acceptance'] = contracts.acceptance(run)
     run.ended_at_ms = run.ended_at_ms or now_ms()
     return final

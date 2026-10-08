@@ -26,8 +26,8 @@ BASE_URL = os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com").rstri
 MODEL = os.environ.get("DEEPSEEK_MODEL", "deepseek-chat")
 
 SEED_DIR = ROOT / "seed" / "skills"
-OUT_DIR = ROOT / "out"
-DATA_DIR = ROOT / "data"
+OUT_DIR = Path(os.environ.get('SKILLNET_OUT_DIR', str(ROOT / 'out'))).resolve()
+DATA_DIR = Path(os.environ.get('SKILLNET_DATA_DIR', str(ROOT / 'data'))).resolve()
 LIBRARY_FILE = DATA_DIR / "library.json"
 
 # DeepSeek 官方定价（元 / 百万 token，缓存未命中输入 / 输出）

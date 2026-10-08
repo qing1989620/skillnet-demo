@@ -96,6 +96,9 @@ class Artifact:
     sha256: str = ""
     from_step: int | None = None
     url: str = ""               # 相对 API 路径（前端可直接用）
+    logical_name: str = ""
+    source_run_id: str = ""
+    version: int = 1
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -110,6 +113,10 @@ class ExecutionAttempt:
     error_kind: str = ""
     duration_ms: int = 0
     truncated: bool = False
+    code: str = ""
+    repair_reason: str = ""
+    code_diff: str = ""
+    acceptance: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
         d = asdict(self)
@@ -124,6 +131,7 @@ class ProgrammaticCheck:
     name: str
     passed: bool
     detail: str = ""
+    required: bool = True
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -135,6 +143,7 @@ class VerificationResult:
     passed: bool
     evidence: str = ""
     layer: str = "llm"          # deterministic | assertion | llm
+    state: str = ""            # passed | failed | unknown | not_applicable
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -147,6 +156,8 @@ class RunStep:
     skill: str | None = None
     status: str = STEP_PENDING
     depends_on: list[int] = field(default_factory=list)
+    dependency_reason: str = ""
+    contract: dict[str, Any] = field(default_factory=dict)
     inputs: list[str] = field(default_factory=list)      # 来自前序步骤的产物名
     input_artifacts: list[dict[str, Any]] = field(default_factory=list)
     code: str = ""
@@ -187,13 +198,14 @@ class RunStep:
             "idx": self.idx, "action": self.action, "skill": self.skill,
             "status": self.status, "depends_on": self.depends_on, "inputs": self.inputs,
             "input_artifacts": self.input_artifacts,
+            "contract": self.contract, "dependency_reason": self.dependency_reason,
             "code": self.code, "n_attempts": self.n_attempts,
             "fixed": self.fixed, "exhausted": self.exhausted,
             "attempts": [a.to_dict() for a in self.attempts],
             "artifacts": [a.to_dict() for a in self.artifacts],
             "checks": [c.to_dict() for c in self.checks],
-            "checks_passed": sum(1 for c in self.checks if c.passed),
-            "checks_total": len(self.checks),
+            "checks_passed": sum(1 for c in self.checks if c.passed and c.required),
+            "checks_total": sum(c.required for c in self.checks),
             "verifications": [v.to_dict() for v in self.verifications],
             "verification_passed": sum(1 for v in self.verifications if v.passed),
             "verification_total": len(self.verifications),
@@ -360,6 +372,8 @@ class RunStore:
             self._mem[run.run_id] = run
 
     def get(self, run_id: str) -> Run | None:
+        if os.environ.get('SKILLNET_WORKER_MODE') == 'external':
+            return self.load(run_id)
         with self._lock:
             if run_id in self._mem:
                 return self._mem[run_id]
@@ -398,7 +412,7 @@ class RunStore:
         return self.list_page(limit=limit, task_fp=task_fp)["runs"]
 
     def list_page(self, limit: int = 50, offset: int = 0, *, task_fp: str | None = None,
-                  q: str = "", status: str | None = None) -> dict[str, Any]:
+                  q: str = "", status: str | None = None, identity: dict | None = None) -> dict[str, Any]:
         """按任务开始时间分页。缓存轻量摘要；仅重新读取改变的检查点文件。
 
         文件修改时间不能代表任务时间（取消、性能上报也会改写旧记录）。
@@ -425,7 +439,7 @@ class RunStore:
                     seen[cached[1]["run_id"]] = cached[1]
                 except (OSError, ValueError, TypeError, AttributeError):
                     continue
-            for rid, run in self._mem.items():
+            for rid, run in (self._mem.items() if os.environ.get('SKILLNET_WORKER_MODE') != 'external' else []):
                 # Do not serialize code, attempts or the event log for a list request.
                 seen[rid] = self._summary({
                     "run_id": rid, "task": run.task, "task_fp": run.task_fp,
@@ -441,6 +455,7 @@ class RunStore:
             rows = [s for s in seen.values()
                     if (not task_fp or s["task_fp"] == task_fp)
                     and (not status or s["status"] == status)
+                    and (identity is None or s.get('identity') == identity)
                     and (not needle or needle in s["_search"])]
             rows.sort(key=lambda s: (s.get("started_at_ms") or 0, s["run_id"]), reverse=True)
             summary = {"total": len(rows), "completed": sum(s["status"] == STATUS_COMPLETED for s in rows),
@@ -454,7 +469,7 @@ class RunStore:
     @staticmethod
     def _summary(d: dict[str, Any]) -> dict[str, Any]:
         ss = d.get("step_stats") or {}
-        checks = [c for s in d.get("steps") or [] for c in s.get("checks") or []]
+        checks = [c for s in d.get("steps") or [] for c in s.get("checks") or [] if c.get('required', True)]
         semantic = [c for s in d.get("steps") or [] for c in s.get("verifications") or []]
         gate = (d.get("staged") or {}).get("learning_gate") or {}
         return {
@@ -469,6 +484,7 @@ class RunStore:
             "checks_passed": sum(c.get("passed") is True for c in checks), "checks_total": len(checks),
             "semantic_passed": sum(c.get("passed") is True for c in semantic), "semantic_total": len(semantic),
             "learning_eligible": gate.get("eligible"), "learning_reason": gate.get("reason") or gate.get("skip_reason", ""),
+            "identity": (d.get('staged') or {}).get('s1_identity'),
             "_search": " ".join(str(d.get(k) or "") for k in ("task", "run_id", "task_fp")).casefold(),
         }
 
@@ -505,10 +521,14 @@ class RunStore:
             return None
         if not p.exists():
             return None
-        try:
-            d = json.loads(p.read_text(encoding="utf-8"))
-        except (OSError, ValueError):
-            return None
+        for attempt in range(5):
+            try:
+                d = json.loads(p.read_text(encoding="utf-8"))
+                break
+            except (OSError, ValueError):
+                if attempt == 4:
+                    return None
+                time.sleep(.02)
         try:
             return self._from_dict(d)
         except (TypeError, ValueError, KeyError):
@@ -547,6 +567,8 @@ class RunStore:
             st = RunStep(idx=sd.get("idx", 0), action=sd.get("action", ""), skill=sd.get("skill"))
             st.status = sd.get("status", STEP_PENDING)
             st.depends_on = sd.get("depends_on") or []
+            st.dependency_reason = sd.get('dependency_reason') or ''
+            st.contract = sd.get('contract') or {}
             st.inputs = sd.get("inputs") or []
             st.input_artifacts = sd.get("input_artifacts") or []
             st.code = sd.get("code") or ""

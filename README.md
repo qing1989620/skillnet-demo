@@ -4,6 +4,21 @@
 
 这是面向立理 S1 的独立服务原型，提供技能发现、依赖编排、受预算约束的运行、产物验收和技能进化。已交付可运行的服务客户端与契约测试；**与 S1 线上系统的联调尚未完成**。接入边界见 [S1 接入说明](docs/s1-integration.md)。
 
+## 本轮升级：1,769 个独立社区 Skill
+
+当前技能库为 **1,881 个 Skill**：76 个种子、1,769 个 GitHub 社区 Skill、36 个原有演化 Skill。社区包按正文去重，保留原文、资源、许可证、固定提交与哈希；Stars 属于来源仓库，导入不等于执行认证。
+
+六页面优化、千级星图与分页、真实文件依赖、验收修复、跨轮文件版本、候选治理、语义检索、签名身份和独立 worker 的实现与证据见 [本轮交付说明](docs/scale-upgrade.md)；来源见 [锁定清单](config/skill_sources.json)。225 项回归与 31 项自检通过。真实经营对照三组均通过，未测出质量增益；S1 线上联调及 Docker 实机验证仍待完成。
+
+要启用本地真实多语言语义检索，先执行：
+
+~~~bash
+python -m pip install -r requirements-semantic.txt
+python tools/setup_semantic_model.py
+~~~
+
+没有下载模型时会明确标记为词法回退。模型文件不随 Git 仓库分发。
+
 ## 启动与演示
 
 需要 **Python 3.11+**。Windows 双击 **start.bat**；macOS / Linux 执行 **bash start.sh**。也可以手动启动：
@@ -50,7 +65,7 @@ Fabric 重排会调用模型，因此同样需要令牌保护。公开健康接�
 
 默认同时运行最多 4 个后台任务，超过上限返回 **429** 与 **Retry-After**。可用 SKILLNET_MAX_ACTIVE_RUNS 调整；每个 Run 都有独立费用、调用数和时间预算。取消与预算检查覆盖检索、编排、执行、验收和收尾阶段；已发出的模型请求或正在执行的子进程会在检查点结束后停止后续步骤。费用预算按服务返回的 usage 核算，在途的并行模型请求可能小幅超限。
 
-当前 runtime 面向**单进程、受控环境**。模型生成代码运行于宿主子进程，清除凭据环境变量并限制执行时间；这不是对抗性代码隔离。接入企业用户前，需要独立执行容器或虚拟机、网络与资源限制、S1 用户/项目权限、共享任务队列与存储。详细方案见 [接入文档](docs/s1-integration.md) 与 [交付说明](docs/release-0.8.md)。
+默认使用 API 进程内线程与宿主子进程；可启用 **单主机 SQLite 持久化队列 + 一个独立 worker**，API 重启与执行互不绑定。签名身份提供租户/用户/项目范围检查。可选 Docker 执行模式禁止网络、限制资源并在 Docker 不可用时拒绝降级；本机未做容器实机验证。宿主子进程仅适用于受控演示。详细方案见 [接入文档](docs/s1-integration.md) 与 [交付说明](docs/release-0.8.md)。
 
 ## 核心能力
 
@@ -95,7 +110,7 @@ python tools/selfcheck.py
 python tools/full_audit.py
 ~~~
 
-GitHub Actions 在 Windows / Linux、Python 3.11 / 3.12 上执行离线回归、组件验证和前端资源检查。CI 不配置模型密钥，不运行付费实验。本次 206 项回归、真实执行与浏览器证据见 [全产品优化与验收](docs/full-product-upgrade.md)；早期交付记录见 [0.8 交付说明](docs/release-0.8.md)。
+GitHub Actions 在 Windows / Linux、Python 3.11 / 3.12 上执行离线回归、组件验证和前端资源检查。CI 不配置模型密钥，不运行付费实验。本次 225 项回归、真实执行与浏览器证据见 [千级技能与执行证据升级](docs/scale-upgrade.md)；上一轮 206 项验证见 [全产品优化与验收](docs/full-product-upgrade.md)；早期交付记录见 [0.8 交付说明](docs/release-0.8.md)。
 
 ## 容器启动
 

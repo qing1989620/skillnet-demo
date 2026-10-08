@@ -27,6 +27,10 @@ _RESP_SCHEMA = """{
      "action": "这一步具体做什么",
      "key_params": ["关键参数或阈值及取值理由"],
      "expected_output": "这一步应产出什么",
+     "depends_on": [0],
+     "input_files": ["上游真实文件名；第一步没有则空数组"],
+     "output_files": ["本步生成的真实文件名；验证步骤可以为空"],
+     "verification": ["只验收本步职责，必须引用实际产物的可验证判据"],
      "check": "怎么判断这一步做对了"}
   ],
   "risks": ["可能出错的地方与应对"],
@@ -120,7 +124,8 @@ class ResearchAgent:
                     f"  适用：{'；'.join(s.use_when[:2])}"
                 )
             else:
-                blocks.append(s.to_skill_md())
+                definition = s.to_skill_md()
+                blocks.append(definition[:16000] + ('\n[剩余正文和资源在技能详情中按需查看]' if len(definition) > 16000 else ''))
         if style == STYLE_CARDS:
             return "【可用技能（仅元数据）】\n" + "\n".join(blocks)
         # 技能正文会被整段放进提示词，而这些正文可能是模型生成的（进化技能）。
@@ -143,6 +148,7 @@ class ResearchAgent:
         skills: list[str] | None = None,
         style: str = STYLE_GUIDED,
         max_tokens: int = 3200,
+        max_steps: int | None = None,
     ) -> AgentRun:
         skills = skills or []
         if style == STYLE_BARE:
@@ -165,11 +171,13 @@ class ResearchAgent:
             user += block + "\n\n"
         user += (
             "请给出完成该任务的研究执行方案。要求：\n"
-            "1. 步骤控制在 4–6 步，每步写明用什么技能或工具、关键参数取值及理由；\n"
+            f"1. 步骤控制在 {max_steps or '4–6'} 步以内，每步写明用什么技能或工具、关键参数取值及理由；\n"
             "2. 必须包含对结果可靠性的验证方式（如何证明这一步没做错）；\n"
             "3. 指出最可能出错的环节及应对，不超过 4 条；\n"
             "4. 若提供了技能且与任务匹配，步骤中的 skill 字段必须填对应的技能名；\n"
-            "5. 控制篇幅，直接输出 JSON，不要写解释性文字。\n\n"
+            "5. depends_on 使用从 0 开始的上游步骤编号；由真实文件读写决定依赖，禁止下游重新生成上游数据。\n"
+            "6. input_files/output_files 写具体路径名；verification 只包含本步负责的验收，别把后续绘图要求放到清洗步骤。\n"
+            "7. 控制篇幅，直接输出 JSON，不要写解释性文字。\n\n"
             f"严格输出 JSON：\n{_RESP_SCHEMA}"
         )
 

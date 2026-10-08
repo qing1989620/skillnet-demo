@@ -1,0 +1,438 @@
+{
+  "kind": "frozen-chinese-retrieval-smoke",
+  "created_at": 1791447738.9806364,
+  "cases_sha256": "39c5e0aa7d77176af3bdfd93784ae4a011ccfbd26f06b45e0703a7e76ee17dcd",
+  "library_size": 1881,
+  "encoder": {
+    "kind": "dense-onnx",
+    "active": true,
+    "model": "Xenova/multilingual-e5-small",
+    "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+    "dimension": 384,
+    "max_tokens": 256
+  },
+  "weights": [
+    0.7,
+    0.2,
+    0.1
+  ],
+  "k": 10,
+  "scope": "Hit@10 against manually frozen acceptable skills; labels not exhaustive; not a general quality claim",
+  "results": [
+    {
+      "query": "表格里有重复记录、空值和单位混乱，我需要清洗并保留审计记录",
+      "expected": [
+        "data-cleaning"
+      ],
+      "lexical": {
+        "hit": false,
+        "selected": [
+          "gh-agentic-grill-me-e2de87",
+          "gh-agentic-since-cutoff-bfba48",
+          "gh-agentic-iconsax-library-da09d9",
+          "brand-guidelines",
+          "gh-agentic-grill-with-docs-3f2861",
+          "gh-agentic-skill-optimizer-c72e06",
+          "gh-agentic-stitch-design-taste-d17e04",
+          "gh-agentic-brooks-lint-4c3b0d",
+          "dose-response-curve-cleaning-and-ic50-fitting",
+          "gh-claude-revenue-operations-da9c67"
+        ]
+      },
+      "dense": {
+        "hit": true,
+        "selected": [
+          "data-cleaning",
+          "dose-response-cleaning-ic50-pipeline",
+          "descriptive-stats-acceptance-audit",
+          "dose-response-curve-analysis",
+          "business-metrics-audit",
+          "dose-response-curve-cleaning-and-ic50-fitting",
+          "estimator-robustness-audit",
+          "missing-data-baseline-modeling",
+          "leakage-guard",
+          "dose-response-ic50-robust-estimation"
+        ]
+      },
+      "hybrid": {
+        "selected": [
+          "data-cleaning",
+          "dose-response-curve-cleaning-and-ic50-fitting",
+          "dose-response-cleaning-ic50-pipeline",
+          "eeg-preprocessing",
+          "missing-data-baseline-modeling",
+          "two-group-statistical-testing-with-effect-size",
+          "leakage-guard",
+          "dose-response-curve-analysis",
+          "dose-response-ic50-robust-estimation",
+          "estimator-robustness-audit"
+        ],
+        "hit": true
+      }
+    },
+    {
+      "query": "论文图需要误差带、显著性标记、合适的配色以及矢量导出",
+      "expected": [
+        "scientific-visualization"
+      ],
+      "lexical": {
+        "hit": true,
+        "selected": [
+          "scientific-visualization",
+          "gh-claude-launch-strategy-e687e5",
+          "gh-agentic-odoo-security-rules-fa4a99",
+          "gh-agentic-crossframe-essay-d4d392",
+          "gh-agentic-humanize-chinese-2a67c7",
+          "discernment-nudge",
+          "gh-agentic-setup-matt-pocock-skills-a76b50",
+          "gh-agentic-rayden-use-86bbae",
+          "gh-claude-company-os-089480",
+          "demo-descriptive-stats-report"
+        ]
+      },
+      "dense": {
+        "hit": true,
+        "selected": [
+          "scientific-visualization",
+          "math-modeling-pipeline",
+          "dose-response-curve-analysis",
+          "demo-descriptive-stats-report",
+          "research-field-top-ideas-distillation",
+          "estimator-robustness-audit",
+          "poster-slides",
+          "dose-response-curve-cleaning-and-ic50-fitting",
+          "broad-topic-to-evidence-pipeline",
+          "scientific-writing"
+        ]
+      },
+      "hybrid": {
+        "selected": [
+          "scientific-visualization",
+          "math-modeling-pipeline",
+          "scientific-writing",
+          "demo-descriptive-stats-report",
+          "competition-reproducible-ml-pipeline",
+          "missing-data-baseline-modeling",
+          "statistical-testing",
+          "high-temp-oxidation-coating-recipe-dev",
+          "research-field-top-ideas-distillation",
+          "poster-slides"
+        ],
+        "hit": true
+      }
+    },
+    {
+      "query": "模型预测成绩异常高，检查训练测试重叠和目标变量提前泄漏",
+      "expected": [
+        "leakage-guard"
+      ],
+      "lexical": {
+        "hit": false,
+        "selected": [
+          "gh-agentic-php-5ddf5d",
+          "gh-scientific-nmrglue-679255",
+          "gh-agentic-busybox-on-windows-aa3841",
+          "model-interpretability",
+          "peer-review-response",
+          "gh-agentic-nanobanana-ppt-skills-7ab003",
+          "gh-agentic-salesforce-development-e5d35d",
+          "gh-agentic-go-concurrency-patterns-ffbae2",
+          "deep-learning-training",
+          "gh-agentic-documentation-templates-94acaa"
+        ]
+      },
+      "dense": {
+        "hit": true,
+        "selected": [
+          "leakage-guard",
+          "competition-reproducible-ml-pipeline",
+          "competition-data-science-pipeline",
+          "missing-data-baseline-modeling",
+          "estimator-robustness-audit",
+          "exam-weakness-analysis-and-review-plan",
+          "materials-screening",
+          "gh-scientific-scikit-survival-e853c1",
+          "two-group-statistical-testing-with-effect-size",
+          "dose-response-curve-analysis"
+        ]
+      },
+      "hybrid": {
+        "selected": [
+          "leakage-guard",
+          "deep-learning-training",
+          "flux-tower-ml",
+          "clinical-feature-engineering",
+          "venue-template",
+          "tabular-ml-baseline",
+          "model-interpretability",
+          "materials-screening",
+          "competition-reproducible-ml-pipeline",
+          "competition-data-science-pipeline"
+        ],
+        "hit": true
+      }
+    },
+    {
+      "query": "清理模拟订单，汇总每月收入成本和毛利率，生成经营月报",
+      "expected": [
+        "business-metrics-audit"
+      ],
+      "lexical": {
+        "hit": true,
+        "selected": [
+          "business-metrics-audit",
+          "gh-agentic-crossframe-casebook-0865ba",
+          "gh-agentic-crossframe-teach-2498ab",
+          "gh-agentic-crossframe-public-a7bed8",
+          "gh-claude-azure-cloud-architect-42de2e",
+          "gh-agentic-aas-discover-410ef2",
+          "gh-agentic-crossframe-org-10b340",
+          "gh-agentic-crossframe-debate-a5aa10",
+          "gh-agentic-crossframe-review-91b081",
+          "gh-agentic-azure-functions-d08c60"
+        ]
+      },
+      "dense": {
+        "hit": true,
+        "selected": [
+          "business-metrics-audit",
+          "competition-data-science-pipeline",
+          "math-modeling-pipeline",
+          "competition-reproducible-ml-pipeline",
+          "gh-agentic-weather-data-lifecycle-management-340ae1",
+          "dose-response-curve-analysis",
+          "gh-claude-finance-skills-0b078c",
+          "gh-agentic-asset-it-management-26c655",
+          "gh-agentic-fal-platform-4735d2",
+          "data-cleaning"
+        ]
+      },
+      "hybrid": {
+        "selected": [
+          "business-metrics-audit",
+          "gh-agentic-fact-check-x-unified-da13a6",
+          "materials-screening",
+          "factor-backtest",
+          "algorithmic-art",
+          "interview",
+          "md-simulation",
+          "code-helper",
+          "competition-data-science-pipeline",
+          "math-modeling-pipeline"
+        ],
+        "hit": true
+      }
+    },
+    {
+      "query": "关系数据库查询变慢了，需要分析执行计划、优化索引和查询性能",
+      "expected": [
+        "gh-agentic-postgres-best-practices-ed32a6",
+        "gh-agentic-postgresql-optimization-2fea25",
+        "gh-agentic-supabase-postgres-best-practices-f18084"
+      ],
+      "lexical": {
+        "hit": false,
+        "selected": [
+          "gh-claude-roadmap-communicator-56098a",
+          "gh-agentic-us-property-data-293d2a",
+          "gh-agentic-brendangregg-use-tsa-dad034",
+          "gh-claude-senior-computer-vision-89f318",
+          "gh-claude-pw-review-66b12b",
+          "gh-claude-fix-817919",
+          "gh-scientific-astropy-b3a34d",
+          "gh-claude-internal-narrative-261a70",
+          "gh-agentic-business-website-setup-4c700a",
+          "gh-agentic-seo-meta-optimizer-feeeb4"
+        ]
+      },
+      "dense": {
+        "hit": true,
+        "selected": [
+          "gh-agentic-postgresql-optimization-2fea25",
+          "gh-agentic-database-db9486",
+          "gh-agentic-postgres-readonly-queries-ac391b",
+          "gh-agentic-odoo-performance-tuner-334084",
+          "exam-weakness-analysis-and-review-plan",
+          "gh-agentic-decision-navigator-b103ba",
+          "gh-claude-database-designer-e303ca",
+          "gh-agentic-react-component-performance-b06dd8",
+          "dose-response-cleaning-ic50-pipeline",
+          "data-cleaning"
+        ]
+      },
+      "hybrid": {
+        "selected": [
+          "exam-weakness-analysis-and-review-plan",
+          "gh-agentic-travel-planner-3b0cd4",
+          "eda-profiling",
+          "cfd-simulation",
+          "data-structure-impl-verify",
+          "optimization-solver",
+          "broad-topic-to-evidence-pipeline",
+          "dose-response-curve-analysis",
+          "data-cleaning",
+          "missing-data-baseline-modeling"
+        ],
+        "hit": false
+      }
+    },
+    {
+      "query": "把容器应用部署到生产集群，配置编排、服务网格和部署清单",
+      "expected": [
+        "gh-agentic-kubernetes-deployment-84d43d"
+      ],
+      "lexical": {
+        "hit": false,
+        "selected": [
+          "gh-agentic-docs-generator-ae0086",
+          "gh-agentic-color-blocking-80524d",
+          "gh-agentic-cyberpunk-ui-634a1b",
+          "gh-agentic-sequence-psychologist-0f454a",
+          "gh-agentic-copywriting-psychologist-73182c",
+          "gh-agentic-headline-psychologist-5e199b",
+          "gh-agentic-pitch-psychologist-ca8dc7",
+          "gh-agentic-identity-mirror-b0c8b1",
+          "gh-agentic-trust-calibrator-f76b05",
+          "gh-agentic-social-proof-architect-b48929"
+        ]
+      },
+      "dense": {
+        "hit": true,
+        "selected": [
+          "gh-agentic-kubernetes-deployment-84d43d",
+          "gh-agentic-odoo-docker-deployment-c1678d",
+          "gh-agentic-devops-pipeline-builder-bf8436",
+          "gh-agentic-mirrord-b7d126",
+          "gh-agentic-dep-b4042f",
+          "gh-agentic-app-store-changelog-f4ae08",
+          "gh-agentic-container-security-hardening-c8d555",
+          "gh-agentic-cloud-devops-254c97",
+          "gh-agentic-sop-company-wiki-dd0bdc",
+          "gh-claude-docker-development-521176"
+        ]
+      },
+      "hybrid": {
+        "selected": [
+          "mcp-builder",
+          "cfd-simulation",
+          "web-artifacts-builder",
+          "webapp-testing",
+          "gh-agentic-fact-check-x-unified-da13a6",
+          "gh-agentic-travel-planner-3b0cd4",
+          "fem-analysis",
+          "flux-tower-ml",
+          "brand-guidelines",
+          "descriptive-stats-acceptance-audit"
+        ],
+        "hit": false
+      }
+    },
+    {
+      "query": "开发异步的 Python 后端接口，使用数据校验、数据库映射和身份认证",
+      "expected": [
+        "gh-agentic-python-fastapi-development-a46d86"
+      ],
+      "lexical": {
+        "hit": false,
+        "selected": [
+          "gh-agentic-jobgpt-341fa5",
+          "gh-claude-dependency-auditor-de819d",
+          "gh-agentic-pypict-skill-2bc978",
+          "gh-agentic-debugging-strategies-6d5343",
+          "gh-agentic-seek-and-analyze-video-4081e7",
+          "gh-claude-statistical-analyst-1f36af",
+          "math-concept-formalization-and-verification",
+          "gh-scientific-get-available-resources-d2fc26",
+          "gh-agentic-dbt-transformation-patterns-55dcda",
+          "broad-topic-to-evidence-pipeline"
+        ]
+      },
+      "dense": {
+        "hit": true,
+        "selected": [
+          "gh-agentic-python-fastapi-development-a46d86",
+          "gh-claude-senior-backend-aa81c3",
+          "gh-agentic-snowflake-development-d53b3f",
+          "gh-claude-senior-fullstack-31bed5",
+          "gh-agentic-code-audit-ef38da",
+          "gh-claude-atlassian-admin-0ba253",
+          "gh-claude-senior-secops-d0f907",
+          "gh-claude-snowflake-development-f3548a",
+          "gh-scientific-pi-agent-df0a66",
+          "gh-agentic-hipaa-compliance-08d6bb"
+        ]
+      },
+      "hybrid": {
+        "selected": [
+          "broad-topic-to-evidence-pipeline",
+          "claude-api",
+          "data-cleaning",
+          "descriptive-stats-csv-summary",
+          "econometric-panel",
+          "eda-profiling",
+          "gh-claude-universal-scraping-architect-f42c53",
+          "descriptive-stats-csv-and-plot",
+          "gh-agentic-snowflake-development-d53b3f",
+          "gh-claude-snowflake-development-f3548a"
+        ],
+        "hit": false
+      }
+    },
+    {
+      "query": "把 PDF 转成 Markdown 或结构化笔记，选择合适的提取和转换工具",
+      "expected": [
+        "gh-agentic-pdf-conversion-router-8ab07e"
+      ],
+      "lexical": {
+        "hit": false,
+        "selected": [
+          "gh-agentic-arrowspace-1efc68",
+          "gh-agentic-team-collaboration-issue-e6f6e0",
+          "gh-agentic-ai-agent-tool-routing-2e8944",
+          "gh-agentic-ai-agents-architect-4f778c",
+          "gh-agentic-clients-accounts-0c0b14",
+          "gh-claude-report-d0382e",
+          "gh-agentic-tutorial-engineer-65be36",
+          "gh-agentic-prototype-ebf329",
+          "gh-agentic-bug-hunter-a02a9c",
+          "causal-inference"
+        ]
+      },
+      "dense": {
+        "hit": true,
+        "selected": [
+          "gh-scientific-markitdown-418a56",
+          "pdf",
+          "gh-agentic-pdf-conversion-router-8ab07e",
+          "research-field-top-ideas-distillation",
+          "gh-claude-book-to-skill-0e8c61",
+          "gh-claude-md-document-b33cbf",
+          "gh-agentic-audio-transcriber-075926",
+          "poster-slides",
+          "gh-agentic-writer-18a282",
+          "gh-claude-md-review-005e1e"
+        ]
+      },
+      "hybrid": {
+        "selected": [
+          "pdf",
+          "gh-scientific-markitdown-418a56",
+          "gh-agentic-pdf-conversion-router-8ab07e",
+          "protein-structure-predict",
+          "gh-scientific-liteparse-549796",
+          "econometric-panel",
+          "gh-claude-book-to-skill-0e8c61",
+          "gh-scientific-literature-review-d92936",
+          "cross-validation-protocol",
+          "claude-api"
+        ],
+        "hit": true
+      }
+    }
+  ],
+  "hit_at_10": {
+    "lexical": 0.25,
+    "dense": 1.0,
+    "hybrid": 0.625
+  }
+}

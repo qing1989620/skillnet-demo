@@ -67,12 +67,15 @@ def test_explorer_edges_only_reference_selected_skills(library, monkeypatch):
         "skills": ["input-data", "analyze-data", "input-data"],
         "workflow": [["analyze-data", "write-report"], ["analyze-data", "input-data"]],
         "reason": ["invalid reason type"],
+        "decisions": [None, {"name": []}, {"name": {}}, {"name": "unknown", "reason": "invalid"},
+                      {"name": "input-data", "reason": "读取源数据"}],
     })
     result = Retriever(library).build().route_with_wiki("单细胞分析报告", k=2)
     assert result["skills"] == ["input-data", "analyze-data"]
     assert result["order"] == ["input-data", "analyze-data"]
     assert result["workflow"] == [["input-data", "analyze-data"]]
     assert result["reason"] == ""
+    assert result["decisions"] == [{"name": "input-data", "selected": True, "reason": "读取源数据"}]
     assert result["degraded"] is True
 
 
