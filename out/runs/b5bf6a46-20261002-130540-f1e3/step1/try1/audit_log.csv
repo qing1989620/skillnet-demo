@@ -1,7 +1,0 @@
-step,reason,affected_rows,before,after
-主键唯一性检查,compound_id+well 应唯一,31,120行,31个重复主键
-剂量单位统一,log10(uM)->uM,40,log10(uM),uM
-抑制率单位统一,percent->fraction,30,percent,fraction
-缺失模式标记,标记缺失不删除，避免选择偏差,4,未标记,标记为 missing
-业务规则异常标记,"dose<=0 或 inh不在[0,1]，标记不删除",3,未标记,3行标记异常
-重复孔标记,compound_id+well 重复，保留首次，后续标记,41,120行,41行标记duplicate

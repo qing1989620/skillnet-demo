@@ -191,8 +191,15 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         carry_pairs.append((name, orig))
         carried.append(orig)
     step.inputs = carried
-    if carried:
-        _emit(run, "step.inputs", step=step.idx, files=carried)
+    # Preserve the exact version copied into the sandbox, including its producer.
+    # Repeated logical names follow the same last-copy-wins order as carry_pairs.
+    versions = {}
+    registered = {a.name: a for a in run.artifacts}
+    for name, logical in carry_pairs:
+        artifact = registered.get(name)
+        versions[logical] = {"logical_name": logical, "name": name,
+                             "from_step": artifact.from_step if artifact else None,
+                             "sha256": artifact.sha256 if artifact else ""}
 
     step.status = STEP_RUNNING
     step.started_at_ms = now_ms()
@@ -201,7 +208,7 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
     stack = sandbox.available_stack()
     code = ""
     result: dict[str, Any] = {}
-    from .executor import (_extract_code, _fix_prompt, _gen_code_prompt,
+    from .executor import (_extract_code, _fix_prompt, _gen_code_prompt, _execution_diagnostic,
                            _looks_truncated, _record_execution, _verify_with_skill)
 
     def _llm_snapshot() -> tuple[int, float]:
@@ -220,7 +227,11 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         workdir = step_dir / f"try{attempt}"
         workdir.mkdir(parents=True, exist_ok=True)
         for aname, orig in carry_pairs:
-            _copy_retry(workspace / "artifacts" / aname, workdir / orig)
+            if not _copy_retry(workspace / "artifacts" / aname, workdir / orig):
+                raise OSError(f"无法复制上游产物 {aname}，本步未执行")
+        if attempt == 1 and carried:
+            step.input_artifacts = list(versions.values())
+            _emit(run, "step.inputs", step=step.idx, files=carried, artifacts=step.input_artifacts)
         phase = "code_gen" if attempt == 1 else f"repair{attempt - 1}_llm"
         if attempt == 1:
             prompt = _gen_code_prompt(run.task, {"action": step.action, "key_params": [],
@@ -228,8 +239,7 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
                                       mode=mode, carried=carried)
         else:
             previous = step.attempts[-1]
-            diagnostic = previous.stderr or (
-                "执行失败，stderr 为空。标准输出中的诊断：\n" + previous.stdout[-1800:])
+            diagnostic = _execution_diagnostic(previous.stderr, previous.stdout)
             prompt = _fix_prompt(code, diagnostic, skill, attempt, mode=mode)
         _emit(run, "code.generating", step=step.idx, attempt=attempt)
         c0, y0 = _llm_snapshot()
@@ -417,7 +427,20 @@ def _run_steps_graph(run: Run, workspace: pathlib.Path, lib: Any,
                         ancestors.add(pred)
                         collect(pred)
             collect(st.idx)
-            up = [a.name for a in run.artifacts if a.from_step in ancestors]
+            distances = {st.idx: 0}
+            queue = [st.idx]
+            while queue:
+                node = queue.pop(0)
+                for pred in by_idx[node].depends_on:
+                    distance = distances[node] + 1
+                    if pred not in distances or distance < distances[pred]:
+                        distances[pred] = distance
+                        queue.append(pred)
+            # Completion order of parallel siblings must not select file versions.
+            # Copy distant producers first; nearest dependency wins, ties by idx.
+            inputs = sorted((a for a in run.artifacts if a.from_step in ancestors),
+                            key=lambda a: (-distances[a.from_step], a.from_step, a.name))
+            up = [a.name for a in inputs]
             # 每步保留自己的增量明细，同时向 Run 父账本汇总。并行兄弟步骤
             # 不能用共享总额的前后差值计费，那会把彼此调用计入各自步骤。
             with llm.ledger_scope(llm.UsageLedger(parent=llm.current_ledger())):

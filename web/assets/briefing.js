@@ -125,7 +125,7 @@
       $('benchmark-chart').innerHTML = '<p class="loading-text">完成实验后，这里会展示原始结果。</p>';
       return;
     }
-    $('benchmark-subtitle').textContent = 'Held-out · ' + experiment.n_tasks + ' 个任务 · K=' + experiment.k;
+    $('benchmark-subtitle').textContent = '历史冻结记录 · ' + experiment.n_tasks + ' 个任务 · K=' + experiment.k + (experiment.split !== 'heldout' ? ' · split 元数据待复核' : ' · Held-out');
     $('benchmark-chart').innerHTML = ['bm25','hybrid','fabric'].map(mode => {
       const value = Number(experiment.summary[mode] && experiment.summary[mode].skill_recall);
       if (!Number.isFinite(value)) return '';

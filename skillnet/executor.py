@@ -120,6 +120,14 @@ def _looks_truncated(err: str, code: str) -> bool:
     return any(m in e for m in marks) and len(code) > 6000
 
 
+def _execution_diagnostic(stderr: str, stdout: str) -> str:
+    """Keep both the exception and the printed failing check within prompt budget."""
+    error=(stderr or "").strip()
+    output=(stdout or "").strip()
+    return ("【标准错误】\n" + (error[-900:] or "stderr 为空。")
+            + "\n【标准输出中的诊断】\n" + (output[-1400:] or "未记录标准输出。"))
+
+
 def _fix_prompt(code: str, err: str, skill: Any, attempt: int,
                 mode: str = "contract") -> str:
     traps = ""
@@ -144,6 +152,8 @@ def _fix_prompt(code: str, err: str, skill: Any, attempt: int,
 1. 若是逻辑错误，只改必要的部分，保持原有逻辑与分析目标；
 2. 若错误是缺少第三方库，改用标准库或已装库实现（不要 import 未安装的包）；
 3. 若错误与数据/维度/类型有关，做相应检查与兜底；
+   标准输出中为 False 的检查是定位依据。CSV 会推断数值类型；若契约规定浮点类型，
+   在读取时显式指定 dtype，并独立按约定容差校验数值。不得删除验收或硬编码通过；
 4. 修好后确保关键结果有 print 输出；
 5. 只输出修复后的完整代码（```python 包裹），不要解释。"""
 
@@ -250,7 +260,8 @@ def execute_step(task: str, step: dict[str, Any], skill: Any,
         else:
             raw = llm.chat(
                 [{"role": "system", "content": "你是严谨的科研工程师，只输出修复后的完整代码。"},
-                 {"role": "user", "content": _fix_prompt(code, attempts[-1]["stderr"], skill, i, mode)}],
+                 {"role": "user", "content": _fix_prompt(code, _execution_diagnostic(
+                     attempts[-1]["stderr"], attempts[-1]["stdout"]), skill, i, mode)}],
                 role="executor", temperature=0.1, max_tokens=config_code_tokens())
             code = _extract_code(raw)
 

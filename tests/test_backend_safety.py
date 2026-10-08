@@ -40,6 +40,62 @@ def make_run(run_id="regression-run", **kwargs):
     return runtime.Run(run_id=run_id, task="计算示例数据均值", task_fp="regression", **kwargs)
 
 
+def test_history_api_filters_paginates_and_preserves_legacy_runs_key(api):
+    client, store = api
+    for i in range(3):
+        run = make_run(f"history-{i}", started_at_ms=100+i, status="COMPLETED" if i else "FAILED")
+        store.save(run)
+    page = client.get("/api/runs?limit=1&offset=1&status=COMPLETED&q=示例").json()
+    assert page["total"] == 2 and page["runs"][0]["run_id"] == "history-1"
+    assert page["summary"]["completed"] == 2 and not page["has_more"]
+    assert len(client.get("/api/runs").json()["runs"]) == 3
+
+
+@pytest.mark.parametrize("query", ["offset=-1", "offset=100001", "status=UNKNOWN", "q="+"x"*201])
+def test_history_api_rejects_invalid_filters(api, query):
+    client, _ = api
+    assert client.get("/api/runs?"+query).status_code == 422
+
+
+@pytest.mark.parametrize("execution,steps", [({"final_ok":False},1), ({"final_ok":True},3),
+    ({"final_ok":True,"verification":[{"passed":False}]},1),
+    ({"final_ok":"false"},1), ({"final_ok":True,"verification":[{"passed":"true"}]},1)])
+def test_single_step_experiment_cannot_train_from_failed_or_incomplete_evidence(execution, steps):
+    reward, reason = server._demo_learning_reward({"weighted":9,"score_valid":True}, execution, steps)
+    assert reward is None and reason
+
+
+def test_input_copy_failure_does_not_emit_false_provenance_or_call_model(tmp_path, monkeypatch):
+    source = tmp_path / "artifacts"
+    source.mkdir()
+    (source / "step1_data.csv").write_text("x\n1\n", encoding="utf-8")
+    run = make_run()
+    run.artifacts = [runtime.Artifact(name="step1_data.csv", from_step=0)]
+    step = runtime.RunStep(idx=1, action="read", depends_on=[0])
+    monkeypatch.setattr(pipeline, "_copy_retry", lambda *a: False)
+    monkeypatch.setattr(pipeline.llm, "chat", lambda *a, **k: pytest.fail("input failure consumed model budget"))
+    with pytest.raises(OSError, match="无法复制上游产物"):
+        pipeline.run_step(run, step, None, tmp_path, run.budget, ["step1_data.csv"])
+    assert not step.input_artifacts and not any(e.type=="step.inputs" for e in run.events)
+
+
+def test_parallel_completion_order_does_not_select_input_versions(tmp_path, monkeypatch):
+    seen = []
+    run = make_run()
+    run.steps = [runtime.RunStep(idx=0, action="root", status="done"),
+                 runtime.RunStep(idx=1, action="derived", status="done", depends_on=[0]),
+                 runtime.RunStep(idx=2, action="consume", depends_on=[0,1])]
+    # Simulate later checkpoints appending older producer after newer producer.
+    run.artifacts = [runtime.Artifact(name="step2_data.csv", from_step=1),
+                     runtime.Artifact(name="step1_data.csv", from_step=0)]
+    def fake_step(run, step, lib, workspace, budget, upstream, **kwargs):
+        if step.idx==2:seen.extend(upstream)
+        step.status="done"
+    monkeypatch.setattr(pipeline, "run_step", fake_step)
+    pipeline._run_steps_graph(run, tmp_path, None, run.budget)
+    assert seen == ["step1_data.csv","step2_data.csv"]
+
+
 def test_concurrent_persistence_has_no_shared_temporary_file(tmp_path):
     store = runtime.RunStore(tmp_path)
     run = make_run()

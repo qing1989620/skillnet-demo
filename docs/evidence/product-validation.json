@@ -1,0 +1,322 @@
+{
+  "date": "2026-10-08",
+  "version": "0.9.0",
+  "scope": "six product pages, five run-center views, seven laboratory tabs and shared components",
+  "browser": "Codex In-app Browser",
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 1000
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "runs": [
+    {
+      "run_id": "2a2cde39-20261008-083429-c54f",
+      "status": "COMPLETED",
+      "duration_ms": 58346,
+      "cost_yuan": 0.2143,
+      "tokens": 55296,
+      "llm_calls": 15,
+      "step_stats": {
+        "total": 3,
+        "done": 3,
+        "failed": 0,
+        "skipped": 0,
+        "retried": 2
+      },
+      "programmatic": {
+        "passed": 37,
+        "total": 37
+      },
+      "semantic": {
+        "passed": 9,
+        "total": 11
+      },
+      "learning_gate": {
+        "eligible": false,
+        "skip_reason": "技能语义验收存在未通过项，未更新反馈或进行技能准入"
+      },
+      "dependencies": [
+        {
+          "idx": 0,
+          "depends_on": [],
+          "input_artifacts": []
+        },
+        {
+          "idx": 1,
+          "depends_on": [],
+          "input_artifacts": []
+        },
+        {
+          "idx": 2,
+          "depends_on": [
+            0,
+            1
+          ],
+          "input_artifacts": [
+            {
+              "logical_name": "figure.png",
+              "name": "step1_figure.png",
+              "from_step": 0,
+              "sha256": "10800329b9a2ea930a05a1f5b775a96e905a1759cd205329098a2e86b76def23"
+            },
+            {
+              "logical_name": "summary.csv",
+              "name": "step1_summary.csv",
+              "from_step": 0,
+              "sha256": "4ccbce35d78f3722316f05681d7bd1546bdd5bd58310c329906bbac176b37241"
+            },
+            {
+              "logical_name": "README_result.txt",
+              "name": "step1_README_result.txt",
+              "from_step": 0,
+              "sha256": "9e8367ec6a55d9908619dda0d4f863cd78b6d0fa39b4577189ed2e91df80e2e2"
+            }
+          ]
+        }
+      ],
+      "artifacts": [
+        {
+          "name": "step2_figure.png",
+          "bytes": 37273,
+          "sha256": "18b7111923babff97b7511d1e61d122bd620c192d11d9b293fdcb9a3f047bd9e",
+          "fingerprint_matches": true
+        },
+        {
+          "name": "step2_summary.csv",
+          "bytes": 57,
+          "sha256": "4ccbce35d78f3722316f05681d7bd1546bdd5bd58310c329906bbac176b37241",
+          "fingerprint_matches": true
+        },
+        {
+          "name": "step1_figure.png",
+          "bytes": 35051,
+          "sha256": "10800329b9a2ea930a05a1f5b775a96e905a1759cd205329098a2e86b76def23",
+          "fingerprint_matches": true
+        },
+        {
+          "name": "step1_README_result.txt",
+          "bytes": 512,
+          "sha256": "9e8367ec6a55d9908619dda0d4f863cd78b6d0fa39b4577189ed2e91df80e2e2",
+          "fingerprint_matches": true
+        },
+        {
+          "name": "step1_summary.csv",
+          "bytes": 57,
+          "sha256": "4ccbce35d78f3722316f05681d7bd1546bdd5bd58310c329906bbac176b37241",
+          "fingerprint_matches": true
+        },
+        {
+          "name": "step3_figure.pdf",
+          "bytes": 19742,
+          "sha256": "7367ea8a027dab35a9fa08442085cc65e8e48c0d38bfb821af4ee1a0bc77e6fe",
+          "fingerprint_matches": true
+        },
+        {
+          "name": "step3_figure.png",
+          "bytes": 85619,
+          "sha256": "9add0a5fa6d1a15f8165e319ed41ef8e5610ba576c52fb7aff27886834ed444e",
+          "fingerprint_matches": true
+        }
+      ]
+    },
+    {
+      "run_id": "4bafbb0c-20261008-090352-ffe8",
+      "status": "COMPLETED",
+      "duration_ms": 52947,
+      "cost_yuan": 0.1559,
+      "tokens": 43899,
+      "llm_calls": 13,
+      "step_stats": {
+        "total": 3,
+        "done": 3,
+        "failed": 0,
+        "skipped": 0,
+        "retried": 2
+      },
+      "programmatic": {
+        "passed": 33,
+        "total": 33
+      },
+      "semantic": {
+        "passed": 8,
+        "total": 11
+      },
+      "learning_gate": {
+        "eligible": false,
+        "skip_reason": "技能语义验收存在未通过项，未更新反馈或进行技能准入"
+      },
+      "dependencies": [
+        {
+          "idx": 0,
+          "depends_on": [],
+          "input_artifacts": []
+        },
+        {
+          "idx": 1,
+          "depends_on": [
+            0
+          ],
+          "input_artifacts": [
+            {
+              "logical_name": "figure.png",
+              "name": "step1_figure.png",
+              "from_step": 0,
+              "sha256": "2bd0c3ee3d194bd25b00bfe961c86df87671966a32439d5614f12b2e6de4898c"
+            },
+            {
+              "logical_name": "summary.csv",
+              "name": "step1_summary.csv",
+              "from_step": 0,
+              "sha256": "4ccbce35d78f3722316f05681d7bd1546bdd5bd58310c329906bbac176b37241"
+            }
+          ]
+        },
+        {
+          "idx": 2,
+          "depends_on": [
+            0
+          ],
+          "input_artifacts": [
+            {
+              "logical_name": "figure.png",
+              "name": "step1_figure.png",
+              "from_step": 0,
+              "sha256": "2bd0c3ee3d194bd25b00bfe961c86df87671966a32439d5614f12b2e6de4898c"
+            },
+            {
+              "logical_name": "summary.csv",
+              "name": "step1_summary.csv",
+              "from_step": 0,
+              "sha256": "4ccbce35d78f3722316f05681d7bd1546bdd5bd58310c329906bbac176b37241"
+            }
+          ]
+        }
+      ],
+      "artifacts": [
+        {
+          "name": "step1_figure.png",
+          "bytes": 70242,
+          "sha256": "2bd0c3ee3d194bd25b00bfe961c86df87671966a32439d5614f12b2e6de4898c",
+          "fingerprint_matches": true
+        },
+        {
+          "name": "step1_summary.csv",
+          "bytes": 57,
+          "sha256": "4ccbce35d78f3722316f05681d7bd1546bdd5bd58310c329906bbac176b37241",
+          "fingerprint_matches": true
+        },
+        {
+          "name": "step3_figure.png",
+          "bytes": 82742,
+          "sha256": "37dc7132d7a241d6e27d5e99fb410931dbd6347e17424d10e5b38d981ee6f14a",
+          "fingerprint_matches": true
+        },
+        {
+          "name": "step2_figure.png",
+          "bytes": 40151,
+          "sha256": "3b28941956812a73fb8f99e24d39fa7d716b55200e8b48f8b01c888c0410fe64",
+          "fingerprint_matches": true
+        },
+        {
+          "name": "step2_summary.csv",
+          "bytes": 53,
+          "sha256": "39b105d1cb16931645ef0a2a1b4fd760030a60542f7ba599bb7a426b5a2ff2d1",
+          "fingerprint_matches": true
+        }
+      ]
+    }
+  ],
+  "local_checks": {
+    "pytest": {
+      "passed": 206
+    },
+    "component_verifier": {
+      "passed": 31
+    },
+    "live_http_selfcheck": {
+      "passed": 23,
+      "failed": 0
+    },
+    "front_render": {
+      "passed": 5
+    },
+    "javascript_syntax": {
+      "scripts": 17
+    },
+    "product_evidence_and_experiment_fixtures": "passed",
+    "homepage_seven_stages": "passed",
+    "executive_replay_and_artifacts": "passed",
+    "repair_diagnostics": "9 focused diagnostic regressions passed; suite includes 2 new diagnostics and 2 dataset provenance tests"
+  },
+  "browser_interactions": {
+    "home": [
+      "original animated background and star graph",
+      "seven-stage demonstration retained",
+      "live stage and historical replay"
+    ],
+    "chat": [
+      "real public-data task",
+      "refresh resumes same Run",
+      "seven phase evidence and real DAG",
+      "CSV and PNG previews",
+      "mobile history drawer"
+    ],
+    "center": [
+      "latest run and aggregate counters",
+      "history next page, full-text search and status filter",
+      "skill contract links",
+      "system runtime and S1 boundaries",
+      "all four raw experiments visible"
+    ],
+    "run": [
+      "actual dependency graph",
+      "milestone event filter",
+      "full step details and code",
+      "upstream file producer and fingerprint",
+      "mobile automatic inspector and independent scrolling"
+    ],
+    "graph": [
+      "search selects skill",
+      "neighbor filter shows 4 nodes",
+      "similarity filter changes to 3 nodes",
+      "contract details and navigation",
+      "responsive mobile graph"
+    ],
+    "laboratory": [
+      "seven tabs desktop and mobile",
+      "full skill contract and deep link",
+      "three retrieval modes complete",
+      "Wiki route and validated dependencies complete",
+      "plan generation and independent blind score complete",
+      "four experiment records complete",
+      "eight adapter exports complete",
+      "complete execution chain creates and finishes real Run",
+      "research comparison retains single-step evidence and learning gate"
+    ],
+    "shared": [
+      "mobile connection dialog opens and closes",
+      "no root horizontal overflow at 390px",
+      "safe text and bounded CSV preview"
+    ]
+  },
+  "experiment_metadata_issue": "exp1_retrieval_heldout records split=dev and dataset=dev-v1; raw values preserved and classification flagged for review",
+  "s1_production_connection_verified": false,
+  "execution_isolation": "host subprocess for controlled demos; production worker isolation, identity mapping and shared queue are pending",
+  "research_comparison_after_repair": {
+    "final_ok": true,
+    "attempts": 2,
+    "verification_passed": 4,
+    "verification_total": 4,
+    "planned_steps": 4,
+    "feedback_written": false,
+    "learning_eligible": false,
+    "cost_yuan": 0.1077,
+    "reason": "Only one step of the four-step plan was executed; full-trajectory learning blocked"
+  },
+  "experiment_metadata_fix": "All three benchmark generators now record selected dataset version, split, task file and full SHA-256; historical raw results preserved"
+}

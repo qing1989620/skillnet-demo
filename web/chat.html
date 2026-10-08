@@ -155,8 +155,10 @@
     .composer{padding:12px 14px}
   }
 </style>
-<link rel="stylesheet" href="/static/assets/ui.css?v=0.8.1-restored2">
-<script src="/static/assets/ui.js?v=0.8.1-restored2"></script>
+<link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
+<script src="/static/assets/ui.js?v=0.9.0-product"></script>
+<link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
+<script src="/static/assets/product.js?v=0.9.0-product"></script>
 </head>
 <body>
 
@@ -178,10 +180,10 @@
     <b id="sess-title">新对话</b>
     <span class="hint" id="sess-hint">提问后会调用完整 Agent 框架：检索 → 选择 → 编排 → 真实执行 → 验收 → 进化</span>
     <span class="sp"></span>
-    <a id="last-run" href="#" target="_blank" style="display:none">完整面板 →</a>
+    <a id="last-run" href="#" target="_blank" style="display:none">运行详情 ↗</a>
     <span id="product-nav" style="display:contents"></span>
   </div>
-  <div class="msgs" id="msgs"></div>
+  <div class="msgs" id="msgs" tabindex="0" role="region" aria-label="对话与执行证据"></div>
   <div class="composer">
     <div class="chips" id="chips"></div>
     <div class="inputrow">
@@ -202,7 +204,7 @@ const LS_KEY = "skillnet_chat_sessions_v1";
 let SESSIONS = [], CUR = null, busy = false, activeRun = null;
 document.getElementById("product-nav").innerHTML = UI.productNav("chat");
 const PHASES = [["retrieval","检索对比"],["ranking","策略选择"],["orchestration","任务编排"],
-                ["dag","DAG 收束"],["plan","研究方案"],["exec","真实执行"],["final","验收与进化"]];
+                ["plan","研究方案"],["dag","DAG 收束"],["exec","真实执行"],["final","验收与进化"]];
 const CHIPS = [
   "解释一下费马大定理",
   "对一批剂量-存活率实验数据做清洗并做剂量-反应分析",
@@ -291,7 +293,7 @@ function renderMain(){
   if (last){ link.style.display = ""; link.href = `/run?id=${encodeURIComponent(last.run_id)}`; }
   else link.style.display = "none";
   if (!s || !s.turns.length){
-    host.innerHTML = '<div class="empty">在上方输入问题，调用完整 Agent 框架。<br>' +
+    host.innerHTML = '<div class="empty">从一个问题开始，让能力协作起来。<br>' +
       '执行完成后这里会给出：AI 回复 · 每一步的执行解释 · 本次任务总结（SkillNet 的角色与技能库成长）。<br>' +
       '同一个对话里可以继续追问，系统会自动带上上下文。</div>';
     return;
@@ -303,7 +305,7 @@ function renderMain(){
 
 function turnHTML(t, i){
   return `<div class="turn" id="turn-${i}">
-    <div class="q"><div class="who">你</div><div class="txt">${esc(t.q)}</div></div>
+    <div class="q"><div class="who">你</div><div class="txt">${t.q.length>150?`<details class="question-details"><summary>${esc(t.q.slice(0,96))}…<span>展开完整问题 ▾</span></summary><div>${esc(t.q)}</div></details>`:esc(t.q)}</div></div>
     <div class="acard" id="acard-${i}">${t._html || (t.status === "running" && !t.run_id ? phaseBarHTML(i) : '<span style="color:var(--ink3)">正在读取执行记录…</span>')}</div>
   </div>`;
 }
@@ -311,7 +313,7 @@ function turnHTML(t, i){
 function phaseBarHTML(index){
   return '<div class="phases">' + PHASES.map(([k, label]) =>
     `<span class="ph" id="ph-${k}-${index}"><i></i>${label}<b style="font-weight:400;color:var(--ink3)"></b></span>`).join("") +
-    `</div><div class="sub" id="ph-sub-${index}">正在创建研究运行…</div>`;
+    `</div><div class="sub" id="ph-sub-${index}">正在创建研究运行…</div><div class="chat-live" id="chat-live-${index}" aria-label="实时执行证据"></div>`;
 }
 function setPhase(k, state, ms, i){
   const wrap = document.getElementById(`ph-${k}-${i}`) || document.getElementById(`ph-${k}`);
@@ -379,18 +381,18 @@ function taskSummaryHTML(fin){
     (n.capability ? `<div style="margin-top:5px;color:var(--ink2)">${esc(n.capability)}</div>` : "") + `</div>`).join("");
   return `<div class="task-summary">
     <div class="ts-head"><i></i>本次任务总结 · SkillNet 扮演的角色<span class="rp-meta">数据来自技能统计前后差值</span></div>
-    <div class="ts-role">它不是执行者，而是这个 Agent 的<b>能力运维层</b>：本次任务里它完成了「找到能力 → 挑出能力 → 编排能力 → 验收产物 → 沉淀能力」五件事。</div>
+    <div class="ts-role">它是这个 Agent 的<b>能力运维层</b>：以下记录展示本次检索、选择、编排、执行与学习的实际结果。</div>
     <div class="ts-steps">
       <div class="ts-step"><b>① 检索</b><span>从 ${imp.library_before} 个技能中三档检索（BM25 / 语义 / 关系图扩展）定位候选</span></div>
       <div class="ts-step"><b>② 选择</b><span>LinUCB 按任务条件化排序，最终采用 ${s.used_n || 0} 个技能：${esc((imp.used || []).slice(0,8).join("、") || "通用执行")}</span></div>
       <div class="ts-step"><b>③ 编排</b><span>按技能依赖边生成执行 DAG，${steps.length} 步真实执行（含修复后的 ${nFix} 步）</span></div>
       <div class="ts-step"><b>④ 验收</b><span>程序化验收 ${chkOk}/${chkAll} 通过</span></div>
-      <div class="ts-step"><b>⑤ 沉淀</b><span>${(imp.new_skills || []).length ? `蒸馏并准入 ${(imp.new_skills || []).length} 个新技能` : "本次未产生通过准入的新技能（相似度/质量闸拦截）"}</span></div>
+      <div class="ts-step"><b>⑤ 沉淀</b><span>${(imp.new_skills || []).length ? `蒸馏并准入 ${(imp.new_skills || []).length} 个新技能` : esc(fin.staged?.learning_gate?.skip_reason || fin.staged?.learning_gate?.reason || "本次未记录新技能准入")}</span></div>
     </div>
     <div class="ts-metrics">
       <div><b>${imp.library_before} → ${imp.library_after}</b>技能库规模${delta ? `（+${delta}）` : ""}</div>
       <div><b>${imp.evolved_before} → ${imp.evolved_after}</b>演化技能${evoUp ? `（+${evoUp}）` : ""}</div>
-      <div><b>${s.updated_n || 0}</b>个技能被本次任务更新</div>
+      <div><b>${s.updated_n || 0}</b>个技能执行账本发生变化</div>
     </div>
     ${rows ? `<div class="ts-sec">── 技能资产更新（真实统计变化）──</div>
       <table><tr><th style="width:40%">技能</th><th>变化</th></tr>${rows}</table>` : ""}
@@ -412,9 +414,9 @@ function resultHTML(fin){
     `¥${Number(fin.cost_yuan || 0).toFixed(3)} · ${(fin.duration_ms/1000).toFixed(1)}s<br>` +
     `步骤 ${steps.length}：一次通过 <b style="color:var(--ok)">${nDone - nFix}</b> · 修复后成功 <b style="color:var(--warn)">${nFix}</b> · 失败 <b style="color:var(--bad)">${nFail}</b> · 跳过 <b>${nSkip}</b>` +
     (cpTxt ? `<br><span style="color:#8a97a4">${cpTxt}</span>` : "") +
-    ` · <a href="/run?id=${encodeURIComponent(fin.run_id)}" target="_blank">完整面板 →</a></div>`;
+    ` · <a href="/run?id=${encodeURIComponent(fin.run_id)}" target="_blank">运行详情 ↗</a></div>`;
   const reply = (fin.staged || {}).final_reply;
-  return sum +
+  return sum + Product.evidenceHTML(fin) +
     `<button class="toggle" type="button" aria-expanded="false" onclick="toggleDetail(this)">查看执行详情（${steps.length} 步 · 解释与产物）▾</button>
      <div class="detail" style="display:none">
        <div class="dtabs">
@@ -425,7 +427,7 @@ function resultHTML(fin){
        <div class="dsec" data-sec="raw"><pre style="max-height:280px;overflow:auto;font:11px/1.6 var(--mono);background:var(--soft);padding:10px;border-radius:4px">${esc(((fin.events || []).map(e => e.type).join(" → ")) || "（无事件记录）")}</pre></div>
      </div>` +
     (reply ? replyCardHTML(reply) : "") +
-    taskSummaryHTML(fin);
+    `<details class="product-impact"><summary>技能资产变化与完整任务总结</summary>${taskSummaryHTML(fin)}</details>`;
 }
 function toggleDetail(el){
   const d = el.nextElementSibling;
@@ -447,10 +449,20 @@ async function hydrateTurn(i, runId){
   try {
     const fin = await jget(`${API}/api/runs/${encodeURIComponent(runId)}`, 15000);
     t._loaded = true; t.status = fin.status;
-    t._html = resultHTML(fin);
     if (CUR !== sessionId || cur()?.turns[i] !== t) return;
     const box = document.getElementById(`acard-${i}`);
-    if (box) box.innerHTML = t._html;
+    if(!Product.terminal.includes(fin.status)){
+      t._html=phaseBarHTML(i);if(box)box.innerHTML=t._html;
+      if(!busy){
+        busy=true;activeRun=runId;
+        document.getElementById('send').disabled=true;document.getElementById('send').textContent='运行中…';document.querySelector('.newbtn').disabled=true;
+        document.getElementById('cancel-active').style.display='';document.getElementById('cancel-active').disabled=false;
+        try{await stream(i,runId);const final=await jget(`${API}/api/runs/${encodeURIComponent(runId)}`,15000);t.status=final.status;t._html=resultHTML(final);t.reply_digest=(final.staged?.final_reply||'').slice(0,400);if(box?.isConnected)box.innerHTML=t._html;saveSessions();}
+        finally{busy=false;activeRun=null;document.getElementById('send').disabled=false;document.getElementById('send').textContent='发送';document.querySelector('.newbtn').disabled=false;document.getElementById('cancel-active').style.display='none';}
+      }else if(box)box.innerHTML=`<a href="/run?id=${encodeURIComponent(runId)}">此任务仍在执行，打开实时运行详情 ↗</a>`;
+    }else{
+      t._html=resultHTML(fin);if(box)box.innerHTML=t._html;
+    }
   } catch (e) {
     if (CUR !== sessionId || cur()?.turns[i] !== t) return;
     const box = document.getElementById(`acard-${i}`);
@@ -493,7 +505,7 @@ async function submitQ(){
     }
     const { run_id } = await r.json();
     turn.run_id = run_id; activeRun = run_id; saveSessions();
-    localStorage.setItem("last_run",run_id);
+    try{localStorage.setItem("last_run",run_id);}catch{}
     document.getElementById("cancel-active").disabled = false;
     const link = document.getElementById("last-run");
     link.style.display = ""; link.href = `/run?id=${encodeURIComponent(run_id)}`;
@@ -520,7 +532,7 @@ async function submitQ(){
     document.querySelector(".newbtn").disabled = false;
     document.getElementById("cancel-active").style.display = "none";
     activeRun = null;
-    document.getElementById("msgs").scrollTop = document.getElementById("msgs").scrollHeight;
+    document.getElementById(`acard-${idx}`)?.closest(".turn")?.scrollIntoView({block:"start",behavior:"smooth"});
   }
 }
 
@@ -544,8 +556,20 @@ async function stream(i, runId){
   }
 }
 
+const LIVE_MODELS={};
 function onEvent(i, ev){
   const t = ev.type || "", d = ev.data || ev;
+  const live=document.getElementById(`chat-live-${i}`);
+  if(live){
+    const model=LIVE_MODELS[i]||(LIVE_MODELS[i]={steps:[],log:[]});
+    if(t==='dag.ready')model.steps=(d.nodes||[]).map(n=>({...n,status:'pending'}));
+    const step=model.steps.find(s=>s.idx===ev.step);
+    if(step&&t==='step.started')step.status='running';
+    if(step&&t==='step.completed')step.status=d.status||'done';
+    const text=t==='retrieval.completed'?`检索候选：${(d.selected||[]).join('、')}`:t==='ranking.completed'?'任务条件化排序已完成':t==='plan.created'?`方案：${d.approach||''}`:t==='step.started'?`步骤 ${ev.step+1} · ${d.action||''}`:t==='step.retry'?`步骤 ${ev.step+1} 自动修复：${d.reason||''}`:t==='artifact.created'?`交付产物：${d.name}`:t==='evolution.proposed'?(d.accepted?'新技能已准入':d.skip_reason||d.feedback?.find(f=>f.skip_reason)?.skip_reason||'本次未准入新技能'):'';
+    if(text)model.log.push(text);
+    live.innerHTML=Product.dagHTML(model)+`<div class="chat-live-log">${model.log.slice(-4).map(text=>`<p>${esc(text)}</p>`).join('')}</div>`;
+  }
   const P = k => document.getElementById(`ph-${k}-${i}`);
   const phase = (key,state,ms)=>setPhase(key,state,ms,i);
   if (t === "retrieval.completed"){ phase("retrieval","done",d.duration_ms); phase("ranking","run");
@@ -553,16 +577,16 @@ function onEvent(i, ev){
   else if (t === "ranking.completed"){ phase("ranking","done"); phase("orchestration","run"); }
   else if (t === "orchestration.completed"){ phase("orchestration","done"); phase("dag","run");
     setSub(i, `编排完成：${(d.skills || []).length} 个技能进入执行图`); }
-  else if (t === "dag.ready"){ phase("dag","done"); phase("plan","run");
+  else if (t === "dag.ready"){ phase("dag","done"); phase("exec","run");
     setSub(i, `执行图就绪：${(d.nodes || []).length} 步（来源 ${d.workflow_source || "—"}）`); }
-  else if (t === "plan.created"){ phase("plan","done",d.duration_ms); phase("exec","run");
+  else if (t === "plan.created"){ phase("plan","done",d.duration_ms); phase("dag","run");
     setSub(i, `方案生成：${d.steps} 步`); }
-  else if (t === "step.started"){ setSub(i, `执行中：Step ${d.step + 1}`); }
-  else if (t === "step.attempt" && d.ok === false){ setSub(i, `Step ${d.step + 1} 第 ${d.attempt} 次失败，准备修复`); }
+  else if (t === "step.started"){ setSub(i, `执行中：Step ${ev.step + 1}`); }
+  else if (t === "step.attempt" && d.ok === false){ setSub(i, `Step ${ev.step + 1} 第 ${d.attempt} 次失败，准备修复`); }
   else if (t === "execution.finished"){ phase("exec", d.failed > 0 ? "fail" : "done"); phase("final","run"); }
   else if (t === "evolution.proposed"){ setSub(i, d.accepted ? `技能蒸馏：已准入 ${d.name} · 库规模 ${d.library_size}` : "技能蒸馏：本次未准入"); }
   else if (t === "run.reply"){ phase("final","done"); setSub(i, "Agent 最终回复已生成"); }
-  else if (t === "run.failed" || t === "run.budget_exceeded"){
+  else if (t === "run.failed" || t === "run.budget_exceeded" || t === "run.cancelled"){
     PHASES.forEach(([k]) => { if (P(k) && P(k).className !== "ph ok") phase(k, "fail"); });
     setSub(i, "运行中断：" + String(d.reason || t));
   }

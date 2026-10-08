@@ -62,7 +62,7 @@ const factory = new Function(
   return {renderGraph, renderMeta, renderDomains, renderQuality, renderPipeline,
           renderRefs, recallOf, esc, pct, num};`
 );
-const api = factory(mockDocument, mockFetch, {}, mockUI);
+const api = factory(mockDocument, mockFetch, {addEventListener() {}}, mockUI);
 
 const graph = loadJSON('graph.json');
 const stats = loadJSON('stats.json');
@@ -88,7 +88,7 @@ t('渲染函数全套执行（注入真实数据）', () => {
     + 'renderMeta(); renderDomains(); renderQuality(); renderPipeline(); renderRefs(); renderGraph();\n'
     + 'return 1;'
   );
-  run(mockDocument, mockFetch, {}, mockUI);
+  run(mockDocument, mockFetch, {addEventListener() {}}, mockUI);
   const svg = captured['#graph'] || '';
   if (!svg.includes('<svg ')) throw new Error('未生成 SVG');
   const circles = (svg.match(/<circle/g) || []).length;

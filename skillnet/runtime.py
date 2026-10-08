@@ -148,6 +148,7 @@ class RunStep:
     status: str = STEP_PENDING
     depends_on: list[int] = field(default_factory=list)
     inputs: list[str] = field(default_factory=list)      # 来自前序步骤的产物名
+    input_artifacts: list[dict[str, Any]] = field(default_factory=list)
     code: str = ""
     attempts: list[ExecutionAttempt] = field(default_factory=list)
     artifacts: list[Artifact] = field(default_factory=list)
@@ -185,6 +186,7 @@ class RunStep:
         return {
             "idx": self.idx, "action": self.action, "skill": self.skill,
             "status": self.status, "depends_on": self.depends_on, "inputs": self.inputs,
+            "input_artifacts": self.input_artifacts,
             "code": self.code, "n_attempts": self.n_attempts,
             "fixed": self.fixed, "exhausted": self.exhausted,
             "attempts": [a.to_dict() for a in self.attempts],
@@ -350,6 +352,7 @@ class RunStore:
         self.root.mkdir(parents=True, exist_ok=True)
         self._mem: dict[str, Run] = {}
         self._lock = threading.RLock()
+        self._summaries: dict[Path, tuple[tuple[int, int, int, int], dict[str, Any]]] = {}
 
     # ---- 内存 ----
     def put(self, run: Run) -> None:
@@ -377,6 +380,8 @@ class RunStore:
                 d = json.loads(f.read_text(encoding="utf-8"))
             except (OSError, ValueError):
                 continue
+            if not isinstance(d, dict):
+                continue
             if d.get("status") in TERMINAL:
                 continue
             d["status"] = STATUS_INTERRUPTED
@@ -390,29 +395,68 @@ class RunStore:
         return n
 
     def list_recent(self, limit: int = 50, task_fp: str | None = None) -> list[dict[str, Any]]:
-        """按开始时间倒序列出 Run 摘要（内存 + 磁盘合并，磁盘优先保证不丢历史）。"""
-        seen: dict[str, dict[str, Any]] = {}
-        for f in sorted(self.root.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
-            try:
-                d = json.loads(f.read_text(encoding="utf-8"))
-            except (OSError, ValueError):
-                continue
-            if task_fp and d.get("task_fp") != task_fp:
-                continue
-            seen[d.get("run_id", f.stem)] = self._summary(d)
-            if len(seen) >= limit:
-                break
+        return self.list_page(limit=limit, task_fp=task_fp)["runs"]
+
+    def list_page(self, limit: int = 50, offset: int = 0, *, task_fp: str | None = None,
+                  q: str = "", status: str | None = None) -> dict[str, Any]:
+        """按任务开始时间分页。缓存轻量摘要；仅重新读取改变的检查点文件。
+
+        文件修改时间不能代表任务时间（取消、性能上报也会改写旧记录）。
+        内存中的活动任务总是覆盖磁盘检查点，完整任务文本用于搜索。
+        """
         with self._lock:
-            for rid, r in self._mem.items():
-                if task_fp and r.task_fp != task_fp:
+            paths = set(self.root.glob("*.json"))
+            for stale in self._summaries.keys() - paths:
+                del self._summaries[stale]
+            seen: dict[str, dict[str, Any]] = {}
+            for path in paths:
+                try:
+                    stat = path.stat()
+                    # Atomic replacements can share size and a coarse Windows
+                    # timestamp; file identity distinguishes those checkpoints.
+                    fingerprint = (stat.st_mtime_ns, stat.st_size, stat.st_ino, stat.st_ctime_ns)
+                    cached = self._summaries.get(path)
+                    if not cached or cached[0] != fingerprint:
+                        data = json.loads(path.read_text(encoding="utf-8"))
+                        if not isinstance(data, dict) or not data.get("run_id"):
+                            continue
+                        cached = (fingerprint, self._summary(data))
+                        self._summaries[path] = cached
+                    seen[cached[1]["run_id"]] = cached[1]
+                except (OSError, ValueError, TypeError, AttributeError):
                     continue
-                # 内存是正在执行的最新状态；磁盘是最近一次检查点，不能覆盖它。
-                seen[rid] = self._summary(r.to_dict(with_events=False))
-        return sorted(seen.values(), key=lambda x: x.get("started_at_ms", 0), reverse=True)[:limit]
+            for rid, run in self._mem.items():
+                # Do not serialize code, attempts or the event log for a list request.
+                seen[rid] = self._summary({
+                    "run_id": rid, "task": run.task, "task_fp": run.task_fp,
+                    "status": run.status, "duration_ms": run.duration_ms,
+                    "cost_yuan": run.cost_yuan, "tokens": run.tokens, "llm_calls": run.llm_calls,
+                    "step_stats": run.step_stats(), "steps": [
+                        {"checks": [c.to_dict() for c in s.checks],
+                         "verifications": [v.to_dict() for v in s.verifications]}
+                        for s in run.steps], "staged": run.staged,
+                    "artifacts": run.artifacts, "started_at_ms": run.started_at_ms,
+                })
+            needle = q.strip().casefold()
+            rows = [s for s in seen.values()
+                    if (not task_fp or s["task_fp"] == task_fp)
+                    and (not status or s["status"] == status)
+                    and (not needle or needle in s["_search"])]
+            rows.sort(key=lambda s: (s.get("started_at_ms") or 0, s["run_id"]), reverse=True)
+            summary = {"total": len(rows), "completed": sum(s["status"] == STATUS_COMPLETED for s in rows),
+                       "active": sum(s["status"] not in TERMINAL for s in rows),
+                       "artifacts": sum(s["artifacts"] for s in rows),
+                       "cost_yuan": round(sum(s.get("cost_yuan") or 0 for s in rows), 4)}
+            page = [{k: v for k, v in s.items() if k != "_search"} for s in rows[offset:offset + limit]]
+            return {"runs": page, "total": len(rows), "offset": offset, "limit": limit,
+                    "has_more": offset + len(page) < len(rows), "summary": summary}
 
     @staticmethod
     def _summary(d: dict[str, Any]) -> dict[str, Any]:
         ss = d.get("step_stats") or {}
+        checks = [c for s in d.get("steps") or [] for c in s.get("checks") or []]
+        semantic = [c for s in d.get("steps") or [] for c in s.get("verifications") or []]
+        gate = (d.get("staged") or {}).get("learning_gate") or {}
         return {
             "run_id": d.get("run_id"), "task": (d.get("task") or "")[:120],
             "task_fp": d.get("task_fp"), "status": d.get("status"),
@@ -421,6 +465,11 @@ class RunStore:
             "steps_done": ss.get("done", 0), "steps_failed": ss.get("failed", 0),
             "artifacts": len(d.get("artifacts") or []),
             "started_at_ms": d.get("started_at_ms"),
+            "llm_calls": d.get("llm_calls", 0),
+            "checks_passed": sum(c.get("passed") is True for c in checks), "checks_total": len(checks),
+            "semantic_passed": sum(c.get("passed") is True for c in semantic), "semantic_total": len(semantic),
+            "learning_eligible": gate.get("eligible"), "learning_reason": gate.get("reason") or gate.get("skip_reason", ""),
+            "_search": " ".join(str(d.get(k) or "") for k in ("task", "run_id", "task_fp")).casefold(),
         }
 
     # ---- 磁盘 ----
@@ -468,6 +517,8 @@ class RunStore:
     @staticmethod
     def _from_dict(d: dict[str, Any]) -> Run:
         """从磁盘恢复 Run（事件与步骤产物保留；运行中状态标记为中断）。"""
+        if not isinstance(d, dict):
+            raise TypeError("Run checkpoint must be an object")
         run = Run(run_id=d.get("run_id", ""), task=d.get("task", ""),
                   task_fp=d.get("task_fp", ""), status=d.get("status", STATUS_FAILED))
         run.model = d.get("model", "")
@@ -497,6 +548,7 @@ class RunStore:
             st.status = sd.get("status", STEP_PENDING)
             st.depends_on = sd.get("depends_on") or []
             st.inputs = sd.get("inputs") or []
+            st.input_artifacts = sd.get("input_artifacts") or []
             st.code = sd.get("code") or ""
             st.error = sd.get("error") or ""
             st.verify_skip_reason = sd.get("verify_skip_reason") or ""

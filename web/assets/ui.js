@@ -122,7 +122,7 @@
     } finally { await reader.cancel().catch(()=>{}); reader.releaseLock(); }
   }
   function productNav(active) {
-    return `<nav class="ui-product-nav" aria-label="产品导航">${[["/","产品概览","briefing"],["/chat","科研工作台","chat"],["/runs","运行中心","dashboard"],["/graph","技能图谱","graph"]].map(([href,label,page]) => `<a href="${href}"${page === active ? ' aria-current="page"' : ""}>${label}</a>`).join("")}<button class="ui-settings-btn" type="button" data-connection-settings>连接设置</button></nav>`;
+    return `<nav class="ui-product-nav" aria-label="产品导航">${[["/","产品概览","briefing"],["/chat","科研工作台","chat"],["/runs","运行中心","dashboard"],["/graph","技能星图","graph"],["/dashboard","内核实验室","technical"]].map(([href,label,page]) => `<a href="${href}"${page === active ? ' aria-current="page"' : ""}>${label}</a>`).join("")}<button class="ui-settings-btn" type="button" data-connection-settings>连接设置</button></nav>`;
   }
   /* Original c491d8c interactions, retained alongside connection safety. */
   function initProgress() {

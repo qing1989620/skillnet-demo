@@ -1,0 +1,86 @@
+{
+  "exec_record": {
+    "skill": "descriptive-stats-csv-summary",
+    "task": "只使用公开演示数据，不联网：A组[1,2,3,4,5]，B组[2,3,4,5,6]。完成3步真实执行：计算各组n、均值与样本标准差(ddof=1)，保留4位小数输出summary.csv；用绝对容差0.0001逐值回读校验表头group,n,mean,std_sample与2组数据；直接读取同一CSV生成figure.png，误差条表示样本标准差，纵轴从0开始。只做描述统计，注明演示数据不可用于科",
+    "action": "编写单文件 Python 脚本，硬编码 A=[1,2,3,4,5]、B=[2,3,4,5,6]，对每组计算 n=len(x)、mean=statistics.mean(x)、std_sample=statistics.stdev(x)，写入前统一 round(x,4)，以 UTF-8、逗号分隔写入 summary.csv，列名固定为 group,n,mean,std_sample。",
+    "ok": true,
+    "n_attempts": 2,
+    "error_kind": "",
+    "stderr_tail": "",
+    "code_chars": 509
+  },
+  "skill_exec_stats": {
+    "exec_total": 8,
+    "exec_ok": 8,
+    "exec_fix": 5
+  },
+  "verify_skip_reason": "",
+  "has_verification": true,
+  "skill": "descriptive-stats-csv-summary",
+  "action": "编写单文件 Python 脚本，硬编码 A=[1,2,3,4,5]、B=[2,3,4,5,6]，对每组计算 n=len(x)、mean=statistics.mean(x)、std_sample=statistics.stdev(x)，写入前统一 round(x,4)，以 UTF-8、逗号分隔写入 summary.csv，列名固定为 group,n,mean,std_sample。",
+  "code": "# -*- coding: utf-8 -*-\n\"\"\"\n单文件脚本：描述统计 summary.csv + figure.png\n数据：A=[1,2,3,4,5], B=[2,3,4,5,6]（公开演示数据，非真实实验数据）\n仅做描述统计，不含任何推断统计。\n\"\"\"\nimport os\nimport re\nimport sys\nimport statistics\n\nimport numpy as np\nimport pandas as pd\nimport matplotlib\nmatplotlib.use('Agg')\nimport matplotlib.pyplot as plt\n\n# 中文字体（本机可用 Microsoft YaHei / SimHei）\nplt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'DejaVu Sans']\nplt.rcParams['axes.unicode_minus'] = False\n\n# ---------------- 1. 硬编码演示数据（不联网、不读外部文件） ----------------\nDATA = {\n    \"A\": [1, 2, 3, 4, 5],\n    \"B\": [2, 3, 4, 5, 6],\n}\nCSV_PATH = \"summary.csv\"\nFIG_PATH = \"figure.png\"\nEXPECTED_COLS = [\"group\", \"n\", \"mean\", \"std_sample\"]\n\n\ndef compute_summary(data):\n    \"\"\"对每组计算 n / mean / 样本标准差(ddof=1)，写入前统一 round(4)。\"\"\"\n    rows = []\n    for g, x in data.items():\n        n = len(x)\n        mean = statistics.mean(x)\n        # statistics.stdev 默认 ddof=1（样本标准差），显式等价 numpy.std(x, ddof=1)\n        std_sample = statistics.stdev(x)\n        # 手工核对：样本方差 = Σ(x-mean)²/(n-1)\n        var_manual = sum((v - mean) ** 2 for v in x) / (n - 1)\n        std_manual = var_manual ** 0.5\n        assert abs(std_manual - std_sample) < 1e-12, \"样本标准差手工核对失败\"\n        rows.append({\n            \"group\": g,\n            \"n\": int(n),\n            \"mean\": round(float(mean), 4),\n            \"std_sample\": round(float(std_sample), 4),\n        })\n    return pd.DataFrame(rows, columns=EXPECTED_COLS)\n\n\ndef write_csv(df, path):\n    # UTF-8 + 逗号分隔，保证 pandas 可回读\n    df.to_csv(path, index=False, encoding=\"utf-8\", sep=\",\")\n\n\ndef readback_assert(path):\n    \"\"\"pandas 回读 + 结构断言，失败则非零退出。\"\"\"\n    df = pd.read_csv(path, encoding=\"utf-8\", sep=\",\",\n                     dtype={\"group\": str, \"n\": \"int64\",\n                            \"mean\": \"float64\", \"std_sample\": \"float64\"})\n    fails = []\n    if list(df.columns) != EXPECTED_COLS:\n        fails.append(f\"列名不符: {list(df.columns)}\")\n    if len(df) != len(DATA):\n        fails.append(f\"行数不符: {len(df)} != {len(DATA)}\")\n    if df[\"n\"].dtype.kind not in \"iu\":\n        fails.append(f\"n 非整数 dtype: {df['n'].dtype}\")\n    for c in [\"mean\", \"std_sample\"]:\n        if df[c].dtype.kind != \"f\":\n            fails.append(f\"{c} 非浮点 dtype: {df[c].dtype}\")\n    if int(df.isna().sum().sum()) != 0:\n        fails.append(\"存在 NaN\")\n    # 绝对容差 0.0001 逐值校验\n    expect = {\"A\": (5, 3.0000, 1.5811), \"B\": (5, 4.0000, 1.5811)}\n    for _, r in df.iterrows():\n        g = r[\"group\"]\n        en, em, es = expect[g]\n        if int(r[\"n\"]) != en:\n            fails.append(f\"{g} n 不符: {r['n']} != {en}\")\n        if abs(float(r[\"mean\"]) - em) > 1e-4:\n            fails.append(f\"{g} mean 不符: {r['mean']} != {em}\")\n        if abs(float(r[\"std_sample\"]) - es) > 1e-4:\n            fails.append(f\"{g} std_sample 不符: {r['std_sample']} != {es}\")\n    if fails:\n        print(\"[FAIL] 回读断言失败:\")\n        for f in fails:\n            print(\"  -\", f)\n        sys.exit(1)\n    print(\"[OK] pandas 回读断言全部通过（行数/列名/dtype/无NaN/容差0.0001逐值校验）\")\n    return df\n\n\ndef code_review(path):\n    \"\"\"最小化代码审查：确认无推断统计调用。\n\n    仅扫描可执行代码行（去掉注释与字符串字面量），避免把本函数自身的\n    模式字符串或注释中的说明误判为真实调用。\n    \"\"\"\n    with open(path, \"r\", encoding=\"utf-8\") as f:\n        lines = f.readlines()\n\n    # 去掉注释行与行内注释\n    code_lines = []\n    for ln in lines:\n        stripped = ln.split(\"#\", 1)[0]\n        code_lines.append(stripped)\n    code = \"\\n\".join(code_lines)\n\n    # 去掉字符串字面量（单/双引号，含三引号），避免模式串自匹配\n    code = re.sub(r'\"\"\"[\\s\\S]*?\"\"\"', \"\", code)\n    code = re.sub(r\"'''[\\s\\S]*?'''\", \"\", code)\n    code = re.sub(r'\"[^\"\\n]*\"', \"\", code)\n    code = re.sub(r\"'[^'\\n]*'\", \"\", code)\n\n    pattern = r\"ttest|pvalue|p_value|confidence|effect\"\n    hits = re.findall(pattern, code, flags=re.IGNORECASE)\n    if hits:\n        print(\"[FAIL] 代码审查发现推断统计关键词:\", hits)\n        sys.exit(1)\n    print(\"[OK] 代码审查：未发现 ttest/p值/置信区间/效应量 等推断统计调用\")\n\n\ndef make_figure(df, path):\n    \"\"\"直接读取同一 CSV 生成误差条图，误差条=样本标准差，纵轴从0开始。\"\"\"\n    fig, ax = plt.subplots(figsize=(6, 4.5))\n    x = np.arange(len(df))\n    ax.bar(x, df[\"mean\"], yerr=df[\"std_sample\"], capsize=8,\n           color=[\"#4C72B0\", \"#DD8452\"], alpha=0.85,\n           error_kw=dict(ecolor=\"black\", lw=1.5))\n    ax.set_xticks(x)\n    ax.set_xticklabels(df[\"group\"])\n    ax.set_xlabel(\"组别\")\n    ax.set_ylabel(\"均值 ± 样本标准差 (ddof=1)\")\n    ax.set_title(\"演示数据描述统计（误差条=样本标准差）\")\n    ax.set_ylim(0, max(df[\"mean\"] + df[\"std_sample\"]) * 1.3)\n    for i, r in df.iterrows():\n        ax.text(i, r[\"mean\"] + r[\"std_sample\"] + 0.1,\n                f\"mean={r['mean']:.4f}\\nstd={r['std_sample']:.4f}\",\n                ha=\"center\", va=\"bottom\", fontsize=9)\n    fig.tight_layout()\n    fig.savefig(path, dpi=150)\n    plt.close(fig)\n    print(f\"[OK] 已生成图: {path}\")\n\n\ndef main():\n    print(\"=== 演示数据（非真实实验数据，不可用于科学结论） ===\")\n    for g, x in DATA.items():\n        print(f\"  {g} = {x}\")\n\n    df = compute_summary(DATA)\n    print(\"\\n=== 描述统计结果 ===\")\n    print(df.to_string(index=False))\n\n    write_csv(df, CSV_PATH)\n    print(f\"\\n[OK] 已写入 {CSV_PATH}\")\n\n    code_review(os.path.abspath(__file__))\n    df2 = readback_assert(CSV_PATH)\n    make_figure(df2, FIG_PATH)\n\n    print(\"\\n=== 结果说明（演示数据，不可用于科学结论） ===\")\n    for _, r in df2.iterrows():\n        print(f\"  {r['group']} 组：n={int(r['n'])}，均值={r['mean']:.4f}，\"\n              f\"样本标准差(ddof=1)={r['std_sample']:.4f}。\")\n    print(\"  两组样本标准差相同(1.5811)，仅反映本演示数据的离散程度。\")\n    print(\"  以上均为描述统计，不含任何推断统计或因果结论。\")\n    print(\"  免责声明：本结果基于演示数据，不可用于科学结论。\")\n\n\nif __name__ == \"__main__\":\n    main()",
+  "final_ok": true,
+  "attempts": [
+    {
+      "n": 1,
+      "ok": false,
+      "stderr": "",
+      "stdout": "=== 演示数据（非真实实验数据，不可用于科学结论） ===\n  A = [1, 2, 3, 4, 5]\n  B = [2, 3, 4, 5, 6]\n\n=== 描述统计结果 ===\ngroup  n  mean  std_sample\n    A  5   3.0      1.5811\n    B  5   4.0      1.5811\n\n[OK] 已写入 summary.csv\n[FAIL] 代码审查发现推断统计关键词: ['ttest', 'pvalue', 'p_value', 'confidence', 'effect', 'ttest']\n",
+      "error_kind": "exception",
+      "duration": 1.41
+    },
+    {
+      "n": 2,
+      "ok": true,
+      "stderr": "",
+      "stdout": "=== 演示数据（非真实实验数据，不可用于科学结论） ===\n  A = [1, 2, 3, 4, 5]\n  B = [2, 3, 4, 5, 6]\n\n=== 描述统计结果 ===\ngroup  n  mean  std_sample\n    A  5   3.0      1.5811\n    B  5   4.0      1.5811\n\n[OK] 已写入 summary.csv\n[OK] 代码审查：未发现 ttest/p值/置信区间/效应量 等推断统计调用\n[OK] pandas 回读断言全部通过（行数/列名/dtype/无NaN/容差0.0001逐值校验）\n[OK] 已生成图: figure.png\n\n=== 结果说明（演示数据，不可用于科学结论） ===\n  A 组：n=5，均值=3.0000，样本标准差(ddof=1)=1.5811。\n  B 组：n=5，均值=4.0000，样本标准差(ddof=1)=1.5811。\n  两组样本标准差相同(1.5811)，仅反映本演示数据的离散程度。\n  以上均为描述统计，不含任何推断统计或因果结论。\n  免责声明：本结果基于演示数据，不可用于科学结论。\n",
+      "error_kind": "",
+      "duration": 1.54
+    }
+  ],
+  "n_attempts": 2,
+  "fixed": true,
+  "exhausted": false,
+  "truncated": false,
+  "stdout": "=== 演示数据（非真实实验数据，不可用于科学结论） ===\n  A = [1, 2, 3, 4, 5]\n  B = [2, 3, 4, 5, 6]\n\n=== 描述统计结果 ===\ngroup  n  mean  std_sample\n    A  5   3.0      1.5811\n    B  5   4.0      1.5811\n\n[OK] 已写入 summary.csv\n[OK] 代码审查：未发现 ttest/p值/置信区间/效应量 等推断统计调用\n[OK] pandas 回读断言全部通过（行数/列名/dtype/无NaN/容差0.0001逐值校验）\n[OK] 已生成图: figure.png\n\n=== 结果说明（演示数据，不可用于科学结论） ===\n  A 组：n=5，均值=3.0000，样本标准差(ddof=1)=1.5811。\n  B 组：n=5，均值=4.0000，样本标准差(ddof=1)=1.5811。\n  两组样本标准差相同(1.5811)，仅反映本演示数据的离散程度。\n  以上均为描述统计，不含任何推断统计或因果结论。\n  免责声明：本结果基于演示数据，不可用于科学结论。\n",
+  "artifacts": [
+    {
+      "name": "figure.png",
+      "bytes": 33360,
+      "path": "D:\\qing_zhuomian_\\开发区\\skillnet\\skillnet-demo\\out\\demo_artifacts\\4bafbb0c\\run\\try2\\figure.png"
+    },
+    {
+      "name": "summary.csv",
+      "bytes": 57,
+      "path": "D:\\qing_zhuomian_\\开发区\\skillnet\\skillnet-demo\\out\\demo_artifacts\\4bafbb0c\\run\\try2\\summary.csv"
+    }
+  ],
+  "verification": [
+    {
+      "item": "手工核对均值与样本标准差：样本方差=Σ(x-mean)²/(n-1)，样本标准差=sqrt(样本方差)，与脚本输出比对。",
+      "passed": true,
+      "evidence": "代码含var_manual与std_manual手工核对assert"
+    },
+    {
+      "item": "grep 脚本确认无 ttest/p 值/置信区间/效应量等推断统计调用。",
+      "passed": true,
+      "evidence": "输出[OK]未发现ttest/p值/置信区间/效应量"
+    },
+    {
+      "item": "pandas 回读断言：行数、列名、dtype、无 NaN 全部通过；失败则非零退出。",
+      "passed": true,
+      "evidence": "输出[OK]回读断言全部通过，失败sys.exit(1)"
+    },
+    {
+      "item": "逐句检查结果说明：无 p 值、无显著性结论、无因果表述，且含免责声明关键词。",
+      "passed": true,
+      "evidence": "说明含免责声明，无p值/显著性/因果表述"
+    }
+  ],
+  "verification_passed": 4,
+  "verification_total": 4,
+  "workdir": "D:\\qing_zhuomian_\\开发区\\skillnet\\skillnet-demo\\out\\demo_artifacts\\4bafbb0c\\run",
+  "mode": "contract",
+  "step_index": 0,
+  "step_label": "S1"
+}

@@ -68,7 +68,7 @@ async def _lifespan(application: FastAPI):
 
 app = FastAPI(
     title="SkillNet-S1",
-    version="0.8.0",
+    version="0.9.0",
     description="面向科研 Agent 的技能运维层：技能本体 / 混合检索 / 上下文老虎机 / 技能进化",
     lifespan=_lifespan,
 )
@@ -404,6 +404,21 @@ def _judge_reward(evaluation: dict[str, Any]) -> float | None:
     return float(evaluation.get("weighted") or 0) / 10.0
 
 
+def _demo_learning_reward(evaluation: dict[str, Any], execution: dict[str, Any],
+                          planned_steps: int) -> tuple[float | None, str]:
+    """A one-step research experiment cannot certify a multi-step trajectory."""
+    reward = _judge_reward(evaluation)
+    if reward is None:
+        return None, "评审不可用，未更新反馈"
+    if execution.get("final_ok") is not True:
+        return None, "真实执行未成功，未更新反馈或进行技能准入"
+    if planned_steps != 1:
+        return None, "仅验证了方案中的单步，未验证完整轨迹，未更新反馈或进行技能准入"
+    if any(v.get("passed") is not True for v in execution.get("verification") or []):
+        return None, "技能语义验收存在未通过项，未更新反馈或进行技能准入"
+    return reward, ""
+
+
 # ======================================================================
 # Agent 执行
 # ======================================================================
@@ -659,8 +674,11 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
     stages.append({"stage": "真实执行（沙箱）", "detail": sandbox_result})
 
     # 3.5) 反馈写回：本次盲评奖励更新共享参数 θ——影响所有技能的下一次预测
-    reward = _judge_reward(j)
-    adopted = [s for s in skills if s and s != "manual"]
+    reward, learning_skip = _demo_learning_reward(j, sandbox_result, len(run.response.get("steps") or []))
+    # Research comparison executes only one step. Selected but unexecuted
+    # skills must not receive that step's reward or become its parents.
+    executed_skill = sandbox_result.get("skill")
+    adopted = [executed_skill] if isinstance(executed_skill, str) and executed_skill in skills else []
     if reward is not None:
         for s in adopted:
             bandit.update(req.task, s, reward)
@@ -676,17 +694,18 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
                 "exploit_after": round(e1, 4),
                 "delta": round(e1 - e0, 4),
                 "nudged": reward is not None and n in adopted,
-                "skip_reason": "评审不可用，未更新反馈" if reward is None else "",
+                "skip_reason": learning_skip,
             }
         )
 
     # 4) 从执行轨迹蒸馏新技能
     evolver = SkillEvolver(lib())
     before = len(lib())
-    new_skill = (evolver.distill(req.task, run.trajectory, score=reward, parent=skills[:1])
+    new_skill = (evolver.distill(req.task, run.trajectory, score=reward, parent=adopted[:1])
                  if reward is not None else None)
     if new_skill:
         refresh_runtime()    # 原子替换运行时对象
+    if new_skill or adopted:
         persist_library()    # 落盘，重启后演化成果不丢
 
     stages.append(
@@ -695,7 +714,7 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
             "detail": {
                 "feedback": feedback,
                 "reward": round(reward, 4) if reward is not None else None,
-                "skip_reason": "评审不可用，未更新反馈或进行技能准入" if reward is None else "",
+                "skip_reason": learning_skip,
                 "adopted": adopted,
                 "accepted": new_skill is not None,
                 "name": new_skill.name if new_skill else None,
@@ -1151,7 +1170,7 @@ def _compose_final_reply(run: Any, led: Any) -> str:
             f"{st_map.get(st.status, st.status)}{fixed}｜{st.n_attempts} 次尝试｜"
             f"{st.duration_ms / 1000:.1f}s｜验收 {chk}｜产物 {arts}")
     arts_line = "、".join(f"{a.name}（{a.bytes / 1024:.1f}KB）" for a in run.artifacts) or "无"
-    judged = (f"语义评审加权 {float(run.judge.get('weighted') or 0):.1f}/10"
+    judged = (f"方案盲评加权 {float(run.judge.get('weighted') or 0):.1f}/10（评价方案，不证明产物正确）"
               if isinstance(run.judge, dict) and run.judge.get("weighted") is not None
               and run.judge.get("score_valid", True)
               else "未获得有效评分，未用于反馈或技能准入")
@@ -1159,6 +1178,10 @@ def _compose_final_reply(run: Any, led: Any) -> str:
     cp_line = (f"关键路径 {' → '.join('步骤' + str(i + 1) for i in cp.get('steps', []))}"
                f"（{cp.get('ms', 0) / 1000:.1f}s）" if cp.get("steps") else "未计算")
     evo = run.evolution or {}
+    semantic = [v for s in run.steps for v in s.verifications]
+    semantic_line = (f"产物语义复核 {sum(v.passed for v in semantic)}/{len(semantic)} 通过；"
+                     f"未确认项：{'；'.join(v.item for v in semantic if not v.passed) or '无'}")
+    gate = (run.staged or {}).get("learning_gate") or {}
     evo_line = (f"已蒸馏出新技能 {evo.get('name')}（第 {evo.get('generation')} 代，库规模 {evo.get('library_size')}）"
                 if evo.get("accepted") else "本次未产生通过准入的新技能")
     prompt = f"""你是 SkillNet 的科研 Agent。下面是一次**刚刚真实完成**的任务运行的全部事实记录
@@ -1205,6 +1228,8 @@ def _compose_final_reply(run: Any, led: Any) -> str:
 【关键路径】{cp_line}
 【交付产物】{arts_line}
 【验收与评审】{judged}
+【产物语义复核】{semantic_line}
+【学习准入】{gate.get('reason') or gate.get('skip_reason') or '未记录'}。必须如实说明未确认项；程序运行完成不等于全部验收通过。
 【报告生成前累计（不是最终运行总额）】耗时 {run.duration_ms / 1000:.1f}s · 成本 ¥{float(run.cost_yuan or 0):.3f} · Token {run.tokens} · 步骤结果：完成 {sum(1 for s in run.steps if s.status == 'done')} · 失败 {sum(1 for s in run.steps if s.status == 'failed')} · 跳过 {sum(1 for s in run.steps if s.status == 'skipped')}
 （注意：此刻 Run 的终态判定尚未执行，不要在回复里写具体终态词，按上述步骤结果如实描述）
 【能力沉淀】{evo_line}
@@ -1525,9 +1550,16 @@ def create_run(req: RunReq) -> Any:
 
 @app.get("/api/runs")
 def list_runs(limit: int = Query(default=50, ge=1, le=200),
-              task_fp: str | None = Query(default=None, max_length=64)) -> Any:
+              task_fp: str | None = Query(default=None, max_length=64),
+              offset: int = Query(default=0, ge=0, le=100000),
+              q: str = Query(default="", max_length=200),
+              status: str | None = Query(default=None, max_length=32)) -> Any:
     """Run 列表（不覆盖历史；同任务用 task_fp 分组）。"""
-    return {"runs": run_store().list_recent(limit=limit, task_fp=task_fp)}
+    if status and status not in {runtime.STATUS_CREATED, runtime.STATUS_RETRIEVING,
+                                runtime.STATUS_ORCHESTRATING, runtime.STATUS_EXECUTING,
+                                runtime.STATUS_VERIFYING, runtime.STATUS_EVOLVING, *TERMINAL}:
+        raise HTTPException(422, "未知的运行状态")
+    return run_store().list_page(limit=limit, offset=offset, task_fp=task_fp, q=q, status=status)
 
 
 @app.get("/api/runs/{run_id}")

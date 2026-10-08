@@ -114,8 +114,10 @@
     .ch{flex-wrap:wrap;gap:6px}
   }
 </style>
-<link rel="stylesheet" href="/static/assets/ui.css?v=0.8.1-restored2">
-<script src="/static/assets/ui.js?v=0.8.1-restored2"></script>
+<link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
+<script src="/static/assets/ui.js?v=0.9.0-product"></script>
+<link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
+<script src="/static/assets/product.js?v=0.9.0-product"></script>
 </head>
 <body>
 <header>
@@ -134,12 +136,13 @@
     <div class="hero" style="display:flex;justify-content:space-between;align-items:center">
       <div><h1 style="font-size:17px">运行中心</h1>
       <p style="margin:2px 0 0">每次运行独立 Run ID，步骤 / 产物 / 验收 / 成本全程留痕；点击行进入运行回放。</p></div>
-      <a class="btn" href="/">← 回到产品首页</a>
+      <a class="btn" href="/chat">开始新的研究任务 ↗</a>
     </div>
+    <div class="product-kpis" id="center-kpis" aria-label="运行资产统计"></div>
 
     <section class="card" id="latest" style="display:none">
       <div class="ch">
-        <h2 id="latest-title">Latest run</h2>
+        <h2 id="latest-title">正在加载最近任务</h2>
         <span class="m" id="latest-meta"></span>
       </div>
       <div id="latest-body"></div>
@@ -156,7 +159,9 @@
   <section class="view" id="v-runs">
     <section class="card">
       <div class="ch"><h2>运行记录</h2><span class="m" id="runs-meta"></span></div>
+      <div class="product-filter"><input id="run-query" type="search" placeholder="搜索完整问题、运行 ID 或任务指纹" aria-label="搜索运行记录"><select id="run-status" aria-label="筛选运行状态"><option value="">全部状态</option><option value="COMPLETED">执行完成</option><option value="PARTIAL">部分完成</option><option value="FAILED">失败</option><option value="EXECUTING">执行中</option><option value="CANCELLED">已取消</option><option value="INTERRUPTED">已中断</option><option value="BUDGET_EXCEEDED">预算到上限</option></select><button class="btn" id="run-refresh">刷新</button></div>
       <div id="runs-body" class="data-scroll"><div class="empty">加载中…</div></div>
+      <div class="product-pager"><button id="run-prev">上一页</button><span id="run-page" role="status"></span><button id="run-next">下一页</button></div>
     </section>
   </section>
 
@@ -165,6 +170,7 @@
     <section class="card">
       <div class="ch"><h2>技能库</h2><span class="m" id="skills-meta"></span></div>
       <input id="q" type="search" aria-label="搜索技能库" placeholder="搜索技能名 / 领域 / 能力…" style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:4px;color:var(--ink);padding:9px 11px;font:12.5px inherit;margin-bottom:12px">
+      <div class="product-filter"><select id="skill-domain" aria-label="筛选技能领域"><option value="">全部领域</option></select><select id="skill-source" aria-label="筛选技能来源"><option value="">全部来源</option><option value="seed">种子技能</option><option value="evolved">演化技能</option></select><a href="/graph">在星图中探索技能 ↗</a></div>
       <div id="skills-body" class="data-scroll"><div class="empty">加载中…</div></div>
     </section>
   </section>
@@ -204,7 +210,7 @@ function route(){
   const cur = VIEWS.includes(v) ? v : "runs";
   VIEWS.forEach(x => $(x === "mission" ? "v-intro" : `v-${x}`).classList.toggle("on", x === cur));
   $("nav").innerHTML = VIEWS.map(x =>
-    `<a href="#/${x}" class="${x===cur?"on":""}">${NAMES[x]}</a>`).join("");
+    `<a href="#/${x}" class="${x===cur?"on":""}" ${x===cur?'aria-current="page"':''}>${NAMES[x]}</a>`).join("");
   if (cur === "runs") loadRuns();
   if (cur === "skills") loadSkills();
   if (cur === "eval") loadEval();
@@ -218,14 +224,12 @@ window.addEventListener("skillnet:connection-changed", route);
 let HEALTH = null;
 async function loadHealth(){
   try {
-    HEALTH = await (await fetch(API + "/api/health")).json();
+    HEALTH = await UI.json(API + "/api/health");
     $("sys").innerHTML =
-      `<span><span class="dot ${HEALTH.ok?"on":"off"}"></span>${HEALTH.ok?"online":"down"}</span>`
-      + `<span>model ${esc(HEALTH.model||"—")}</span>`
-      + `<span>${HEALTH.api_key_configured?"":"<span style='color:var(--warn)'>no key</span>"}</span>`
-      + `<span>skills ${HEALTH.skills}</span>`
-      + `<span>evolved ${HEALTH.evolved}</span>`;
-  } catch { $("sys").innerHTML = '<span><span class="dot off"></span>offline</span>'; }
+      `<span><span class="dot ${HEALTH.ok?"on":"off"}"></span>${HEALTH.ok?"服务在线":"服务异常"}</span>`
+      + `<span>${esc(HEALTH.model||"—")}</span>`
+      + `<span>${HEALTH.api_key_configured?"模型已配置":"模型待配置"}</span>`;
+  } catch { $("sys").innerHTML = '<span><span class="dot off"></span>连接失败</span>'; }
 }
 
 /* ---------- 示例任务 ---------- */
@@ -267,56 +271,42 @@ async function startRun(){
 }
 
 /* ---------- Latest Run（首屏关键：让用户看到系统在做事） ---------- */
+function kpis(summary){
+  return [['运行总数',summary.total,'每次任务独立留痕'],['执行完成',summary.completed,'完成状态与验收分别展示'],['交付产物',summary.artifacts,'可追溯的文件资产'],['累计成本','¥'+Number(summary.cost_yuan||0).toFixed(3),'来自真实模型调用账本']].map(([label,value,note])=>`<div><small>${label}</small><b>${value??'—'}</b><span>${note}</span></div>`).join('');
+}
 async function loadLatest(){
-  let runs = [];
-  try { runs = (await (await fetch(API + "/api/runs?limit=1")).json()).runs || []; } catch {}
-  const card = $("latest");
-  if (!runs.length){ card.style.display = "none"; return; }
-  const r = runs[0];
-  let full = null;
-  try { full = await (await fetch(API + `/api/runs/${encodeURIComponent(r.run_id)}`)).json(); } catch {}
-  card.style.display = "block";
-  $("latest-title").innerHTML = `Latest run <span class="badge st-${r.status}" style="margin-left:8px">${r.status}</span>`
-    + (r.status === "INTERRUPTED" ? '<span style="font-size:11.5px;color:var(--warn);margin-left:10px">服务重启导致中断，请重新运行</span>' : "");
-  $("latest-meta").innerHTML = `<a href="/run?id=${encodeURIComponent(r.run_id)}">打开 Live Run →</a>`;
-  const steps = (full && full.steps) || [];
-  const done = (full?.step_stats?.done) || 0, total = (full?.step_stats?.total) || 0;
-  const pct = total ? Math.round(done/total*100) : 0;
-  $("latest-body").innerHTML = `
-    <div style="font-size:13px;margin-bottom:6px">${esc(r.task)}</div>
-    <div style="font:11.5px var(--mono);color:var(--ink3)">
-      ${esc(r.run_id)} · ${fmtTime(r.started_at_ms)} · 时长 ${fmtMs(r.duration_ms)} ·
-      成本 ¥${Number(r.cost_yuan||0).toFixed(4)} · 步骤 ${done}/${total} · 产物 ${r.artifacts||0}
-    </div>
-    <div class="bar"><i style="width:${pct}%"></i></div>
-    <div class="steps">${steps.map(s => `
-      <div class="srow s-${s.status==="done"?"done":s.status}">
-        <span class="sdot"></span>
-        <span class="nm">S${s.idx+1} ${esc(s.action||"")}</span>
-        <span>${esc(s.skill||"—")}</span>
-        <span>${fmtMs(s.duration_ms)}${s.n_attempts>1?` ·×${s.n_attempts}`:""}</span>
-      </div>`).join("") || '<div class="empty">步骤信息加载中…</div>'}</div>`;
+  const card=$('latest');card.style.display='block';
+  try{
+    const page=await UI.json(API+'/api/runs?limit=1');$('center-kpis').innerHTML=kpis(page.summary||{});
+    if(!page.runs.length){$('latest-body').innerHTML='<div class="product-empty">还没有任务记录。<a href="/chat">开始第一次研究任务 ↗</a></div>';return;}
+    const r=page.runs[0],full=await UI.json(API+'/api/runs/'+encodeURIComponent(r.run_id));
+    $('latest-title').innerHTML=`最近一次任务 <span class="badge st-${esc(r.status)}">${esc(Product.labels[r.status]||r.status)}</span>`;
+    $('latest-meta').innerHTML=`<a href="/run?id=${encodeURIComponent(r.run_id)}">查看执行与产物 ↗</a>`;
+    $('latest-body').innerHTML=`<p style="font-size:15px;color:#244c59;margin:0 0 12px;line-height:1.9">${esc(full.task)}</p><div class="m">${fmtTime(r.started_at_ms)} · ${fmtMs(r.duration_ms)} · ¥${Number(r.cost_yuan||0).toFixed(4)} · ${r.llm_calls||0} 次模型调用</div>`+Product.evidenceHTML(full);
+  }catch(error){$('latest-body').innerHTML=UI.errorHTML(error)+'<button class="btn" onclick="loadLatest()">重新加载</button>';}
 }
-
-/* ---------- Runs 列表 ---------- */
+let runOffset=0,runGeneration=0,runSearchTimer;
 async function loadRuns(){
-  let runs = [];
-  try { runs = (await UI.json(API + "/api/runs?limit=60")).runs || []; } catch(error) { $("runs-body").innerHTML=UI.errorHTML(error);return; }
-  $("runs-meta").textContent = `${runs.length} runs · 同一任务共享 task fingerprint 但 run_id 不覆盖`;
-  if (!runs.length){ $("runs-body").innerHTML = '<div class="empty">还没有 Run。<a href="/">返回首页启动研究任务 →</a></div>'; return; }
-  $("runs-body").innerHTML = `<table>
-    <tr><th>Status</th><th>Task</th><th>Started</th><th>Duration</th><th>Steps</th><th>Artifacts</th><th>Cost</th><th>Fingerprint</th></tr>
-    ${runs.map(r => `<tr tabindex="0" role="link" aria-label="查看任务：${esc(r.task||r.run_id)}" onclick="location.href='/run?id=${encodeURIComponent(r.run_id)}'" onkeydown="if(event.key==='Enter'){this.click()}">
-      <td><span class="badge st-${r.status}">${r.status}</span></td>
-      <td style="color:var(--ink)">${esc((r.task||"").slice(0,60))}</td>
-      <td>${fmtTime(r.started_at_ms)}</td>
-      <td>${fmtMs(r.duration_ms)}</td>
-      <td>${r.steps_done||0}/${r.steps||0}${r.steps_failed?` · <span style="color:var(--bad)">${r.steps_failed} failed</span>`:""}</td>
-      <td>${r.artifacts||0}</td>
-      <td>¥${Number(r.cost_yuan||0).toFixed(4)}</td>
-      <td>${esc(r.task_fp||"")}</td>
-    </tr>`).join("")}</table>`;
+  const generation=++runGeneration;
+  $('runs-body').setAttribute('aria-busy','true');
+  const query=new URLSearchParams({limit:'20',offset:String(runOffset),q:$('run-query').value,status:$('run-status').value});
+  try{
+    const page=await UI.json(API+'/api/runs?'+query);
+    if(generation!==runGeneration)return;
+    const runs=page.runs||[];
+    $('runs-meta').textContent=`共 ${page.total} 条匹配记录 · 点击任务查看实际轨迹`;
+    $('run-page').textContent=page.total?`${runOffset+1}–${runOffset+runs.length} / ${page.total}`:'没有匹配记录';
+    $('run-prev').disabled=runOffset===0;$('run-next').disabled=!page.has_more;
+    $('runs-body').innerHTML=runs.length?`<table><thead><tr><th>状态</th><th>问题与任务</th><th>开始时间</th><th>耗时</th><th>执行步骤</th><th>程序 / 语义验收</th><th>产物</th><th>成本</th></tr></thead><tbody>${runs.map(r=>`<tr><td><span class="badge st-${esc(r.status)}">${esc(Product.labels[r.status]||r.status)}</span></td><td style="min-width:240px;max-width:420px"><a href="/run?id=${encodeURIComponent(r.run_id)}" style="color:#1f6170;font-weight:600;display:block;line-height:1.8">${esc(r.task)}</a><small style="font-size:9px;color:#92a6ae">${esc(r.run_id)}</small></td><td>${fmtTime(r.started_at_ms)}</td><td>${fmtMs(r.duration_ms)}</td><td>${r.steps_done||0}/${r.steps||0}</td><td><span style="color:${r.checks_passed===r.checks_total?'#3c8570':'#ab7b38'}">${r.checks_passed||0}/${r.checks_total||0}</span> · <span style="color:${r.semantic_passed===r.semantic_total?'#3c8570':'#ab7b38'}">${r.semantic_passed||0}/${r.semantic_total||0}</span>${r.learning_eligible===false?'<small style="display:block;color:#aa8142">学习准入未通过</small>':''}</td><td>${r.artifacts||0}</td><td>¥${Number(r.cost_yuan||0).toFixed(4)}</td></tr>`).join('')}</tbody></table>`:'<div class="product-empty">未找到匹配任务。可以调整关键词或状态筛选。</div>';
+    labelCells('runs-body',['状态','任务','开始时间','耗时','执行步骤','程序 / 语义验收','产物','成本']);
+  }catch(error){if(generation===runGeneration)$('runs-body').innerHTML=UI.errorHTML(error);}
+  finally{if(generation===runGeneration)$('runs-body').removeAttribute('aria-busy');}
 }
+$('run-query').addEventListener('input',()=>{clearTimeout(runSearchTimer);runSearchTimer=setTimeout(()=>{runOffset=0;loadRuns();},250);});
+$('run-status').onchange=()=>{runOffset=0;loadRuns();};
+$('run-refresh').onclick=()=>loadRuns();
+$('run-prev').onclick=()=>{runOffset=Math.max(0,runOffset-20);loadRuns();};
+$('run-next').onclick=()=>{runOffset+=20;loadRuns();};
 
 /* ---------- Skills ---------- */
 let SKILLS = [];
@@ -325,55 +315,44 @@ async function loadSkills(){
     try { SKILLS = (await UI.json(API + "/api/skills")).items || []; } catch(error) { $("skills-body").innerHTML=UI.errorHTML(error);return; }
   }
   const q = ($("q").value || "").toLowerCase();
-  const rows = SKILLS.filter(s => !q || (s.name+s.domain+(s.capability||"")).toLowerCase().includes(q));
-  $("skills-meta").textContent = `${rows.length} / ${SKILLS.length} skills · 来源 seed/evolved · 执行统计来自真实运行`;
+  if($('skill-domain').options.length===1)$('skill-domain').insertAdjacentHTML('beforeend',[...new Set(SKILLS.map(s=>s.domain))].sort().map(d=>`<option>${esc(d)}</option>`).join(''));
+  const domain=$('skill-domain').value,source=$('skill-source').value;
+  const rows = SKILLS.filter(s => (!q || (s.name+' '+s.domain+' '+(s.capability||'')+' '+(s.description||'')).toLowerCase().includes(q))&&(!domain||s.domain===domain)&&(!source||(source==='seed'?s.source==='seed':s.source!=='seed')));
+  $("skills-meta").textContent = `${rows.length} / ${SKILLS.length} 个技能 · 点击技能阅读完整执行契约`;
   $("skills-body").innerHTML = rows.length ? `<table>
     <tr><th>Skill</th><th>Domain</th><th>Source</th><th>Exec</th><th>Reward</th><th>Quality</th></tr>
     ${rows.slice(0, 400).map(s => {
       const st = s.stats || {};
       const tot = st.exec_total || 0, ok = st.exec_ok || 0;
-      return `<tr><td style="color:var(--ink)">${esc(s.name)}</td><td>${esc(s.domain)}</td>
-        <td>${s.source === "seed" ? "seed" : `<span style="color:var(--warn)">evolved G${s.generation||1}</span>`}</td>
+      return `<tr><td style="color:var(--ink)">${`<a href="/dashboard#skills?skill=${encodeURIComponent(s.name)}" style="color:#256a73">${esc(s.name)} ↗</a>`}</td><td>${esc(s.domain)}</td>
+        <td>${s.source === "seed" ? "种子" : `<span style="color:var(--warn)">演化 G${s.generation||1}</span>`}</td>
         <td>${tot ? `${ok}/${tot}${st.exec_fix?` · fix ${st.exec_fix}`:""}${st.exec_fail?` · <span style="color:var(--bad)">fail ${st.exec_fail}</span>`:""}` : "—"}</td>
         <td>${st.pulls ? Number((st.reward_sum||0)/st.pulls).toFixed(3) : "—"}</td>
         <td style="color:var(--ink3)">${esc(Object.entries(s.quality||{}).map(([k,v])=>`${k.slice(0,4)}:${UI.qualityLabel(v)}`).join(" "))}</td></tr>`;
     }).join("")}</table>` : '<div class="empty">无匹配技能</div>';
+  labelCells('skills-body',['技能','领域','来源','执行记录','平均奖励','质量']);
 }
+function labelCells(id,labels){$(id).querySelectorAll('tr').forEach(row=>row.querySelectorAll('td').forEach((cell,i)=>{cell.dataset.label=labels[i]||'';}));}
 $("q").addEventListener("input", loadSkills);
+$("skill-domain").onchange=loadSkills;$("skill-source").onchange=loadSkills;
 
 /* ---------- Evaluations ---------- */
 async function loadEval(){
-  let d = null;
-  try { d = await (await fetch(API + "/api/results")).json(); } catch {}
-  const ho = d && (d.splits?.heldout || null);
-  const dev = d && (d.splits?.dev || null);
-  const block = (name, label, s) => {
-    if (!s) return `<div class="empty">${label}：暂无数据</div>`;
-    const e1 = s.exp1, e2 = s.exp2, e3 = s.exp3;
-    return `<div style="margin-bottom:16px">
-      <div style="font:600 12.5px inherit;margin-bottom:6px">${label}</div>
-      <table>
-        <tr><th>实验</th><th>指标</th><th>数值</th></tr>
-        ${e1?`<tr><td>检索与编排</td><td>召回 / 编排完整度</td><td>${(e1.rows||[]).map(r=>`${r.mode}: ${r.recall}% / ${r.orchestration}%`).join(" · ")}</td></tr>`:""}
-        ${e2?`<tr><td>执行质量</td><td>盲评均分</td><td>${(e2.rows||[]).map(r=>`${r.arm}: ${r.score}`).join(" · ")}</td></tr>`:""}
-        ${e3?`<tr><td>选择策略</td><td>mean_reward</td><td>${Object.entries(e3.arms||{}).map(([k,v])=>`${k}: ${v.mean_reward}±${v.std??"—"}`).join(" · ")}</td></tr>
-             <tr><td>统计结论</td><td>配对 bootstrap</td><td>${esc((e3.statistics||{}).verdict || "—")}</td></tr>`:""}
-      </table></div>`;
-  };
-  $("eval-body").innerHTML =
-    `<div class="empty" style="padding-bottom:10px">当前技能库规模已变（90+ 技能 / 162+ 边），实验数据为更早条件（51 技能 / 62 边）的产物 —— <b>尚未重跑</b>，文档已显式标注，不以此声称当前性能。</div>`
-    + block("heldout", "HELD-OUT（冻结测试集 · 最终结论只引这里）", ho)
-    + block("dev", "DEV（调参集）", dev)
-    + `<div style="margin-top:14px;font-size:12px"><a href="/static/briefing.html" target="_blank">查看完整六幕复盘页（历史材料）</a> · <a href="/dashboard" target="_blank">完整面板</a> · <a href="/graph" target="_blank">技能拓扑</a></div>`;
+  $('eval-body').innerHTML='<div class="empty">加载实验记录…</div>';
+  try{
+    const [results,stats]=await Promise.all([UI.json(API+'/api/results'),UI.json(API+'/api/stats')]);
+    $('eval-body').innerHTML=Product.experimentsHTML(results,stats);
+  }catch(error){$('eval-body').innerHTML=UI.errorHTML(error)+'<button class="btn" onclick="loadEval()">重新加载</button>';}
 }
 
 /* ---------- System ---------- */
 async function loadSystem(){
-  let cfg = null, stats = null;
-  try { cfg = await (await fetch(API + "/api/config")).json(); } catch {}
-  try { stats = await (await fetch(API + "/api/stats")).json(); } catch {}
+  let cfg,stats;
+  try { [cfg,stats,HEALTH]=await Promise.all([UI.json(API+'/api/config'),UI.json(API+'/api/stats'),UI.json(API+'/api/health')]); }catch(error){$('sys-body').innerHTML=UI.errorHTML(error)+'<button class="btn" onclick="loadSystem()">重新加载</button>';return;}
   $("sys-meta").textContent = HEALTH ? `ui ${HEALTH.ui_version||"—"} · skills ${HEALTH.skills}` : "";
   $("sys-body").innerHTML = `
+    <div class="product-kpis"><div><small>执行并发</small><b>${HEALTH.runtime?.active_runs??0} / ${HEALTH.runtime?.max_active_runs??'—'}</b><span>活动任务 / 最大槽位</span></div><div><small>技能资产</small><b>${stats.total}</b><span>${stats.evolved} 个演化技能</span></div><div><small>模型连接</small><b style="font-size:19px">${HEALTH.api_key_configured?'已配置':'待配置'}</b><span>${esc(HEALTH.model)}</span></div><div><small>访问保护</small><b style="font-size:19px">${HEALTH.token_required?'已启用':'未启用'}</b><span>连接设置仅保存当前标签页令牌</span></div></div>
+    <div class="product-block" style="margin-bottom:22px"><h3>S1 接入与运行边界</h3><p>已实现 HTTP 客户端、任务工具处理器、事件订阅、取消与产物下载。<a href="/dashboard#adapters">查看接口与接入示例 ↗</a> · <a href="/docs" target="_blank">打开 API 文档 ↗</a></p><p>当前为单进程科研演示部署；宿主机子进程执行已知任务代码。生产接入还需要独立执行隔离、身份映射与跨进程队列，S1 线上联调尚未完成。</p></div>
     <div class="grid2">
       <div><div style="font:600 12px inherit;margin-bottom:8px">Runtime</div>
         <table>
@@ -386,7 +365,7 @@ async function loadSystem(){
         <table>
           <tr><td><code>python verify.py</code></td><td>31 项组件自检</td></tr>
           <tr><td><code>python -m pytest tests/</code></td><td>单元测试</td></tr>
-          <tr><td><code>python tools/selfcheck.py</code></td><td>18 项交付自检（含数字一致性）</td></tr>
+          <tr><td><code>python tools/selfcheck.py</code></td><td>页面、数字与产物接口自检</td></tr>
           <tr><td><code>python tools/profile_baseline.py</code></td><td>端到端耗时/成本采样</td></tr>
         </table></div>
     </div>
@@ -398,7 +377,7 @@ async function loadSystem(){
 }
 
 /* ---------- boot ---------- */
-(async function(){ await loadHealth(); route(); setInterval(loadHealth, 15000); })();
+(async function(){ await loadHealth(); route(); setInterval(()=>{if(!document.hidden)loadHealth();}, 15000); })();
 
 /* 自检项（仅 selftest 模式读取） */
 window.__SELFTEST__ = function(){ return {

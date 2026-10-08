@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 import time
@@ -35,6 +36,13 @@ DATASETS = {
     "dev": ("tasks/benchmark.json", "dev-v1", "dev"),
     "heldout": ("tasks/heldout.json", "heldout-v1", "heldout"),
 }
+
+
+def dataset_provenance(dataset: str) -> dict:
+    """Record the selected task file, rather than always labeling it dev."""
+    rel, version, split = DATASETS[dataset]
+    return {"dataset": version, "split": split, "dataset_file": rel,
+            "dataset_sha256": hashlib.sha256((ROOT / rel).read_bytes()).hexdigest()}
 
 
 def load_tasks(dataset: str = "dev") -> list[dict]:
@@ -186,8 +194,7 @@ def exp_retrieval(limit: int, k: int, dataset: str = "dev") -> dict:
         )
     payload = {
         "experiment": "retrieval",
-        "dataset": "dev-v1",
-        "split": "dev",
+        **dataset_provenance(dataset),
         "k": k,
         "n_tasks": len(tasks),
         "summary": summary,
@@ -331,8 +338,7 @@ def exp_execution(limit: int, k: int, repeats: int = 2, dataset: str = "dev") ->
         )
     payload = {
         "experiment": "execution",
-        "dataset": "dev-v1",
-        "split": "dev",
+        **dataset_provenance(dataset),
         "k": k,
         "repeats": repeats,
         "n_tasks": len(tasks),
@@ -464,8 +470,7 @@ def exp_evolution(limit: int, rounds: int, k: int, alpha: float, dataset: str = 
     print(f"  {stats.get('conclusion', 'n/a')}")
     payload = {
         "experiment": "evolution",
-        "dataset": "dev-v1",
-        "split": "dev",
+        **dataset_provenance(dataset),
         "statistics": stats,
         "rounds": rounds,
         "n_tasks": len(tasks),

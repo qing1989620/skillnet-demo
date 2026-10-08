@@ -155,8 +155,10 @@
   }
   .tabs{display:none}
 </style>
-<link rel="stylesheet" href="/static/assets/ui.css?v=0.8.1-restored2">
-<script src="/static/assets/ui.js?v=0.8.1-restored2"></script>
+<link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
+<script src="/static/assets/ui.js?v=0.9.0-product"></script>
+<link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
+<script src="/static/assets/product.js?v=0.9.0-product"></script>
 </head>
 <body>
 <header>
@@ -193,7 +195,7 @@
 
   <section class="col" data-tab="timeline">
     <div class="col-h"><span>实时时间线</span><span id="evcount">0 events</span></div>
-    <div class="col-b" id="timeline"><div class="empty">连接事件流中…</div></div>
+    <div class="timeline-tools"><select id="event-filter" aria-label="筛选轨迹事件"><option value="all">全部事件</option><option value="milestone">阶段里程碑</option><option value="execution">执行与修复</option><option value="verification">验收与产物</option></select><label><input type="checkbox" id="event-follow" checked> 跟随实时</label></div><div class="col-b" id="timeline"><div class="empty">连接事件流中…</div></div>
   </section>
 
   <section class="col" data-tab="inspect">
@@ -283,6 +285,7 @@ async function refresh(){
   $("budget").textContent = "¥" + (RUN.budget?.max_cost_yuan ?? 0.2).toFixed(2);
   if(!SELECTED && RUN.steps?.length)SELECTED={kind:"step",idx:RUN.steps[0].idx};
   renderGraph(); renderTimelineMeta();
+  const m=Product.metrics(RUN);let proof=document.getElementById("run-proof");if(!proof){proof=document.createElement("div");proof.id="run-proof";proof.className="run-proof";$("task").parentNode.appendChild(proof);}proof.textContent=`程序验收 ${m.passed}/${m.checks} · 语义确认 ${m.confirmed}/${m.semantic} · ${m.gate.eligible===false?"学习未准入："+m.gate.reason:m.gate.eligible===true?"具备学习准入证据":"尚未记录学习结论"}`;
   if (SELECTED) renderInspector();
   const done = TERMINAL.includes(RUN.status);
   $("cancel").disabled = done;
@@ -302,12 +305,12 @@ function tickHeader(){
     $("costbar").className = "bar" + (pct > 75 ? " warn" : "");
   }
 }
-if (!(new URLSearchParams(location.search).get("static") === "1")) setInterval(tickHeader, 200);
+if (!(new URLSearchParams(location.search).get("static") === "1")) setInterval(()=>{if(!document.hidden && RUN && !TERMINAL.includes(RUN.status))tickHeader();}, 1000);
 
 /* ---------- Graph ---------- */
 const STEP_STATE = s => {
   if (s.status === "done") {
-    const failedChk = (s.checks_total || 0) > 0 && (s.checks_passed || 0) === 0;
+    const failedChk = (s.checks_total || 0) > (s.checks_passed || 0) || (s.verification_total || 0) > (s.verification_passed || 0);
     return failedChk ? "verifying" : "passed";
   }
   if (s.status === "failed") return s.n_attempts > 1 ? "failed" : "failed";
@@ -325,22 +328,18 @@ function renderGraph(){
     const sel = SELECTED && SELECTED.kind === "step" && SELECTED.idx === s.idx ? " sel" : "";
     parts.push(`<div class="gnode s-${st}${sel}" data-step="${s.idx}">
       <div class="grow1"><span class="dot"></span><span class="gname">S${s.idx+1} ${esc(s.action || "（未命名步骤）").slice(0,42)}</span></div>
-      <div class="gmeta">${st.toUpperCase()} · ${fmtMs(s.duration_ms||0)}${s.n_attempts>1?` · <span class="gretry">×${s.n_attempts} 尝试</span>`:""}
+      <div class="gmeta">${({passed:"执行与验收完成",verifying:"执行完成 · 存在未确认项",failed:"执行失败",skipped:"跳过",retrying:"修复中",running:"执行中",waiting:"等待"})[st]} · ${fmtMs(s.duration_ms||0)}${s.n_attempts>1?` · <span class="gretry">×${s.n_attempts} 尝试</span>`:""}
         ${s.checks_total?` · 检查 ${s.checks_passed}/${s.checks_total}`:""}
         ${s.verification_total?` · 语义 ${s.verification_passed}/${s.verification_total}`:""}</div>
       ${s.skill?`<span class="gskill">${esc(s.skill)}</span>`:""}
     </div>`);
-    // 依赖边：真实 artifact（下游 inputs）
-    const next = RUN.steps[i+1];
-    if (next) {
-      const carried = (next.inputs || []);
-      parts.push(`<div class="gedge"><div class="ln"></div>
-        ${carried.length ? carried.map(a => `<span class="art" data-art="${esc(a)}" data-from="${s.idx}">${esc(a)}</span>`).join("")
-                         : '<span class="art" style="color:var(--ink3);border-color:var(--line)">（无显式产物传递）</span>'}
-        <div class="ln"></div></div>`);
-    }
+    const dependencies=s.depends_on||[];
+    parts.push(`<div class="gedge"><span>${dependencies.length?'依赖 '+dependencies.map(d=>'S'+(d+1)).join(' / '):'根节点 · 可独立启动'}</span></div>`);
+    const inputs=s.input_artifacts||[];
+    if(inputs.length)parts.push(`<div class="gedge">${inputs.map(a=>`<span class="art" data-art="${esc(a.name)}" data-from="${a.from_step??''}">${esc(a.logical_name)} ← S${a.from_step==null?'?':a.from_step+1}</span>`).join('')}</div>`);
+    else if((s.inputs||[]).length)parts.push(`<div class="gedge"><span>输入：${esc(s.inputs.join('、'))}（旧记录未登记版本）</span></div>`);
   });
-  host.innerHTML = parts.join("");
+  host.innerHTML = Product.dagHTML(RUN)+parts.join("");
   if (!STATIC_MODE && !TERMINAL.includes(RUN.status) && PERF.ttfv == null && RUN.steps.length) {
     PERF.ttfv = Date.now() - PERF.t0;
     // 上报（落盘到 Run，供审计）：一次 per page load
@@ -352,12 +351,12 @@ function renderGraph(){
     } catch {}
   }
   host.querySelectorAll(".gnode").forEach(el => el.onclick = () => {
-    SELECTED = { kind: "step", idx: +el.dataset.step }; renderGraph(); renderInspector();
+    SELECTED = { kind: "step", idx: +el.dataset.step }; renderGraph(); renderInspector();inspectMobile();
   });
   host.querySelectorAll(".art").forEach(el => el.onclick = ev => {
     ev.stopPropagation();
     SELECTED = { kind: "artifact", name: el.dataset.art, from: +el.dataset.from };
-    renderGraph(); renderInspector();
+    renderGraph(); renderInspector();inspectMobile();
   });
   $("gcount").textContent = `${RUN.steps.length} steps`;
 }
@@ -371,14 +370,14 @@ const EV_STYLE = t => t.startsWith("run.completed") || t === "execution.finished
 const EV_TEXT = (ev) => {
   const d = ev.data || {};
   switch (ev.type) {
-    case "run.started": return `Run started — <b>${esc((d.task||"").slice(0,90))}</b>`;
-    case "retrieval.completed": return `Retrieved <b>${(d.selected||[]).length}</b> candidates · decision <b>${esc(d.decision||"")}</b> · ${fmtMs(d.duration_ms||0)}`;
-    case "ranking.completed": return `Ranking ready — top: <b>${esc(d.top||"—")}</b>`;
-    case "orchestration.completed": return `Workflow ready — <b>${(d.skills||[]).length}</b> skills · ${(d.workflow||0)} edges · ${fmtMs(d.duration_ms||0)}`;
+    case "run.started": return `任务已创建 · <b>${esc((d.task||"").slice(0,90))}</b>`;
+    case "retrieval.completed": return `检索完成 · <b>${(d.selected||[]).length}</b> 个候选 · 分流 <b>${esc(d.decision||"")}</b> · ${fmtMs(d.duration_ms||0)}`;
+    case "ranking.completed": return `任务条件化排序 · 首选： <b>${esc(d.top||"—")}</b>`;
+    case "orchestration.completed": return `技能编排完成 · <b>${(d.skills||[]).length}</b> 个技能 · ${(d.edges||[]).length} 条依赖 · ${fmtMs(d.duration_ms||0)}`;
     case "plan.created": return `研究方案 — <b>${d.steps}</b> 个步骤 · ${fmtMs(d.duration_ms||0)}`;
     case "run.executing": return `开始执行 <b>${d.steps}</b> 个步骤`;
     case "step.started": return `Step ${ev.step+1} 开始 — ${esc((d.action||"").slice(0,80))}${d.skill?` · <b>${esc(d.skill)}</b>`:""}`;
-    case "step.inputs": return `Step ${ev.step+1} 输入 ← <b>${(d.files||[]).join(", ")}</b>`;
+    case "step.inputs": return `Step ${ev.step+1} 输入 ← <b>${esc((d.files||[]).join(", "))}</b>`;
     case "code.generating": return `Step ${ev.step+1}: 生成代码（第 ${d.attempt} 次尝试）`;
     case "step.attempt": return `Step ${ev.step+1} 尝试 #${d.attempt} <b>${d.ok?"成功":"失败"}</b>${d.error_kind?` · ${esc(d.error_kind)}`:""} · ${fmtMs(d.duration_ms||0)}`;
     case "step.retry": return `Step ${ev.step+1}: 请求修复 — ${esc(d.reason||"")}`;
@@ -388,11 +387,20 @@ const EV_TEXT = (ev) => {
     case "step.error": return `Step ${ev.step+1} 异常 — ${esc((d.error||"").slice(0,90))}`;
     case "steps.skipped": return `步骤 ${JSON.stringify(d.steps)} 被跳过 — ${esc(d.reason||"")}`;
     case "execution.finished": return `执行结束 — 成功 <b>${d.done}</b> · 失败 <b>${d.failed}</b> · ${fmtMs(d.duration_ms||0)}`;
-    case "judge.completed": return `语义评审 — 加权 <b>${d.weighted}</b>${d.coverage!=null?` · 覆盖 ${d.coverage}`:""}`;
+    case "judge.completed": return `方案盲评 — 加权 <b>${d.weighted}</b>${d.coverage!=null?` · 覆盖 ${d.coverage}`:""}`;
     case "evolution.proposed": return `技能蒸馏 — ${d.accepted?`已准入 <b>${esc(d.name)}</b>`:"未准入"} · 库规模 ${d.library_size}`;
     case "run.reply": renderReply(d.text || ""); return `Agent 最终回复已生成（${(d.text||"").length} 字）`;
-    case "run.finished": return `<b>运行结束 ${d.status}</b> · ${fmtMs(d.duration_ms||0)} · ¥${Number(d.cost||0).toFixed(3)}`;
-    default: return `${esc(ev.type)} ${esc(JSON.stringify(d).slice(0,90))}`;
+    case "run.finished": return `<b>运行结束 ${esc(Product.labels[d.status]||d.status)}</b> · ${fmtMs(d.duration_ms||0)} · ¥${Number(d.cost||0).toFixed(3)}`;
+    case 'dag.ready':return `执行图就绪 · ${(d.nodes||[]).length} 个节点 · 依赖来自 ${esc(d.workflow_source||'编排')}`;
+    case 'code.generated':return `步骤 ${ev.step+1} 代码已生成 · 点击查看实际代码与输入`;
+    case 'step.verifying':return `步骤 ${ev.step+1} 进入验收 · ${esc(d.layer||'程序与语义')}`;
+    case 'verification.result':return `步骤 ${ev.step+1} 语义确认 ${d.passed?'通过':'未通过'} · ${esc(d.item||'')}`;
+    case 'verification.completed':return `步骤 ${ev.step+1} 验收完成 · ${d.passed??'—'}/${d.total??'—'}`;
+    case 'run.cancel_requested':return '已请求停止 · 将在执行检查点退出';
+    case 'run.cancelled':return '任务已取消 · 已完成产物与轨迹保留';
+    case 'run.failed':return '任务失败 · '+esc(d.reason||d.error||'查看原始事件');
+    case 'run.budget_exceeded':return '预算到达上限 · '+esc(d.reason||'执行已停止');
+    default: return `<span>${esc(ev.type)}</span> · 点击查看原始事件`;
   }
 };
 /* 同类 check 结果聚合成一行：避免几十条 "✓ 文件存在" 淹没真正的里程碑事件。
@@ -400,15 +408,16 @@ const EV_TEXT = (ev) => {
 const CHECK_AGGR = new Map();   // stepIdx -> {el, n, ok, bad:[]}
 function appendEvent(ev){
   const host = $("timeline");
+  const follow=$("event-follow").checked && host.scrollHeight-host.scrollTop-host.clientHeight<100;
   if (host.querySelector(".empty")) host.innerHTML = "";
   if (ev.type === "check.result" && ev.step != null) {
     const key = ev.step;
     let g = CHECK_AGGR.get(key);
     if (!g) {
       const div = document.createElement("div");
-      div.className = "ev ok new";
+      div.className = "ev ok new";div.dataset.category="verification";
       div.innerHTML = `<span class="ts">${fmtTs(ev.ts_ms)}</span><span class="msg"></span>`;
-      div.onclick = () => { SELECTED = {kind:"step", idx:key}; renderGraph(); renderInspector(); };
+      div.onclick = () => { SELECTED = {kind:"step", idx:key}; renderGraph(); renderInspector();inspectMobile(); };
       host.appendChild(div);
       g = { el: div, n: 0, ok: 0, bad: [] };
       CHECK_AGGR.set(key, g);
@@ -420,16 +429,20 @@ function appendEvent(ev){
       `Step ${key+1}: 确定性检查 <b>${g.ok}/${g.n}</b> 通过`
       + (g.bad.length ? ` — 未过：${esc(g.bad.slice(0,3).join("; "))}` : "")
       + ` <span style="color:var(--ink3)">（点击查看明细）</span>`;
-    host.scrollTop = host.scrollHeight; updateEvCount(); return;
+    applyEventFilter();if(follow)host.scrollTop = host.scrollHeight; updateEvCount(); return;
   }
   const div = document.createElement("div");
   div.className = "ev " + EV_STYLE(ev.type) + " new";
+  div.dataset.category=ev.type.startsWith("artifact.")||ev.type.startsWith("verification.")?"verification":ev.type.startsWith("step.")||ev.type.startsWith("code.")?"execution":"milestone";
   div.innerHTML = `<span class="ts">${fmtTs(ev.ts_ms)}</span><span class="msg">${EV_TEXT(ev)}</span>`;
-  div.onclick = () => { if (ev.step != null) { SELECTED = {kind:"step", idx:ev.step}; renderGraph(); renderInspector(); } };
+  div.onclick = () => { SELECTED = ev.step != null?{kind:"step",idx:ev.step}:{kind:"event",event:ev};renderGraph();renderInspector();inspectMobile(); };
   host.appendChild(div);
-  host.scrollTop = host.scrollHeight;
-  updateEvCount();
+  if(follow)host.scrollTop = host.scrollHeight;
+  applyEventFilter();updateEvCount();
 }
+function applyEventFilter(){const filter=$('event-filter').value;document.querySelectorAll('#timeline .ev').forEach(el=>{el.hidden=filter!=='all'&&el.dataset.category!==filter;});}
+$('event-filter').onchange=applyEventFilter;
+$('event-follow').onchange=()=>{if($('event-follow').checked)$('timeline').scrollTop=$('timeline').scrollHeight;};
 function renderTimelineMeta(){ $("evcount").textContent = EVENTS.length + " events"; }
 function updateEvCount(){ $("evcount").textContent = EVENTS.length + " events"; }
 function reactTo(ev){
@@ -444,8 +457,9 @@ function reactTo(ev){
 function renderInspector(){
   const host = $("inspector");
   if (!RUN || !SELECTED){ host.innerHTML = '<div class="empty">点击左侧节点、产物边或时间线事件查看详情。</div>'; $("inswhat").textContent="—"; return; }
-  if (SELECTED.kind === "step"){ const s = RUN.steps[SELECTED.idx]; if(!s) return; $("inswhat").textContent = `step ${s.idx+1}`; host.innerHTML = stepHtml(s); }
+  if (SELECTED.kind === "step"){ const s = RUN.steps.find(s=>s.idx===SELECTED.idx); if(!s) return; $("inswhat").textContent = `step ${s.idx+1}`; host.innerHTML = stepHtml(s); }
   else if (SELECTED.kind === "artifact"){ $("inswhat").textContent = "artifact"; host.innerHTML = artifactHtml(SELECTED); }
+  else if(SELECTED.kind==='event'){ $('inswhat').textContent='原始事件';host.innerHTML=`<div class="ins-sec"><div class="ins-k">${esc(SELECTED.event.type)}</div><pre>${esc(JSON.stringify(SELECTED.event,null,2))}</pre></div>`;}
   else host.innerHTML = '<div class="empty">—</div>';
 }
 function stepHtml(s){
@@ -462,14 +476,14 @@ function stepHtml(s){
   const l2 = (s.checks||[]).filter(c => String(c.name).startsWith("[技能断言]"));
   const l3 = s.verifications||[];
   const chk = arr => arr.map(c => `<div class="chk ${c.passed?"":"bad"}"><span class="m">${c.passed?"✓":"✗"}</span>
-      <span>${esc(c.name)}${c.detail?` <span style="color:var(--ink3)">— ${esc(c.detail)}</span>`:""}
+      <span>${esc(c.name||c.item)}${c.detail?` <span style="color:var(--ink3)">— ${esc(c.detail)}</span>`:""}
       ${c.evidence?` <span style="color:var(--ink3)">— ${esc(c.evidence)}</span>`:""}</span></div>`).join("") || '<div class="empty">（无）</div>';
   const stageRows = Object.entries(s.stages||{}).sort((a,b)=>b[1]-a[1]).map(([k,v]) =>
       `<div class="row"><span>${esc(k)}</span><b>${k.endsWith("_ms")?fmtMs(v):v}</b></div>`).join("") || '<div class="empty">（无细分数据）</div>';
   const arts = (s.artifacts||[]).map(a => `<div class="row"><a href="${API}/api/runs/${RUN.run_id}/artifacts/${encodeURIComponent(a.name)}" target="_blank">${esc(a.name)}</a><b>${(a.bytes/1024).toFixed(1)} KB</b></div>`).join("") || '<div class="empty">（无）</div>';
   return `
   <div class="ins-sec">
-    <div class="ins-k">步骤 ${s.idx+1} · ${st.toUpperCase()}</div>
+    <div class="ins-k">步骤 ${s.idx+1} · ${{passed:"验收通过",verifying:"执行完成 · 有未确认项",failed:"执行失败",retrying:"正在修复",running:"正在执行",waiting:"等待依赖",skipped:"已跳过"}[st]||esc(st)}</div>
     <div class="row"><span>动作</span><b style="text-align:right;max-width:260px">${esc(s.action)}</b></div>
     <div class="row"><span>技能</span><b>${esc(s.skill||"—")}</b></div>
     <div class="row"><span>耗时</span><b>${fmtMs(s.duration_ms||0)}</b></div>
@@ -495,22 +509,22 @@ function stepHtml(s){
   </div>
   <div class="ins-sec"><div class="ins-k">产物文件</div>${arts}</div>
   <div class="ins-sec"><div class="ins-k">生成的代码</div>
-    <pre style="max-height:300px">${esc((s.code||"（无）").slice(0,6000))}</pre></div>`;
+    <details><summary>展开完整代码（${(s.code||"").length} 字符）</summary><pre style="max-height:400px">${esc(s.code||"（无）")}</pre></details></div>`;
 }
 function artifactHtml(sel){
   const a = (RUN.steps||[]).flatMap(s=>s.artifacts||[]).find(x=>x.name===sel.name) || {};
-  const consumers = (RUN.steps||[]).filter(s => (s.inputs||[]).includes(sel.name)).map(s=>s.idx+1);
+  const consumers = (RUN.steps||[]).filter(s => (s.input_artifacts||[]).some(a=>a.name===sel.name)).map(s=>s.idx+1);
   return `<div class="ins-sec"><div class="ins-k">产物血缘（从哪来、被谁用）</div>
     <div class="row"><span>文件名</span><b>${esc(sel.name)}</b></div>
     <div class="row"><span>来源步骤</span><b>Step ${(sel.from??a.from_step??0)+1}</b></div>
-    <div class="row"><span>被用于</span><b>${consumers.length?consumers.map(i=>"Step "+i).join(", "):"（暂无下游）"}</b></div>
+    <div class="row"><span>被用于</span><b>${consumers.length?consumers.map(i=>"Step "+i).join(", "):"（未登记消费版本）"}</b></div>
     <div class="row"><span>大小</span><b>${a.bytes?((a.bytes/1024).toFixed(1)+" KB"):"—"}</b></div>
-    <div class="row"><span>SHA256（前 16）</span><b>${esc(a.sha256||"—")}</b></div>
-    <div style="margin-top:8px"><a href="${API}/api/runs/${RUN.run_id}/artifacts/${encodeURIComponent(sel.name)}" target="_blank">打开 / 预览</a>
+    <div class="row"><span>SHA-256（完整指纹）</span><b>${esc(a.sha256||"—")}</b></div>
+    <div style="margin-top:8px"><button type="button" data-artifact-preview data-run="${esc(RUN.run_id)}" data-file="${esc(sel.name)}" data-sha="${esc(a.sha256||'')}">在此核对产物</button> <a href="${API}/api/runs/${RUN.run_id}/artifacts/${encodeURIComponent(sel.name)}" target="_blank">打开 / 预览</a>
     　<a href="${API}/api/runs/${RUN.run_id}/artifacts/${encodeURIComponent(sel.name)}?download=1">下载</a></div>
   </div>
   <div class="ins-sec"><div class="ins-k">说明</div>
-    <div class="note">这条边表示：<b>Step ${(sel.from??0)+1} 的产物作为 Step ${consumers.length?consumers[0]:"?"} 的输入</b>（文件系统级传递，非提示词占位）。</div>
+    <div class="note">产物来自 <b>Step ${(sel.from??a.from_step??0)+1}</b>。${consumers.length?`已记录下游消费步骤：${consumers.join("、")}。`:"此记录未登记下游消费版本，不能推断传递关系。"}</div>
   </div>`;
 }
 
@@ -521,11 +535,12 @@ $("cancel").onclick = async () => {
   catch(error){UI.toast(error.message);$("cancel").disabled=false;}
 };
 /* ---------- Tabs（移动端） ---------- */
-document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
-  document.querySelectorAll("#tabs button").forEach(x=>x.classList.remove("on"));
-  b.classList.add("on");
-  document.querySelectorAll(".col").forEach(c => c.classList.toggle("on", c.dataset.tab === b.dataset.t));
-});
+function openRunTab(name){
+  document.querySelectorAll('#tabs button').forEach(button=>{const active=button.dataset.t===name;button.classList.toggle('on',active);button.setAttribute('aria-pressed',String(active));});
+  document.querySelectorAll('.col').forEach(col=>col.classList.toggle('on',col.dataset.tab===name));
+}
+function inspectMobile(){if(innerWidth<=860)openRunTab('inspect');}
+document.querySelectorAll('#tabs button').forEach(button=>button.onclick=()=>openRunTab(button.dataset.t));
 
 /* ---------- Agent 最终回复（Markdown 轻渲染，先 esc 再处理标记） ---------- */
 const mdToHtml = md => {
@@ -572,10 +587,10 @@ function renderReply(text){
   if (!main) return;
   const wrap = document.createElement("div");
   wrap.id = "ai-reply-wrap";
-  wrap.innerHTML = '<div class="ai-reply" style="margin:0;border:0;border-radius:0;box-shadow:none">' +
+  wrap.innerHTML = '<details><summary>Agent 最终回复 · 展开阅读本次研究结论</summary><div class="ai-reply" style="margin:0;border:0;border-radius:0;box-shadow:none">' +
       '<div class="rp-head"><i></i>Agent 最终回复' +
       '<span class="rp-meta">基于本次真实执行数据生成 · 整宽显示，可滚动查看全文</span></div>' +
-      '<div class="rp-body">' + mdToHtml(text) + '</div></div>';
+      '<div class="rp-body">' + mdToHtml(text) + '</div></div></details>';
   main.parentNode.insertBefore(wrap, main.nextSibling);
 }
 

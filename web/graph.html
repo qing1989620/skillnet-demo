@@ -64,8 +64,10 @@
   :root { --bg-img: url("/static/assets/bg-dark.jpg"); --bg-op: .42; }
   /* 移除 graph 页原有的局部背景定义（改由共享层统一控制） */
 </style>
-<link rel="stylesheet" href="/static/assets/ui.css?v=0.8.1-restored2">
-<script src="/static/assets/ui.js?v=0.8.1-restored2"></script>
+<link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
+<script src="/static/assets/ui.js?v=0.9.0-product"></script>
+<link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
+<script src="/static/assets/product.js?v=0.9.0-product"></script>
 </head>
 <body>
 <div class="load" id="load">正在加载技能图谱…</div>
@@ -73,6 +75,7 @@
 <header class="graph-nav" id="graph-nav"></header>
 <div class="graph-search"><label class="ui-sr-only" for="graph-q">搜索并选择技能</label><input id="graph-q" type="search" placeholder="搜索技能或领域…" autocomplete="off"><div class="graph-search-results" id="graph-results"></div></div>
 
+<details class="graph-filters"><summary>筛选领域与关系</summary><select id="graph-domain" aria-label="筛选图谱领域"><option value="">全部领域</option></select><div><label><input type="checkbox" data-relation="depend_on" checked>依赖</label><label><input type="checkbox" data-relation="compose_with" checked>组合</label><label><input type="checkbox" data-relation="similar_to" checked>相似</label></div><label><input type="checkbox" id="graph-neighbors">仅聚焦技能及邻域</label><span id="graph-visible" role="status"></span></details>
 <div class="hud tl">
   <h1>技能星图 · Skill Relation Graph</h1>
   <div class="sub">
@@ -104,7 +107,7 @@
   <h3 id="cName"></h3>
   <div class="dom" id="cDom"></div>
   <div class="kv" id="cKv"></div>
-  <div class="rel" id="cRel"></div>
+  <div class="rel" id="cRel"></div><div class="graph-contract" id="cContract"></div><a class="graph-contract-link" id="cContractLink">打开完整执行契约 ↗</a>
 </div>
 <div class="tip" id="tip"></div>
 
@@ -172,7 +175,7 @@ function step() {
   const src = S.byId;
   for (const e of E) {
     const a = src[e.source], b = src[e.target];
-    if (!a || !b) continue;
+    if (!a || !b || !nodeVisible(a) || !nodeVisible(b) || !GRAPH_FILTER.relations.has(e.type)) continue;
     const L = LINK_LEN[e.type] || 100;
     let dx = b.x - a.x, dy = b.y - a.y;
     const d = Math.max(1, Math.hypot(dx, dy));
@@ -229,7 +232,7 @@ function draw() {
   ctx.lineCap = "round";
   for (const e of S.edges) {
     const a = S.byId[e.source], b = S.byId[e.target];
-    if (!a || !b) continue;
+    if (!a || !b || !nodeVisible(a) || !nodeVisible(b) || !GRAPH_FILTER.relations.has(e.type)) continue;
     if (S.onlyEvolved && !(a.source !== "seed" && b.source !== "seed")) continue;
     const [x1, y1] = toScreen(a.x, a.y), [x2, y2] = toScreen(b.x, b.y);
     const hot = focus && (e.source === focus.id || e.target === focus.id);
@@ -251,7 +254,7 @@ function draw() {
 
   // 节点
   for (const n of S.nodes) {
-    if (S.onlyEvolved && n.source === "seed") continue;
+    if (!nodeVisible(n)) continue;
     const [x, y] = toScreen(n.x, n.y);
     if (x < -60 || y < -60 || x > W + 60 || y > H + 60) continue;
     const evolved = n.source !== "seed";
@@ -287,11 +290,10 @@ function draw() {
   // ---- 标签绘制：屏幕分格占位，聚焦/大节点优先，避免堆叠压字 ----
   if (S.showLabel) {
     const font = Math.max(9.5, Math.min(13, 11 * v.k));
-    const CELL = 44;
-    const occupied = new Set();
+    const occupied = [];
     const cand = [];
     for (const n of S.nodes) {
-      if (S.onlyEvolved && n.source === "seed") continue;
+      if (!nodeVisible(n)) continue;
       if (n._lx == null) continue;
       if (n._lx < -40 || n._ly < -20 || n._lx > W + 40 || n._ly > H + 20) continue;
       const rank = n._focus ? 0 : (n._in ? 1 : 2);
@@ -299,12 +301,11 @@ function draw() {
     }
     cand.sort((a, b) => a.rank - b.rank || b.n._r - a.n._r);
     for (const { n } of cand) {
-      const c0 = Math.floor(n._lx / CELL), c1 = Math.floor(n._ly / CELL);
-      const k1 = c0 + "," + c1, k2 = (c0 + 1) + "," + c1;
-      if (occupied.has(k1) || occupied.has(k2)) continue;
-      occupied.add(k1); occupied.add(k2);
-      ctx.globalAlpha = n._focus ? 1 : (n._in ? 0.92 : 0.14);
       ctx.font = `${n._focus ? 600 : 400} ${font}px "Microsoft YaHei", sans-serif`;
+      const rect={x:n._lx-3,y:n._ly-font-3,w:ctx.measureText(n.id).width+9,h:font+9};
+      if(!n._focus&&occupied.some(r=>rect.x<r.x+r.w&&rect.x+rect.w>r.x&&rect.y<r.y+r.h&&rect.y+rect.h>r.y))continue;
+      occupied.push(rect);
+      ctx.globalAlpha = n._focus ? 1 : (n._in ? 0.92 : 0.18);
       ctx.fillStyle = n._focus ? "#ffffff" : "#c3d5e6";
       ctx.shadowColor = "rgba(0,0,0,.9)"; ctx.shadowBlur = 4;
       ctx.fillText(n.id, n._lx, n._ly);
@@ -328,13 +329,30 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
+const GRAPH_FILTER={domain:'',relations:new Set(['depend_on','compose_with','similar_to']),neighbors:false};
+function nodeVisible(node){
+  if(GRAPH_FILTER.domain&&node.domain!==GRAPH_FILTER.domain)return false;
+  if(S.onlyEvolved&&node.source==='seed')return false;
+  if(GRAPH_FILTER.neighbors&&S.selected&&node.id!==S.selected.id&&!S.edges.some(e=>GRAPH_FILTER.relations.has(e.type)&&((e.source===S.selected.id&&e.target===node.id)||(e.target===S.selected.id&&e.source===node.id))))return false;
+  return true;
+}
+function graphFilterState(){
+  const neighbors=document.getElementById('graph-neighbors');neighbors.disabled=!S.selected;
+  if(!S.selected){neighbors.checked=false;GRAPH_FILTER.neighbors=false;}
+  const count=S.nodes.filter(nodeVisible).length;
+  document.getElementById('graph-visible').textContent=`当前显示 ${count} / ${S.nodes.length} 个技能`;
+}
+document.getElementById('graph-domain').onchange=event=>{GRAPH_FILTER.domain=event.target.value;graphFilterState();};
+document.querySelectorAll('[data-relation]').forEach(input=>input.onchange=()=>{input.checked?GRAPH_FILTER.relations.add(input.dataset.relation):GRAPH_FILTER.relations.delete(input.dataset.relation);graphFilterState();});
+document.getElementById('graph-neighbors').onchange=event=>{GRAPH_FILTER.neighbors=event.target.checked;graphFilterState();};
+
 /* ---------------- 交互 ---------------- */
 function pick(sx, sy) {
   const [wx, wy] = toWorld(sx, sy);
   let best = null, bestD = 1e9;
   const R = 18 / S.view.k;
   for (const n of S.nodes) {
-    if (S.onlyEvolved && n.source === "seed") continue;
+    if (!nodeVisible(n)) continue;
     const d = Math.hypot(n.x - wx, n.y - wy);
     const hit = Math.max(R, n.r + 6 / S.view.k);
     if (d < hit && d < bestD) { best = n; bestD = d; }
@@ -393,6 +411,7 @@ cv.addEventListener("wheel", ev => {
   S.target.y = (ev.clientY - H / 2) / k1 - wy;
 }, { passive: false });
 
+let contractGeneration=0;
 function selectNode(n) {
   S.selected = n;
   const card = document.getElementById("card");
@@ -416,10 +435,13 @@ function selectNode(n) {
   document.getElementById("cRel").innerHTML = rels.length
     ? "关联技能：" + rels.map(r => `<span>${esc(r[0])} → ${esc(r[1])}</span>`).join("")
     : "";
-  card.classList.add("show");
+  card.classList.add("show");graphFilterState();
+  const generation=++contractGeneration,host=document.getElementById('cContract');host.textContent='读取执行契约…';
+  document.getElementById('cContractLink').href='/dashboard#skills?skill='+encodeURIComponent(n.id);
+  UI.json('/api/skill/'+encodeURIComponent(n.id)).then(d=>{if(generation!==contractGeneration)return;const s=d.skill;host.innerHTML=`<b>能力</b><p>${esc(s.capability||s.description||'')}</p><b>实际执行步骤</b><ol>${(s.steps||[]).slice(0,4).map(text=>`<li>${esc(text)}</li>`).join('')}</ol><b>验收条件</b><p>${esc((s.verification||[]).slice(0,2).join('；')||'未定义')}</p>`;}).catch(error=>{if(generation===contractGeneration)host.textContent=error.message;});
 }
 function closeCard() {
-  S.selected = null;
+  S.selected = null;++contractGeneration;graphFilterState();
   document.getElementById("card").classList.remove("show");
 }
 document.addEventListener("keydown",event=>{if(event.key === "Escape"){closeCard();document.getElementById("graph-results").innerHTML="";}});
@@ -432,6 +454,7 @@ document.getElementById("graph-q").addEventListener("input",event=>{
   host.querySelectorAll("[data-node]").forEach(button=>button.addEventListener("click",()=>{
     const node=S.byId[button.dataset.node];if(!node)return;
     if(S.onlyEvolved && node.source === "seed"){S.onlyEvolved=false;document.getElementById("btnEvolved").classList.remove("on");}
+    GRAPH_FILTER.domain='';document.getElementById('graph-domain').value='';
     S.target.x=-node.x;S.target.y=-node.y;S.target.k=Math.max(.85,S.target.k);selectNode(node);host.innerHTML="";
   }));
 });
@@ -448,15 +471,18 @@ document.getElementById("btnPause").onclick = e => {
   e.target.classList.toggle("on", S.paused);
 };
 document.getElementById("btnLabel").onclick = e => {
-  S.showLabel = !S.showLabel; e.target.classList.toggle("on", S.showLabel);
+  S.showLabel = !S.showLabel; e.target.classList.toggle("on", S.showLabel);e.target.setAttribute("aria-pressed",String(S.showLabel));
 };
 document.getElementById("btnEvolved").onclick = e => {
-  S.onlyEvolved = !S.onlyEvolved; e.target.classList.toggle("on", S.onlyEvolved);
+  S.onlyEvolved = !S.onlyEvolved; e.target.classList.toggle("on", S.onlyEvolved);e.target.setAttribute("aria-pressed",String(S.onlyEvolved));graphFilterState();
 };
 
 /* ---------------- 启动 ---------------- */
 function resize() {
+  const previousW=W;
   W = window.innerWidth; H = window.innerHeight;
+  if(W<860 && previousW>=860){S.view.k=S.target.k=.52;S.view.x=S.target.x=0;S.view.y=S.target.y=90;}
+  if(W>=860 && previousW>0 && previousW<860){S.view.k=S.target.k=1;S.view.x=S.target.x=S.view.y=S.target.y=0;}
   cv.width = W * DPR; cv.height = H * DPR;
   cv.style.width = W + "px"; cv.style.height = H + "px";
 }
@@ -487,13 +513,14 @@ window.addEventListener("resize", resize);
   window.__GRAPHN__ = S.nodes.length;   // 供自检读取
 
   const doms = [...new Set(S.nodes.map(n => n.domain))];
+  document.getElementById("graph-domain").insertAdjacentHTML("beforeend",doms.sort().map(d=>`<option>${esc(d)}</option>`).join(""));graphFilterState();
   doms.forEach((d, i) => domainColor[d] = PALETTE[i % PALETTE.length]);
   document.getElementById("nN").textContent = S.nodes.length;
   document.getElementById("nE").textContent = S.edges.length;
   document.getElementById("nD").textContent = doms.length;
 
   initPhysics();
-  if(W < 860)S.view.k = S.target.k = .65;
+  if(W < 860){S.view.k = S.target.k = .52;S.view.y=S.target.y=90;}
   document.getElementById("load").style.display = "none";
   loop();
 })();

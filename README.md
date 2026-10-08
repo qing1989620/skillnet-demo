@@ -22,7 +22,7 @@ python run.py --no-browser
 5. **原有完整演示**：保留「七阶段完整演示（本页）」、同题检索与执行对照、技能反馈前后变化、文件预览和会话历史。
 6. **S1 接入**：展示服务契约、客户端和逐步接入方式。
 
-现场讲解、数据口径和验证记录见 [领导演示说明](docs/executive-demo.md)。
+现场讲解见 [领导演示说明](docs/executive-demo.md)。六个页面、全部功能视图、后端修复和桌面/手机截图见 [全产品优化与验收](docs/full-product-upgrade.md)。
 
 | 页面 | 地址 |
 |---|---|
@@ -31,7 +31,7 @@ python run.py --no-browser
 | 交互式技能网络 | /graph |
 | 运行中心 | /runs |
 | 执行回放 | /run?id=<run_id> |
-| 完整能力与实验面板 | /dashboard |
+| 内核实验室（七个功能页） | /dashboard |
 | API 文档 | /docs |
 | 接入能力清单 | /api/integrations/s1 |
 
@@ -87,12 +87,15 @@ python -m pytest tests -q
 python verify.py
 node tools/front_check.js
 node tools/check_web.js
+node tools/product_check.js
+node tools/briefing_check.js
+node tools/showcase_check.js
 # 以下需要服务已启动
 python tools/selfcheck.py
 python tools/full_audit.py
 ~~~
 
-GitHub Actions 在 Windows / Linux、Python 3.11 / 3.12 上执行离线回归、组件验证和前端资源检查。CI 不配置模型密钥，不运行付费实验。浏览器实机验收与本次证据见 [交付说明](docs/release-0.8.md)。
+GitHub Actions 在 Windows / Linux、Python 3.11 / 3.12 上执行离线回归、组件验证和前端资源检查。CI 不配置模型密钥，不运行付费实验。本次 206 项回归、真实执行与浏览器证据见 [全产品优化与验收](docs/full-product-upgrade.md)；早期交付记录见 [0.8 交付说明](docs/release-0.8.md)。
 
 ## 容器启动
 

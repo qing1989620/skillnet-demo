@@ -24,8 +24,8 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 BASE = "http://127.0.0.1:8848"
 WEB = ROOT / "web"
 
-PAGES = ["/", "/graph", "/dashboard", "/static/briefing.html", "/static/graph.html"]
-APIS = ["/api/health", "/api/stats", "/api/graph", "/api/skills", "/api/tasks", "/api/results", "/api/config"]
+PAGES = ["/", "/chat", "/runs", "/run", "/graph", "/dashboard", "/static/briefing.html", "/static/graph.html"]
+APIS = ["/api/health", "/api/stats", "/api/graph", "/api/skills", "/api/tasks", "/api/results", "/api/config", "/api/runs?limit=1", "/api/integrations/s1"]
 
 _ok: list[str] = []
 _bad: list[str] = []

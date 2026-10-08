@@ -133,8 +133,10 @@
   footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);
     font-size:11.5px;color:var(--ink-3);line-height:1.9}
 </style>
-<link rel="stylesheet" href="/static/assets/ui.css?v=0.8.1-restored2">
-<script src="/static/assets/ui.js?v=0.8.1-restored2"></script>
+<link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
+<script src="/static/assets/ui.js?v=0.9.0-product"></script>
+<link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
+<script src="/static/assets/product.js?v=0.9.0-product"></script>
 </head>
 <body>
 <div class="app">
@@ -143,7 +145,7 @@
     <div id="developer-product-nav" style="display:flex;align-items:center;gap:16px;margin-bottom:26px"></div>
     <div class="brand">
       <a href="/" style="font-size:13px;color:#24557a;text-decoration:none;border:1px solid #b9d2e8;border-radius:999px;padding:3px 14px;margin-right:10px">← 汇报演示模式</a>
-      <h1>SkillNet-S1</h1>
+      <h1>内核实验室</h1>
       <span class="sub">立理 S1 科研技能生态原型 · Skill Retrieval / Evolution / RL</span>
     </div>
     <p class="lede">
@@ -161,7 +163,7 @@
     <button data-v="demo">全链路演示</button>
     <button data-v="skills">技能库</button>
     <button data-v="search">检索与路由</button>
-    <button data-v="run">任务执行</button>
+    <button data-v="run">方案对照与执行</button>
     <button data-v="results">实验结果</button>
     <button data-v="adapters">跨框架接入</button>
   </nav>
@@ -204,14 +206,16 @@
     <div class="panel">
       <h2>全链路演示 <span class="en">End-to-End</span></h2>
       <p class="hint">
-        选一条任务，一次跑完整条链路：三档检索对比 → 任务级技能 Wiki 路由与依赖编排 →
-        技能驱动的研究方案生成与独立盲评 → 从执行轨迹蒸馏出新技能并入库。
-        演示结束会给出本次调用的 token 分账与总成本。
+        选一条任务，一次跑完整条链路：技能检索与策略选择 → 任务级技能 Wiki 路由与依赖编排 →
+        生成方案 → 多步代码执行与修复 → 产物分层验收 → 有证据才反馈和准入。
+        完整执行链创建可回放的 Run；「研究方案对照」保留三档检索与单步实验，单步通过不代表整条方案完成。
       </p>
       <div class="field" style="margin-bottom:14px">
         <select id="demoTask" style="flex:1;min-width:340px"></select>
-        <button class="btn" id="demoBtn">开始演示</button>
+        <button class="btn" id="demoBtn">运行完整执行链</button><button class="btn" id="legacyDemoBtn">研究方案对照</button>
       </div>
+      <label for="demoTaskText" class="hint">这次要验证的问题（可以直接修改）</label>
+      <textarea id="demoTaskText" rows="4" style="width:100%;margin:8px 0 18px"></textarea>
       <div id="demoOut"><p class="note">尚未运行。</p></div>
     </div>
   </section>
@@ -265,7 +269,7 @@
   <!-- ============ 任务执行 ============ -->
   <section class="view" id="v-run">
     <div class="panel">
-      <h2>技能驱动的研究 Agent <span class="en">Agent Execution</span></h2>
+      <h2>方案对照与真实执行 <span class="en">Plan / Execute</span></h2>
       <p class="hint">同一任务在四档技能供给条件下的执行方案与独立评审得分。评审看不到方案来自哪一档。</p>
       <div class="field" style="margin-bottom:12px">
         <select id="runTask" style="flex:1;min-width:320px"></select>
@@ -278,10 +282,10 @@
           <button data-m="hybrid">混合检索</button>
           <button data-m="fabric" class="on">完整方案</button>
         </div>
-        <button class="btn" id="runBtn">执行</button>
+        <button class="btn" id="runBtn">生成方案并盲评</button><button class="btn" id="realRunBtn">运行多步代码与验收 ↗</button>
         <span id="runStatus" class="note" style="margin:0;border:none;padding:0"></span>
       </div>
-      <div id="runOut" style="margin-top:20px"><p class="note">点击「执行」开始。</p></div>
+      <div id="runOut" style="margin-top:20px"><p class="note">方案对照评价研究方案；真实执行会创建独立运行记录并交付实际文件。</p></div>
     </div>
   </section>
 
@@ -292,6 +296,7 @@
 
   <!-- ============ 跨框架 ============ -->
   <section class="view" id="v-adapters">
+    <div id="s1-contract" class="product-block" style="margin-bottom:20px"></div>
     <div class="panel">
       <h2>跨框架接入 <span class="en">Framework Adapters</span></h2>
       <p class="hint">
@@ -331,11 +336,17 @@ async function api(path, opt){
 const post = (p, body) => api(p, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
 
 /* ---------- Tab ---------- */
-$$('#tabs button').forEach(b => b.onclick = () => {
-  $$('#tabs button').forEach(x => x.classList.toggle('on', x === b));
-  $$('.view').forEach(v => v.classList.toggle('on', v.id === 'v-' + b.dataset.v));
-  if(b.dataset.v === 'results') loadResults();
-});
+function laboratoryRoute(){
+  const [tab,query='']=location.hash.slice(1).split('?'),active=$$('#tabs button').find(b=>b.dataset.v===tab)||$('#tabs button');
+  $$('#tabs button').forEach(b=>{b.classList.toggle('on',b===active);b.setAttribute('role','tab');b.setAttribute('aria-selected',String(b===active));});
+  $$('.view').forEach(v=>{v.classList.toggle('on',v.id==='v-'+active.dataset.v);v.setAttribute('role','tabpanel');});
+  if(active.dataset.v==='results')loadResults();
+  if(active.dataset.v==='adapters')loadIntegration();
+  const skill=new URLSearchParams(query).get('skill');
+  if(active.dataset.v==='skills'&&skill&&SKILLS.length)showSkill(skill,$$('#skillList [data-n]').find(r=>r.dataset.n===skill));
+}
+$$('#tabs button').forEach(b=>b.onclick=()=>{location.hash=b.dataset.v;});
+window.addEventListener('hashchange',laboratoryRoute);
 
 /* ---------- 概览 ---------- */
 let STATS = null, GRAPH = null;
@@ -493,16 +504,19 @@ function renderGraph(){
 }
 
 /* ---------- 全链路演示 ---------- */
-async function doDemo(){
+async function doLegacyDemo(){
   const sel = $('#demoTask');
   const t = TASKS.find(x => x.id === sel.value);
-  if(!t) return;
-  const out = $('#demoOut'), btn = $('#demoBtn');
-  btn.disabled = true;
+  const task=$('#demoTaskText').value.trim();if(!task)return;
+  const gold=t&&t.query===task?t.gold:[];
+  const out = $('#demoOut'), btn = $('#legacyDemoBtn');
+  btn.disabled = true;$('#demoBtn').disabled=true;
   out.innerHTML = '<p class="note"><span class="spin"></span>链路执行中：检索对比 → Wiki 路由 → 执行与盲评 → 轨迹蒸馏。约需 1–2 分钟…</p>';
   try{
-    const d = await post('/api/demo', {task:t.query, gold:t.gold, k:5});
-    const [st1, st2, st3, st4] = d.stages.map(s => s.detail);
+    const d = await post('/api/demo', {task, gold, k:5});
+    const stages=Object.fromEntries(d.stages.map(s=>[s.stage,s.detail]));
+    const st1=stages['检索对比'],st2=stages['任务级 Wiki 路由与编排'],st3=stages['技能驱动执行与盲评'],st4=stages['反馈回流与轨迹蒸馏'];
+    const execution=stages['真实执行（沙箱）']||{},delivery=stages['本次产出']||{};
     const MODES = ['bm25','hybrid','fabric'];
     const stageHead = (n, title, sub) => `
       <div style="display:flex;align-items:baseline;gap:12px;margin:26px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line)">
@@ -512,14 +526,14 @@ async function doDemo(){
       </div>`;
 
     out.innerHTML = `
-      <p class="note">任务：${esc(d.task)}<br>金标准技能集：${t.gold.map(g=>`<span class="chip">${esc(g)}</span>`).join('')}</p>
+      <p class="note">任务：${esc(d.task)}<br>${gold.length?'金标准技能集：'+gold.map(g=>`<span class="chip">${esc(g)}</span>`).join(''):'自定义问题未配置金标准，不报告召回率。'}</p>
 
       ${stageHead('01','三档检索对比','同一条任务，三种检索策略')}
       <table>
         <thead><tr><th>策略</th><th>选中技能</th><th>召回</th></tr></thead>
         <tbody>${MODES.map(m => `<tr class="${m==='fabric'?'hl':''}">
           <td>${MODE_LABEL[m]} <span class="tag">${m}</span></td>
-          <td>${st1[m].selected.map(s=>`<span class="chip ${t.gold.includes(s)?'accent':''}">${esc(s)}</span>`).join('')}</td>
+          <td>${st1[m].selected.map(s=>`<span class="chip ${gold.includes(s)?'accent':''}">${esc(s)}</span>`).join('')}</td>
           <td class="num">${st1[m].recall==null?'—':pct(st1[m].recall)}</td>
         </tr>`).join('')}</tbody>
       </table>
@@ -569,7 +583,11 @@ async function doDemo(){
         </div>
       </div>
 
-      ${stageHead('04','从执行轨迹蒸馏新技能','技能库不是静态的')}
+      ${stageHead('04','单步代码验证','研究对照只验证一个步骤')}
+      <div class="panel tight"><p>选中 ${esc(execution.step_label||'未记录步骤')} · ${execution.final_ok?'执行成功':'执行未成功'} · ${execution.n_attempts||0} 次尝试 · 语义确认 ${execution.verification_passed||0}/${execution.verification_total||0}</p><p class="note">方案共 ${st3.steps} 步，单步成功不代表完整轨迹完成。</p><details class="contract-section"><summary>核对代码、尝试、输出与验收原始记录</summary><pre>${esc(JSON.stringify(execution,null,2))}</pre></details></div>
+      ${stageHead('05','反馈前后变化','核对奖励是否真正进入选择器')}
+      <div class="experiment-table"><table><thead><tr><th>技能</th><th>收益预测：更新前</th><th>更新后</th><th>变化</th><th>反馈状态</th></tr></thead><tbody>${(st4.feedback||[]).map(row=>`<tr><td>${esc(row.name||row.skill)}</td><td>${num(row.exploit_before,4)}</td><td>${num(row.exploit_after,4)}</td><td>${num(row.delta,4)}</td><td>${row.nudged?'已写入奖励':'未更新'}</td></tr>`).join('')}</tbody></table></div>
+      ${stageHead('06','从执行轨迹蒸馏新技能','有完整证据才准入')}
       <div class="panel tight">
         ${st4.accepted ? `
           <p style="font-size:13px;margin-bottom:10px">
@@ -578,13 +596,13 @@ async function doDemo(){
             <span class="chip">库规模 ${st4.library_size}</span>
           </p>
           <p class="hint">${esc(st4.capability||'')}</p>`
-          : `<p class="err">本次蒸馏未通过准入过滤（${esc((st4.records[0]||{}).reason||'')}）——这本身是准入机制在工作。</p>`}
+          : `<p class="note">${esc(st4.skip_reason||(st4.records[0]||{}).reason||'本次没有新技能准入。')}</p>`}
         <p class="note">
           准入过滤记录：${st4.records.map(r=>`<span class="chip ${r.accepted?'jade':''}">${esc(r.op)} ${r.accepted?'入库':'拒绝'}：${esc(r.reason)}</span>`).join('')}
         </p>
       </div>
 
-      ${stageHead('05','本次链路成本','按角色分账')}
+      ${stageHead('07','成本与交付','按角色分账，保留实际文件')}
       <table>
         <thead><tr><th>角色</th><th>调用次数</th><th>输入 token</th><th>输出 token</th><th>成本</th></tr></thead>
         <tbody>${Object.entries(d.usage_by_role).map(([k,v])=>`<tr>
@@ -592,22 +610,23 @@ async function doDemo(){
           <td class="num">${v.completion}</td><td class="num">¥${num(v.cost_yuan,5)}</td></tr>`).join('')}
         </tbody>
       </table>
-      <p class="note">本次链路合计 <strong>${d.tokens}</strong> tokens，成本 <strong>¥${num(d.cost_yuan,4)}</strong>。</p>`;
+      <p class="note">本次链路合计 <strong>${d.tokens}</strong> tokens，成本 <strong>¥${num(d.cost_yuan,4)}</strong>。</p><p>${delivery.saved?(delivery.artifacts||[]).map(a=>`<a class="chip" href="/api/artifact/${encodeURIComponent(d.slug)}/${encodeURIComponent(a.name)}" target="_blank">${esc(a.name)} ↗</a>`).join(''):esc(delivery.save_error||'未登记保存的文件')}</p>`;
   }catch(e){
     out.innerHTML = `<p class="err">演示失败：${esc(e.message)}</p>`;
-  }finally{ btn.disabled = false; }
+  }finally{ btn.disabled = false;$('#demoBtn').disabled=false; }
 }
 
 /* ---------- 技能库 ---------- */
 let SKILLS = [], TASKS = [];
+const PUBLIC_DEMO_TASK='只使用公开演示数据，不联网：A组[1,2,3,4,5]，B组[2,3,4,5,6]。完成3步真实执行：计算各组n、均值与样本标准差(ddof=1)，保留4位小数输出summary.csv；用绝对容差0.0001逐值回读校验表头group,n,mean,std_sample与2组数据；直接读取同一CSV生成figure.png，误差条表示样本标准差，纵轴从0开始。只做描述统计，注明演示数据不可用于科学结论。';
 function renderSkillList(){
   const q = ($('#skillQ').value || '').toLowerCase().trim();
   const dm = $('#skillDomain').value;
   let items = SKILLS;
   if(dm) items = items.filter(s => s.domain === dm);
   if(q) items = items.filter(s =>
-    s.name.toLowerCase().includes(q) || s.description.toLowerCase().includes(q) ||
-    s.tags.some(t => t.toLowerCase().includes(q)));
+    s.name.toLowerCase().includes(q) || (s.description||'').toLowerCase().includes(q) || (s.capability||'').toLowerCase().includes(q) ||
+    (s.tags||[]).some(t => t.toLowerCase().includes(q)));
   $('#skillCount').textContent = `${items.length} / ${SKILLS.length}`;
   $('#skillList').innerHTML = items.map(s => `
     <div class="row" data-n="${esc(s.name)}">
@@ -616,22 +635,18 @@ function renderSkillList(){
     </div>`).join('') || '<div class="row"><div class="d">无匹配技能</div></div>';
   $$('#skillList .row[data-n]').forEach(r => r.onclick = () => showSkill(r.dataset.n, r));
 }
-async function showSkill(name, row){
-  $$('#skillList .row').forEach(r => r.classList.toggle('on', r === row));
-  const d = await api('/api/skill/' + encodeURIComponent(name));
-  const s = d.skill;
-  const q = s.quality || {};
-  $('#skillDetail').innerHTML = `
-    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:14px">
-      <span class="tag">${esc(s.name)}</span>
-      <span class="chip jade">${esc(s.domain)}</span>
-      <span class="chip ${s.source!=='seed'?'accent':''}">${esc(s.source)} · G${s.generation}</span>
-      ${s.stats && s.stats.pulls ? `<span class="chip gold">实测 ${num(s.mean_reward,3)} / ${s.stats.pulls} 次</span>` : ''}
-    </div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
-      ${Object.entries(q).map(([k,v]) => `<span class="chip">${k}: ${v}</span>`).join('')}
-    </div>
-    <pre class="md">${esc(d.markdown)}</pre>`;
+let skillGeneration=0;
+async function showSkill(name,row){
+  const generation=++skillGeneration;
+  $$('#skillList .row').forEach(r=>r.classList.toggle('on',r===row));
+  $('#skillDetail').innerHTML='<p class="note">正在读取完整技能契约…</p>';
+  try{
+    const d=await api('/api/skill/'+encodeURIComponent(name));if(generation!==skillGeneration)return;
+    const s=d.skill,stats=s.stats||{};
+    history.replaceState(null,'','#skills?skill='+encodeURIComponent(name));
+    const list=(title,items)=>items?.length?`<div class="contract-section"><h3>${title}</h3><ol>${items.map(v=>`<li>${esc(typeof v==='string'?v:JSON.stringify(v))}</li>`).join('')}</ol></div>`:'';
+    $('#skillDetail').innerHTML=`<div class="contract-head"><div><span class="product-eyebrow">SKILL / EXECUTION CONTRACT</span><h2>${esc(s.name)}</h2></div><a href="/graph">星图 ↗</a></div><div class="contract-tags"><span>${esc(s.domain)}</span><span>${s.source==='seed'?'种子技能':'演化技能'} · G${s.generation||0}</span><span>执行 ${stats.exec_ok||0}/${stats.exec_total||0} 成功</span>${Object.entries(s.quality||{}).map(([k,v])=>`<span>${esc(k)} · ${esc(UI.qualityLabel(v))}</span>`).join('')}</div><p class="hint">${esc(s.capability||s.description||'')}</p>${list('何时使用',s.use_when)}${list('输入契约',s.inputs)}${list('交付输出',s.outputs)}${list('执行步骤',s.steps)}${list('已知陷阱与修复依据',s.pitfalls)}${list('验收要求',s.verification)}<details class="contract-section"><summary>查看完整 SKILL.md 与元数据</summary><pre class="md">${esc(d.markdown)}</pre></details>`;
+  }catch(error){if(generation===skillGeneration)$('#skillDetail').innerHTML=UI.errorHTML(error);}
 }
 function initSkills(){
   SKILLS.sort((a,b) => a.domain.localeCompare(b.domain) || a.name.localeCompare(b.name));
@@ -663,8 +678,10 @@ function taskOptions(){
   };
   if(TASKS.length) $('#runTaskText').value = TASKS[0].query;
   const dt = $('#demoTask');
-  dt.innerHTML = TASKS.map(t =>
+  dt.innerHTML = '<option value="__public__">公开数据 · 描述统计与图表（可直接运行）</option>'+TASKS.map(t =>
     `<option value="${t.id}">${t.id} · ${esc(t.domain)} · ${esc(t.query.slice(0,30))}…</option>`).join('');
+  dt.onchange=()=>{$('#demoTaskText').value=dt.value==='__public__'?PUBLIC_DEMO_TASK:TASKS.find(t=>t.id===dt.value)?.query||'';};
+  $('#demoTaskText').value=PUBLIC_DEMO_TASK;
 }
 
 function recallOf(sel, gold){
@@ -677,6 +694,7 @@ async function doSearch(){
   const k = +$('#searchK').value;
   const out = $('#searchOut');
   out.innerHTML = '<p class="note"><span class="spin"></span>检索中…（Fabric 档会调用 LLM 重排）</p>';
+  const requestButton=$('#searchBtn');requestButton.disabled=true;
   try{
     const d = await post('/api/search', {query:q, k, modes:['bm25','hybrid','fabric']});
     const gold = TASKS.find(t => t.query === q)?.gold || [];
@@ -695,7 +713,7 @@ async function doSearch(){
           <div style="display:flex;align-items:baseline;gap:8px">
             <span class="tag" style="color:${hit?'var(--accent)':'var(--ink-3)'}">${String(c.rank).padStart(2,'0')}</span>
             <span style="font-family:var(--mono);font-size:12px;font-weight:${hit?'600':'400'};
-              color:${hit?'var(--accent)':'var(--ink)'}">${esc(c.name)}</span>
+              color:${hit?'var(--accent)':'var(--ink)'}">${esc(c.name)}</span>${blk.selected.includes(c.name)?'<span class="chip accent">已选</span>':''}
           </div>
           <div style="font-size:11px;color:var(--ink-3);margin-top:3px;line-height:1.5">
             ${c.channels.map(ch=>`<span class="chip">${ch}</span>`).join('')} ${esc(c.capability||'').slice(0,42)}
@@ -703,19 +721,21 @@ async function doSearch(){
       }).join('');
       return `<div class="panel tight" style="border-color:${m==='fabric'?'var(--accent)':'var(--line)'}">
         <h2>${MODE_LABEL[m]} <span class="en">${m}</span></h2>
-        <p class="hint">召回 ${pct(recall[m])}　成本 ¥${num(blk.cost_yuan,5)}</p>
+        <p class="hint">已选 ${blk.selected.length} 张技能 · 展示 ${blk.detail.length} 个候选${gold.length?' · 召回 '+pct(recall[m]):''}　成本 ¥${num(blk.cost_yuan,5)}</p>
         ${blk.trace.map(t=>`<div style="font-size:11px;color:var(--ink-3);padding:1px 0">· ${esc(t)}</div>`).join('')}
         <div style="margin-top:10px">${rows}</div>
       </div>`;
     }).join('');
     out.innerHTML = head + `<div class="grid g3">${cols}</div>`;
   }catch(e){ out.innerHTML = `<p class="err">检索失败：${esc(e.message)}</p>`; }
+  finally{requestButton.disabled=false;}
 }
 
 async function doRoute(){
   const q = $('#routeQ').value.trim(); if(!q) return;
   const out = $('#routeOut');
   out.innerHTML = '<p class="note"><span class="spin"></span>构造任务级技能 Wiki 并路由…</p>';
+  const requestButton=$('#routeBtn');requestButton.disabled=true;
   try{
     const d = await post('/api/route', {query:q, k:5});
     out.innerHTML = `
@@ -742,6 +762,7 @@ async function doRoute(){
       </div>
       <p class="note">检索轨迹：${d.retrieval_trace.map(esc).join(' ｜ ')}　本次成本 ¥${num(d.cost_yuan,5)}</p>`;
   }catch(e){ out.innerHTML = `<p class="err">路由失败：${esc(e.message)}</p>`; }
+  finally{requestButton.disabled=false;}
 }
 
 /* ---------- 任务执行 ---------- */
@@ -754,7 +775,7 @@ $$('#runMode button').forEach(b => b.onclick = () => {
 async function doRun(){
   const task = $('#runTaskText').value.trim(); if(!task) return;
   const out = $('#runOut'), st = $('#runStatus'), btn = $('#runBtn');
-  btn.disabled = true; st.innerHTML = '<span class="spin"></span>执行中（检索 → 方案生成 → 独立评审）…';
+  btn.disabled = true; st.innerHTML = '<span class="spin"></span>方案生成中（检索 → 方案 → 盲评）…';
   try{
     const t = TASKS.find(x => x.query === task);
     const d = await post('/api/run', {task, mode:RUN_MODE, k:5, gold:t?.gold || []});
@@ -818,104 +839,12 @@ async function doRun(){
 function bar(v, mx){ return `<div class="bar"><i style="width:${mx?Math.max(2,v/mx*100):0}%"></i></div>`; }
 
 async function loadResults(){
-  const out = $('#resultsOut');
-  out.innerHTML = '<p class="note"><span class="spin"></span>加载实验结果…</p>';
+  const out=$('#resultsOut');
+  out.innerHTML='<p class="note"><span class="spin"></span>加载实验结果…</p>';
   try{
-    const d = await api('/api/results');
-    if(!Object.keys(d).length){ out.innerHTML = '<p class="note">还没有实验结果。运行 bench/run_bench.py 后刷新。</p>'; return; }
-    let html = '';
-
-    /* 实验一 */
-    if(d.exp1_retrieval){
-      const s = d.exp1_retrieval.summary, M = ['bm25','hybrid','fabric'];
-      html += `
-      <div class="sec-title">实验一 · 技能检索与编排　<span class="tag">${d.exp1_retrieval.n_tasks} 个任务 · K=${d.exp1_retrieval.k}</span></div>
-      <div class="panel">
-        <p class="hint">金标准为人工标注的"完成任务所必需的技能集"。编排完整度衡量预测的依赖边恢复了多少金标准工作流边。</p>
-        <table>
-          <thead><tr><th>检索策略</th><th>技能召回</th><th></th><th>完全覆盖</th><th>编排完整度</th></tr></thead>
-          <tbody>${M.map((m,i) => { const v = s[m]; return `
-            <tr class="${m==='fabric'?'hl':''}">
-              <td>${MODE_LABEL[m]} <span class="tag">${m}</span></td>
-              <td class="num">${pct(v.skill_recall)}</td>
-              <td style="width:180px">${bar(v.skill_recall,1)}</td>
-              <td class="num">${pct(v.full_coverage_rate)}</td>
-              <td class="num">${pct(v.orchestration_completeness)}</td>
-            </tr>`; }).join('')}</tbody>
-        </table>
-        <p class="note">基线到完整方案的召回提升：${pct(s.bm25.skill_recall)} → ${pct(s.fabric.skill_recall)}；
-        编排完整度：${pct(s.bm25.orchestration_completeness)} → ${pct(s.fabric.orchestration_completeness)}。</p>
-      </div>`;
-    }
-
-    /* 实验二 */
-    if(d.exp2_execution){
-      const s = d.exp2_execution.summary, arms = ['bare','cards','hybrid','fabric'];
-      const LAB = {bare:'无技能', cards:'仅技能卡', hybrid:'混合检索 + 全文', fabric:'完整方案'};
-      const mx = Math.max(...arms.map(a=>s[a].avg_score)) * 1.05;
-      const mc = Math.max(...arms.map(a=>s[a].avg_coverage||0), 0.01);
-      html += `
-      <div class="sec-title">实验二 · 技能对执行质量的影响　<span class="tag">${d.exp2_execution.n_tasks} 个任务 × ${d.exp2_execution.repeats} 次重复 · 独立盲评</span></div>
-      <div class="panel">
-        <p class="hint">评审为 LLM 盲评（不知道方案来自哪一档）。要点覆盖率为客观指标：方案是否实质覆盖了该领域技能库中的常见陷阱与验证清单。</p>
-        <table>
-          <thead><tr><th>技能供给方式</th><th>盲评均分</th><th></th><th>要点覆盖率</th><th></th><th>相对基线</th><th>平均成本/任务</th></tr></thead>
-          <tbody>${arms.map(a => { const v = s[a]; return `
-            <tr class="${a==='fabric'?'hl':''}">
-              <td>${LAB[a]} <span class="tag">${a}</span></td>
-              <td class="num">${num(v.avg_score,2)}</td>
-              <td style="width:120px">${bar(v.avg_score,mx)}</td>
-              <td class="num">${v.avg_coverage==null?'—':pct(v.avg_coverage)}</td>
-              <td style="width:120px">${v.avg_coverage==null?'':bar(v.avg_coverage,mc)}</td>
-              <td class="num">${a==='bare'?'基线':(v.gain_pct>=0?'+':'')+v.gain_pct+'%'}</td>
-              <td class="num">¥${num(v.avg_cost_yuan,4)}</td>
-            </tr>`; }).join('')}</tbody>
-        </table>
-        <p class="note">四档的评审维度均分：
-        ${arms.map(a=>`<span class="chip">${LAB[a]} ${Object.entries(s[a].dim_avg).map(([k,v])=>k.slice(0,6)+':'+num(v,1)).join(' ')}</span>`).join('')}</p>
-      </div>`;
-    }
-
-    /* 实验三 */
-    if(d.exp3_evolution){
-      const R = d.exp3_evolution.results;
-      const LN = {linucb:'LinUCB 老虎机选择', random:'随机选择（消融）'};
-      html += `
-      <div class="sec-title">实验三 · 老虎机选择与技能进化闭环　<span class="tag">${d.exp3_evolution.rounds} 轮 · α=${d.exp3_evolution.alpha}</span></div>
-      <div class="panel">
-        <p class="hint">每轮由选择器挑一个技能、真实执行并盲评打分，得分回流更新选择器；偶数轮触发一次技能蒸馏。两组使用同一份种子技能库。</p>
-        <table>
-          <thead><tr><th>选择策略</th><th>平均实测奖励</th><th></th><th>最佳技能</th><th>库规模</th><th>新技能</th><th>成本</th></tr></thead>
-          <tbody>${Object.entries(R).map(([k,v]) => `
-            <tr class="${k==='linucb'?'hl':''}">
-              <td>${LN[k]}</td>
-              <td class="num">${num(v.mean_reward,3)}</td>
-              <td style="width:150px">${bar(v.mean_reward, Math.max(...Object.values(R).map(x=>x.mean_reward))||1)}</td>
-              <td><span class="tag">${esc(v.best_skill || '—')}</span></td>
-              <td class="num">${v.library_size}</td>
-              <td class="num">${(v.evolved_skills||[]).length}</td>
-              <td class="num">¥${num(v.cost_yuan,3)}</td>
-            </tr>`).join('')}</tbody>
-        </table>
-        <div class="grid g2" style="margin-top:18px">
-          ${Object.entries(R).map(([k,v]) => `
-          <div class="panel tight">
-            <h2>${LN[k]} · 逐轮奖励 <span class="en">reward curve</span></h2>
-            <div style="display:flex;align-items:flex-end;gap:6px;height:96px;margin:10px 0 6px">
-              ${v.curve.map(c=>`
-                <div title="第${c.round}轮 ${c.chosen} 奖励${c.reward}"
-                  style="flex:1;background:${c.evolved?'var(--accent)':'var(--jade)'};
-                  opacity:${0.35+c.reward*0.65};height:${Math.max(4,c.reward*100)}%;border-radius:2px 2px 0 0"></div>`).join('')}
-            </div>
-            <p class="note">朱红柱表示该轮之后有新技能入库。逐轮选择：
-            ${v.curve.map(c=>`<span class="chip">R${c.round}:${esc(c.chosen)}</span>`).join('')}</p>
-          </div>`).join('')}
-        </div>
-        <p class="note">消融结论：移除老虎机后（随机选择），平均实测奖励的变化直接反映"选择性评估"这一组件的贡献。</p>
-      </div>`;
-    }
-    out.innerHTML = html || '<p class="note">尚无可用实验结果。</p>';
-  }catch(e){ out.innerHTML = `<p class="err">加载失败：${esc(e.message)}</p>`; }
+    const [results,stats]=await Promise.all([api('/api/results'),api('/api/stats')]);
+    out.innerHTML=Product.experimentsHTML(results,stats);
+  }catch(error){out.innerHTML=UI.errorHTML(error)+'<button class="btn" onclick="loadResults()">重新加载</button>';}
 }
 
 /* ---------- 跨框架 ---------- */
@@ -948,8 +877,8 @@ function statusBar(health){
   const lib = `技能库 ${health.skills} 个`
     + (health.evolved ? `（其中 ${health.evolved} 个为进化产生）` : '')
     + (health.token_required ? '　·　已启用访问令牌' : '');
-  document.body.insertAdjacentHTML('afterbegin', `
-    <div style="background:${on?'#e8eeec':'#f4efe3'};
+  $('.app>header').insertAdjacentHTML('beforeend', `
+    <div id="lab-status" style="background:${on?'#e8eeec':'#f4efe3'};
                 border-bottom:1px solid ${on?'#cfded9':'#e3d9c0'};
                 color:${on?'#3d5a52':'#8a6a2f'};
                 font-size:12.5px;padding:9px 32px;letter-spacing:.02em">
@@ -959,6 +888,34 @@ function statusBar(health){
         : '技能库 / 检索 / 关系图 / 实验结果 / 跨框架导出 全部可用；<strong>路由 / 执行 / 进化 / 一键演示</strong> 需在 <code>.env</code> 中填入 DEEPSEEK_API_KEY'}
     </div>`);
 }
+
+async function loadIntegration(){
+  const host=$('#s1-contract');host.innerHTML='<p>正在读取 S1 接入契约…</p>';
+  try{const d=await api('/api/integrations/s1');host.innerHTML=`<span class="product-eyebrow">S1 / SERVICE CONTRACT</span><h3>把能力内核接入立理 S1</h3><p>接入方向：${esc(d.direction)} · 契约版本 ${esc(d.contract_version)} · ${d.production_connection_verified?'线上连接已验证':'接口与客户端已实现，线上联调待完成'}</p><div class="grid g-2-1"><div><table><thead><tr><th>能力</th><th>服务接口</th></tr></thead><tbody>${Object.entries(d.operations||{}).map(([name,op])=>`<tr><td>${esc(name)}</td><td><code>${esc(op.method)} ${esc(op.path)}</code></td></tr>`).join('')}</tbody></table></div><div><p><b>Agent 工具</b><br>${(d.tools||[]).map(esc).join(' / ')}</p><p><b>服务身份</b><br>${esc(d.authentication?.header)} · 服务到服务</p><p><b>可验证交付</b><br>运行 ID、可恢复事件流、完整产物指纹与错误分类。</p><a href="/docs" target="_blank">查阅交互式 API 文档 ↗</a></div></div><details class="contract-section"><summary>Python 后端接入示例</summary><pre>from skillnet.integration import ClientConfig, SkillNetClient
+
+with SkillNetClient(ClientConfig(base_url="http://skillnet:8848")) as client:
+    run = client.create_run("公开演示数据统计", max_steps=3)
+    for event in client.iter_run_events(run["run_id"]):
+        # 将真实事件转发给 S1 的前端
+        print(event["type"])</pre></details><p>当前执行器为宿主机子进程。生产落地需补齐独立执行隔离、S1 身份映射和跨进程队列。</p>`;}catch(error){host.innerHTML=UI.errorHTML(error);}
+}
+async function doDemo(){
+  const task=$('#demoTaskText').value.trim();if(!task)return;
+  const btn=$('#demoBtn'),out=$('#demoOut');btn.disabled=true;$('#legacyDemoBtn').disabled=true;
+  try{
+    const created=await post('/api/runs',{task,k:5,max_steps:3,max_cost_yuan:1,max_seconds:420});
+    out.innerHTML=`<p class="note">运行 ${esc(created.run_id)} 已创建 · <a href="/run?id=${encodeURIComponent(created.run_id)}" target="_blank">打开完整实时轨迹 ↗</a></p><div id="laboratory-live" role="status"></div>`;
+    const draw=run=>{const host=$('#laboratory-live');if(host)host.innerHTML=Product.evidenceHTML(run);};
+    let pending=null;
+    const sync=()=>{if(!pending)pending=api('/api/runs/'+encodeURIComponent(created.run_id)).then(draw).finally(()=>{pending=null;});return pending;};
+    await sync();
+    try{await UI.consumeSSE('/api/runs/'+encodeURIComponent(created.run_id)+'/stream',ev=>{if(['dag.ready','step.completed','artifact.created','evolution.proposed','run.finished'].includes(ev.type))sync().catch(()=>{});});}catch(error){UI.toast('实时连接中断，已保留运行记录，请在运行详情中继续查看。');}
+    if(pending)await pending;await sync();
+  }catch(error){out.innerHTML=UI.errorHTML(error);}finally{btn.disabled=false;$('#legacyDemoBtn').disabled=false;}
+}
+$('#demoBtn').onclick=doDemo;
+$('#legacyDemoBtn').onclick=doLegacyDemo;
+$('#realRunBtn').onclick=async event=>{const task=$('#runTaskText').value.trim();if(!task)return;const button=event.currentTarget;button.disabled=true;try{const run=await post('/api/runs',{task,k:5,max_steps:3,max_cost_yuan:1,max_seconds:420});location.href='/run?id='+encodeURIComponent(run.run_id);}catch(error){UI.toast(error.message);button.disabled=false;}};
 
 /* ---------- 初始化 ---------- */
 async function boot(){
@@ -971,7 +928,7 @@ async function boot(){
     STATS = stats; GRAPH = graph; SKILLS = skills.items;
     TASKS = await api('/api/tasks').catch(() => []);
     renderMeta(); renderDomains(); renderQuality(); renderPipeline(); renderRefs(); renderGraph();
-    initSkills(); taskOptions();
+    initSkills(); taskOptions();laboratoryRoute();
   }catch(e){
     document.body.insertAdjacentHTML('afterbegin',
       `<div style="padding:16px 32px;background:#f3e8e5;color:#9c3d2e;font-size:13px">

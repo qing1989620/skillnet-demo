@@ -580,8 +580,10 @@
     .hero { background-image: linear-gradient(180deg, rgba(251,250,248,.97) 0%, rgba(251,250,248,.93) 55%, rgba(251,250,248,.36) 100%), url('/static/assets/bg-flow.jpg') !important; }
   }
 </style>
-<link rel="stylesheet" href="/static/assets/ui.css?v=0.8.1-restored2">
-<script src="/static/assets/ui.js?v=0.8.1-restored2"></script>
+<link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
+<script src="/static/assets/ui.js?v=0.9.0-product"></script>
+<link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
+<script src="/static/assets/product.js?v=0.9.0-product"></script>
 <link rel="stylesheet" href="/static/assets/showcase.css?v=20261008.6">
 </head>
 <body>
@@ -593,10 +595,10 @@
     <span class="stat"><span class="dot" id="dot-key"></span>模型密钥 <span id="key-txt">—</span></span>
     <span class="stat">技能库 <b id="lib-n" style="color:var(--ink)">—</b></span>
     <span class="spacer"></span>
-    <a href="/chat" target="_blank">独立工作台</a>
+    <a href="/chat" target="_blank">科研工作台</a>
     <a href="/runs" target="_blank">运行中心</a>
     <a href="/graph" target="_blank">技能星图</a>
-    <a href="/dashboard" target="_blank">完整面板</a>
+    <a href="/dashboard" target="_blank">内核实验室</a>
     <button class="abtn" type="button" data-connection-settings>连接设置</button>
   </div>
 </div>
@@ -752,7 +754,7 @@
       <text x="604" y="146" text-anchor="middle" font-size="11" fill="#2e7d4f">反馈回流：实测奖励更新选择策略 · 新技能回流库（这次演示就会跑一遍）</text>
       <!-- 治理底座 -->
       <rect x="14" y="168" width="976" height="32" rx="4" fill="#f2f5f8" stroke="#dde4ea"/>
-      <text x="502" y="188" text-anchor="middle" font-size="11" fill="#5b6b7c">治理底座（四篇论文都没有的）：dev / held-out 数据集隔离 · manifest 单一数据源 · 全链路成本账本 · 降级显式可观测 · 证据分级标注 · 置信度分流（自动 / 确认 / 直答）</text>
+      <text x="502" y="188" text-anchor="middle" font-size="11" fill="#5b6b7c">治理底座（四篇论文都没有的）：开发 / 冻结任务集与元数据溯源（历史划分待复核） · manifest 数据源 · 全链路成本账本 · 降级显式可观测 · 证据分级标注 · 置信度分流（自动 / 确认 / 直答）</text>
     </svg>
     <div class="legend">
       <span><i style="background:#1a3a5c"></i>实现并已验证</span>
@@ -812,7 +814,7 @@
     <tr><td>Fabric 式路由</td><td class="no3">检索 67.9% @ K=5</td><td class="ours">三档（BM25 / 混合 / 图扩展），且<b>降级显式可观测</b>：缺密钥时明示哪些组件未执行</td><td><button class="evtag" data-ev="gating">展开</button></td></tr>
     <tr><td>技能选择（RL）</td><td class="no3">未涉及</td><td class="ours">Shared LinUCB：任务条件化，实测跨技能泛化 <b>≈<span data-live="linucb_ratio">1.25</span>×</b>（同领域 vs 异领域响应）</td><td><button class="evtag" data-ev="linucb">展开</button></td></tr>
     <tr><td>技能进化</td><td class="no3">未涉及</td><td class="ours">四种算子（蒸馏 / 变异 / 交叉 / 再生）+ 质量准入，闭环可现场演示</td><td><button class="evtag" data-ev="evolver">展开</button></td></tr>
-    <tr><td>评估体系</td><td class="no3">库级质量评估</td><td class="ours">主客分离双线评估 + dev / held-out 治理 + <b>配对 bootstrap 95% CI</b></td><td><button class="evtag" data-ev="stats">展开</button></td></tr>
+    <tr><td>评估体系</td><td class="no3">库级质量评估</td><td class="ours">主客分离双线评估 + 任务集与原始口径溯源 + <b>配对 bootstrap 95% CI</b></td><td><button class="evtag" data-ev="stats">展开</button></td></tr>
     <tr><td>置信度分流</td><td class="no3">未涉及（仅检索排序）</td><td class="ours">Top-1 相关度三档：自动执行 / 人工确认 / 无匹配直答，阈值按 42 条查询实测标定</td><td><button class="evtag" data-ev="gating">展开</button></td></tr>
     <tr><td>技能库构成</td><td class="no3">单一类型</td><td class="ours"><span data-live="skills">—</span> 个技能 / 51 科研方法 + 24 交付工具（来自开发组另一成员项目）+ <span data-live="evolved">—</span> 演化</td><td><button class="evtag" data-ev="library">展开</button></td></tr>
     <tr><td>成本核算</td><td class="no3">未核算</td><td class="ours">请求级 Token / 费用账本（contextvar 隔离，跨线程不串账），页面实时可见</td><td><button class="evtag" data-ev="ledger">展开</button></td></tr>
@@ -874,7 +876,7 @@
       <td class="no3">无对照，只能主观感受</td>
       <td class="no3">只能主观比较两个提示词</td>
       <td class="no3">只能报召回率，无法证明任务完成得更好</td>
-      <td class="ours">有 / 无技能<b>对照实验</b> + dev / held-out 隔离 + 配对 bootstrap 95% CI（含负面结果）</td></tr>
+      <td class="ours">有 / 无技能<b>对照实验</b> + 开发 / 冻结任务集 + 配对 bootstrap 95% CI（含负面结果）</td></tr>
   </table>
 
   <div class="uniq" style="grid-template-columns:repeat(3,1fr)">
@@ -928,12 +930,12 @@
   <div class="kpi">
     <div class="kp"><div class="n"><span data-live="skills">—</span></div><div class="t">技能 · <span data-live="domains">—</span> 个领域（科研方法 + 工具交付 + 演化）</div></div>
     <div class="kp"><div class="n"><span data-live="edges">—</span></div><div class="t">类型化关系边 · 图驱动编排</div></div>
-    <div class="kp"><div class="n">152</div><div class="t">维任务-技能联合上下文（LinUCB）</div></div>
+    <div class="kp"><div class="n">160</div><div class="t">维任务-技能联合上下文（当前 LinUCB 实现）</div></div>
     <div class="kp"><div class="n">31</div><div class="t">项交付自检（verify.py）</div></div>
-    <div class="kp"><div class="n">186</div><div class="t">项自动化测试（泛化 / 可复现 / 接口安全）</div></div>
-    <div class="kp"><div class="n">5</div><div class="t">阶段闭环 API（/api/demo 全链路）</div></div>
-    <div class="kp"><div class="n">4</div><div class="t">种跨框架导出格式</div></div>
-    <div class="kp"><div class="n">2</div><div class="t">套数据集（dev / held-out 隔离治理）</div></div>
+    <div class="kp"><div class="n">206</div><div class="t">项自动化回归（0.9 交付验证）</div></div>
+    <div class="kp"><div class="n">7</div><div class="t">项真实运行内核证据</div></div>
+    <div class="kp"><div class="n">8</div><div class="t">个框架 / 目录导出落点</div></div>
+    <div class="kp"><div class="n">2</div><div class="t">套任务集（历史划分元数据待复核）</div></div>
   </div>
   <div class="next" style="border-left:3px solid var(--ok)">
     <b>技能库已完成一次跨项目扩容：</b>吸收开发组成员项目（Nexus）的 24 个技能——
@@ -961,11 +963,11 @@
     </div>
   </details>
 
-  <footer>SkillNet-S1 · 单一数据源 out/manifest.json 溯源 · 所有演示为真实 API 调用，无预置结果</footer>
+  <footer>SkillNet-S1 · 实时执行使用真实 API · 历史回放明确标注 · 冻结实验保留原始口径与溯源</footer>
 </section>
 
 <script>
-const PAGE_VER = "2026-10-08.showcase.9";
+const PAGE_VER = "2026-10-08.product.11";
 const API = location.origin;
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1077,7 +1079,7 @@ function evidenceDetail(key) {
       "curl -s -X POST http://127.0.0.1:8848/api/evolve -H 'Content-Type: application/json' -d '{\"task\":\"示例\"}'");
     case "stats": return wrap("评估体系 · 统计检验", [
       ["配对检验", S.paired_bootstrap], ["判定口径", S.note],
-      ["数据集治理", "dev（调参）/ held-out（结论）严格隔离，调参集过拟合主动暴露"],
+      ["数据集治理", "开发 / 冻结任务分别加载；历史结果的划分元数据待复核，开发分数不能作为独立测试集结论"],
       ["代码", "<code>bench/run_bench.py</code>"]],
       "python bench/run_bench.py --help");
     case "ledger": return wrap("成本核算 · 请求级账本", [

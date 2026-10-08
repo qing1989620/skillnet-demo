@@ -1,0 +1,70 @@
+{
+  "exec_record": {
+    "skill": "descriptive-stats-csv-and-plot",
+    "task": "只使用公开演示数据，不联网：A组[1,2,3,4,5]，B组[2,3,4,5,6]。完成3步真实执行：计算各组n、均值与样本标准差(ddof=1)，保留4位小数输出summary.csv；用绝对容差0.0001逐值回读校验表头group,n,mean,std_sample与2组数据；直接读取同一CSV生成figure.png，误差条表示样本标准差，纵轴从0开始。只做描述统计，注明演示数据不可用于科",
+    "action": "编写单文件 Python 脚本，硬编码 groups={'A':[1,2,3,4,5],'B':[2,3,4,5,6]}，对每组计算 n=len(x)、mean=statistics.mean(x)、std_sample=statistics.stdev(x)（即 ddof=1），全部 round(x,4) 后以 UTF-8、逗号分隔写入 summary.csv，表头固定为 group,n,mea",
+    "ok": false,
+    "n_attempts": 3,
+    "error_kind": "exception",
+    "stderr_tail": "[失败] 回读校验未通过\n",
+    "code_chars": 489
+  },
+  "skill_exec_stats": {
+    "exec_total": 4,
+    "exec_ok": 2,
+    "exec_fix": 2,
+    "exec_fail": 2,
+    "exec_last_error": "exception"
+  },
+  "verify_skip_reason": "执行未成功，无法进行产物验收",
+  "has_verification": true,
+  "skill": "descriptive-stats-csv-and-plot",
+  "action": "编写单文件 Python 脚本，硬编码 groups={'A':[1,2,3,4,5],'B':[2,3,4,5,6]}，对每组计算 n=len(x)、mean=statistics.mean(x)、std_sample=statistics.stdev(x)（即 ddof=1），全部 round(x,4) 后以 UTF-8、逗号分隔写入 summary.csv，表头固定为 group,n,mean,std_sample。",
+  "code": "# -*- coding: utf-8 -*-\n\"\"\"\n描述统计：演示数据（硬编码，无网络、无外部文件读取）\ngroups = {'A': [1,2,3,4,5], 'B': [2,3,4,5,6]}\n输出: summary.csv, figure.png\n注意: 演示数据，不可用于科学结论。\n\"\"\"\nimport sys\nimport statistics\nimport numpy as np\nimport pandas as pd\nimport matplotlib\nmatplotlib.use('Agg')\nimport matplotlib.pyplot as plt\n\nplt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'DejaVu Sans']\nplt.rcParams['axes.unicode_minus'] = False\n\n# ---------- 1. 硬编码演示数据 ----------\ngroups = {'A': [1, 2, 3, 4, 5], 'B': [2, 3, 4, 5, 6]}\nprint(\"[数据] 演示数据（硬编码，无网络/无外部文件）:\", groups)\n\n# ---------- 2. 计算 n / mean / std_sample (ddof=1) ----------\nrows = []\nfor g, x in groups.items():\n    n = len(x)\n    mean = statistics.mean(x)\n    std_sample = statistics.stdev(x)  # ddof=1\n    var_manual = sum((v - mean) ** 2 for v in x) / (n - 1)\n    std_manual = var_manual ** 0.5\n    assert abs(std_manual - std_sample) < 1e-12, \"样本标准差复核失败\"\n    rows.append({\n        'group': g,\n        'n': int(n),\n        'mean': round(mean, 4),\n        'std_sample': round(std_sample, 4),\n    })\n    print(f\"[计算] {g}: n={n}, mean={mean:.6f}->{round(mean,4)}, \"\n          f\"std_sample(ddof=1)={std_sample:.6f}->{round(std_sample,4)}, \"\n          f\"手工复核std={std_manual:.6f}\")\n\ndf_out = pd.DataFrame(rows, columns=['group', 'n', 'mean', 'std_sample'])\nprint(\"[写入前 DataFrame]\\n\", df_out)\n\n# ---------- 3. 写入 summary.csv ----------\ncsv_path = 'summary.csv'\ndf_out.to_csv(csv_path, index=False, encoding='utf-8', sep=',')\nprint(f\"[落盘] 已写入 {csv_path}\")\n\n# ---------- 4. pandas 回读校验 ----------\ndf_in = pd.read_csv(csv_path, encoding='utf-8', sep=',')\nchecks = {}\nchecks['行数==组数'] = (len(df_in) == len(groups))\nchecks['列名精确匹配'] = (list(df_in.columns) == ['group', 'n', 'mean', 'std_sample'])\nchecks['n为整数'] = bool(pd.api.types.is_integer_dtype(df_in['n']))\nchecks['mean为浮点'] = bool(pd.api.types.is_float_dtype(df_in['mean']))\nchecks['std_sample为浮点'] = bool(pd.api.types.is_float_dtype(df_in['std_sample']))\nchecks['无缺失值'] = (int(df_in.isna().sum().sum()) == 0)\n\n# 逐值绝对容差 0.0001 比较（避免 df.equals 因 dtype/浮点长尾失败）\ntol = 0.0001\nval_ok = True\nfor i in range(len(df_out)):\n    for col in ['n', 'mean', 'std_sample']:\n        if abs(float(df_in.loc[i, col]) - float(df_out.loc[i, col])) > tol:\n            val_ok = False\nchecks['逐值容差<=0.0001'] = val_ok\n\nprint(\"[回读校验]\")\nfor k, v in checks.items():\n    print(f\"  {k}: {v}\")\nif not all(checks.values()):\n    print(\"[失败] 回读校验未通过\", file=sys.stderr)\n    sys.exit(1)\n\n# ---------- 5. 绘图（yerr 与 CSV 同源） ----------\nfig, ax = plt.subplots(figsize=(6, 4.5), dpi=300)\nxpos = np.arange(len(df_out))\nmeans = df_out['mean'].to_numpy()\nstds = df_out['std_sample'].to_numpy()\nns = df_out['n'].to_numpy()\nlabels = df_out['group'].tolist()\n\nbars = ax.bar(xpos, means, yerr=stds, capsize=5,\n              color=['#4C72B0', '#DD8452'], edgecolor='black', linewidth=0.8,\n              error_kw=dict(ecolor='black', elinewidth=1.2))\nfor i, (b, m, s, n) in enumerate(zip(bars, means, stds, ns)):\n    ax.text(b.get_x() + b.get_width() / 2, m + s + 0.05,\n            f'n={n}', ha='center', va='bottom', fontsize=10)\n    ax.text(b.get_x() + b.get_width() / 2, m / 2,\n            f'{m:.4f}', ha='center', va='center', color='white', fontsize=10)\n\nax.set_xticks(xpos)\nax.set_xticklabels(labels)\nax.set_xlabel('组别')\nax.set_ylabel('均值（单位：无量纲）')\nax.set_title('各组均值对比（误差条=样本标准差 ddof=1）\\n演示数据，不可用于科学结论')\nax.set_ylim(bottom=0)\nax.grid(axis='y', linestyle='--', alpha=0.4)\nfig.tight_layout()\nfig.savefig('figure.png', dpi=300)\nplt.close(fig)\nprint(\"[落盘] 已写入 figure.png\")\n\n# ---------- 6. 结果说明（仅描述性，无推断） ----------\nprint(\"\\n[结果说明]\")\nprint(\"1) 本分析使用硬编码的演示数据，A组=[1,2,3,4,5]，B组=[2,3,4,5,6]，\"\n      \"该演示数据不可用于科学结论。\")\nprint(f\"2) A组：n={int(df_out.loc[0,'n'])}，均值={df_out.loc[0,'mean']:.4f}，\"\n      f\"样本标准差(ddof=1)={df_out.loc[0,'std_sample']:.4f}。\")\nprint(f\"3) B组：n={int(df_out.loc[1,'n'])}，均值={df_out.loc[1,'mean']:.4f}，\"\n      f\"样本标准差(ddof=1)={df_out.loc[1,'std_sample']:.4f}。\")\nprint(\"4) 上述数值仅为对演示数据的描述统计，演示数据不可用于科学结论。\")\nprint(\"[完成] 退出码 0\")",
+  "final_ok": false,
+  "attempts": [
+    {
+      "n": 1,
+      "ok": false,
+      "stderr": "[失败] 回读校验未通过\n",
+      "stdout": "[数据] 演示数据（硬编码，无网络/无外部文件）: {'A': [1, 2, 3, 4, 5], 'B': [2, 3, 4, 5, 6]}\n[计算] A: n=5, mean=3.000000->3, std_sample(ddof=1)=1.581139->1.5811, 手工复核std=1.581139\n[计算] B: n=5, mean=4.000000->4, std_sample(ddof=1)=1.581139->1.5811, 手工复核std=1.581139\n[写入前 DataFrame]\n   group  n  mean  std_sample\n0     A  5     3      1.5811\n1     B  5     4      1.5811\n[落盘] 已写入 summary.csv\n[回读校验]\n  行数==组数: True\n  列名精确匹配: True\n  n为整数: True\n  mean为浮点: False\n  std_sample为浮点: True\n  无缺失值: True\n  df.equals(写入前): True\n  逐值容差<=0.0001: True\n",
+      "error_kind": "exception",
+      "duration": 1.82
+    },
+    {
+      "n": 2,
+      "ok": false,
+      "stderr": "[失败] 回读校验未通过\n",
+      "stdout": "[数据] 演示数据（硬编码，无网络/无外部文件）: {'A': [1, 2, 3, 4, 5], 'B': [2, 3, 4, 5, 6]}\n[计算] A: n=5, mean=3.000000->3, std_sample(ddof=1)=1.581139->1.5811, 手工复核std=1.581139\n[计算] B: n=5, mean=4.000000->4, std_sample(ddof=1)=1.581139->1.5811, 手工复核std=1.581139\n[写入前 DataFrame]\n   group  n  mean  std_sample\n0     A  5     3      1.5811\n1     B  5     4      1.5811\n[落盘] 已写入 summary.csv\n[回读校验]\n  行数==组数: True\n  列名精确匹配: True\n  n为整数: True\n  mean为浮点: False\n  std_sample为浮点: True\n  无缺失值: True\n  逐值容差<=0.0001: True\n",
+      "error_kind": "exception",
+      "duration": 1.72
+    },
+    {
+      "n": 3,
+      "ok": false,
+      "stderr": "[失败] 回读校验未通过\n",
+      "stdout": "[数据] 演示数据（硬编码，无网络/无外部文件）: {'A': [1, 2, 3, 4, 5], 'B': [2, 3, 4, 5, 6]}\n[计算] A: n=5, mean=3.000000->3, std_sample(ddof=1)=1.581139->1.5811, 手工复核std=1.581139\n[计算] B: n=5, mean=4.000000->4, std_sample(ddof=1)=1.581139->1.5811, 手工复核std=1.581139\n[写入前 DataFrame]\n   group  n  mean  std_sample\n0     A  5     3      1.5811\n1     B  5     4      1.5811\n[落盘] 已写入 summary.csv\n[回读校验]\n  行数==组数: True\n  列名精确匹配: True\n  n为整数: True\n  mean为浮点: False\n  std_sample为浮点: True\n  无缺失值: True\n  逐值容差<=0.0001: True\n",
+      "error_kind": "exception",
+      "duration": 1.7
+    }
+  ],
+  "n_attempts": 3,
+  "fixed": false,
+  "exhausted": true,
+  "truncated": false,
+  "stdout": "[数据] 演示数据（硬编码，无网络/无外部文件）: {'A': [1, 2, 3, 4, 5], 'B': [2, 3, 4, 5, 6]}\n[计算] A: n=5, mean=3.000000->3, std_sample(ddof=1)=1.581139->1.5811, 手工复核std=1.581139\n[计算] B: n=5, mean=4.000000->4, std_sample(ddof=1)=1.581139->1.5811, 手工复核std=1.581139\n[写入前 DataFrame]\n   group  n  mean  std_sample\n0     A  5     3      1.5811\n1     B  5     4      1.5811\n[落盘] 已写入 summary.csv\n[回读校验]\n  行数==组数: True\n  列名精确匹配: True\n  n为整数: True\n  mean为浮点: False\n  std_sample为浮点: True\n  无缺失值: True\n  逐值容差<=0.0001: True\n",
+  "artifacts": [
+    {
+      "name": "summary.csv",
+      "bytes": 53,
+      "path": "D:\\qing_zhuomian_\\开发区\\skillnet\\skillnet-demo\\out\\demo_artifacts\\4bafbb0c\\run\\try3\\summary.csv"
+    }
+  ],
+  "verification": [],
+  "verification_passed": 0,
+  "verification_total": 0,
+  "workdir": "D:\\qing_zhuomian_\\开发区\\skillnet\\skillnet-demo\\out\\demo_artifacts\\4bafbb0c\\run",
+  "mode": "contract",
+  "step_index": 0,
+  "step_label": "S1"
+}
