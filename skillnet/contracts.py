@@ -3,10 +3,35 @@ from __future__ import annotations
 
 import csv
 import hashlib
+import io
 import json
 import re
 from pathlib import Path
 from types import SimpleNamespace
+
+
+def planning_data_facts(task: str) -> dict:
+    """Observe an explicitly supplied CSV, without inventing cleaning policy or target answers."""
+    match = re.search(r'```csv\s*\n(.*?)\n```', task, re.I | re.S)
+    if not match:
+        match = re.search(r'(?:^|\n)CSV\s*[:：]\s*\n(.+)$', task, re.I | re.S)
+    if not match:
+        return {}
+    text = match.group(1).split('\n\n', 1)[0]
+    try:
+        rows = list(csv.reader(io.StringIO(text), strict=True))
+    except csv.Error:
+        return {}
+    if not 2 <= len(rows) <= 512:
+        return {}
+    header, values = rows[0], rows[1:]
+    if (len(header) < 2 or len(set(header)) != len(header)
+            or any(len(row) != len(header) for row in values)):
+        return {}
+    return dict(source='explicit_user_csv', rows=len(values), columns=header,
+                missing_cells={key:sum(not row[i].strip() for row in values) for i,key in enumerate(header)},
+                exact_duplicate_rows=len(values)-len({tuple(row) for row in values}),
+                boundary='输入观察值；未推断清洗策略、清洗后行数或业务结论')
 
 
 def scoped_skill(skill, step):

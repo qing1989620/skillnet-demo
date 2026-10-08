@@ -32,3 +32,17 @@ jobs:
       - run: node tools/briefing_check.js
       - run: node tools/showcase_check.js
       - run: node tools/product_check.js
+  docker-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: docker build -f deploy/Dockerfile.executor -t skillnet-executor:local .
+      - run: python tools/docker_smoke.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: docker-isolation-evidence
+          path: out/docker-smoke.json

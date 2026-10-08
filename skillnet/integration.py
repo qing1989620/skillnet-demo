@@ -46,6 +46,18 @@ class LoadInput(_Input):
     name: str = Field(min_length=1, max_length=64, pattern=r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
 
+class HistoryInput(_Input):
+    q: str = Field(min_length=1, max_length=6000, pattern=r"\S")
+    a: str = Field(default="", max_length=8000)
+    run_id: str = Field(default="", max_length=96, pattern=r"^[A-Za-z0-9-]*$")
+
+
+class ArtifactInput(_Input):
+    run_id: str = Field(min_length=1, max_length=96, pattern=r"^[A-Za-z0-9-]+$")
+    name: str = Field(min_length=1, max_length=240)
+    sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
 class RunInput(_Input):
     task: str = Field(min_length=1, max_length=6000)
     k: int = Field(default=5, ge=1, le=15)
@@ -53,6 +65,8 @@ class RunInput(_Input):
     max_cost_yuan: float = Field(default=1.0, gt=0, le=20)
     max_seconds: int = Field(default=300, ge=30, le=1800)
     max_llm_calls: int = Field(default=40, ge=5, le=200)
+    history: list[HistoryInput] = Field(default_factory=list, max_length=20)
+    artifact_refs: list[ArtifactInput] = Field(default_factory=list, max_length=16)
 
 
 @dataclass(frozen=True)

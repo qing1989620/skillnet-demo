@@ -19,6 +19,17 @@ from skillnet.s1_identity import S1Context, S1Auth, sign, verify
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def test_planner_observes_csv_without_inventing_cleaned_counts():
+    from skillnet.contracts import planning_data_facts
+    facts = planning_data_facts(scenarios()[0]['task'])
+    assert facts['rows'] == 15
+    assert facts['exact_duplicate_rows'] == 1
+    assert facts['missing_cells'] == dict(order_id=0, month=0, revenue=1, cost=1)
+    assert 'cleaned_rows' not in facts
+    assert planning_data_facts('CSV：\na,b\n1,2,3') == {}
+    assert planning_data_facts('These words merely mention CSV') == {}
+
+
 def test_community_packages_are_real_unique_attributed_skills():
     rows = json.loads((ROOT/'seed/community/catalog.json').read_text(encoding='utf-8'))
     assert len(rows) >= 1000

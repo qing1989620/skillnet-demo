@@ -118,10 +118,15 @@ def run_python(code: str, timeout: int = 90, keep_dir: bool = False,
         image = os.environ.get('SKILLNET_SANDBOX_IMAGE', 'skillnet-executor:local')
         if not shutil.which('docker'):
             raise RuntimeError('请求 Docker 隔离，但 Docker 不可用；拒绝降级为宿主机执行')
+        # Match the non-root Linux worker: bind mounts retain host ownership.
+        uid = os.getuid() if hasattr(os, 'getuid') else 65534
+        gid = os.getgid() if hasattr(os, 'getgid') else 65534
+        if uid == 0:
+            raise RuntimeError('Docker 执行 worker 必须以非 root 宿主用户运行')
         command = ['docker', 'run', '--rm', '--name', container_name, '--network', 'none',
                    '--read-only', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges',
                    '--memory', '768m', '--cpus', '2', '--pids-limit', '64',
-                   '--user', '65534:65534', '--tmpfs', '/tmp:rw,noexec,nosuid,size=128m',
+                   '--user', f'{uid}:{gid or 65534}', '--tmpfs', '/tmp:rw,noexec,nosuid,size=128m',
                    '--mount', f'type=bind,source={tmp},target=/work', '--workdir', '/work',
                    '--env', 'MPLCONFIGDIR=/tmp/mpl', '--env', 'HOME=/tmp', image,
                    'python', '-I', '-B', '-X', 'utf8', '/work/main.py']

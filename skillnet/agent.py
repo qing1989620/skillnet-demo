@@ -167,6 +167,10 @@ class ResearchAgent:
             )
 
         user = f"【研究任务】\n{task}\n\n"
+        from .contracts import planning_data_facts
+        input_facts = planning_data_facts(task)
+        if input_facts:
+            user += "【服务端解析的输入事实（不是目标答案）】\n" + json.dumps(input_facts, ensure_ascii=False) + "\n\n"
         if block:
             user += block + "\n\n"
         user += (
@@ -177,6 +181,8 @@ class ResearchAgent:
             "4. 若提供了技能且与任务匹配，步骤中的 skill 字段必须填对应的技能名；\n"
             "5. depends_on 使用从 0 开始的上游步骤编号；由真实文件读写决定依赖，禁止下游重新生成上游数据。\n"
             "6. input_files/output_files 写具体路径名；verification 只包含本步负责的验收，别把后续绘图要求放到清洗步骤。\n"
+            "验收中的行数、去重数量和合计应由实际输入计算并回读比较；不要心算后把未经证实的常数写成验收目标。"
+            "保留用户给出的明确数值要求；不得为了满足你自己推算的数字删改有效数据。\n"
             "7. 控制篇幅，直接输出 JSON，不要写解释性文字。\n\n"
             f"严格输出 JSON：\n{_RESP_SCHEMA}"
         )
