@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import asyncio
 import logging
 import mimetypes
@@ -29,7 +30,7 @@ from fastapi.responses import (FileResponse, JSONResponse, Response,
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from skillnet import config, llm, runtime
+from skillnet import assessment, config, llm, runtime
 from skillnet.integration import integration_manifest
 from skillnet.adapters import export_all
 from skillnet.agent import ResearchAgent, STYLE_BARE, STYLE_CARDS, STYLE_GUIDED
@@ -476,17 +477,8 @@ def _judge_reward(evaluation: dict[str, Any]) -> float | None:
 
 def _demo_learning_reward(evaluation: dict[str, Any], execution: dict[str, Any],
                           planned_steps: int) -> tuple[float | None, str]:
-    """A one-step research experiment cannot certify a multi-step trajectory."""
-    reward = _judge_reward(evaluation)
-    if reward is None:
-        return None, "评审不可用，未更新反馈"
-    if execution.get("final_ok") is not True:
-        return None, "真实执行未成功，未更新反馈或进行技能准入"
-    if planned_steps != 1:
-        return None, "仅验证了方案中的单步，未验证完整轨迹，未更新反馈或进行技能准入"
-    if any(v.get("passed") is not True for v in execution.get("verification") or []):
-        return None, "技能语义验收存在未通过项，未更新反馈或进行技能准入"
-    return reward, ""
+    """Legacy plan comparison has no independent result reference."""
+    return None, "方案模型评分仅供参考；演示缺少执行前独立结果判据，不分配学习奖励或更新正式网络"
 
 
 # ======================================================================
@@ -558,6 +550,9 @@ def evolve(req: EvolveReq) -> dict[str, Any]:
     agent: ResearchAgent = STATE["agent"]
     evolver = SkillEvolver(lib())
     evolver.candidate_dir = config.OUT_DIR / 'candidates'
+    evolver.evidence_context = dict(mode='unexecuted_proposal',
+        origin_task_sha256=hashlib.sha256(req.task.strip().encode()).hexdigest(),
+        causal_attribution=False, scope='方案提案；尚无真实执行或独立结果证据')
 
     with llm.ledger_scope() as led:
         # 先让 Agent 在无技能条件下跑一次，得到用于蒸馏的轨迹
@@ -569,10 +564,10 @@ def evolve(req: EvolveReq) -> dict[str, Any]:
         if score is None:
             pass                        # 没有有效评审证据，不能把轨迹视为成功样本入库
         elif req.op == "distill":
-            new_skill = evolver.distill(req.task, run.trajectory, score=score)
+            new_skill = evolver.distill(req.task, run.trajectory, score=None)
         elif req.op == "mutate":
             new_skill = evolver.mutate(
-                req.base_skill, successes=[run.trajectory], failures=[]
+                req.base_skill, successes=[], failures=[]
             )
         elif req.op == "crossover":
             new_skill = evolver.crossover(req.base_skill, req.donor_skill, req.negatives)
@@ -587,7 +582,10 @@ def evolve(req: EvolveReq) -> dict[str, Any]:
         "op": req.op,
         "chat_score": score,
         "evaluation": evaluation,
-        "skip_reason": "评审不可用，未进行技能准入" if score is None else "",
+        "skip_reason": "评审不可用，未进行技能准入" if score is None else "仅生成未执行的候选提案，无独立结果证据，不准入正式库",
+        "evidence_mode": "unexecuted_proposal",
+        "score_role": "plan_advisory",
+        "network_updated": False,
         "accepted": False,
         "candidate": new_skill is not None,
         "new_skill": new_skill.to_dict() if new_skill else None,
@@ -633,10 +631,10 @@ def run_store() -> RunStore:
 
 
 def _bandit() -> SharedLinUCB:
-    """服务运行期共享的 LinUCB 单例：反馈在多次请求间持续累积。
+    """Serving LinUCB. Live requests preview observations on detached copies.
 
-    服务重启后从零开始（A=I, b=0），依赖探索机制重新积累——
-    这是有意为之：策略参数不持久化，演示状态不污染正式库。
+    Weights start from identity/zero and are not deployed by single-run feedback
+    or candidate promotion. Offline experiments retain the explicit update API.
     """
     with _STATE_LOCK:
         b = STATE.get("bandit")
@@ -644,6 +642,16 @@ def _bandit() -> SharedLinUCB:
             b = SharedLinUCB(lib(), alpha=0.3)
             STATE["bandit"] = b
         return b
+
+
+@app.get("/api/learning/policy", dependencies=[Depends(require_token)])
+def learning_policy() -> dict[str, Any]:
+    """Serving state digest for verification, without exposing raw parameters."""
+    state = _bandit().state_dict()
+    return dict(mode='shadow', single_run_updates_serving_policy=False,
+                policy=state['policy'], updates=state['n_updates'],
+                state_sha256=assessment.digest(state), assessment_version=assessment.VERSION,
+                release_scope='held-out task suite only; candidate promotion does not deploy ranking weights')
 
 
 def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
@@ -745,15 +753,12 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
                           "attempts": [], "artifacts": [], "verification": []}
     stages.append({"stage": "真实执行（沙箱）", "detail": sandbox_result})
 
-    # 3.5) 反馈写回：本次盲评奖励更新共享参数 θ——影响所有技能的下一次预测
+    # 3.5) 记录观察：模型的方案评分不能训练正式排序参数。
     reward, learning_skip = _demo_learning_reward(j, sandbox_result, len(run.response.get("steps") or []))
     # Research comparison executes only one step. Selected but unexecuted
     # skills must not receive that step's reward or become its parents.
     executed_skill = sandbox_result.get("skill")
     adopted = [executed_skill] if isinstance(executed_skill, str) and executed_skill in skills else []
-    if reward is not None:
-        for s in adopted:
-            bandit.update(req.task, s, reward)
     after_rows = bandit.rank(req.task, cand) if cand else []
     after_map = {r[0]: (r[2], r[3]) for r in after_rows}
     feedback = []
@@ -787,6 +792,8 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
             "detail": {
                 "feedback": feedback,
                 "reward": round(reward, 4) if reward is not None else None,
+                "mode": "observation_only",
+                "network_updated": False,
                 "skip_reason": learning_skip,
                 "adopted": adopted,
                 "accepted": False,
@@ -1311,6 +1318,8 @@ def _compose_final_reply(run: Any, led: Any) -> str:
 【交付产物】{arts_line}
 【验收与评审】{judged}
 【产物语义复核】{semantic_line}
+【独立结果判断及边界】{json.dumps((run.staged or {}).get('quality_assessment') or {'overall_verdict':'unconfirmed'}, ensure_ascii=False)[:12000]}
+模型方案评分不是学习奖励。整体满意度、报告洞察、技能因果贡献和网络整体提升均未被证实；不得声称问一次就优化了网络。独立判据通过只支持已测范围。
 【学习准入】{gate.get('reason') or gate.get('skip_reason') or '未记录'}。必须如实说明未确认项；程序运行完成不等于全部验收通过。
 【报告生成前累计（不是最终运行总额）】耗时 {run.duration_ms / 1000:.1f}s · 成本 ¥{float(run.cost_yuan or 0):.3f} · Token {run.tokens} · 步骤结果：完成 {sum(1 for s in run.steps if s.status == 'done')} · 失败 {sum(1 for s in run.steps if s.status == 'failed')} · 跳过 {sum(1 for s in run.steps if s.status == 'skipped')}
 （注意：此刻 Run 的终态判定尚未执行，不要在回复里写具体终态词，按上述步骤结果如实描述）
@@ -1432,6 +1441,8 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                     f"{a.logical_name} (SHA-256 {a.sha256})" for a in run.artifacts if a.kind == '跨轮输入')
             arun = agent.run(plan_task, skills=run.skills, style=STYLE_GUIDED, max_steps=req.max_steps)
             run.plan = arun.response or {}
+            run.staged["evaluation_contract"] = assessment.prepare_contract(run.task)
+            BUS.publish(run, "evaluation.prepared", contract=run.staged["evaluation_contract"])
             run.status = "EXECUTING"
             run.staged["planning_ms"] = int((time.time() - t0) * 1000)
             pipeline.sync_usage(run, led)
@@ -1451,51 +1462,41 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
             checkpoint()
             store.save(run)
 
-            # 6) 盲评 + 反馈回流 + 蒸馏
+            # 6) 独立结果核验 + 影子观察；方案模型评分只作为建议。
             t0 = time.time()
+            quality = assessment.assess(run, workspace, lib())
+            shadow = assessment.shadow_feedback(b, run.task, quality)
+            run.staged["quality_assessment"] = quality
+            run.staged["shadow_feedback"] = shadow
+            run.feedback = shadow["rows"]
+            BUS.publish(run, "evaluation.completed", assessment=quality, shadow=shadow)
             j = _judge_evidence(score_plan(run.task, run.plan, []))
             run.judge = j
-            reward = _judge_reward(j)
-            # A good plan is not proof of a successful execution. Do not feed an
-            # incomplete/failed or rejected execution into positive learning.
-            learning_skip = "评审不可用，未更新反馈" if reward is None else ""
-            if reward is not None:
-                if not run.steps or any(s.status != runtime.STEP_DONE for s in run.steps):
-                    learning_skip = "真实执行未完整完成，未更新反馈或进行技能准入"
-                elif any(not c.passed for s in run.steps for c in s.checks
-                         if c.required):
-                    learning_skip = "实际产物检查未全部通过，未更新反馈或进行技能准入"
-                elif any(not v.passed for s in run.steps for v in s.verifications):
-                    learning_skip = "技能语义验收存在未通过项，未更新反馈或进行技能准入"
-                if learning_skip:
-                    reward = None
-            run.staged["learning_gate"] = {"eligible": reward is not None,
-                                           "skip_reason": learning_skip}
+            reward = None
+            learning_skip = assessment.NETWORK_REASON
+            candidate_score = quality["candidate_score"]
+            run.staged["learning_gate"] = {"eligible": False, "mode": "shadow",
+                "network_updated": False, "candidate_eligible": quality["candidate_eligible"],
+                "evidence_sha256": quality["evidence_sha256"], "skip_reason": learning_skip}
             adopted = sorted({s.skill for s in run.steps if s.skill and s.status == runtime.STEP_DONE})
-            before_rows = {x["name"]: x["exploit"] for x in run.ranking}
-            if reward is not None:
-                for s in adopted:
-                    try:
-                        b.update(run.task, s, reward)
-                    except Exception:
-                        pass
-            after = {n: e for n, _p, e, _x in b.rank(run.task, adopted)}
-            run.feedback = [
-                {"name": n, "exploit_before": before_rows.get(n, 0.0),
-                 "exploit_after": after.get(n, before_rows.get(n, 0.0)),
-                 "delta": round(after.get(n, before_rows.get(n, 0.0)) - before_rows.get(n, 0.0), 4),
-                 "nudged": reward is not None and n in adopted,
-                 "skip_reason": learning_skip}
-                for n in adopted
-            ]
             BUS.publish(run, "judge.completed", weighted=j.get("weighted") if j.get("score_valid", True) else None,
                         coverage=j.get("coverage"), reward=round(reward, 4) if reward is not None else None,
                         score_valid=j.get("score_valid", True), coverage_valid=j.get("coverage_valid", True),
-                        learning_eligible=reward is not None, skip_reason=learning_skip)
+                        learning_eligible=False, role="plan_advisory", mode="shadow", skip_reason=learning_skip)
             run.status = "EVOLVING"
             evolver = SkillEvolver(lib())
             evolver.candidate_dir = config.OUT_DIR / 'candidates'
             evolver.origin_run_id = run.run_id
+            from skillnet.governance import known_training_tasks
+            training_tasks = known_training_tasks(lib(), adopted)
+            training_tasks.add(quality['task_sha256'])
+            training_tasks.update(hashlib.sha256(str(h.get('q', '')).strip().encode()).hexdigest() for h in hist)
+            for artifact in run.artifacts:
+                origin = store.get(artifact.source_run_id) if artifact.source_run_id else None
+                if origin:training_tasks.add(hashlib.sha256(origin.task.strip().encode()).hexdigest())
+            evolver.evidence_context = dict(assessment_version=quality['version'],
+                origin_task_sha256=quality['task_sha256'], evidence_sha256=quality['evidence_sha256'],
+                training_task_sha256=sorted(training_tasks), scope=quality['scope'], causal_attribution=False)
             execution_trajectory = json.dumps({'task': run.task, 'steps': [
                 {'idx':s.idx,'action':s.action,'skill':s.skill,'contract':s.contract,
                  'status':s.status,'repairs':[a.repair_reason for a in s.attempts if a.repair_reason],
@@ -1503,14 +1504,17 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                  'semantic':[v.to_dict() for v in s.verifications],
                  'files':[{'name':a.logical_name or a.name,'sha256':a.sha256} for a in s.artifacts]}
                 for s in run.steps],
-                'acceptance': pipeline.contracts.acceptance(run)}, ensure_ascii=False)
+                'acceptance': pipeline.contracts.acceptance(run),
+                'independent_assessment': quality}, ensure_ascii=False)
+            measured_parents = [row['skill'] for row in quality['observations']
+                                if row['skill'] and row['observed_score'] is not None]
             new_skill = (evolver.distill(run.task, execution_trajectory,
-                                         score=reward, parent=adopted[:1])
-                         if reward is not None else None)
+                                         score=candidate_score, parent=measured_parents[:1])
+                         if candidate_score is not None else None)
             is_candidate = bool(new_skill and getattr(new_skill, 'metadata', {}).get('governance_status') == 'candidate')
             if new_skill and not is_candidate:
                 refresh_runtime()
-            # 即使本次没有新技能，真实反馈更新也需要落盘。
+            # 执行次数等事实统计仍需落盘；正式排序参数未更新。
             if new_skill or adopted:
                 persist_library()
             if new_skill is not None:
@@ -1530,8 +1534,8 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                 "capability": (getattr(new_skill, "capability", "") or "")[:200],
                 "library_size": len(lib()),
                 "records": evolver.summary().get("records", []),
-                "skipped": reward is None,
-                "skip_reason": learning_skip,
+                "skipped": candidate_score is None,
+                "skip_reason": "缺少独立合格的完整执行证据，只保留观察" if candidate_score is None else "候选仅隔离保存，尚未证明跨任务增益",
             }
             BUS.publish(run, "evolution.proposed", accepted=run.evolution["accepted"],
                         candidate=run.evolution.get("candidate"),

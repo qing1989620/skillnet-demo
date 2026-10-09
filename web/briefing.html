@@ -581,11 +581,12 @@
   }
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=20261008.18"></script>
+<script src="/static/assets/ui.js?v=20261009.1"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=20261008.18"></script>
-<link rel="stylesheet" href="/static/assets/showcase.css?v=20261008.18">
-<link rel="stylesheet" href="/static/assets/refinement.css?v=20261008.18">
+<script src="/static/assets/product.js?v=20261009.1"></script>
+<link rel="stylesheet" href="/static/assets/showcase.css?v=20261009.1">
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261009.1">
+<link rel="stylesheet" href="/static/assets/quality.css?v=20261009.1">
 </head>
 <body>
 
@@ -610,7 +611,7 @@
     <div>
       <div class="h-kicker">SKILLNET-S1 · AGENT 技能运维层</div>
       <h1>让一次提问，<br>调动一整个<br><span class="em">能力网络。</span></h1>
-      <div class="h-sub">从找到能力，到协作执行，再到验收与进化。<br>让你看到 Agent <b>如何做成这件事，<br>以及这次经验如何变成下一次的能力。</b></div>
+      <div class="h-sub">从找到能力，到协作执行，再到验收与进化。<br>让你看到 Agent <b>如何做成这件事，<br>经验如何被核验，何时才有资格影响网络。</b></div>
       <div class="h-actions">
         <a class="btn btn-primary" href="#s3">提出问题，展开内核 ↗</a>
         <button type="button" class="btn btn-ghost" onclick="Showcase.replay()">回放一次真实任务</button>
@@ -683,7 +684,7 @@
     </div>
   </div>
   </details>
-  <div class="show-tools"><button class="btn" type="button" data-show-run="b5492bb7-20261008-174014-44aa">经营月报 · 3 步真实执行</button><button class="btn" type="button" data-show-run="02f80093-20261008-175420-f527">沿用同一文件追问 · 原值已核验</button><button class="btn" type="button" data-show-run="7356cc57-20261008-012151-3b64">历史科研任务 · 3 步回放</button><button class="btn" type="button" data-show-run="7c29f741-20261008-163216-a4ef">新版内核记录 · 1 步真实执行</button><button class="btn" id="demo-seven" style="background:#fff;color:var(--brand2);border:1px solid var(--brand2);font-size:12px" onclick="runDemo()">七阶段完整演示（本页）</button><p>原有完整演示、同题对照、代码、文件预览与反馈前后对比均可继续使用。</p></div>
+  <div class="show-tools"><button class="btn" type="button" data-show-run="b5492bb7-20261009-232823-34fe">独立判据通过 · 经营月报</button><button class="btn" type="button" data-show-run="1624c869-20261009-232919-0fe0">同为 8 分，为何不学习？</button><button class="btn" type="button" data-show-run="b5492bb7-20261008-174014-44aa">历史经营任务 · 3 步回放</button><button class="btn" type="button" data-show-run="02f80093-20261008-175420-f527">历史同文件追问 · 原值已核验</button><button class="btn" type="button" data-show-run="7356cc57-20261008-012151-3b64">历史科研任务 · 3 步回放</button><button class="btn" type="button" data-show-run="7c29f741-20261008-163216-a4ef">内核记录 · 1 步真实执行</button><button class="btn" id="demo-seven" style="background:#fff;color:var(--brand2);border:1px solid var(--brand2);font-size:12px" onclick="runDemo()">七阶段完整演示（本页）</button><p>对照两次真实任务的判据、结果和影子观察。原有完整演示、同题对照、代码、文件预览与会话历史均可继续使用。</p></div>
   <div id="ver-badge" title="当前页面版本；点击可强制刷新" onclick="forceRefresh()"
        style="position:fixed;right:14px;bottom:14px;z-index:99;font:11px/1 var(--mono,monospace);
        color:#9aa7b3;background:rgba(255,255,255,.85);border:1px solid var(--line);
@@ -968,7 +969,7 @@
 </section>
 
 <script>
-const PAGE_VER = "2026-10-08.upgrade.18";
+const PAGE_VER = "2026-10-09.evidence.1";
 const API = location.origin;
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1569,12 +1570,12 @@ function renderFeedback(d) {
   }).join("");
   const rewardValid = typeof d.reward === "number" && Number.isFinite(d.reward);
   if (rows && rewardValid) {
-    fb = `<div style="font-size:12.5px;margin:8px 0 4px">本次盲评奖励 <b style="color:var(--brand)">${(d.reward ?? 0).toFixed(2)}/1.0</b>
-      已写回共享参数 θ（采纳 ${esc((d.adopted || []).join("、"))}）——<b>所有</b>技能的预测随之更新，同领域技能变化最大：</div>
+    fb = `<div style="font-size:12.5px;margin:8px 0 4px">历史反馈规则曾使用模型方案分 <b style="color:var(--brand)">${(d.reward ?? 0).toFixed(2)}/1.0</b>
+      更新共享参数 θ（采纳 ${esc((d.adopted || []).join("、"))}）。下面是当时的参数变化记录，不能证明技能贡献或网络增益：</div>
     <table class="cmp"><tr><th>技能</th><th style="width:86px">更新前预测</th><th style="width:86px">更新后预测</th><th style="width:74px">变化</th></tr>${rows}</table>
-    <div style="font-size:11.5px;color:var(--ok);margin:4px 0 10px">这就是「根据旧数据迭代」：下次遇到相似任务，排序将不同——学习可见、可追溯。</div>`;
+    <div style="font-size:11.5px;color:var(--ink2);margin:4px 0 10px">当前版本已经停止用方案评分直接更新正式策略；新经验须接受独立结果核验与留出评测。</div>`;
   }
-  if (!rewardValid) fb = '<div class="trace">本次评审不可用，未写回策略参数：' + esc(d.skip_reason || "缺少有效奖励") + "</div>";
+  if (!rewardValid) fb = '<div class="trace">未写回正式策略参数：' + esc(d.skip_reason || "缺少独立结果证据，模型评分仅供参考") + "</div>";
   const distill = d.accepted
     ? `<div class="nskill"><b>新候选技能：${esc(d.name)}</b>
         <div style="font-size:12px;color:var(--ink2);margin-top:3px">${esc(d.capability || "")}</div>
@@ -2611,6 +2612,6 @@ window.__SELFTEST__ = function(){
   }, 4000);
 })();
 </script>
-<script src="/static/assets/showcase.js?v=20261008.18"></script>
+<script src="/static/assets/showcase.js?v=20261009.1"></script>
 </body>
 </html>

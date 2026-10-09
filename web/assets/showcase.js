@@ -3,19 +3,19 @@
   'use strict';
   const PHASES = [
     {name:'检索能力',tag:'BM25 · HYBRID · FABRIC',title:'先找到适合这道题的能力',doing:'关键词、语义与关系图围绕同一问题检索。候选技能和实际启用的检索组件会在这里出现。',benefit:'把能力定位变成可追溯的选择过程，便于发现漏选和误选。'},
-    {name:'策略选择',tag:'SHARED LINUCB',title:'让过去的反馈参与这次选择',doing:'任务与技能共同进入 LinUCB 排序；优先级由历史收益预测与探索项组成。排序是选择依据，实际采用由后续编排确定。',benefit:'经验能改变下次的优先级，同时保留探索新能力的机会。'},
+    {name:'策略选择',tag:'SHARED LINUCB / SHADOW',title:'先提出可检验的选择假设',doing:'共享 LinUCB 分解收益预测与探索项；当前正式权重从零开始，收益预测可能为零，它们不是成功概率。新增经验只做影子预演，尚未部署学习后的排序参数。',benefit:'保留可追溯的选择依据，避免一次偶然结果污染整个网络。'},
     {name:'关系编排',tag:'WIKI · DEPENDENCIES',title:'把单项能力组织成协作',doing:'路由器读取技能关系与依赖，确定采用的技能和编排边。降级路径也会明确展示。',benefit:'先明确谁依赖谁，减少任务顺序与输入输出脱节。'},
     {name:'方案与 DAG',tag:'PLAN → EXECUTION GRAPH',title:'把研究方案变成执行路径',doing:'规划器生成动作，执行引擎再解析真实步骤依赖。图中的每个节点都对应一个可查证的运行步骤。',benefit:'计划可以被逐步执行和追踪，前序文件能进入后序步骤。'},
     {name:'执行与修复',tag:'PYTHON · RETRY · ARTIFACTS',title:'让能力真正产出结果',doing:'生成代码、语法预检、运行 Python；失败后携带错误信息与技能陷阱进行修复，每步最多尝试三次。',benefit:'交付可下载的真实文件，保留失败原因与修复轨迹。'},
-    {name:'分层验收',tag:'L1 / L2 · L3 · BLIND JUDGE',title:'完成了，也要知道做得怎样',doing:'执行期间检查文件与技能断言，并记录语义验收；方案评审另行提供反馈信号。完成状态与验收结论分开展示。',benefit:'不把“代码跑完”当成“全部合格”，未通过与不可用结果都可见。'},
-    {name:'反馈与进化',tag:'REWARD → CANDIDATE → EVIDENCE',title:'让经验经过验证，再进入能力库',doing:'实际执行和验收合格后，有效反馈参与策略更新，可复用经验进入候选区。候选还须经过冻结任务配对评测，测出增益才可晋级。',benefit:'保留可复用经验，也拦住没有提升或发生回退的候选；生成技能不等于能力已经提升。'}
+    {name:'分层验收',tag:'FROZEN REFERENCE / ARTIFACT HASH',title:'先展示判据，再判断结果',doing:'服务端重新读取文件并验证指纹；有独立参考的结果逐项重算。模型评分仅供参考，没有结果判据就保留未知。',benefit:'区分技术执行成功、目标结果正确和用户认可，判断边界可以核对。'},
+    {name:'反馈与进化',tag:'OBSERVATION → SHADOW → HOLD-OUT',title:'一条经验，先成为待验证的假设',doing:'单次经验只进入影子观察。合格轨迹可隔离为候选；至少五道留出任务、每题两组同预算对照，并满足无回退与统计门槛后才有资格晋级。',benefit:'不把参数变化当成网络提升；只在已测范围内陈述增益，保留未知和失败。'}
   ];
   const esc = x => String(x == null ? '' : x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const arr = x => Array.isArray(x) ? x : [];
   const number = (x, fallback=0) => Number.isFinite(Number(x)) ? Number(x) : fallback;
   const statusName = s => ({COMPLETED:'已完成',PARTIAL:'部分完成',FAILED:'失败',CANCELLED:'已取消',BUDGET_EXCEEDED:'预算已达上限',INTERRUPTED:'运行中断'}[s] || s || '待启动');
   const stepName = s => ({pending:'待执行',running:'执行中',done:'已完成',failed:'失败',skipped:'已跳过'}[s] || '待执行');
-  const PUBLIC_REPLAY_ID='b5492bb7-20261008-174014-44aa';
+  const PUBLIC_REPLAY_ID='b5492bb7-20261009-232823-34fe';
   function createState(task='',mode='idle') {
     return {task,mode,id:null,seq:0,phase:0,view:null,phases:PHASES.map(()=> 'pending'),nodes:[],selected:[],ranking:[],retrieval:{},orchestration:{},checks:[],artifacts:[],feedback:[],judge:null,evolution:null,logs:[],started:0,elapsed:0,finished:false,error:'',snapshot:null};
   }
@@ -51,6 +51,7 @@
     else if(t==='step.completed') {if(node()){node().status=d.status;node().stage='done';node().checks=d.checks;node().duration_ms=d.duration_ms;node().attempt=number(d.n_attempts);}log=`Step ${number(idx)+1} ${stepName(d.status)} · 程序检查 ${d.checks || '—'}`;}
     else if(t==='steps.skipped') {arr(d.steps).forEach(i=>{const n=s.nodes.find(x=>x.idx===i);if(n)n.status='skipped';});log='依赖失败，跳过受影响的下游步骤';}
     else if(t==='execution.finished') {complete(4);log=`执行结束 · ${number(d.done)} 步完成 / ${number(d.failed)} 步失败`;}
+    else if(t==='evaluation.completed') {s.assessment=d.assessment;s.shadow=d.shadow;log='独立结果核验完成 · 正式网络保持不变';}
     else if(t==='judge.completed') {s.judge=d;complete(5);log=d.score_valid===false?'评审不可用 · 跳过反馈学习':`方案评审完成 · ${d.weighted == null?'分数不可用':d.weighted+'/10'}`;}
     else if(t==='evolution.proposed') {s.evolution=d;s.feedback=arr(d.feedback);s.phases[6]='done';s.phase=6;log=d.candidate?'新经验进入候选区 · 等待冻结任务验证':d.accepted?`新增能力已准入 · ${d.name}`:(d.skipped?(d.skip_reason||'未满足学习门槛，未进行技能准入'):'本次未新增技能 · 保留现有能力');}
     else if(t==='run.reply') {s.reply=d.text || '';log='基于真实执行事实生成最终回答';}
@@ -130,7 +131,9 @@
     if(i===3)return fact(`${state.nodes.length || state.planSteps || 0} 个执行节点`,state.approach||snap.plan?.approach||'动作与验收约束已进入执行引擎。')+fact('按实际依赖执行，编号来自规划','编号不代表开始顺序；点击步骤查看动作、输入、代码与输出。');
     if(i===4)return fact(`${state.nodes.filter(n=>n.status==='done').length}/${state.nodes.length} 步完成`,`${state.nodes.filter(n=>number(n.attempt)>1&&n.status==='done').length} 步修复后完成 · ${state.nodes.filter(n=>n.status==='failed').length} 步失败`)+fact(`${state.artifacts.length} 个文件已登记`,state.artifacts.slice(-3).map(a=>a.name).join(' / '))+fact('文件在步骤间实际传递',state.nodes.filter(n=>arr(n.inputs).length).map(n=>`Step ${n.idx+1} ← ${arr(n.inputs).length} 文件`).join(' / ')||'本次尚未记录跨步文件传递。');
     if(i===5){const checks=state.checks;const j=state.judge||(done(5)?snap.judge:null)||{};const sem=state.mode==='replay'&&!done(5)?[]:arr(snap.steps).flatMap(n=>arr(n.verifications));return fact(`程序检查 ${checks.filter(c=>c.passed).length}/${checks.length} 通过`,checks.filter(c=>!c.passed).slice(0,2).map(c=>c.name).join(' / ')||'当前已记录的检查未出现失败。')+fact('方案评审 · '+(j.score_valid!==false&&j.weighted!=null?number(j.weighted).toFixed(1)+'/10':done(5)?'不可用':'等待评审'),'方案评分与文件检查分开计算，不相互替代。')+fact(`语义验收 ${sem.filter(v=>v.passed).length}/${sem.length} 通过`,sem.length?'详细证据可在逐步记录中查看。':'尚无语义验收记录；不可解释为全部通过。')+sem.filter(v=>!v.passed).slice(0,2).map(v=>fact('未确认 · '+v.evidence,v.item)).join('');}
-    const e={...(snap.evolution||{}),...(state.evolution||{})};if(e.candidate)return fact('新经验已进入候选区','先在冻结任务上做学习前后对照，有增益且不回退才晋级。');const feedback=state.feedback.length?state.feedback:arr(snap.feedback);return fact(e.accepted?'新增能力 · '+e.name:'本次未新增能力',e.accepted?`G${e.generation??snap.evolution?.generation??'—'} · 库规模 ${e.library_size??'—'}`:e.skip_reason||'未通过蒸馏或准入条件。')+fact(`${feedback.filter(f=>f.nudged).length} 项技能收到有效反馈`,feedback.slice(0,2).map(f=>`${f.name} · Δ ${number(f.delta).toFixed(4)}`).join(' / ')||(e.skipped?'未满足学习条件，未更新策略。':'等待反馈明细。'));
+    const e={...(snap.evolution||{}),...(state.evolution||{})},a=state.assessment||staged.quality_assessment;
+    if(a)return fact('正式网络未更新','单次运行没有证明技能因果贡献或跨任务增益。')+fact(`${arr(a.observations).filter(r=>r.observed_score!=null).length} 步有可重算的限定范围结果`,a.scope)+fact(e.candidate?'新经验已隔离为候选':'本次仅保留观察',e.candidate?'留出评测前不准入，不自动部署排序参数。':e.skip_reason||'没有足够的独立结果证据。');
+    const feedback=state.feedback.length?state.feedback:arr(snap.feedback);return fact(e.candidate?'历史候选记录':e.accepted?'历史准入 · '+e.name:'本次未新增能力',e.skip_reason||'见原始记录')+fact('历史记录未采用当前独立评价协议','旧参数变化不能作为网络整体提升的证据。')+fact(`${feedback.filter(f=>f.nudged).length} 项历史反馈`,feedback.slice(0,2).map(f=>`${f.name} · Δ ${number(f.delta).toFixed(4)}`).join(' / '));
   }
   function render() {
     if(!$('show-stage'))return;
@@ -191,7 +194,7 @@
     const answer=fin.staged?.final_reply || fin.error || '本次没有生成最终文本，请查看步骤和文件证据。';
     const verdict=fin.staged?.acceptance;
     const value=fin.evolution?.candidate?'新经验已进入候选区，等待冻结任务的真实执行验证；当前技能库尚未新增。':fin.evolution?.accepted?`本次经验已沉淀为 ${fin.evolution.name}，可进入后续任务复用。`:fin.staged?.learning_gate?.eligible===false?`本次经验暂不写入技能库：${fin.staged.learning_gate.skip_reason}。结果与证据保留供核对，避免学习未经确认的经验。`:fin.evolution?.skip_reason||'本次未新增技能；已有运行、验收和反馈记录保留供后续复盘。';
-    $('show-answer-body').innerHTML=`<div class="show-value">${esc(statusName(fin.status))} · 验收${verdict?({passed:'通过',failed:'未通过',unknown:'有待确认'}[verdict.state]||verdict.state):'见逐项证据'} · ${esc(value)}</div><div class="rp-body">${typeof root.mdToHtml==='function'?root.mdToHtml(answer):esc(answer).replace(/\n/g,'<br>')}</div>`;
+    $('show-answer-body').innerHTML=`${root.Product?.assessmentHTML(fin)||''}<div class="show-value">${esc(statusName(fin.status))} · 验收${verdict?({passed:'通过',failed:'未通过',unknown:'有待确认'}[verdict.state]||verdict.state):'见逐项证据'} · ${esc(value)}</div><div class="rp-body">${typeof root.mdToHtml==='function'?root.mdToHtml(answer):esc(answer).replace(/\n/g,'<br>')}</div>`;
     $('show-files-body').innerHTML=arr(fin.artifacts).slice().sort((a,b)=>number(b.from_step)-number(a.from_step)).map(a=>{const url='/api/runs/'+encodeURIComponent(fin.run_id)+'/artifacts/'+encodeURIComponent(a.name);return `<div class="show-file"><b>${esc(a.name)}</b><p>${esc(a.kind||'真实运行产物')}${a.from_step!=null?' · Step '+(number(a.from_step)+1)+' 产出':''} · ${(number(a.bytes)/1024).toFixed(1)} KB · SHA-256 ${esc(String(a.sha256||'未记录').slice(0,16))}${a.sha256?'…':''}</p><button type="button" data-show-artifact="${esc(a.name)}">查看文件</button><a href="${url}" download="${esc(a.name)}">下载</a>${/\.(png|jpg|jpeg|webp|svg)$/i.test(a.name)?`<img src="${url}" alt="本次实际运行生成的 ${esc(a.name)}" loading="lazy">`:''}</div>`;}).join('')||'<p style="font-size:12px;color:#7a909e">本次没有登记可下载文件。</p>';
     $('show-evidence-link').href='/run?id='+encodeURIComponent(fin.run_id);
     const modes=fin.retrieval||{},feedback=arr(fin.feedback),orchestration=fin.staged?.orchestration||{};
@@ -202,7 +205,7 @@
       ['可执行方案',number(stats.total)+' 步 / '+(fin.staged?.scheduler||'见执行记录'),'DAG 对应真实运行路径'],
       ['执行与修复',number(stats.retried)+' 步重试 / '+arr(fin.artifacts).length+' 个文件','保留实际输出与尝试记录'],
       ['独立验收',checks.filter(c=>c.passed).length+'/'+checks.length+' 程序检查通过','失败结果保留，完成与合格分开'],
-      ['经验回流',feedback.filter(f=>f.nudged).length+' 项反馈 / '+(fin.evolution?.accepted?'1':'0')+' 项新增','执行与验收合格后才学习，技能需准入']
+      ['经验观察',fin.staged?.quality_assessment?'影子观察 / 正式更新 0 次':feedback.filter(f=>f.nudged).length+' 项历史反馈','任务结果、技能贡献与网络增益分开核验']
     ];
     $('show-impact').innerHTML=evidence.map(([title,value,why],i)=>`<button type="button" data-show-phase="${i}"><small>${String(i+1).padStart(2,'0')} · ${esc(title)}</small><b>${esc(value)}</b><span>${esc(why)}</span></button>`).join('');
   }

@@ -16,7 +16,7 @@ def scenarios():
             '列名严格为 month,revenue,cost,gross_profit,gross_margin,orders；③读取 monthly_summary.csv，'
             '生成 figure.svg 趋势图和 report.md 管理层报告，明确标注模拟数据、金额单位为元、毛利风险与行动建议。'
             '每步只负责本步交付，使用 depends_on 和 input_files/output_files 表达真实文件传递。规则：' + row['rules'] + '\nCSV：\n' + row['data'])
-        row['task_sha256'] = hashlib.sha256(row['task'].encode()).hexdigest()
+        row['task_sha256'] = hashlib.sha256(row['task'].strip().encode()).hexdigest()
     return rows
 
 

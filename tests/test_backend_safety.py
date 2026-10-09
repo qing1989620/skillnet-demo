@@ -51,6 +51,21 @@ def test_history_api_filters_paginates_and_preserves_legacy_runs_key(api):
     assert len(client.get("/api/runs").json()["runs"]) == 3
 
 
+def test_policy_proof_is_authenticated_and_does_not_expose_or_mutate_weights(api, monkeypatch):
+    client,_ = api
+    library = SkillLibrary([Skill('proof','test','data')])
+    bandit = SharedLinUCB(library)
+    monkeypatch.setattr(server,'_bandit',lambda:bandit)
+    before = bandit.state_dict()
+    assert client.get('/api/learning/policy').status_code == 401
+    response = client.get('/api/learning/policy',headers={'X-SkillNet-Token':'test-access-token'})
+    assert response.status_code == 200
+    data = response.json()
+    assert data['updates'] == 0 and len(data['state_sha256']) == 64
+    assert data['single_run_updates_serving_policy'] is False
+    assert 'A' not in data and 'b' not in data and bandit.state_dict() == before
+
+
 @pytest.mark.parametrize("query", ["offset=-1", "offset=100001", "status=UNKNOWN", "q="+"x"*201])
 def test_history_api_rejects_invalid_filters(api, query):
     client, _ = api
@@ -553,10 +568,10 @@ def test_report_prompt_distinguishes_pre_report_usage_from_final_metrics(monkeyp
 
 @pytest.mark.parametrize("evaluation, expected_reward, expected_coverage", [
     ({"weighted": 0.0, "score_valid": False, "coverage": 0.0, "coverage_valid": False}, None, None),
-    ({"weighted": 8.0, "score_valid": True, "coverage": 0.0, "coverage_valid": False}, 0.8, None),
-    ({"weighted": 8.0, "coverage": 0.75}, 0.8, 0.75),  # historical evaluation contract
+    ({"weighted": 8.0, "score_valid": True, "coverage": 0.0, "coverage_valid": False}, None, None),
+    ({"weighted": 8.0, "coverage": 0.75}, None, 0.75),
 ])
-def test_worker_abstains_from_invalid_scores_but_keeps_valid_score_feedback(
+def test_worker_keeps_plan_advice_but_never_learns_unmeasured_results(
         routed_workflow, monkeypatch, evaluation, expected_reward, expected_coverage):
     _, store, wiki = routed_workflow
     run = make_run()
@@ -589,14 +604,10 @@ def test_worker_abstains_from_invalid_scores_but_keeps_valid_score_feedback(
         assert updates == admissions == []
         assert all(not row["nudged"] and row["skip_reason"] for row in loaded.feedback)
         assert loaded.evolution["skipped"] and loaded.evolution["skip_reason"]
-        assert event.data["weighted"] is None
-    else:
-        # A planned skill that never executed must not receive a success reward.
-        assert updates == [('input-data', expected_reward)]
-        assert not any(name in ('z-analyze', 'z-report') for name, _ in updates)
-        assert admissions == [expected_reward]
-        assert all(row["nudged"] for row in loaded.feedback)
-        assert not loaded.evolution["skipped"]
+        assert event.data["weighted"] == (evaluation['weighted'] if evaluation.get('score_valid', True) else None)
+    assert loaded.staged['learning_gate']['mode'] == 'shadow'
+    assert loaded.staged['quality_assessment']['scope_verdict'] == 'unknown'
+    assert loaded.staged['quality_assessment']['overall_verdict'] == 'unconfirmed'
 
 
 @pytest.mark.parametrize("gate", ["execution", "checks", "semantic"])
@@ -653,6 +664,25 @@ def test_explicit_evolution_does_not_admit_unrated_trajectory(api, monkeypatch):
     assert response.json()["accepted"] is False
     assert response.json()["chat_score"] is None
     assert response.json()["skip_reason"]
+
+
+def test_explicit_evolution_labels_a_plan_as_unexecuted_proposal(api, monkeypatch):
+    client,_ = api
+    monkeypatch.setattr(server,'require_llm',lambda:None)
+    server.STATE['agent'] = SimpleNamespace(run=lambda *a,**k:SimpleNamespace(response={},trajectory='plan only'))
+    monkeypatch.setattr(server,'score_plan',lambda *a:{'weighted':9.,'score_valid':True})
+    seen=[]
+    evolver=SimpleNamespace(distill=lambda *a,**k:seen.append(k),summary=lambda:{'records':[]})
+    monkeypatch.setattr(server,'SkillEvolver',lambda *a:evolver)
+    response=client.post('/api/evolve',json={'task':'生成方法提案','op':'distill'},
+        headers={'X-SkillNet-Token':'test-access-token'})
+    assert response.status_code==200
+    data=response.json()
+    assert data['chat_score']==.9 and data['score_role']=='plan_advisory'
+    assert data['evidence_mode']=='unexecuted_proposal' and not data['network_updated']
+    assert seen==[dict(score=None)]
+    assert evolver.evidence_context['mode']=='unexecuted_proposal'
+    assert not data['accepted']
 
 
 def test_report_does_not_present_invalid_evaluation_as_real_low_score(monkeypatch):

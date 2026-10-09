@@ -1,0 +1,192 @@
+{
+  "protocol": "outcome-evidence-v1",
+  "business_run_id": "b5492bb7-20261009-232823-34fe",
+  "unmeasured_run_id": "1624c869-20261009-232919-0fe0",
+  "oracle": {
+    "score": 1.0,
+    "checks": [
+      {
+        "name": "月份完整且无额外月份",
+        "passed": true
+      },
+      {
+        "name": "2026-01.revenue",
+        "passed": true,
+        "expected": 3500.0,
+        "actual": "3500.0"
+      },
+      {
+        "name": "2026-01.cost",
+        "passed": true,
+        "expected": 2180.0,
+        "actual": "2180.0"
+      },
+      {
+        "name": "2026-01.orders",
+        "passed": true,
+        "expected": 3,
+        "actual": "3"
+      },
+      {
+        "name": "2026-01.gross_profit",
+        "passed": true,
+        "expected": 1320.0,
+        "actual": "1320.0"
+      },
+      {
+        "name": "2026-01.gross_margin",
+        "passed": true,
+        "expected": 0.37714285714285717,
+        "actual": "0.37714285714285717"
+      },
+      {
+        "name": "2026-02.revenue",
+        "passed": true,
+        "expected": 4000.0,
+        "actual": "4000.0"
+      },
+      {
+        "name": "2026-02.cost",
+        "passed": true,
+        "expected": 2700.0,
+        "actual": "2700.0"
+      },
+      {
+        "name": "2026-02.orders",
+        "passed": true,
+        "expected": 3,
+        "actual": "3"
+      },
+      {
+        "name": "2026-02.gross_profit",
+        "passed": true,
+        "expected": 1300.0,
+        "actual": "1300.0"
+      },
+      {
+        "name": "2026-02.gross_margin",
+        "passed": true,
+        "expected": 0.325,
+        "actual": "0.325"
+      },
+      {
+        "name": "2026-03.revenue",
+        "passed": true,
+        "expected": 4300.0,
+        "actual": "4300.0"
+      },
+      {
+        "name": "2026-03.cost",
+        "passed": true,
+        "expected": 3180.0,
+        "actual": "3180.0"
+      },
+      {
+        "name": "2026-03.orders",
+        "passed": true,
+        "expected": 3,
+        "actual": "3"
+      },
+      {
+        "name": "2026-03.gross_profit",
+        "passed": true,
+        "expected": 1120.0,
+        "actual": "1120.0"
+      },
+      {
+        "name": "2026-03.gross_margin",
+        "passed": true,
+        "expected": 0.26046511627906976,
+        "actual": "0.26046511627906976"
+      },
+      {
+        "name": "2026-04.revenue",
+        "passed": true,
+        "expected": 5200.0,
+        "actual": "5200.0"
+      },
+      {
+        "name": "2026-04.cost",
+        "passed": true,
+        "expected": 3340.0,
+        "actual": "3340.0"
+      },
+      {
+        "name": "2026-04.orders",
+        "passed": true,
+        "expected": 3,
+        "actual": "3"
+      },
+      {
+        "name": "2026-04.gross_profit",
+        "passed": true,
+        "expected": 1860.0,
+        "actual": "1860.0"
+      },
+      {
+        "name": "2026-04.gross_margin",
+        "passed": true,
+        "expected": 0.3576923076923077,
+        "actual": "0.3576923076923077"
+      },
+      {
+        "name": "矢量图存在",
+        "passed": true
+      },
+      {
+        "name": "报告标注模拟数据",
+        "passed": true
+      }
+    ],
+    "evaluator": "independent arithmetic + artifact presence; report insight not scored",
+    "artifact_hashes": {
+      "step1_clean.csv": "7e6cbc82b564f901f3958e2ec28d58fa5ae2867448efd8e06afd1e4cf51c0026",
+      "step2_monthly_summary.csv": "a2a0524e5ba15ad02d37b77ae6b6fd3ade0c4450dd93d55b1bab18009e1b7027",
+      "step3_figure.svg": "a29126cba141eb0f7f7f3877c046a7b672ee3500d9ccb0dd2817e8d3eeed352f",
+      "step3_report.md": "a8031809cd97f81f7f084e0e70428fdea15154b035c3b2ea4c2becdf40ddab43"
+    }
+  },
+  "policy_before": {
+    "mode": "shadow",
+    "single_run_updates_serving_policy": false,
+    "policy": "shared_linucb",
+    "updates": 0,
+    "state_sha256": "bc60c6945a9af22b2443d24b507cbb58de28deda51a7acc7b893246226851003",
+    "assessment_version": "outcome-evidence-v1",
+    "release_scope": "held-out task suite only; candidate promotion does not deploy ranking weights"
+  },
+  "policy_after": {
+    "mode": "shadow",
+    "single_run_updates_serving_policy": false,
+    "policy": "shared_linucb",
+    "updates": 0,
+    "state_sha256": "bc60c6945a9af22b2443d24b507cbb58de28deda51a7acc7b893246226851003",
+    "assessment_version": "outcome-evidence-v1",
+    "release_scope": "held-out task suite only; candidate promotion does not deploy ranking weights"
+  },
+  "serving_policy_unchanged": true,
+  "business_scoped_verdict": "passed",
+  "overall_quality": "unconfirmed",
+  "measured_steps": [
+    {
+      "idx": 0,
+      "skill": "data-cleaning",
+      "score": null
+    },
+    {
+      "idx": 1,
+      "skill": "business-metrics-audit",
+      "score": 1.0
+    },
+    {
+      "idx": 2,
+      "skill": "scientific-visualization",
+      "score": null
+    }
+  ],
+  "unmeasured_verdict": "unknown",
+  "unmeasured_no_learning": true,
+  "contract_frozen_before_execution": true,
+  "cost_yuan": 0.3129,
+  "boundary": "No causal attribution, cross-task gain or user satisfaction established; browser screenshot not part of this test"
+}
