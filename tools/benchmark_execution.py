@@ -106,6 +106,7 @@ def main():
         frozen_plan=dict(protocol='heldout-task-cluster-v1',candidate_sha256=candidate['sha256'],
             created_at_ms=runtime.now_ms(),tasks={c['task_sha256']:evaluation_digest(c) for c in selected},
             repeats=repeats,budget=runtime.Budget(max_cost_yuan=args.budget_per_run,max_seconds=600,max_llm_calls=40).to_dict(),
+            baseline_skill=dict(name='business-metrics-audit',sha256=fingerprint(library.get('business-metrics-audit'))),
             profile=evaluation_profile(),arm_order='alternating_before_after')
         evaluation_plan_sha256=evaluation_digest(frozen_plan)
         directory=config.OUT_DIR/'evaluation_plans'

@@ -10,7 +10,7 @@ from skillnet import assessment, runtime
 from skillnet.bandit import SharedLinUCB
 from skillnet.catalog import SkillLibrary
 from skillnet.governance import (validate_promotion_design, validate_evaluation_plan,
-    evaluation_digest, evaluation_profile, quarantine, promote)
+    evaluation_digest, evaluation_profile, fingerprint, quarantine, promote)
 from skillnet.schema import Skill
 from skillnet.scenarios import scenarios, oracle
 
@@ -168,21 +168,23 @@ def test_promotion_design_rejects_leakage_weak_evidence_and_regression(fault):
     with pytest.raises(ValueError):validate_promotion_design(evidence,candidate)
 
 
-@pytest.mark.parametrize('fault', ['omission','duplicate','reference','profile'])
+@pytest.mark.parametrize('fault', ['omission','duplicate','reference','profile','baseline'])
 def test_preregistered_suite_prevents_selective_reporting_and_posthoc_standards(fault):
     frozen = {c['task_sha256']:c for c in scenarios()[1:]}
     plan = dict(protocol='heldout-task-cluster-v1',candidate_sha256='candidate',repeats=2,
-        tasks={k:evaluation_digest(c) for k,c in frozen.items()},profile=evaluation_profile())
+        tasks={k:evaluation_digest(c) for k,c in frozen.items()},profile=evaluation_profile(),
+        baseline_skill=dict(name='baseline',sha256='a'*64),arm_order='alternating_before_after')
     evidence = [dict(task_sha256=k,repeat=i) for k in frozen for i in range(2)]
     validate_evaluation_plan(plan,evidence,'candidate',frozen)
     if fault == 'omission':evidence.pop()
     if fault == 'duplicate':evidence[-1] = evidence[0]
     if fault == 'reference':plan['tasks'][next(iter(frozen))] = 'changed'
     if fault == 'profile':plan['profile']['model'] = 'different-model'
+    if fault == 'baseline':del plan['baseline_skill']
     with pytest.raises(ValueError):validate_evaluation_plan(plan,evidence,'candidate',frozen)
 
 
-@pytest.mark.parametrize('fault', [None,'budget','training','tampered','wrong_score','posthoc'])
+@pytest.mark.parametrize('fault', [None,'budget','training','tampered','wrong_score','posthoc','baseline_swap','baseline_changed','arm_order'])
 def test_promotion_recomputes_all_twenty_runs_and_checks_experiment_fairness(tmp_path,monkeypatch,fault):
     from skillnet import config
     from skillnet.scenarios import evaluate_artifacts
@@ -197,9 +199,12 @@ def test_promotion_recomputes_all_twenty_runs_and_checks_experiment_fairness(tmp
     quarantine(skill,tmp_path/'candidates',origin_run_id='origin')
     candidate_path=next((tmp_path/'candidates').glob('*.json'))
     candidate=json.loads(candidate_path.read_text(encoding='utf-8'))
+    baseline=Skill('baseline','serving method','data',steps=['read','compute','verify'])
+    baseline_sha=fingerprint(baseline)
     plan=dict(protocol='heldout-task-cluster-v1',candidate_sha256=candidate['sha256'],created_at_ms=0,
         tasks={c['task_sha256']:evaluation_digest(c) for c in cases},repeats=2,
-        budget=runtime.Budget().to_dict(),profile=evaluation_profile())
+        budget=runtime.Budget().to_dict(),profile=evaluation_profile(),
+        baseline_skill=dict(name='baseline',sha256=baseline_sha),arm_order='alternating_before_after')
     if fault == 'training':
         origin.task=cases[0]['task'];store.save(origin)
     sha=evaluation_digest(plan)
@@ -210,15 +215,15 @@ def test_promotion_recomputes_all_twenty_runs_and_checks_experiment_fairness(tmp
     for i,case in enumerate(cases):
         for repeat in range(2):
             pair=dict(task_sha256=case['task_sha256'],repeat=repeat,frozen=True)
-            for arm in ('before','after'):
+            for arm in (('before','after') if repeat%2==0 else ('after','before')):
                 rid=f'{arm}-{i}-{repeat}'
                 workspace=tmp_path/'runs'/rid
                 run=business_run(workspace,case)
                 run.run_id=rid;run.status='COMPLETED';run.model=plan['profile']['model']
                 run.staged.update(execution_mode='contract',evaluation_plan_sha256=sha,
-                    evaluated_skill_sha256=candidate['sha256'] if arm=='after' else 'baseline')
+                    evaluated_skill_sha256=candidate['sha256'] if arm=='after' else baseline_sha)
+                for step in run.steps:step.skill='candidate' if arm=='after' else 'baseline'
                 run.plan=dict(steps=[dict(action=s.action,skill=s.skill,depends_on=s.depends_on) for s in run.steps])
-                if arm=='after':run.steps[1].skill='candidate'
                 if arm=='before':
                     path=workspace/'artifacts/monthly_summary.csv'
                     path.write_text('month,revenue,cost,gross_profit,gross_margin,orders\n')
@@ -230,16 +235,19 @@ def test_promotion_recomputes_all_twenty_runs_and_checks_experiment_fairness(tmp
                     if fault=='posthoc':run.started_at_ms=-1
                     if fault=='tampered':(workspace/'artifacts/monthly_summary.csv').write_text('corrupt')
                     if fault=='wrong_score':pair[arm]-=.01
+                    if fault=='arm_order':run.started_at_ms=1
+                if i==0 and repeat==0 and arm=='before' and fault=='baseline_swap':run.steps[0].skill='unrelated-bad-baseline'
                 store.save(run)
             report['pairs'].append(pair)
     report_path=tmp_path/'report.json';report_path.write_text(json.dumps(report),encoding='utf-8')
-    target=SkillLibrary([])
+    if fault=='baseline_changed':baseline.steps.append('new implementation')
+    target=SkillLibrary([baseline])
     saves=[];monkeypatch.setattr(target,'save',lambda:saves.append(True))
     if fault:
         with pytest.raises(ValueError):promote(candidate_path,report_path,target)
-        assert not saves and len(target)==0
+        assert not saves and len(target)==1
         assert json.loads(candidate_path.read_text(encoding='utf-8'))['state']=='candidate'
     else:
         promoted=promote(candidate_path,report_path,target)
-        assert promoted.name=='candidate' and saves==[True] and len(target)==1
+        assert promoted.name=='candidate' and saves==[True] and len(target)==2
         assert promoted.metadata['governance_status']=='promoted'

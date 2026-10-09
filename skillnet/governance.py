@@ -30,6 +30,10 @@ def validate_evaluation_plan(plan, pairs, candidate_sha256, frozen) -> None:
     """Require the complete preregistered suite, preventing post-hoc winner selection."""
     if plan.get('protocol') != 'heldout-task-cluster-v1' or plan.get('candidate_sha256') != candidate_sha256:
         raise ValueError('Evaluation plan does not bind this candidate and protocol')
+    baseline = plan.get('baseline_skill') or {}
+    if (not baseline.get('name') or not re.fullmatch(r'[0-9a-f]{64}',baseline.get('sha256',''))
+            or plan.get('arm_order') != 'alternating_before_after'):
+        raise ValueError('Evaluation plan must freeze the baseline version and arm order')
     repeats, tasks = plan.get('repeats'), plan.get('tasks') or {}
     if type(repeats) is not int or repeats < 2 or len(tasks) < 5:
         raise ValueError('Evaluation plan must freeze five tasks and at least two repeats')
@@ -116,6 +120,10 @@ def promote(candidate_path: Path, report_path: Path, library) -> Skill:
     plan = json.loads(plan_path.read_text(encoding='utf-8'))
     if evaluation_digest(plan) != plan_sha:raise ValueError('Evaluation plan content changed')
     validate_evaluation_plan(plan,pairs,candidate['sha256'],frozen)
+    baseline = plan['baseline_skill']
+    current_baseline = library.get(baseline['name'])
+    if current_baseline is None or fingerprint(current_baseline) != baseline['sha256']:
+        raise ValueError('Serving baseline changed; rerun the paired evaluation')
     store = runtime.RunStore(config.OUT_DIR / 'runs')
     seen_runs = set()
     for pair in pairs:
@@ -136,6 +144,11 @@ def promote(candidate_path: Path, report_path: Path, library) -> Skill:
                     or run.started_at_ms < plan.get('created_at_ms', float('inf'))
                     or run.budget.to_dict() != plan.get('budget') or run.model != plan['profile']['model']):
                 raise ValueError('Run does not match the pre-execution evaluation plan')
+            expected_name = skill.name if arm == 'after' else baseline['name']
+            expected_sha = candidate['sha256'] if arm == 'after' else baseline['sha256']
+            if (not run.steps or any(s.skill != expected_name for s in run.steps)
+                    or run.staged.get('evaluated_skill_sha256') != expected_sha):
+                raise ValueError('Evaluated treatment or baseline differs from the frozen plan')
             if run.run_id == candidate.get('origin_run_id'):
                 raise ValueError('Training run cannot be evaluation evidence')
             if arm == 'before' and any(s.skill == skill.name for s in run.steps):
@@ -161,6 +174,9 @@ def promote(candidate_path: Path, report_path: Path, library) -> Skill:
             if abs(measured - pair[arm]) > 1e-9:
                 raise ValueError('Report score disagrees with physical artifact oracle')
         before, after = arms['before'], arms['after']
+        first, second = (before,after) if pair['repeat'] % 2 == 0 else (after,before)
+        if first.started_at_ms > second.started_at_ms:
+            raise ValueError('Paired arm order differs from the frozen plan')
         if before.budget.to_dict() != after.budget.to_dict() or before.model != after.model:
             raise ValueError('Paired runs must use identical budgets and model')
         if before.staged.get('execution_mode') != 'contract' or after.staged.get('execution_mode') != 'contract':
