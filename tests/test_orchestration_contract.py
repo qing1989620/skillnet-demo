@@ -14,7 +14,9 @@ from skillnet.schema import Skill
 
 
 @pytest.fixture
-def library():
+def library(monkeypatch):
+    # Routing invariants must also hold on clean installs without an ONNX model.
+    monkeypatch.setenv("SKILLNET_ENCODER", "lexical")
     return SkillLibrary([
         Skill(name="input-data", description="单细胞输入数据与质量控制", domain="生物", capability="单细胞输入数据"),
         Skill(name="analyze-data", description="单细胞分析模型", domain="生物", capability="单细胞分析",

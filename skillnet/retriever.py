@@ -232,8 +232,8 @@ class Retriever:
         if mode == MODE_FABRIC and rerank:
             if not config.API_KEY:
                 skip_reason = "DEEPSEEK_API_KEY not configured"
-            elif len(cands) <= k:
-                skip_reason = f"candidates({len(cands)}) <= k({k})"
+            elif not cands:
+                skip_reason = "no retrieved candidates"
             else:
                 names = [c.name for c in cands[: min(pool, 16)]]
                 output = self._llm_rerank(query, names)
