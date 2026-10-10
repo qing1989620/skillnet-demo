@@ -83,3 +83,61 @@ def test_bm25_does_not_claim_unexecuted_retrieval_channels(library):
     result = Retriever(library).build().search("单细胞", mode="bm25")
     assert all(candidate.channels == ["bm25"] for candidate in result.candidates)
     assert result.to_dict()["confidence_kind"] == "heuristic_relevance_not_probability"
+
+
+def test_utility_selection_does_not_refill_rejected_skills(library, monkeypatch):
+    monkeypatch.setattr("skillnet.retriever.config.API_KEY", "test")
+    monkeypatch.setattr("skillnet.retriever.chat_json", lambda *a, **k: {
+        "skills": ["input-data", "input-data"],
+        "decisions": [{"name":"input-data", "reason":"只需读取源数据"},
+                      {"name":"write-report", "reason":"本题没有报告交付要求"}],
+    })
+    result = Retriever(library).build().search("读取单细胞输入数据", k=2)
+    assert result.selected == ["input-data"]
+    assert len(result.candidates) > len(result.selected)
+    assert result.selection["method"] == "task_utility"
+    assert result.selection["library_size"] == 3
+    assert not result.selection["abstained"]
+    card = next(c for c in result.to_dict()["candidates"] if c["name"] == "input-data")
+    assert card["capability"] == "单细胞输入数据"
+    assert card["note"] == "只需读取源数据"
+
+
+def test_explicit_utility_abstention_preserves_candidates(library, monkeypatch):
+    monkeypatch.setattr("skillnet.retriever.config.API_KEY", "test")
+    monkeypatch.setattr("skillnet.retriever.chat_json", lambda *a, **k: {"skills":[], "decisions":[]})
+    result = Retriever(library).build().search("读取单细胞输入数据", k=2)
+    assert result.selected == []
+    assert result.candidates
+    assert result.selection["abstained"]
+    assert result.components["llm_rerank"]
+    assert result.decision == "direct"
+
+
+@pytest.mark.parametrize("output", [None, {}, [], {"skills":"input-data"}, {"skills":["unknown"]}, {"skills":[{}]}])
+def test_malformed_utility_call_is_fallback_not_abstention(library, monkeypatch, output):
+    monkeypatch.setattr("skillnet.retriever.config.API_KEY", "test")
+    monkeypatch.setattr("skillnet.retriever.chat_json", lambda *a, **k: output)
+    result = Retriever(library).build().search("读取单细胞输入数据", k=2)
+    assert len(result.selected) == 2
+    assert result.selection["method"] == "score_fallback"
+    assert not result.selection["abstained"]
+    assert result.degraded
+
+
+def test_wiki_reuses_frozen_pool_and_honors_zero_selection(library, monkeypatch):
+    monkeypatch.setattr("skillnet.retriever.chat_json", lambda *a, **k: {"skills":[], "workflow":[], "reason":"不需要"})
+    router = Retriever(library)
+    monkeypatch.setattr(router, "search", lambda *a, **k: pytest.fail("must not perform another retrieval"))
+    result = router.route_with_wiki("当前问题", candidate_names=["input-data","unknown","input-data"], k=2)
+    assert result["candidate_names"] == ["input-data"]
+    assert result["skills"] == []
+    assert result["order"] == []
+    assert not result["degraded"]
+
+
+def test_server_does_not_replace_explicit_empty_selection(library, monkeypatch):
+    import server
+    monkeypatch.setitem(server.STATE, "orchestrator", Orchestrator(library))
+    assert server._resolve_orchestration({"skills":[]}, ["input-data"])["skills"] == []
+    assert server._resolve_orchestration({}, ["input-data"])["skills"] == ["input-data"]

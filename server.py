@@ -504,7 +504,7 @@ def route(req: RouteReq) -> dict[str, Any]:
 
 def _resolve_orchestration(wiki: dict[str, Any], fallback: list[str] | None = None) -> dict[str, Any]:
     """让路由响应、规划上下文与执行 DAG 使用同一组经过验证的依赖边。"""
-    names = wiki.get("skills") or fallback or []
+    names = wiki["skills"] if isinstance(wiki.get("skills"), list) else fallback or []
     return STATE["orchestrator"].merge_workflow(names, wiki.get("workflow"))
 
 
@@ -1424,7 +1424,8 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                         confidence=res.get("confidence"), raw_bm25_top=res.get("raw_bm25_top"),
                         modes={m: {key: run.retrieval[m].get(key) for key in
                                    ("selected", "components", "decision", "decision_reason",
-                                    "degraded", "degraded_reason", "confidence_kind")}
+                                    "degraded", "degraded_reason", "confidence_kind", "selection",
+                                    "candidates", "encoder", "weights")}
                                for m in MODES},
                         duration_ms=run.staged["retrieval_ms"])
             pipeline.sync_usage(run, led)
@@ -1447,7 +1448,8 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
             # 3) 编排
             t0 = time.time()
             run.status = "ORCHESTRATING"
-            wiki = r.route_with_wiki(run.task, k=req.k)
+            wiki = r.route_with_wiki(run.task, k=req.k,
+                                     candidate_names=[c['name'] for c in res.get('candidates', [])])
             orch = _resolve_orchestration(wiki, fabric_selected)
             run.skills = orch["skills"]
             run.staged["orchestration"] = {
@@ -1455,6 +1457,7 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                 "source": wiki.get("source", orch.get("source", "")),
                 "degraded": bool(wiki.get("degraded") or orch.get("degraded")),
                 "reason": wiki.get('reason',''), "decisions": wiki.get('decisions',[]),
+                "candidate_names": wiki.get('candidate_names', []),
             }
             run.staged["orchestration_ms"] = int((time.time() - t0) * 1000)
             BUS.publish(run, "orchestration.completed",

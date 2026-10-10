@@ -141,6 +141,26 @@ def test_capsule_never_reads_file_outside_registered_workspace(tmp_path):
     assert not data['handoff_ready']
 
 
+def test_capsule_preserves_selection_reasons_and_distinguishes_generic_execution(tmp_path):
+    run = make_run(tmp_path)
+    run.skills = ['metrics','report']
+    run.retrieval = {'fabric':{'selected':['metrics'], 'selection':{'method':'task_utility','library_size':1881},
+        'candidates':[{'name':'metrics','note':'计算指标','source':'seed','private_identity':'never export'}]}}
+    run.staged['orchestration'] = {'candidate_names':['metrics','report'],
+        'decisions':[{'name':'metrics','reason':'固定阈值重算','selected':True}]}
+    run.steps[0].skill = 'manual'
+    before = copy.deepcopy(run.to_dict())
+    result = evidence.capsule(run,tmp_path)['routing']
+    assert result['recommended'] == ['metrics']
+    assert result['adopted'] == ['metrics','report']
+    assert result['generic_steps'] == [0]
+    assert 'manual' not in result['entered_execution']
+    assert result['decisions'][0]['reason'] == '固定阈值重算'
+    assert 'private_identity' not in json.dumps(result)
+    assert result['reason_kind'] == 'model_advisory_not_contribution_proof'
+    assert run.to_dict() == before
+
+
 def test_capsule_partial_and_historical_records_do_not_gain_a_quality_claim(tmp_path):
     run = make_run(tmp_path)
     run.status = 'PARTIAL'

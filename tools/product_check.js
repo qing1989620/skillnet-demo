@@ -103,6 +103,25 @@ for(const record of researchManifest){
   assert.equal(require('node:crypto').createHash('sha256').update(raw).digest('hex'),record.sha256);
 }
 const researchRun=JSON.parse(fs.readFileSync(path.join(__dirname,'../out/runs/f11ad204-20261010-100815-58a8.json'),'utf8'));
+const routing=Product.selectionHTML({run_id:'a',skills:['csv','plot'],steps:[{idx:0,skill:'csv',status:'failed',action:'实际读取'}],
+  retrieval:{fabric:{selected:['csv','unused'],selection:{library_size:1881,rule:'至多 k 项'},candidates:[
+    {name:'csv',capability:'安全 CSV',note:'<script>理由</script>',channels:['bm25']},{name:'unused',note:'候选'},
+    ...Array.from({length:12},(_,i)=>({name:'other'+i,note:'无需报告'}))]}},
+  staged:{orchestration:{decisions:[{name:'csv',reason:'读取原表，不生成替代数据'}]}}});
+assert.match(routing,/1881/);
+assert.match(routing,/14<\/b> 检索候选/);
+assert.match(routing,/读取原表，不生成替代数据/);
+assert.match(routing,/编排采用 · 本轮未执行/);
+assert.match(routing,/检索推荐 · 编排未采用/);
+assert.match(routing,/Step 1 · 实际读取 · 失败/);
+assert.match(routing,/other11/,'all rejected candidates remain inspectable');
+assert.doesNotMatch(routing,/<script>/);
+assert.match(Product.selectionHTML({retrieval:{fabric:{selection:{method:'task_utility'},selected:[]}}}),/没有推荐适用技能/);
+const genericRoute=Product.selectionHTML({skills:['csv'],steps:[{idx:0,skill:'manual'}]});
+assert.match(genericRoute,/1 个步骤采用通用执行/);
+assert.match(genericRoute,/0<\/b> 进入执行/);
+assert.doesNotMatch(genericRoute,/<h4>manual/);
+assert.match(Product.selectionHTML(researchRun),/不能事后补写|历史记录/);
 const value=Product.valueHTML(researchRun);
 assert.match(value,/5 个真实文件/);
 assert.match(value,/20\/20 项独立参考检查/);
@@ -115,4 +134,13 @@ assert.match(Product.resourcesButtonHTML({name:'example',source:'github'}),/data
 assert.equal(Product.resourcesButtonHTML({name:'seed',source:'seed'}),'');
 assert.doesNotMatch(Product.resourcesHTML({name:'<script>',repository:'<img>',files:[{path:'<iframe>',sha256:'" onmouseover="evil'}]}),/<script>|<img>|<iframe>| onmouseover="evil/);
 assert.match(Product.resourcesHTML({files:[]}),/脚本作为参考文件读取，不自动运行/);
+const selectionManifest=JSON.parse(fs.readFileSync(path.join(__dirname,'../docs/evidence/skill-selection-files.json'),'utf8'));
+for(const record of selectionManifest){
+  const raw=fs.readFileSync(path.join(__dirname,'..',record.path));
+  assert.equal(require('node:crypto').createHash('sha256').update(raw).digest('hex'),record.sha256);
+}
+const selectedRun=JSON.parse(fs.readFileSync(path.join(__dirname,'../out/runs/f11ad204-20261010-110841-6d42.json'),'utf8'));
+assert.match(Product.selectionHTML(selectedRun),/descriptive-stats-csv-summary/);
+assert.match(Product.selectionHTML(selectedRun),/编排采用 · 本轮未执行/);
+assert.match(Product.selectionHTML(selectedRun),/1 个步骤采用通用执行/);
 console.log('Product: true dependencies, noncontiguous steps, learning gate, partial verification, repairs, safe text and all six page scripts passed.');

@@ -17,6 +17,27 @@ def digest(value):
         separators=(',', ':'), allow_nan=False).encode()).hexdigest()
 
 
+def routing(data):
+    """Only recorded selection evidence; never reconstruct reasons from today's library."""
+    modes = data.get('retrieval') or {}
+    result = modes.get('fabric', modes)
+    orch = (data.get('staged') or {}).get('orchestration') or {}
+    selection = result.get('selection') or {}
+    candidates = result.get('candidates') or []
+    return dict(source='recorded_at_execution', reason_kind='model_advisory_not_contribution_proof',
+        library_size=selection.get('library_size'), method=selection.get('method'),
+        recommended=result.get('selected', []), adopted=data.get('skills', []),
+        entered_execution=sorted({s['skill'] for s in data.get('steps', []) if s.get('skill') and s['skill'] != 'manual'}),
+        generic_steps=[s['idx'] for s in data.get('steps', []) if not s.get('skill') or s['skill']=='manual'],
+        candidates=[{key:c.get(key) for key in ('name','channels','score','rank','capability','outputs','source','note')}
+                    for c in candidates],
+        orchestration_candidate_names=orch.get('candidate_names', []),
+        decisions=[{key:d.get(key) for key in ('name','selected','reason')} for d in orch.get('decisions', [])],
+        reason=orch.get('reason'), degraded=result.get('degraded'), degraded_reason=result.get('degraded_reason'),
+        encoder=result.get('encoder'), weights=result.get('weights'),
+        boundary='推荐、编排采用和进入执行分别记录；缺失的历史理由保留未知，不证明已找到全库最优组合')
+
+
 def capsule(run, workspace: Path):
     """Project an authorized Run; verify exact registered files at request time."""
     data = run.to_dict(with_events=False)
@@ -73,7 +94,7 @@ def capsule(run, workspace: Path):
             output_files=sum(f['role'] == 'output' for f in files), cost_yuan=run.cost_yuan,
             model=run.model, llm_calls=run.llm_calls, duration_ms=run.duration_ms,
             omitted_steps=(staged.get('execution_scope') or {}).get('omitted', [])),
-        files=files, chain=chain,
+        files=files, chain=chain, routing=routing(data),
         acceptance=dict(source='recorded_at_execution', protocol=assessment.get('version'),
             verdict=assessment.get('scope_verdict', 'unknown'), scope=assessment.get('scope'),
             contract=assessment.get('goal_contract'), evidence_sha256=assessment.get('evidence_sha256'),
@@ -83,7 +104,7 @@ def capsule(run, workspace: Path):
             improvement_proven=False, reward_applied=gates.get('reward_applied') is True,
             policy_sha256=gates.get('policy_sha256'), ranking_weights_deployed=False),
         host_product=dict(target='立理 S1', production_connection_verified=False,
-            mapping=dict(task='project conversation', chain='execution timeline', files='project attachments',
+            mapping=dict(task='project conversation', routing='capability selection evidence', chain='execution timeline', files='project attachments',
                 acceptance='result evidence', reuse='candidate capability asset'),
             next_action='S1 backend verifies capsule digest, downloads files with expected SHA-256, and applies its project permissions'),
         limitations=['文件指纹证明文件一致性，不证明研究结论正确',

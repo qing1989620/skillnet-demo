@@ -1,0 +1,3233 @@
+{
+  "kind": "real-api-task-utility-selection",
+  "run_id": "f11ad204-20261010-110841-6d42",
+  "probes": [
+    {
+      "name": "focused-csv",
+      "query": "对 CSV 去重并统计缺失值，只交付清洗后的表格与缺失统计，不训练模型、不写报告。",
+      "result": {
+        "query": "对 CSV 去重并统计缺失值，只交付清洗后的表格与缺失统计，不训练模型、不写报告。",
+        "mode": "fabric",
+        "selected": [
+          "data-cleaning",
+          "descriptive-stats-csv-and-plot"
+        ],
+        "candidates": [
+          {
+            "name": "data-cleaning",
+            "channels": [
+              "bm25",
+              "vector",
+              "structural"
+            ],
+            "score": 0.75763,
+            "rank": 1,
+            "rerank_score": 1.0,
+            "note": "直接匹配任务核心：将原始 CSV 转为可分析数据集，记录清洗决策，可覆盖去重与缺失值处理，并交付干净数据集与审计日志。",
+            "capability": "把原始数据转为可分析数据集，并记录每一步清洗决策",
+            "use_when": [
+              "拿到未经处理的原始数据",
+              "合并多个来源的数据表",
+              "发现数据质量异常"
+            ],
+            "outputs": [
+              "干净数据集",
+              "清洗审计日志",
+              "数据字典"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "descriptive-stats-csv-and-plot",
+            "channels": [
+              "bm25",
+              "vector"
+            ],
+            "score": 0.86452,
+            "rank": 2,
+            "rerank_score": 0.5,
+            "note": "可产出描述统计 CSV 与同源图表，适合交付缺失统计表；但需裁剪掉非必要的图表/说明文本部分，仅保留统计表能力。",
+            "capability": "产出一份可精确回读校验的描述统计 CSV、一张与表格同源的均值对比图，以及一段仅含描述性数值的说明文本。",
+            "use_when": [
+              "任务要求只做描述统计、明确禁止推断统计",
+              "需要同时交付表格与图表且两者数值必须一致",
+              "要求逐条核对数值与表头、可复现的校验流程"
+            ],
+            "outputs": [
+              "summary.csv（固定表头，每组一行）",
+              "figure.png（均值条形图 + 误差条 + n 标注）",
+              "单文件 Python 脚本（无网络与外部文件依赖）",
+              "终端说明文本（含免责声明关键词）"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "missing-data-baseline-modeling",
+            "channels": [
+              "bm25",
+              "vector"
+            ],
+            "score": 0.92837,
+            "rank": 3,
+            "rerank_score": null,
+            "note": "任务明确不训练模型、不写报告，该技能核心交付物包含基线模型与可解释性报告，超出交付范围。",
+            "capability": "产出一套带审计轨迹的干净数据集、可复现的基线模型性能表（含子群指标与波动范围）以及误差归因与可解释性报告。",
+            "use_when": [
+              "拿到一份含缺失值的表格数据需要快速建立可信基线",
+              "需要判断缺失机制并避免填补引入偏差",
+              "需要定位模型高误差子群并做归因"
+            ],
+            "outputs": [
+              "干净数据集与数据字典",
+              "清洗审计日志",
+              "EDA 报告与分布/相关性图组",
+              "验证协议说明与评估脚本"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "eda-profiling",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.84147,
+            "rank": 4,
+            "rerank_score": null,
+            "note": "EDA 报告与分布/相关性图组不是本任务要求的交付物，任务只需去重、缺失统计和清洗后表格。",
+            "capability": "系统性刻画数据集的分布、关系与质量风险",
+            "use_when": [
+              "需要理解数据结构",
+              "为建模做特征初筛",
+              "分析前评估数据是否支持研究问题"
+            ],
+            "outputs": [
+              "EDA 报告",
+              "分布与相关性图组",
+              "候选特征清单"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "tabular-ml-baseline",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.84147,
+            "rank": 5,
+            "rerank_score": null,
+            "note": "任务明确不训练模型，该技能直接不适用。",
+            "capability": "在表格数据上产出可信的预测基线并给出误差归因",
+            "use_when": [
+              "需要预测某个连续或类别目标",
+              "为复杂模型提供对照基线",
+              "评估特征的信息量"
+            ],
+            "outputs": [
+              "基线模型与性能表",
+              "特征重要性",
+              "误差分析报告"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "scientific-visualization",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.80711,
+            "rank": 6,
+            "rerank_score": null,
+            "note": "任务不要求出版级矢量图或统计标注图，仅需表格与缺失统计。",
+            "capability": "生成可直接用于发表的矢量图表，含统计标注与可复现脚本",
+            "use_when": [
+              "论文或报告需要图表",
+              "需要重绘不符合规范的图",
+              "需要统一的配色体系"
+            ],
+            "outputs": [
+              "矢量图（PDF/SVG）",
+              "绘图脚本",
+              "图注文本"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "cross-validation-protocol",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.79317,
+            "rank": 7,
+            "rerank_score": null,
+            "note": "不涉及模型验证、泛化性能或超参搜索，任务明确不训练模型。",
+            "capability": "为给定数据结构设计无偏的验证与外部验证协议",
+            "use_when": [
+              "需要报告泛化性能",
+              "数据存在分组或时间结构",
+              "需要做超参搜索"
+            ],
+            "outputs": [
+              "验证协议说明",
+              "评估脚本",
+              "性能不确定性估计"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "model-interpretability",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.79317,
+            "rank": 8,
+            "rerank_score": null,
+            "note": "没有训练好的模型需要解释，任务也不要求归因分析。",
+            "capability": "产出可辩护的模型归因分析并识别其局限",
+            "use_when": [
+              "需要解释模型为什么这样预测",
+              "论文要求机理解释",
+              "向业务方交付可解释结论"
+            ],
+            "outputs": [
+              "全局重要性排序",
+              "局部归因图",
+              "部分依赖曲线"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "competition-data-science-pipeline",
+            "channels": [
+              "bm25",
+              "vector"
+            ],
+            "score": 0.62984,
+            "rank": 9,
+            "rerank_score": null,
+            "note": "该技能面向竞赛/评估型建模交付，包含基线模型、统计检验和报告，远超本任务范围。",
+            "capability": "产出一套指标对齐、可复现、含审计轨迹与统计支撑的建模交付物（清洗数据、基线模型、统计结果、矢量图与结论报告）。",
+            "use_when": [
+              "拿到竞赛/评估型建模任务，需要快速建立可信基线并交付报告",
+              "需要保证离线指标与官方评分口径一致",
+              "需要可复现、可审计、防泄漏的建模流程"
+            ],
+            "outputs": [
+              "清洗后数据集与清洗审计日志、数据字典",
+              "EDA 报告与候选特征清单、风险项",
+              "基线模型文件与模型对比表、特征重要性、误差分析",
+              "统计检验结果表与方法段落"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "leakage-guard",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.62844,
+            "rank": 10,
+            "rerank_score": null,
+            "note": "不涉及模型评估或数据泄漏审计，任务不训练模型。",
+            "capability": "识别并消除会导致乐观偏差的数据泄漏路径",
+            "use_when": [
+              "模型指标高得不合理",
+              "需要保证评估可信",
+              "投稿前的方法学自检"
+            ],
+            "outputs": [
+              "泄漏审计报告",
+              "修正后的管线",
+              "修正后性能对比"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "business-metrics-audit",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.62844,
+            "rank": 11,
+            "rerank_score": null,
+            "note": "面向订单经营报告，交付物包含 report.md 和月度汇总，与本任务去重和缺失统计无关。",
+            "capability": "从订单明细生成可复核的月度经营报告，显式区分模拟数据、业务事实与推测。",
+            "use_when": [
+              "管理层需要经营表现、风险与下一步行动",
+              "验证数据清洗和跨步骤产物传递"
+            ],
+            "outputs": [
+              "clean.csv",
+              "monthly_summary.csv",
+              "figure.svg",
+              "report.md"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "exam-review-topic-matrix",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.62844,
+            "rank": 12,
+            "rerank_score": null,
+            "note": "属于考试备考规划技能，与 CSV 清洗和缺失统计任务无关。",
+            "capability": "产出一张可追溯的考点矩阵、带闭环判据的周计划、可分析的错题台账与套卷成绩曲线，并用可量化判据证明每步复习有效。",
+            "use_when": [
+              "备考周期开始、需要规划全局复习路线时",
+              "刷题很多但正确率停滞、需要定位薄弱章节时",
+              "冲刺期需要限时套卷收敛并做错因归因时"
+            ],
+            "outputs": [
+              "考点矩阵表（章节×知识点×考频×分值×掌握度）",
+              "带日期与闭环判据的周计划表",
+              "错题台账（含错因与用时）",
+              "套卷成绩曲线与错题归因记录"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "exam-prep-topic-matrix",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.62844,
+            "rank": 13,
+            "rerank_score": null,
+            "note": "属于考试备考规划技能，与 CSV 清洗和缺失统计任务无关。",
+            "capability": "产出一份可执行、可验证、带闭环判据的备考计划与配套数据台账，并能按数据驱动收敛到目标正确率。",
+            "use_when": [
+              "准备有明确考纲和历年真题的笔试科目",
+              "复习覆盖偏差大、不知道先复习哪章",
+              "刷题很多但正确率不涨、错因说不清"
+            ],
+            "outputs": [
+              "考点矩阵表（章节×知识点×题型×出现年份×分值×掌握度）",
+              "带日期与闭环判据的周计划表",
+              "错题台账（含4类错因与用时）+清洗审计日志+数据字典",
+              "各章错误率与平均用时统计表（样本量≥100时附基线模型验证结果）"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "broad-topic-to-evidence-pipeline",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.62844,
+            "rank": 14,
+            "rerank_score": null,
+            "note": "面向文献检索、证据综合和建模流水线，交付物远超本任务，且包含模型与 EDA 报告。",
+            "capability": "输入一个宽泛主题与可用数据库/数据源，产出可复现的检索式、PRISMA 台账、结构化证据表、清洗数据集与审计日志、EDA 报告、基线模型性能表及出版级矢量图。",
+            "use_when": [
+              "研究主题过宽、无法直接检索或建模时",
+              "需要从文献证据建立定量基线并保证可追溯时",
+              "需要向他人交付可复现证据链（综述+数据+模型+图）时"
+            ],
+            "outputs": [
+              "可复现检索式与各库命中数台账",
+              "PRISMA 筛选流程图与结构化证据抽取表",
+              "BibTeX 文献库",
+              "清洗后数据集、清洗审计日志、数据字典"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "exam-prep-quantified-closed-loop",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.62844,
+            "rank": 15,
+            "rerank_score": null,
+            "note": "属于考试备考闭环体系，与数据清洗和缺失统计任务无关。",
+            "capability": "产出一套可追溯、可量化、可闭环的备考体系：考点矩阵表、带闭环判据的周计划、错题台账与归因统计、套卷成绩曲线、重学验证记录。",
+            "use_when": [
+              "准备标准化考试且已有历年真题可获取",
+              "需要量化排优先级而非凭感觉复习",
+              "错题反复出现但归因不清"
+            ],
+            "outputs": [
+              "考点矩阵表（章节×知识点×题型×出现年份×分值×掌握度）",
+              "带日期与闭环判据的周计划表",
+              "错题台账+清洗审计日志+数据字典",
+              "各章错误率与平均用时统计表（样本量≥100时附基线模型验证结果）"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "dose-response-ic50-robust-estimation",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.62844,
+            "rank": 16,
+            "rerank_score": null,
+            "note": "面向剂量-响应 IC50 估计，领域和交付物均不匹配本任务。",
+            "capability": "产出一份带审计日志的干净数据表、IC50 点估计与 95% CI、模型参数表、稳健性审计报告及出版级剂量-响应矢量图。",
+            "use_when": [
+              "拿到一批不同剂量下的存活率/抑制率数据需要估计 IC50",
+              "需要给出 IC50 的置信区间而非仅点估计",
+              "需要判断数据是否覆盖平台期、Top/Bottom 是否可识别"
+            ],
+            "outputs": [
+              "带审计日志的干净数据表与数据字典",
+              "EDA 报告与剂量-响应散点图",
+              "IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²、残差标准误）",
+              "bootstrap 不确定性与蒙特卡洛稳健性审计报告"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "dose-response-ic50-pipeline",
+            "channels": [
+              "bm25"
+            ],
+            "score": 0.62844,
+            "rank": 17,
+            "rerank_score": null,
+            "note": "",
+            "capability": "产出一份含 IC50 点估计与 95% CI、HillSlope、Top/Bottom、模型诊断、稳健性审计与矢量图的完整剂量-响应分析报告。",
+            "use_when": [
+              "拿到多剂量下的细胞存活率或抑制率数据需要估计 IC50",
+              "需要判断数据是否覆盖平台期、Top/Bottom 是否可识别",
+              "需要对 IC50 估计做不确定性量化与稳健性核验"
+            ],
+            "outputs": [
+              "带审计日志的干净数据集与数据字典",
+              "EDA 报告与剂量-响应散点图",
+              "IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²、残差标准误）",
+              "bootstrap 不确定性与稳健性审计报告"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "dose-response-cleaning-ic50-pipeline",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.62844,
+            "rank": 18,
+            "rerank_score": null,
+            "note": "",
+            "capability": "从原始剂量-响应表产出带审计日志的干净数据、IC50 点估计与置信区间、稳健性审计报告及出版级矢量图。",
+            "use_when": [
+              "拿到一批剂量-存活率/抑制率原始数据需要清洗并估计 IC50",
+              "需要给出可复现、带审计轨迹的分析产物",
+              "需要评估 IC50 估计量在有限样本与假设违反下的稳健性"
+            ],
+            "outputs": [
+              "干净数据表（含 log10_dose）与数据字典",
+              "清洗审计日志",
+              "EDA 报告与剂量-响应散点图",
+              "IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²、残差标准误）"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "dose-response-curve-cleaning-and-ic50-fitting",
+            "channels": [
+              "bm25"
+            ],
+            "score": 0.62844,
+            "rank": 19,
+            "rerank_score": null,
+            "note": "",
+            "capability": "从原始剂量-响应表产出带审计日志的干净数据集、IC50 点估计与置信区间、稳健性审计报告及出版级矢量图。",
+            "use_when": [
+              "拿到一批剂量-存活率/抑制率实验数据需要清洗并估计 IC50",
+              "需要判断曲线是否覆盖平台期以决定用 4PL 还是 3PL",
+              "需要对 IC50 估计量做有限样本与假设违反下的稳健性验证"
+            ],
+            "outputs": [
+              "带审计日志的干净数据集与数据字典",
+              "EDA 报告与剂量-响应散点图",
+              "IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²、残差标准误）",
+              "bootstrap 不确定性与蒙特卡洛稳健性审计报告"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "dose-response-curve-analysis",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.62844,
+            "rank": 20,
+            "rerank_score": null,
+            "note": "",
+            "capability": "从原始剂量-存活率数据出发，产出带审计日志的干净数据集、IC50 点估计与置信区间、模型选择依据、稳健性审计报告及出版级剂量-反应曲线图。",
+            "use_when": [
+              "拿到一批剂量-效应实验数据需要估计 IC50/EC50 时",
+              "需要判断 4PL 还是 3PL、Top/Bottom 是否可自由估计时",
+              "需要为剂量-反应结论提供不确定性与稳健性证据时"
+            ],
+            "outputs": [
+              "带审计日志的干净数据表与数据字典",
+              "EDA 报告与剂量-反应散点图",
+              "IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²、残差标准误）",
+              "bootstrap 不确定性与蒙特卡洛稳健性审计报告"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "exam-prep-closed-loop-matrix",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.57131,
+            "rank": 21,
+            "rerank_score": null,
+            "note": "",
+            "capability": "产出一套可量化验收的备考闭环方案：考点矩阵表、带闭环判据的周计划、错题台账与数据字典、错误率统计与归因结果、套卷成绩曲线、重学验证记录。",
+            "use_when": [
+              "面对有明确考纲和历年真题的标准化考试需要系统备考时",
+              "复习范围大、章节多、需要按分值密度分配时间时",
+              "刷题量大但错误归因不清、成绩波动无法收敛时"
+            ],
+            "outputs": [
+              "考点矩阵表（章节×知识点×题型×出现年份×分值×掌握度）",
+              "带日期与闭环判据的周计划表",
+              "错题台账（含固定错因与用时）+清洗审计日志+数据字典",
+              "各章错误率与平均用时统计表（样本量≥100时附基线模型验证结果）"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "demo-descriptive-stats-report",
+            "channels": [
+              "bm25",
+              "vector"
+            ],
+            "score": 0.48548,
+            "rank": 22,
+            "rerank_score": null,
+            "note": "",
+            "capability": "从内存中的分组数值产出一份可解析的统计对照CSV、一张带样本量标注与误差条的条形图，以及一段仅含可核验数值的描述文本。",
+            "use_when": [
+              "需要用演示数据快速生成分组描述性统计对照表",
+              "需要同时交付CSV与可视化图并保证二者数值同源",
+              "需要避免推断性结论、仅做可核验的数值陈述"
+            ],
+            "outputs": [
+              "summary.csv（列：group,n,mean,std_sample）",
+              "barplot.png（含误差条与n标注的条形图）",
+              "单文件Python脚本",
+              "终端结果说明文本（含免责声明）"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "competition-reproducible-ml-pipeline",
+            "channels": [
+              "bm25",
+              "vector"
+            ],
+            "score": 0.43082,
+            "rank": 23,
+            "rerank_score": null,
+            "note": "",
+            "capability": "产出一套对齐官方指标、防泄漏、含统计验证与出版级图表的可复现建模交付包。",
+            "use_when": [
+              "接到数据科学竞赛或需对齐官方评分口径的建模任务",
+              "需要交付可复现、可审计的建模结果",
+              "需要同时给出模型性能与统计显著性证据"
+            ],
+            "outputs": [
+              "指标对齐检查表",
+              "清洗后数据集与清洗审计日志、数据字典",
+              "EDA报告与候选特征清单、风险项",
+              "基线模型文件与模型对比表、特征重要性、误差分析"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "demo-descriptive-stats-summary",
+            "channels": [
+              "bm25"
+            ],
+            "score": 0.42722,
+            "rank": 24,
+            "rerank_score": null,
+            "note": "",
+            "capability": "产出一份包含每组样本量、均值和样本标准差的 CSV 文件及一段明确声明数据不可用于科学结论的简短说明。",
+            "use_when": [
+              "任务只要求描述性统计（n、均值、样本标准差）",
+              "数据为演示或占位数据，不能用于推断",
+              "禁止访问外部网络或外部文件"
+            ],
+            "outputs": [
+              "summary.csv（列：group,n,mean,std_sample）",
+              "终端打印的结果说明文本（含免责声明）",
+              "单文件 Python 脚本"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "xlsx",
+            "channels": [
+              "bm25"
+            ],
+            "score": 0.38838,
+            "rank": 25,
+            "rerank_score": null,
+            "note": "",
+            "capability": "依据原文 SKILL.md 提供Excel 表格处理能力（member-import 导入，契约字段由原文提炼）",
+            "use_when": [
+              "以电子表格为主要输入或输出的任务——打开/读取/编辑 .xlsx/.csv、写公式、格式化、图表分析等触发"
+            ],
+            "outputs": [
+              "生成的表格文件",
+              "公式重算校验结果"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "descriptive-stats-csv-summary",
+            "channels": [
+              "bm25",
+              "vector"
+            ],
+            "score": 0.35001,
+            "rank": 26,
+            "rerank_score": null,
+            "note": "",
+            "capability": "产出一个含 group,n,mean,std_sample 列的 summary.csv、对应单文件 Python 脚本，以及带免责声明的结果说明文本。",
+            "use_when": [
+              "任务只要求描述统计，明确排除推断统计",
+              "数据量小、可硬编码或本地读取，且禁止联网",
+              "需要固定结构、可被下游程序回读的统计汇总文件"
+            ],
+            "outputs": [
+              "summary.csv（列：group,n,mean,std_sample）",
+              "单文件 Python 脚本（无网络/外部依赖）",
+              "终端结果说明文本（含免责声明）"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "two-group-statistical-testing-with-effect-size",
+            "channels": [
+              "bm25",
+              "vector"
+            ],
+            "score": 0.3123,
+            "rank": 27,
+            "rerank_score": null,
+            "note": "",
+            "capability": "产出一套可复现的组间比较分析包：干净数据集、检验结果表（含效应量与95%CI）、多重比较校正表、矢量图与稳健性复核记录。",
+            "use_when": [
+              "需要比较两组或多组实验数据差异并报告效应量",
+              "需要为论文/报告生成出版级统计图表",
+              "需要控制多重比较假阳性率"
+            ],
+            "outputs": [
+              "干净数据集与数据字典",
+              "清洗审计日志",
+              "统计检验结果表（统计量、自由度、p值、效应量、95%CI）",
+              "多重比较校正表"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "descriptive-stats-acceptance-audit",
+            "channels": [
+              "bm25",
+              "vector"
+            ],
+            "score": 0.30649,
+            "rank": 28,
+            "rerank_score": null,
+            "note": "",
+            "capability": "产出一份验收检查必要性对照表、已支持/未支持结论二分清单、可复现性回放日志与下一步改进清单。",
+            "use_when": [
+              "描述统计交付后需要复核检查项是否冗余或缺失",
+              "需要明确哪些结果不能支撑业务结论",
+              "需要为下一轮分析列出可执行的改进项"
+            ],
+            "outputs": [
+              "验收检查→防御错误→后果对照表",
+              "已支持/未支持结论二分清单",
+              "可复现性回放日志（数值比对、表头断言、图像检查）",
+              "下一步改进清单（补证据项+补设计项，含优先级与前置条件）"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "exam-weakness-analysis-and-review-plan",
+            "channels": [
+              "bm25",
+              "vector"
+            ],
+            "score": 0.20709,
+            "rank": 29,
+            "rerank_score": null,
+            "note": "",
+            "capability": "产出一份含数据字典、清洗审计日志、统计比较结果、薄弱环节清单、带优先级与闭环判据的复习建议表、矢量图表和Word报告的完整分析交付物。",
+            "use_when": [
+              "拿到一批考试成绩原始数据需要定位薄弱环节",
+              "需要按知识点维度生成可执行的复习计划",
+              "需要为教学决策提供统计依据与可视化报告"
+            ],
+            "outputs": [
+              "干净成绩数据集与数据字典",
+              "清洗审计日志",
+              "各科目/知识点正确率与用时统计表",
+              "组间比较检验结果表（含效应量与置信区间）"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "math-modeling-pipeline",
+            "channels": [
+              "bm25",
+              "vector"
+            ],
+            "score": 0.18627,
+            "rank": 30,
+            "rerank_score": null,
+            "note": "",
+            "capability": "给定一个可量化的业务/科研问题，产出符号化模型、最优性条件、数值解与对偶/敏感性分析、独立数值验证与统计检验、出版级矢量图及可复现脚本。",
+            "use_when": [
+              "需要把定性问题转化为可求解的数学模型",
+              "需要给出带最优性保证的数值解与敏感性结论",
+              "结论需要独立数值验证与统计显著性支撑"
+            ],
+            "outputs": [
+              "符号化目标函数与约束表达式及一阶/KKT条件",
+              "优化模型文件、求解状态、目标值、对偶变量与敏感性区间",
+              "蒙特卡洛验证代码、收敛曲线与泄漏审计报告",
+              "统计检验结果表（统计量、p值、效应量、置信区间）"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "gh-agentic-spreadsheet-manual-build-9af67b",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.16115,
+            "rank": 31,
+            "rerank_score": null,
+            "note": "",
+            "capability": "Spreadsheet Manual Build: an empty Excel workbook or CSV from a confirmed field list, formatted and validated. Use for an xlsx template or a manual register.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-scientific-exploratory-data-analysis-a64a41",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.1522,
+            "rank": 32,
+            "rerank_score": null,
+            "note": "",
+            "capability": "Performs bounded, local exploratory analysis of explicitly supported scientific files. Supports redacted CSV/TSV/JSON profiles; optional NumPy, HDF5, FASTA/FASTQ, and basic image metadata inspection; missingness/leakage audits; outlier and transformation sensitivity; and rigorous EDA report scaffolds. Other domain formats are reference-only and unknown formats fail closed.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-agentic-oneroster-csv-validator-8b7579",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.13519,
+            "rank": 33,
+            "rerank_score": null,
+            "note": "",
+            "capability": "Validates 1EdTech / IMS Global OneRoster v1.1 and v1.2 CSV roster sets: manifest integrity, bulk vs delta strictness, foreign key references, and encoding sanitization. Trigger phrases: oneroster csv validator, validate oneroster zip, clever roster error, oneroster sourcedid.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-agentic-weightloss-analyzer-d8ce1d",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.109,
+            "rank": 34,
+            "rerank_score": null,
+            "note": "",
+            "capability": "分析减肥数据、计算代谢率、追踪能量缺口、管理减肥阶段",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "deep-learning-training",
+            "channels": [
+              "bm25",
+              "structural"
+            ],
+            "score": 0.09668,
+            "rank": 35,
+            "rerank_score": null,
+            "note": "",
+            "capability": "把神经网络训练到稳定收敛并诊断常见失败模式",
+            "use_when": [
+              "需要训练神经网络",
+              "训练损失不下降或不稳定",
+              "需要提升现有模型性能"
+            ],
+            "outputs": [
+              "训练脚本与配置",
+              "训练曲线与诊断结论",
+              "最佳权重"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "statistical-testing",
+            "channels": [
+              "bm25"
+            ],
+            "score": 0.08219,
+            "rank": 36,
+            "rerank_score": null,
+            "note": "",
+            "capability": "为研究设计选择正确的检验并给出完整的统计报告",
+            "use_when": [
+              "需要比较组间差异",
+              "论文中报告统计结果",
+              "需要判断结果是否稳健"
+            ],
+            "outputs": [
+              "检验结果表",
+              "效应量与置信区间",
+              "统计方法说明段"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "gh-agentic-aws-iam-best-practices-c69876",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.0817,
+            "rank": 37,
+            "rerank_score": null,
+            "note": "",
+            "capability": "IAM policy review, hardening, and least privilege implementation",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "dose-response-ic50-estimation",
+            "channels": [
+              "bm25"
+            ],
+            "score": 0.06188,
+            "rank": 38,
+            "rerank_score": null,
+            "note": "",
+            "capability": "输入带剂量与响应（含重复）的实验数据，输出 IC50 点估计与 95% 置信区间、HillSlope、Top/Bottom、拟合优度、稳健性审计报告与矢量剂量-响应图。",
+            "use_when": [
+              "需要从多剂量抑制率数据估计 IC50/EC50 时",
+              "需要评估曲线拟合质量与参数不确定性时",
+              "需要判断平台期是否覆盖、Top/Bottom 是否可识别时"
+            ],
+            "outputs": [
+              "带审计日志的干净数据集与数据字典",
+              "EDA 报告与剂量-响应散点图",
+              "IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²、残差标准误）",
+              "bootstrap 不确定性与蒙特卡洛稳健性审计报告"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "gh-agentic-calc-e19457",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.0517,
+            "rank": 39,
+            "rerank_score": null,
+            "note": "",
+            "capability": "Spreadsheet creation, format conversion (ODS/XLSX/CSV), formulas, data automation with LibreOffice Calc.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          }
+        ],
+        "trace": [
+          "BM25 召回 20 条",
+          "dense-onnx 向量召回 20 条",
+          "结构信号召回 2 条",
+          "加权融合后候选池 29 条（BM25 0.35 / 语义 0.55 / 结构 0.10）",
+          "关系图扩展补入 19 条：eda-profiling, cross-validation-protocol, tabular-ml-baseline, model-interpretability, scientific-visualization, leakage-guard",
+          "任务必要性筛选：建议 2 项，最多 5 项；不补入未选候选"
+        ],
+        "confidence": 1.0,
+        "confidence_kind": "heuristic_relevance_not_probability",
+        "raw_bm25_top": 50.6667,
+        "fusion_score": 0.7576,
+        "decision": "auto",
+        "decision_reason": "BM25 原始分 50.67 ≥ 15.0：技能匹配明确，可直接执行",
+        "degraded": false,
+        "components": {
+          "bm25": true,
+          "vector": true,
+          "structural": true,
+          "graph_expansion": true,
+          "llm_rerank": true
+        },
+        "degraded_reason": "",
+        "encoder": {
+          "kind": "dense-onnx",
+          "active": true,
+          "model": "Xenova/multilingual-e5-small",
+          "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+          "dimension": 384,
+          "max_tokens": 256
+        },
+        "weights": [
+          0.35,
+          0.55,
+          0.1
+        ],
+        "selection": {
+          "method": "task_utility",
+          "limit": 5,
+          "selected_count": 2,
+          "candidate_count": 39,
+          "library_size": 1881,
+          "abstained": false,
+          "reason_kind": "model_advisory",
+          "rule": "至多 k 项；按任务必要性筛选，允许少选或不选；模型理由待执行检验"
+        },
+        "cost_yuan": 0.01146,
+        "detail": [
+          {
+            "name": "data-cleaning",
+            "domain": "数据与分析",
+            "capability": "把原始数据转为可分析数据集，并记录每一步清洗决策",
+            "channels": [
+              "bm25",
+              "vector",
+              "structural"
+            ],
+            "score": 0.75763,
+            "rank": 1
+          },
+          {
+            "name": "descriptive-stats-csv-and-plot",
+            "domain": "数据科学与统计分析",
+            "capability": "产出一份可精确回读校验的描述统计 CSV、一张与表格同源的均值对比图，以及一段仅含描述性数值的说明文本。",
+            "channels": [
+              "bm25",
+              "vector"
+            ],
+            "score": 0.86452,
+            "rank": 2
+          },
+          {
+            "name": "missing-data-baseline-modeling",
+            "domain": "数据科学与机器学习",
+            "capability": "产出一套带审计轨迹的干净数据集、可复现的基线模型性能表（含子群指标与波动范围）以及误差归因与可解释性报告。",
+            "channels": [
+              "bm25",
+              "vector"
+            ],
+            "score": 0.92837,
+            "rank": 3
+          },
+          {
+            "name": "eda-profiling",
+            "domain": "数据与分析",
+            "capability": "系统性刻画数据集的分布、关系与质量风险",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.84147,
+            "rank": 4
+          },
+          {
+            "name": "tabular-ml-baseline",
+            "domain": "机器学习与人工智能",
+            "capability": "在表格数据上产出可信的预测基线并给出误差归因",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.84147,
+            "rank": 5
+          },
+          {
+            "name": "scientific-visualization",
+            "domain": "学术写作与可视化",
+            "capability": "生成可直接用于发表的矢量图表，含统计标注与可复现脚本",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.80711,
+            "rank": 6
+          },
+          {
+            "name": "cross-validation-protocol",
+            "domain": "机器学习与人工智能",
+            "capability": "为给定数据结构设计无偏的验证与外部验证协议",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.79317,
+            "rank": 7
+          },
+          {
+            "name": "model-interpretability",
+            "domain": "机器学习与人工智能",
+            "capability": "产出可辩护的模型归因分析并识别其局限",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.79317,
+            "rank": 8
+          }
+        ]
+      }
+    },
+    {
+      "name": "community-rdkit",
+      "query": "Use RDKit to compute molecular weight and logP for a list of SMILES. Only deliver a CSV of descriptors; no docking, training or literature review.",
+      "result": {
+        "query": "Use RDKit to compute molecular weight and logP for a list of SMILES. Only deliver a CSV of descriptors; no docking, training or literature review.",
+        "mode": "fabric",
+        "selected": [
+          "gh-scientific-rdkit-526244"
+        ],
+        "candidates": [
+          {
+            "name": "gh-scientific-rdkit-526244",
+            "channels": [
+              "bm25",
+              "vector"
+            ],
+            "score": 0.92588,
+            "rank": 1,
+            "rerank_score": 1.0,
+            "note": "任务明确要求使用 RDKit 计算 MW 和 logP，该技能直接提供 RDKit 的 SMILES 解析与描述符计算能力，是完成本任务的核心且唯一必需技能。",
+            "capability": "Cheminformatics toolkit for fine-grained molecular control. SMILES/SDF parsing, descriptors (MW, LogP, TPSA), fingerprints, substructure search, 2D/3D generation, similarity, reactions. For standard workflows with simpler interface, use datamol (wrapper around RDKit). Use rdkit for advanced control, custom sanitization, specialized algorithms.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-scientific-datamol-8b910c",
+            "channels": [
+              "bm25",
+              "vector"
+            ],
+            "score": 0.80699,
+            "rank": 2,
+            "rerank_score": null,
+            "note": "datamol 是 RDKit 的简化封装，虽可计算描述符，但任务明确指定 RDKit，且该技能不提供超出 RDKit 的额外必要能力，属于可替代而非必需。",
+            "capability": "Pythonic wrapper around RDKit with simplified interface and sensible defaults. Preferred for standard drug discovery including SMILES parsing, standardization, descriptors, fingerprints, clustering, 3D conformers, parallel processing. Returns native rdkit.Chem.Mol objects. For advanced control or custom parameters, use rdkit directly.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-scientific-diffdock-9d2950",
+            "channels": [
+              "bm25",
+              "vector"
+            ],
+            "score": 0.37672,
+            "rank": 3,
+            "rerank_score": null,
+            "note": "任务明确排除 docking，该技能用于分子对接与虚拟筛选，与交付 CSV 描述符无关。",
+            "capability": "Predicts protein-small-molecule binding poses with DiffDock and DiffDock-L from PDB or sequence plus SMILES/SDF/MOL2. Covers batch docking, pose triage, confidence interpretation, and validation. Use for molecular docking and virtual-screening pose generation, not binding-affinity prediction.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-scientific-deepchem-affeb7",
+            "channels": [
+              "bm25",
+              "vector"
+            ],
+            "score": 0.32486,
+            "rank": 4,
+            "rerank_score": null,
+            "note": "任务不涉及分子性质预测建模或机器学习工作流，仅需描述符计算，该技能超出范围。",
+            "capability": "Builds molecular property prediction and MoleculeNet workflows with DeepChem, including SMILES featurization, scaffold or grouped holdouts, masked labels, graph models and explicit pretrained encoder transfer. Used for ADMET, toxicity, solubility and chemistry ML when DeepChem data/model contracts and scientific validation are needed.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "molecular-descriptors",
+            "channels": [
+              "bm25",
+              "vector",
+              "structural"
+            ],
+            "score": 0.27803,
+            "rank": 5,
+            "rerank_score": null,
+            "note": "该技能产出特征矩阵与骨架划分，面向建模与相似性检索，任务仅需 MW 和 logP 的 CSV，不需要骨架划分或特征矩阵。",
+            "capability": "产出可复现的分子特征矩阵与骨架划分方案",
+            "use_when": [
+              "构建分子性质预测模型",
+              "做相似性检索与聚类",
+              "需要严格的骨架外推评估"
+            ],
+            "outputs": [
+              "分子特征矩阵",
+              "骨架划分结果",
+              "相似性矩阵"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "tabular-ml-baseline",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.24467,
+            "rank": 6,
+            "rerank_score": null,
+            "note": "任务不涉及预测建模或基线评估，仅需描述符导出，该技能不适用。",
+            "capability": "在表格数据上产出可信的预测基线并给出误差归因",
+            "use_when": [
+              "需要预测某个连续或类别目标",
+              "为复杂模型提供对照基线",
+              "评估特征的信息量"
+            ],
+            "outputs": [
+              "基线模型与性能表",
+              "特征重要性",
+              "误差分析报告"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "sequence-to-lead-structure-based-screening",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.24467,
+            "rank": 7,
+            "rerank_score": null,
+            "note": "该技能涵盖结构预测、对接、ADMET 与 MD，任务明确排除 docking 和筛选，远超所需范围。",
+            "capability": "产出从靶点序列到候选小分子清单的完整证据链，包括结构置信度评估、对接排序、ADMET风险与MD稳定性验证。",
+            "use_when": [
+              "仅有靶点序列而无实验结构",
+              "需要快速筛选小分子候选并评估成药性",
+              "需要从结构到候选的完整证据链支持决策"
+            ],
+            "outputs": [
+              "靶点PDB结构文件与pLDDT/PAE置信度报告",
+              "对接构象、结合能排序表与相互作用残基清单",
+              "重对接验证报告",
+              "分子特征矩阵与骨架划分结果"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "admet-prediction",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.22243,
+            "rank": 8,
+            "rerank_score": null,
+            "note": "任务仅需 MW 和 logP 两个描述符，不要求多终点 ADMET 预测或适用域评估。",
+            "capability": "产出多终点 ADMET 预测与适用域评估",
+            "use_when": [
+              "需要评估成药性",
+              "早期淘汰高风险化合物",
+              "优化先导化合物的药代性质"
+            ],
+            "outputs": [
+              "ADMET 预测表",
+              "适用域与置信标注",
+              "风险化合物清单"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "gh-scientific-molfeat-bb3faf",
+            "channels": [
+              "bm25"
+            ],
+            "score": 0.15141,
+            "rank": 9,
+            "rerank_score": null,
+            "note": "该技能用于 QSAR/QSPR 特征化与分子 ML，任务只需 RDKit 描述符，不需要指纹或嵌入特征。",
+            "capability": "Featurizes small molecules with Molfeat for QSAR/QSPR, chemical similarity, virtual screening, and molecular ML. Covers ECFP/MACCS fingerprints, RDKit descriptors, pharmacophores, pretrained embeddings, configuration persistence, and molecule-to-label alignment.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-scientific-pytdc-faedc7",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.1413,
+            "rank": 10,
+            "rerank_score": null,
+            "note": "该技能面向 TDC 治疗 ML 数据集与基准，与描述符计算任务无关。",
+            "capability": "Provides Therapeutics Data Commons workflows through PyTDC for registry discovery, dataset access, task-aware splits, evaluator metrics, benchmark groups, and bounded molecular-oracle scoring. Use when working with TDC therapeutic ML datasets or benchmarks.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-claude-research-cb94d4",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.13355,
+            "rank": 11,
+            "rerank_score": null,
+            "note": "任务明确排除文献综述，且不需要多源研究综合，该路由技能不适用。",
+            "capability": "Default entry point for any research request — a hybrid router that classifies the question deterministically and either delegates to a specialist research skill (pulse for trends/sentiment, grants for NIH funding, litreview for academic literature, syllabus for course reading, patent for prior-art + IP landscape, dossier for entity research, deepread for evidence-first reading of supplied documents) or runs its own plan-decompose-multi-source-search-synthesize-cite fallback workflow when no specialist matches. Always surfaces the routing decision so users can override. Use when the user makes any research request that doesn't obviously match a more-specific specialist skill (e.g., \"research [topic]\", \"look into [topic]\", \"what do we know about [topic]\", \"investigate [topic]\", \"find me information on [topic]\", \"do some research on [topic]\", \"I need to understand [topic]\"). Output is a markdown briefing (default) or .docx document (on request) with full citations and an audit log.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-agentic-csv-manual-export-8dff62",
+            "channels": [
+              "bm25"
+            ],
+            "score": 0.1238,
+            "rank": 12,
+            "rerank_score": null,
+            "note": "该技能生成空 CSV 模板，而任务需要填充计算得到的描述符值，不能完成实际计算。",
+            "capability": "CSV Manual Export: a UTF-8 CSV template from a confirmed field list, empty by default, with no invented columns or values. Use for an import, staging or handoff file.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-scientific-clinical-reports-0c74d3",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.11092,
+            "rank": 13,
+            "rerank_score": null,
+            "note": "该技能用于临床报告草稿与安全检查，与分子描述符计算无关。",
+            "capability": "Creates safety-bounded draft structures and runs local deterministic checks for clinical case, diagnostic, trial, safety, and aggregate research reports. Use only with synthetic, de-identified, or aggregate inputs and verified source-fact manifests; every output requires qualified review.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-scientific-autoskill-ef35c8",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.10678,
+            "rank": 14,
+            "rerank_score": null,
+            "note": "该技能分析 Screenpipe 历史以发现工作流，与当前描述符计算任务无关。",
+            "capability": "Analyzes user-requested Screenpipe history windows to detect repeated research workflows, match existing scientific skills, and stage new skill drafts or composition recipes for review. Requires a reachable Screenpipe HTTP API, normally on localhost:3030. Detection and embedding inference run locally; the selected LLM receives redacted app/title cluster summaries and matched skill descriptions. Use only when the user explicitly asks to analyze their recent work and propose skills.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-scientific-treatment-plans-e8b337",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.09282,
+            "rank": 15,
+            "rerank_score": null,
+            "note": "该技能用于治疗计划文档格式化与验证，与化学描述符计算无关。",
+            "capability": "Formats and structurally validates local treatment-plan documentation after clinical decisions have already been supplied and verified by authorized licensed professionals. Use for source traceability, clinician-authored intervention records, goals and checkpoints, shared-decision records, reconciliation handoffs, and release gates—not for clinical decision-making.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-scientific-latchbio-integration-c2bc88",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.07175,
+            "rank": 16,
+            "rerank_score": null,
+            "note": "该技能用于 Latch 生物信息学工作流部署，与本地 RDKit 描述符计算无关。",
+            "capability": "Builds, registers, debugs, and operates bioinformatics workflows on Latch using the Python SDK, CLI, Latch Data and Registry, Nextflow, Snakemake, programmatic execution, and Latch MCP. Use when authoring or deploying Latch workflows, configuring resources or interfaces, moving data, integrating Registry, or launching and monitoring runs.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-scientific-tamarind-35fb90",
+            "channels": [
+              "bm25"
+            ],
+            "score": 0.06957,
+            "rank": 17,
+            "rerank_score": null,
+            "note": "",
+            "capability": "Provides access to a collection of open-source molecular design and structural biology tools on the Tamarind Bio platform, via its REST API or MCP server — no local GPUs required. Tamarind bundles popular open-source models for structure prediction (AlphaFold, Boltz, Chai, ESMFold), protein, binder, and de novo design (RFdiffusion, ProteinMPNN, BoltzGen), antibody and nanobody design and developability, protein-ligand docking (DiffDock, Autodock Vina), binding-affinity prediction, MSA generation, and molecular dynamics. Use when the user mentions Tamarind or tamarind.bio, wants to run any of these open-source tools in the cloud, references app.tamarind.bio/api or the x-api-key header, or needs to submit batches of sequences for structural or biophysical characterization.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-scientific-uncertainty-and-units-ccb540",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.06839,
+            "rank": 18,
+            "rerank_score": null,
+            "note": "",
+            "capability": "Tracks physical units and propagates measurement uncertainty in scientific calculations using pint and uncertainties. Use for unit conversion and dimensional checking, GUM uncertainty budgets, Type A and Type B evaluation, coverage factors and expanded uncertainty, Monte Carlo propagation, significant-figure and plus-minus reporting, error propagation through curve fits, CODATA constants, auditing Python code for stripped units or broken uncertainty propagation, and order-of-magnitude plausibility checks using dimensionless groups (Reynolds, Peclet, Damkohler, Knudsen, Biot, Womersley), characteristic scales such as diffusion time or Debye length, and observed magnitude ranges. Trigger on \"is this number physically reasonable\", \"sanity check these units\", \"what regime is this flow in\", or a result that looks off by orders of magnitude.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-scientific-vaex-c6d73e",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.06063,
+            "rank": 19,
+            "rerank_score": null,
+            "note": "",
+            "capability": "Processes large tabular scientific datasets with Vaex expressions, filtered views, streamed statistics, binned visualizations, and file conversion. Use for larger-than-RAM HDF5, Arrow, CSV, or Parquet analysis, virtual feature engineering, or Vaex ML preprocessing; distinguishes these operations from estimators and conversions that materialize data.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-claude-clinical-research-ab7306",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.05494,
+            "rank": 20,
+            "rerank_score": null,
+            "note": "",
+            "capability": "Use when designing a prospective clinical study before submission — selecting and classifying endpoints (primary / key-secondary / exploratory, with surrogate-endpoint flagging), estimating sample size and power for two-arm designs (means / proportions / survival), or scoring a study plan for feasibility and a GO / GO-WITH-CONDITIONS / REDESIGN / NO-GO phase-gate decision. Every output is an ESTIMATE plus a named human owner (clinician / biostatistician / regulatory owner) — never clinical fact, never a finished protocol. Distinct from ra-qm-team, which handles the regulatory/QM submission (ISO 13485, EU MDR, FDA 510(k)/PMA/QSR), not the study design.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-agentic-spreadsheet-manual-build-9af67b",
+            "channels": [
+              "bm25"
+            ],
+            "score": 0.04901,
+            "rank": 21,
+            "rerank_score": null,
+            "note": "",
+            "capability": "Spreadsheet Manual Build: an empty Excel workbook or CSV from a confirmed field list, formatted and validated. Use for an xlsx template or a manual register.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-agentic-json-schema-manual-516983",
+            "channels": [
+              "bm25"
+            ],
+            "score": 0.03877,
+            "rank": 22,
+            "rerank_score": null,
+            "note": "",
+            "capability": "JSON Schema Manual: draft 2020-12 validation schema from a confirmed field list, with required and enum values only where confirmed. Use for an API or import contract.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-agentic-notion-manual-import-c5be82",
+            "channels": [
+              "bm25"
+            ],
+            "score": 0.03865,
+            "rank": 23,
+            "rerank_score": null,
+            "note": "",
+            "capability": "Notion Manual Import: the Notion step for any module - CSV, property mapping, import steps and verification for the field list the active module confirmed. Use whenever the user picks Notion.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          }
+        ],
+        "trace": [
+          "BM25 召回 20 条",
+          "dense-onnx 向量召回 20 条",
+          "结构信号召回 1 条",
+          "加权融合后候选池 35 条（BM25 0.35 / 语义 0.55 / 结构 0.10）",
+          "关系图扩展补入 3 条：tabular-ml-baseline, admet-prediction, sequence-to-lead-structure-based-screening",
+          "任务必要性筛选：建议 1 项，最多 5 项；不补入未选候选"
+        ],
+        "confidence": 1.0,
+        "confidence_kind": "heuristic_relevance_not_probability",
+        "raw_bm25_top": 46.0704,
+        "fusion_score": 0.9259,
+        "decision": "auto",
+        "decision_reason": "BM25 原始分 46.07 ≥ 15.0：技能匹配明确，可直接执行",
+        "degraded": false,
+        "components": {
+          "bm25": true,
+          "vector": true,
+          "structural": true,
+          "graph_expansion": true,
+          "llm_rerank": true
+        },
+        "degraded_reason": "",
+        "encoder": {
+          "kind": "dense-onnx",
+          "active": true,
+          "model": "Xenova/multilingual-e5-small",
+          "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+          "dimension": 384,
+          "max_tokens": 256
+        },
+        "weights": [
+          0.35,
+          0.55,
+          0.1
+        ],
+        "selection": {
+          "method": "task_utility",
+          "limit": 5,
+          "selected_count": 1,
+          "candidate_count": 23,
+          "library_size": 1881,
+          "abstained": false,
+          "reason_kind": "model_advisory",
+          "rule": "至多 k 项；按任务必要性筛选，允许少选或不选；模型理由待执行检验"
+        },
+        "cost_yuan": 0.01102,
+        "detail": [
+          {
+            "name": "gh-scientific-rdkit-526244",
+            "domain": "科研方法",
+            "capability": "Cheminformatics toolkit for fine-grained molecular control. SMILES/SDF parsing, descriptors (MW, LogP, TPSA), fingerprints, substructure search, 2D/3D generation, similarity, reactions. For standard workflows with simpler interface, use datamol (wrapper around RDKit). Use rdkit for advanced control, custom sanitization, specialized algorithms.",
+            "channels": [
+              "bm25",
+              "vector"
+            ],
+            "score": 0.92588,
+            "rank": 1
+          },
+          {
+            "name": "gh-scientific-datamol-8b910c",
+            "domain": "科研方法",
+            "capability": "Pythonic wrapper around RDKit with simplified interface and sensible defaults. Preferred for standard drug discovery including SMILES parsing, standardization, descriptors, fingerprints, clustering, 3D conformers, parallel processing. Returns native rdkit.Chem.Mol objects. For advanced control or custom parameters, use rdkit directly.",
+            "channels": [
+              "bm25",
+              "vector"
+            ],
+            "score": 0.80699,
+            "rank": 2
+          },
+          {
+            "name": "gh-scientific-diffdock-9d2950",
+            "domain": "生命科学",
+            "capability": "Predicts protein-small-molecule binding poses with DiffDock and DiffDock-L from PDB or sequence plus SMILES/SDF/MOL2. Covers batch docking, pose triage, confidence interpretation, and validation. Use for molecular docking and virtual-screening pose generation, not binding-affinity prediction.",
+            "channels": [
+              "bm25",
+              "vector"
+            ],
+            "score": 0.37672,
+            "rank": 3
+          },
+          {
+            "name": "gh-scientific-deepchem-affeb7",
+            "domain": "科研方法",
+            "capability": "Builds molecular property prediction and MoleculeNet workflows with DeepChem, including SMILES featurization, scaffold or grouped holdouts, masked labels, graph models and explicit pretrained encoder transfer. Used for ADMET, toxicity, solubility and chemistry ML when DeepChem data/model contracts and scientific validation are needed.",
+            "channels": [
+              "bm25",
+              "vector"
+            ],
+            "score": 0.32486,
+            "rank": 4
+          },
+          {
+            "name": "molecular-descriptors",
+            "domain": "化学、药物发现与药理学",
+            "capability": "产出可复现的分子特征矩阵与骨架划分方案",
+            "channels": [
+              "bm25",
+              "vector",
+              "structural"
+            ],
+            "score": 0.27803,
+            "rank": 5
+          },
+          {
+            "name": "tabular-ml-baseline",
+            "domain": "机器学习与人工智能",
+            "capability": "在表格数据上产出可信的预测基线并给出误差归因",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.24467,
+            "rank": 6
+          },
+          {
+            "name": "sequence-to-lead-structure-based-screening",
+            "domain": "计算药物发现",
+            "capability": "产出从靶点序列到候选小分子清单的完整证据链，包括结构置信度评估、对接排序、ADMET风险与MD稳定性验证。",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.24467,
+            "rank": 7
+          },
+          {
+            "name": "admet-prediction",
+            "domain": "化学、药物发现与药理学",
+            "capability": "产出多终点 ADMET 预测与适用域评估",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.22243,
+            "rank": 8
+          }
+        ]
+      }
+    },
+    {
+      "name": "no-skill-needed",
+      "query": "你好，只说一句晚安就好，不做研究、不生成文件。",
+      "result": {
+        "query": "你好，只说一句晚安就好，不做研究、不生成文件。",
+        "mode": "fabric",
+        "selected": [],
+        "candidates": [
+          {
+            "name": "gh-agentic-aws-iam-best-practices-c69876",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.5665,
+            "rank": 1,
+            "rerank_score": null,
+            "note": "任务明确不做研究、不生成文件，仅需一句晚安；IAM 策略审查与本任务无关。",
+            "capability": "IAM policy review, hardening, and least privilege implementation",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-agentic-unslop-d202e8",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.54287,
+            "rank": 2,
+            "rerank_score": null,
+            "note": "任务不产出 AI 生成文本，无需后处理去 AI 味。",
+            "capability": "Post-process AI-generated text through the unslop CLI to strip AI writing patterns before publishing",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-agentic-poka-yoke-383837",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.42789,
+            "rank": 3,
+            "rerank_score": null,
+            "note": "任务不涉及代码、配置或流程防错设计。",
+            "capability": "Mistake-proof code, config and process: make the wrong action impossible or self-announcing rather than documented.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "historical-scientist-work-survey",
+            "channels": [
+              "bm25"
+            ],
+            "score": 0.40592,
+            "rank": 4,
+            "rerank_score": null,
+            "note": "任务不询问历史人物研究，且明确不做研究。",
+            "capability": "产出一份按研究领域组织、每条论断可追溯至原始著作或权威史料、且引用 100% 核验的历史科学家研究清单。",
+            "use_when": [
+              "需要回答「某历史人物做过哪些研究/工作」类开放性问题",
+              "需要对某学者毕生成果做主题化、可追溯的系统梳理",
+              "需要区分人物本人的主张与有实验/观察数据支撑的结论"
+            ],
+            "outputs": [
+              "去重后的候选文献/著作列表（含标识符、年份、要点）",
+              "结构化方法卡与局限清单",
+              "按研究领域组织的研究清单终稿",
+              "冲突/缺口矩阵"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "paper-deep-read",
+            "channels": [
+              "structural"
+            ],
+            "score": 0.35721,
+            "rank": 5,
+            "rerank_score": null,
+            "note": "任务无目标论文，也不需方法卡或局限清单。",
+            "capability": "逐节拆解论文并产出可复用的方法卡与局限清单",
+            "use_when": [
+              "需要复现某篇论文的方法",
+              "需要判断某方法能否迁移到自己的问题",
+              "写相关工作章节"
+            ],
+            "outputs": [
+              "方法与实验设置摘要",
+              "可复用技术点清单",
+              "局限与未解问题清单"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "citation-verify",
+            "channels": [
+              "structural"
+            ],
+            "score": 0.35721,
+            "rank": 6,
+            "rerank_score": null,
+            "note": "任务无引用或参考文献需要核验。",
+            "capability": "逐条核验引用的真实性与表述一致性，剔除无法验证的引用",
+            "use_when": [
+              "投稿前终检",
+              "综述或报告交付前",
+              "怀疑存在模型伪造引用"
+            ],
+            "outputs": [
+              "核验报告（通过/存疑/错误）",
+              "修正后的参考文献列表"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "research-field-top-ideas-distillation",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.34681,
+            "rank": 7,
+            "rerank_score": null,
+            "note": "任务不要求领域思想谱系或范式清单。",
+            "capability": "产出一份按思想范式组织、每条可追溯到至少 2 篇已核验文献、并标注成熟度与证据强度的领域顶级思想清单及冲突/缺口矩阵。",
+            "use_when": [
+              "被问「某领域有哪些顶级思想/核心范式/主流路线」",
+              "需要快速建立陌生领域的思想谱系而非单篇论文综述",
+              "需要区分成熟范式与萌芽方向并识别冲突结论"
+            ],
+            "outputs": [
+              "去重后的候选论文列表（含标识符、日期、三行要点）",
+              "结构化方法卡（生成范式/监督信号/数据模态/评价指标/失败模式）",
+              "思想范式清单（定义+代表工作+成熟度+证据强度）",
+              "冲突/缺口矩阵"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "scientific-writing",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.34681,
+            "rank": 8,
+            "rerank_score": null,
+            "note": "任务不写论文正文，也不生成文件。",
+            "capability": "把实验结果组织成符合期刊规范的 IMRaD 正文",
+            "use_when": [
+              "需要写论文正文",
+              "中文稿改英文稿",
+              "论文被要求大修重写"
+            ],
+            "outputs": [
+              "Methods/Results/Discussion 初稿",
+              "术语一致性检查表"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "literature-review",
+            "channels": [
+              "bm25",
+              "structural"
+            ],
+            "score": 0.31997,
+            "rank": 9,
+            "rerank_score": null,
+            "note": "任务不做文献综述，无研究问题或检索需求。",
+            "capability": "从研究问题出发完成 PRISMA 式检索-筛选-抽取-综合，产出带证据链的文献综述",
+            "use_when": [
+              "需要梳理某方向的研究现状",
+              "为选题或立项做背景调研",
+              "论文引言缺少系统证据支撑"
+            ],
+            "outputs": [
+              "综述初稿",
+              "筛选流程数量台账",
+              "结构化证据抽取表",
+              "BibTeX 文献库"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "research-gap-mining",
+            "channels": [
+              "bm25",
+              "structural"
+            ],
+            "score": 0.31216,
+            "rank": 10,
+            "rerank_score": null,
+            "note": "任务不寻找研究空白或候选选题。",
+            "capability": "把文献群转化为结构化研究空白与候选选题",
+            "use_when": [
+              "需要为立项寻找创新点",
+              "论证选题的新颖性",
+              "申报书需要研究缺口分析"
+            ],
+            "outputs": [
+              "主题聚类图",
+              "冲突/缺口矩阵",
+              "候选选题与可行性评估"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "pdf",
+            "channels": [
+              "bm25"
+            ],
+            "score": 0.27338,
+            "rank": 11,
+            "rerank_score": null,
+            "note": "任务不涉及任何 PDF 读取、生成或处理操作。",
+            "capability": "依据原文 SKILL.md 提供PDF 文档处理能力（member-import 导入，契约字段由原文提炼）",
+            "use_when": [
+              "用户需要对 PDF 做任何操作——读取提取、合并拆分、生成、表单处理等触发"
+            ],
+            "outputs": [
+              "处理后的 PDF 文件",
+              "文本或表格提取结果"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "high-temp-oxidation-coating-recipe-dev",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.27338,
+            "rank": 12,
+            "rerank_score": null,
+            "note": "任务与高温抗氧化涂层配方开发无关。",
+            "capability": "产出一套含不确定性标注的高温抗氧化涂层候选配方清单，并配套可复现的1200℃氧化实验方案与统计验证结论。",
+            "use_when": [
+              "需要开发新型高温抗氧化涂层配方时",
+              "需要在有限实验次数下筛选多组候选成分时",
+              "需要设计可复现的高温氧化验证实验时"
+            ],
+            "outputs": [
+              "PRISMA式文献综述与结构化证据抽取表",
+              "形成能/氧化倾向预测模型及留元外推报告",
+              "候选配方排序清单（含预测值±不确定性）",
+              "交叉验证与外部验证协议"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "exam-review-topic-matrix",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.27338,
+            "rank": 13,
+            "rerank_score": null,
+            "note": "任务不涉及备考规划、错题台账或成绩分析。",
+            "capability": "产出一张可追溯的考点矩阵、带闭环判据的周计划、可分析的错题台账与套卷成绩曲线，并用可量化判据证明每步复习有效。",
+            "use_when": [
+              "备考周期开始、需要规划全局复习路线时",
+              "刷题很多但正确率停滞、需要定位薄弱章节时",
+              "冲刺期需要限时套卷收敛并做错因归因时"
+            ],
+            "outputs": [
+              "考点矩阵表（章节×知识点×考频×分值×掌握度）",
+              "带日期与闭环判据的周计划表",
+              "错题台账（含错因与用时）",
+              "套卷成绩曲线与错题归因记录"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "broad-topic-to-evidence-pipeline",
+            "channels": [
+              "bm25"
+            ],
+            "score": 0.27338,
+            "rank": 14,
+            "rerank_score": null,
+            "note": "任务无宽泛主题、数据库或证据链交付需求。",
+            "capability": "输入一个宽泛主题与可用数据库/数据源，产出可复现的检索式、PRISMA 台账、结构化证据表、清洗数据集与审计日志、EDA 报告、基线模型性能表及出版级矢量图。",
+            "use_when": [
+              "研究主题过宽、无法直接检索或建模时",
+              "需要从文献证据建立定量基线并保证可追溯时",
+              "需要向他人交付可复现证据链（综述+数据+模型+图）时"
+            ],
+            "outputs": [
+              "可复现检索式与各库命中数台账",
+              "PRISMA 筛选流程图与结构化证据抽取表",
+              "BibTeX 文献库",
+              "清洗后数据集、清洗审计日志、数据字典"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "competition-profile-research",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.27338,
+            "rank": 15,
+            "rerank_score": null,
+            "note": "任务不调研竞赛或赛事信息。",
+            "capability": "产出一份带证据强度标注、可追溯来源、并附时间线与结构图的竞赛介绍终稿及配套核验报告。",
+            "use_when": [
+              "需要快速了解一个竞赛/赛事的定位、赛制与赛题方向",
+              "交付物要求事实可溯源、区分官方规则与参赛者经验",
+              "需要把分散的官方公告与经验帖综合成结构化介绍"
+            ],
+            "outputs": [
+              "去重后的候选资料列表（来源、日期、三行要点）",
+              "结构化赛事信息卡（字段+来源+证据等级）",
+              "介绍初稿与终稿（赛事概况/赛制规则/赛题方向/参赛价值与准备路径）",
+              "引用核验报告（通过/存疑/错误清单）"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "algorithmic-art",
+            "channels": [
+              "bm25"
+            ],
+            "score": 0.26891,
+            "rank": 16,
+            "rerank_score": null,
+            "note": "任务不要求生成艺术或代码创作。",
+            "capability": "依据原文 SKILL.md 提供算法生成艺术能力（member-import 导入，契约字段由原文提炼）",
+            "use_when": [
+              "用户要求用代码创作生成艺术、算法艺术、流场图案或交互式参数视觉作品时触发"
+            ],
+            "outputs": [
+              "p5.js 生成艺术代码与作品"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "gh-agentic-git-pr-review-877d80",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.26461,
+            "rank": 17,
+            "rerank_score": null,
+            "note": "",
+            "capability": "Generate a concise and structured PR description from commit history with minimal token usage",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "poster-slides",
+            "channels": [
+              "bm25",
+              "vector"
+            ],
+            "score": 0.25983,
+            "rank": 18,
+            "rerank_score": null,
+            "note": "",
+            "capability": "产出信息层级清晰的海报或汇报材料",
+            "use_when": [
+              "学术会议海报",
+              "组会或答辩汇报",
+              "需要把论文转成演示"
+            ],
+            "outputs": [
+              "海报文件或幻灯片",
+              "讲稿要点"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "gh-agentic-geo-llmstxt-ec02e3",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.25149,
+            "rank": 19,
+            "rerank_score": null,
+            "note": "",
+            "capability": "Analyzes and generates llms.txt files -- the emerging standard for helping AI systems understand website structure and content.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-agentic-decision-navigator-b103ba",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.23521,
+            "rank": 20,
+            "rerank_score": null,
+            "note": "",
+            "capability": "Guide stuck or overwhelmed users through targeted branching questions until they reach concrete next steps.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "code-helper",
+            "channels": [
+              "bm25"
+            ],
+            "score": 0.20733,
+            "rank": 21,
+            "rerank_score": null,
+            "note": "",
+            "capability": "依据原文 SKILL.md 提供Python 代码生成助手能力（member-import 导入，契约字段由原文提炼）",
+            "use_when": [
+              "用户要求写代码、讲代码、排查报错或优化算法时触发（如排序、字符串处理、数据结构、冒泡排序等经典算法）"
+            ],
+            "outputs": [
+              "可运行代码与解释说明"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "meta-analysis",
+            "channels": [
+              "bm25"
+            ],
+            "score": 0.18568,
+            "rank": 22,
+            "rerank_score": null,
+            "note": "",
+            "capability": "综合多项研究的效应量并评估异质性与偏倚风险",
+            "use_when": [
+              "多项研究结论不一致",
+              "需要给出定量综合结论",
+              "系统综述的定量部分"
+            ],
+            "outputs": [
+              "合并效应量",
+              "森林图与漏斗图",
+              "异质性与偏倚分析"
+            ],
+            "source": "seed"
+          },
+          {
+            "name": "gh-agentic-report-writing-6be6d0",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.16748,
+            "rank": 23,
+            "rerank_score": null,
+            "note": "",
+            "capability": "Bug bounty report writing for H1/Bugcrowd/Intigriti/Immunefi",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-agentic-google-no-code-0d337b",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.15593,
+            "rank": 24,
+            "rerank_score": null,
+            "note": "",
+            "capability": "Design Google Forms and wire Apps Script triggers (onFormSubmit) for email alerts, spreadsheet logging, and dynamic questions — no code editor required.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "math-theory-proof-and-simulation-verify",
+            "channels": [
+              "bm25"
+            ],
+            "score": 0.14592,
+            "rank": 25,
+            "rerank_score": null,
+            "note": "",
+            "capability": "产出一份含公理化范围说明、严格证明文本、可复现数值验证结果、泄漏审计报告与反例边界表的完整理论研究报告。",
+            "use_when": [
+              "研究数学理论命题且需要形式化证明时",
+              "理论结论需要独立数值证据支撑时",
+              "需要明确命题成立边界与反例时"
+            ],
+            "outputs": [
+              "研究范围与公理化基础说明",
+              "核心命题的严格证明文本（含定理引用与条件标注）",
+              "蒙特卡洛验证代码与收敛曲线、拟合检验结果表",
+              "泄漏审计报告（种子记录、样本流分配、参数预注册清单）"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "descriptive-stats-csv-summary",
+            "channels": [
+              "bm25"
+            ],
+            "score": 0.14232,
+            "rank": 26,
+            "rerank_score": null,
+            "note": "",
+            "capability": "产出一个含 group,n,mean,std_sample 列的 summary.csv、对应单文件 Python 脚本，以及带免责声明的结果说明文本。",
+            "use_when": [
+              "任务只要求描述统计，明确排除推断统计",
+              "数据量小、可硬编码或本地读取，且禁止联网",
+              "需要固定结构、可被下游程序回读的统计汇总文件"
+            ],
+            "outputs": [
+              "summary.csv（列：group,n,mean,std_sample）",
+              "单文件 Python 脚本（无网络/外部依赖）",
+              "终端结果说明文本（含免责声明）"
+            ],
+            "source": "distill"
+          },
+          {
+            "name": "gh-agentic-geminiignore-finops-9e9150",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.13756,
+            "rank": 27,
+            "rerank_score": null,
+            "note": "",
+            "capability": "Configure and optimize .geminiignore files for AI context window efficiency and token cost reduction (FinOps).",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-agentic-short-83e750",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.13651,
+            "rank": 28,
+            "rerank_score": null,
+            "note": "",
+            "capability": "Rewrite the previous response more briefly while preserving the substance.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          },
+          {
+            "name": "gh-agentic-grill-me-e2de87",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.12706,
+            "rank": 29,
+            "rerank_score": null,
+            "note": "",
+            "capability": "A relentless interview to sharpen a plan or design.",
+            "use_when": [],
+            "outputs": [],
+            "source": "github"
+          }
+        ],
+        "trace": [
+          "BM25 召回 20 条",
+          "dense-onnx 向量召回 20 条",
+          "结构信号召回 5 条",
+          "加权融合后候选池 42 条（BM25 0.35 / 语义 0.55 / 结构 0.10）",
+          "关系图扩展补入 9 条：research-field-top-ideas-distillation, paper-deep-read, citation-verify, scientific-writing, pdf, high-temp-oxidation-coating-recipe-dev",
+          "任务必要性筛选：建议 0 项，最多 5 项；不补入未选候选"
+        ],
+        "confidence": 0.6807,
+        "confidence_kind": "heuristic_relevance_not_probability",
+        "raw_bm25_top": 10.2112,
+        "fusion_score": 0.5665,
+        "decision": "direct",
+        "decision_reason": "必要性筛选没有推荐适用技能；保留候选供复核，不强行补足技能",
+        "degraded": false,
+        "components": {
+          "bm25": true,
+          "vector": true,
+          "structural": true,
+          "graph_expansion": true,
+          "llm_rerank": true
+        },
+        "degraded_reason": "",
+        "encoder": {
+          "kind": "dense-onnx",
+          "active": true,
+          "model": "Xenova/multilingual-e5-small",
+          "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+          "dimension": 384,
+          "max_tokens": 256
+        },
+        "weights": [
+          0.35,
+          0.55,
+          0.1
+        ],
+        "selection": {
+          "method": "task_utility",
+          "limit": 5,
+          "selected_count": 0,
+          "candidate_count": 29,
+          "library_size": 1881,
+          "abstained": true,
+          "reason_kind": "model_advisory",
+          "rule": "至多 k 项；按任务必要性筛选，允许少选或不选；模型理由待执行检验"
+        },
+        "cost_yuan": 0.00817,
+        "detail": [
+          {
+            "name": "gh-agentic-aws-iam-best-practices-c69876",
+            "domain": "工程与运维",
+            "capability": "IAM policy review, hardening, and least privilege implementation",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.5665,
+            "rank": 1
+          },
+          {
+            "name": "gh-agentic-unslop-d202e8",
+            "domain": "人工智能",
+            "capability": "Post-process AI-generated text through the unslop CLI to strip AI writing patterns before publishing",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.54287,
+            "rank": 2
+          },
+          {
+            "name": "gh-agentic-poka-yoke-383837",
+            "domain": "工程与运维",
+            "capability": "Mistake-proof code, config and process: make the wrong action impossible or self-announcing rather than documented.",
+            "channels": [
+              "vector"
+            ],
+            "score": 0.42789,
+            "rank": 3
+          },
+          {
+            "name": "historical-scientist-work-survey",
+            "domain": "文献调研与科学史研究",
+            "capability": "产出一份按研究领域组织、每条论断可追溯至原始著作或权威史料、且引用 100% 核验的历史科学家研究清单。",
+            "channels": [
+              "bm25"
+            ],
+            "score": 0.40592,
+            "rank": 4
+          },
+          {
+            "name": "paper-deep-read",
+            "domain": "文献与研究",
+            "capability": "逐节拆解论文并产出可复用的方法卡与局限清单",
+            "channels": [
+              "structural"
+            ],
+            "score": 0.35721,
+            "rank": 5
+          },
+          {
+            "name": "citation-verify",
+            "domain": "文献与研究",
+            "capability": "逐条核验引用的真实性与表述一致性，剔除无法验证的引用",
+            "channels": [
+              "structural"
+            ],
+            "score": 0.35721,
+            "rank": 6
+          },
+          {
+            "name": "research-field-top-ideas-distillation",
+            "domain": "科研文献调研与综述",
+            "capability": "产出一份按思想范式组织、每条可追溯到至少 2 篇已核验文献、并标注成熟度与证据强度的领域顶级思想清单及冲突/缺口矩阵。",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.34681,
+            "rank": 7
+          },
+          {
+            "name": "scientific-writing",
+            "domain": "学术写作与可视化",
+            "capability": "把实验结果组织成符合期刊规范的 IMRaD 正文",
+            "channels": [
+              "fused"
+            ],
+            "score": 0.34681,
+            "rank": 8
+          }
+        ]
+      }
+    }
+  ],
+  "model": "deepseek-chat",
+  "cost_yuan": 0.2097,
+  "status": "COMPLETED",
+  "retrieval": {
+    "query": "使用下方公开模拟科研预测数据，完成 3 步真实执行，不联网、不训练模型。这是科研复现审计，不是医学诊断或真实模型性能。①按 sample_id 去重保留首次记录；识别同时出现在多个 split 的 subject_id；删除这些受试者的全部记录，再删除 score 缺失记录。生成 clean_predictions.csv（保留原列与原值）和 cohort_audit.csv，后者列名 check,count，且只含 raw_rows,duplicate_rows,cross_split_subjects,cross_split_rows,missing_score_rows,eligible_test_rows 六行；missing_score_rows 在删除跨 split 受试者后统计。②读取两个前序文件，仅用清洗后的 test 行，固定阈值 score >= 0.5 为阳性，生成 heldout_metrics.csv，列名 metric,value，且只含 n,tp,fp,tn,fn,accuracy,precision,recall,f1 九行，保留充分精度（至少 10 位有效数字）；不能用测试集选择阈值，不计算 AUROC。③读取审计表和指标表，生成 figure.svg 与 report.md，报告必须写明“模拟数据”“固定阈值”“不代表临床有效性”，解释数据泄漏风险与复用边界。每步只负责本步交付，使用 depends_on、input_files、output_files 传递真实文件。\nCSV：\nsample_id,subject_id,split,label,score\ns01,p01,train,0,0.10\ns02,p02,train,1,0.90\ns03,p03,train,1,0.80\ns04,p04,validation,0,0.20\ns05,p05,validation,1,0.70\ns06,p06,test,1,0.90\ns07,p07,test,0,0.20\ns08,p08,test,1,0.40\ns09,p09,test,0,0.80\ns10,p10,test,1,0.70\ns11,p11,test,0,0.30\ns12,p01,test,1,0.95\ns13,p12,test,1,\ns06,p06,test,1,0.90",
+    "mode": "fabric",
+    "selected": [
+      "data-cleaning",
+      "scientific-visualization"
+    ],
+    "candidates": [
+      {
+        "name": "data-cleaning",
+        "channels": [
+          "structural"
+        ],
+        "score": 0.62039,
+        "rank": 1,
+        "rerank_score": 1.0,
+        "note": "第①步需要按 sample_id 去重、识别跨 split 受试者、删除记录并统计缺失，产出 clean_predictions.csv 与 cohort_audit.csv，属于带审计日志的数据清洗，直接匹配。",
+        "capability": "把原始数据转为可分析数据集，并记录每一步清洗决策",
+        "use_when": [
+          "拿到未经处理的原始数据",
+          "合并多个来源的数据表",
+          "发现数据质量异常"
+        ],
+        "outputs": [
+          "干净数据集",
+          "清洗审计日志",
+          "数据字典"
+        ],
+        "source": "seed"
+      },
+      {
+        "name": "scientific-visualization",
+        "channels": [
+          "fused"
+        ],
+        "score": 0.60821,
+        "rank": 2,
+        "rerank_score": 0.5,
+        "note": "第③步需要生成 figure.svg 矢量图，该技能可产出 SVG 与绘图脚本，匹配交付物要求。",
+        "capability": "生成可直接用于发表的矢量图表，含统计标注与可复现脚本",
+        "use_when": [
+          "论文或报告需要图表",
+          "需要重绘不符合规范的图",
+          "需要统一的配色体系"
+        ],
+        "outputs": [
+          "矢量图（PDF/SVG）",
+          "绘图脚本",
+          "图注文本"
+        ],
+        "source": "seed"
+      },
+      {
+        "name": "missing-data-baseline-modeling",
+        "channels": [
+          "bm25",
+          "vector"
+        ],
+        "score": 0.64516,
+        "rank": 3,
+        "rerank_score": null,
+        "note": "任务明确不训练模型，且不需要缺失机制判断或子群归因；其清洗能力被更专用的 data-cleaning 覆盖，故不采用。",
+        "capability": "产出一套带审计轨迹的干净数据集、可复现的基线模型性能表（含子群指标与波动范围）以及误差归因与可解释性报告。",
+        "use_when": [
+          "拿到一份含缺失值的表格数据需要快速建立可信基线",
+          "需要判断缺失机制并避免填补引入偏差",
+          "需要定位模型高误差子群并做归因"
+        ],
+        "outputs": [
+          "干净数据集与数据字典",
+          "清洗审计日志",
+          "EDA 报告与分布/相关性图组",
+          "验证协议说明与评估脚本"
+        ],
+        "source": "distill"
+      },
+      {
+        "name": "dose-response-curve-cleaning-and-ic50-fitting",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.6325,
+        "rank": 4,
+        "rerank_score": null,
+        "note": "任务数据是分类预测分数表，不涉及剂量-响应或 IC50 拟合，领域与交付物均不匹配。",
+        "capability": "从原始剂量-响应表产出带审计日志的干净数据集、IC50 点估计与置信区间、稳健性审计报告及出版级矢量图。",
+        "use_when": [
+          "拿到一批剂量-存活率/抑制率实验数据需要清洗并估计 IC50",
+          "需要判断曲线是否覆盖平台期以决定用 4PL 还是 3PL",
+          "需要对 IC50 估计量做有限样本与假设违反下的稳健性验证"
+        ],
+        "outputs": [
+          "带审计日志的干净数据集与数据字典",
+          "EDA 报告与剂量-响应散点图",
+          "IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²、残差标准误）",
+          "bootstrap 不确定性与蒙特卡洛稳健性审计报告"
+        ],
+        "source": "distill"
+      },
+      {
+        "name": "eda-profiling",
+        "channels": [
+          "structural"
+        ],
+        "score": 0.62039,
+        "rank": 5,
+        "rerank_score": null,
+        "note": "任务未要求分布刻画、相关性图或特征初筛，交付物中无 EDA 报告，故不需要。",
+        "capability": "系统性刻画数据集的分布、关系与质量风险",
+        "use_when": [
+          "需要理解数据结构",
+          "为建模做特征初筛",
+          "分析前评估数据是否支持研究问题"
+        ],
+        "outputs": [
+          "EDA 报告",
+          "分布与相关性图组",
+          "候选特征清单"
+        ],
+        "source": "seed"
+      },
+      {
+        "name": "competition-reproducible-ml-pipeline",
+        "channels": [
+          "bm25",
+          "vector"
+        ],
+        "score": 0.61882,
+        "rank": 6,
+        "rerank_score": null,
+        "note": "任务不训练模型、不追求竞赛指标对齐，且明确禁止模型训练；其清洗与审计能力可由 data-cleaning 覆盖，故不采用。",
+        "capability": "产出一套对齐官方指标、防泄漏、含统计验证与出版级图表的可复现建模交付包。",
+        "use_when": [
+          "接到数据科学竞赛或需对齐官方评分口径的建模任务",
+          "需要交付可复现、可审计的建模结果",
+          "需要同时给出模型性能与统计显著性证据"
+        ],
+        "outputs": [
+          "指标对齐检查表",
+          "清洗后数据集与清洗审计日志、数据字典",
+          "EDA报告与候选特征清单、风险项",
+          "基线模型文件与模型对比表、特征重要性、误差分析"
+        ],
+        "source": "distill"
+      },
+      {
+        "name": "tabular-ml-baseline",
+        "channels": [
+          "fused"
+        ],
+        "score": 0.60232,
+        "rank": 7,
+        "rerank_score": null,
+        "note": "任务明确不训练模型，仅做固定阈值指标计算，不需要预测基线或误差归因。",
+        "capability": "在表格数据上产出可信的预测基线并给出误差归因",
+        "use_when": [
+          "需要预测某个连续或类别目标",
+          "为复杂模型提供对照基线",
+          "评估特征的信息量"
+        ],
+        "outputs": [
+          "基线模型与性能表",
+          "特征重要性",
+          "误差分析报告"
+        ],
+        "source": "seed"
+      },
+      {
+        "name": "demo-descriptive-stats-report",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.57533,
+        "rank": 8,
+        "rerank_score": null,
+        "note": "任务不需要分组描述统计条形图或 summary.csv，其输出结构与 cohort_audit.csv、heldout_metrics.csv 不匹配。",
+        "capability": "从内存中的分组数值产出一份可解析的统计对照CSV、一张带样本量标注与误差条的条形图，以及一段仅含可核验数值的描述文本。",
+        "use_when": [
+          "需要用演示数据快速生成分组描述性统计对照表",
+          "需要同时交付CSV与可视化图并保证二者数值同源",
+          "需要避免推断性结论、仅做可核验的数值陈述"
+        ],
+        "outputs": [
+          "summary.csv（列：group,n,mean,std_sample）",
+          "barplot.png（含误差条与n标注的条形图）",
+          "单文件Python脚本",
+          "终端结果说明文本（含免责声明）"
+        ],
+        "source": "distill"
+      },
+      {
+        "name": "cross-validation-protocol",
+        "channels": [
+          "fused"
+        ],
+        "score": 0.56774,
+        "rank": 9,
+        "rerank_score": null,
+        "note": "任务不报告泛化性能、不做超参搜索，仅用清洗后的 test 行计算固定阈值指标，不需要验证协议设计。",
+        "capability": "为给定数据结构设计无偏的验证与外部验证协议",
+        "use_when": [
+          "需要报告泛化性能",
+          "数据存在分组或时间结构",
+          "需要做超参搜索"
+        ],
+        "outputs": [
+          "验证协议说明",
+          "评估脚本",
+          "性能不确定性估计"
+        ],
+        "source": "seed"
+      },
+      {
+        "name": "model-interpretability",
+        "channels": [
+          "fused"
+        ],
+        "score": 0.56774,
+        "rank": 10,
+        "rerank_score": null,
+        "note": "任务不训练模型，也不需要全局重要性、局部归因或部分依赖分析。",
+        "capability": "产出可辩护的模型归因分析并识别其局限",
+        "use_when": [
+          "需要解释模型为什么这样预测",
+          "论文要求机理解释",
+          "向业务方交付可解释结论"
+        ],
+        "outputs": [
+          "全局重要性排序",
+          "局部归因图",
+          "部分依赖曲线"
+        ],
+        "source": "seed"
+      },
+      {
+        "name": "estimator-robustness-audit",
+        "channels": [
+          "fused"
+        ],
+        "score": 0.5566,
+        "rank": 11,
+        "rerank_score": null,
+        "note": "任务不涉及估计量收敛性证明或蒙特卡洛稳健性验证，仅需固定阈值指标与审计表。",
+        "capability": "产出一份含公理化前提表、带收敛模式标注的严格证明、预注册蒙特卡洛验证报告、泄漏审计报告与适用范围表的完整稳健性论证包。",
+        "use_when": [
+          "需要论证估计量在有限样本或假设被违反时的性质",
+          "需要区分 a.s./依概率/L^p/依分布收敛并给出严格证明",
+          "需要蒙特卡洛验证理论收敛速率且防止伪验证"
+        ],
+        "outputs": [
+          "公理化基础与前提闭合性核验表",
+          "含定理引用与收敛模式标注的严格证明文本",
+          "预注册蒙特卡洛协议与收敛曲线、拟合检验结果表",
+          "泄漏审计报告（种子记录、样本流分配、参数预注册清单）"
+        ],
+        "source": "distill"
+      },
+      {
+        "name": "competition-data-science-pipeline",
+        "channels": [
+          "bm25",
+          "vector",
+          "structural"
+        ],
+        "score": 0.53536,
+        "rank": 12,
+        "rerank_score": null,
+        "note": "任务不训练模型、不对齐竞赛评分口径，且交付物为审计表、指标表、图和报告，非建模交付包；清洗能力由 data-cleaning 覆盖。",
+        "capability": "产出一套指标对齐、可复现、含审计轨迹与统计支撑的建模交付物（清洗数据、基线模型、统计结果、矢量图与结论报告）。",
+        "use_when": [
+          "拿到竞赛/评估型建模任务，需要快速建立可信基线并交付报告",
+          "需要保证离线指标与官方评分口径一致",
+          "需要可复现、可审计、防泄漏的建模流程"
+        ],
+        "outputs": [
+          "清洗后数据集与清洗审计日志、数据字典",
+          "EDA 报告与候选特征清单、风险项",
+          "基线模型文件与模型对比表、特征重要性、误差分析",
+          "统计检验结果表与方法段落"
+        ],
+        "source": "distill"
+      },
+      {
+        "name": "demo-descriptive-stats-summary",
+        "channels": [
+          "bm25"
+        ],
+        "score": 0.50629,
+        "rank": 13,
+        "rerank_score": null,
+        "note": "",
+        "capability": "产出一份包含每组样本量、均值和样本标准差的 CSV 文件及一段明确声明数据不可用于科学结论的简短说明。",
+        "use_when": [
+          "任务只要求描述性统计（n、均值、样本标准差）",
+          "数据为演示或占位数据，不能用于推断",
+          "禁止访问外部网络或外部文件"
+        ],
+        "outputs": [
+          "summary.csv（列：group,n,mean,std_sample）",
+          "终端打印的结果说明文本（含免责声明）",
+          "单文件 Python 脚本"
+        ],
+        "source": "distill"
+      },
+      {
+        "name": "xlsx",
+        "channels": [
+          "fused"
+        ],
+        "score": 0.46027,
+        "rank": 14,
+        "rerank_score": null,
+        "note": "输入为 CSV 文本且交付物为 CSV/SVG/MD，不需要 Excel 公式、格式化或图表处理。",
+        "capability": "依据原文 SKILL.md 提供Excel 表格处理能力（member-import 导入，契约字段由原文提炼）",
+        "use_when": [
+          "以电子表格为主要输入或输出的任务——打开/读取/编辑 .xlsx/.csv、写公式、格式化、图表分析等触发"
+        ],
+        "outputs": [
+          "生成的表格文件",
+          "公式重算校验结果"
+        ],
+        "source": "seed"
+      },
+      {
+        "name": "statistical-testing",
+        "channels": [
+          "structural"
+        ],
+        "score": 0.4574,
+        "rank": 15,
+        "rerank_score": null,
+        "note": "任务不比较组间差异、不做推断统计，仅计算固定阈值下的混淆矩阵指标。",
+        "capability": "为研究设计选择正确的检验并给出完整的统计报告",
+        "use_when": [
+          "需要比较组间差异",
+          "论文中报告统计结果",
+          "需要判断结果是否稳健"
+        ],
+        "outputs": [
+          "检验结果表",
+          "效应量与置信区间",
+          "统计方法说明段"
+        ],
+        "source": "seed"
+      },
+      {
+        "name": "descriptive-stats-csv-summary",
+        "channels": [
+          "bm25",
+          "vector"
+        ],
+        "score": 0.43406,
+        "rank": 16,
+        "rerank_score": null,
+        "note": "任务不需要 group,n,mean,std_sample 结构的 summary.csv，其输出与 cohort_audit.csv、heldout_metrics.csv 的列名和行结构不匹配。",
+        "capability": "产出一个含 group,n,mean,std_sample 列的 summary.csv、对应单文件 Python 脚本，以及带免责声明的结果说明文本。",
+        "use_when": [
+          "任务只要求描述统计，明确排除推断统计",
+          "数据量小、可硬编码或本地读取，且禁止联网",
+          "需要固定结构、可被下游程序回读的统计汇总文件"
+        ],
+        "outputs": [
+          "summary.csv（列：group,n,mean,std_sample）",
+          "单文件 Python 脚本（无网络/外部依赖）",
+          "终端结果说明文本（含免责声明）"
+        ],
+        "source": "distill"
+      },
+      {
+        "name": "two-group-statistical-testing-with-effect-size",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.3943,
+        "rank": 17,
+        "rerank_score": null,
+        "note": "",
+        "capability": "产出一套可复现的组间比较分析包：干净数据集、检验结果表（含效应量与95%CI）、多重比较校正表、矢量图与稳健性复核记录。",
+        "use_when": [
+          "需要比较两组或多组实验数据差异并报告效应量",
+          "需要为论文/报告生成出版级统计图表",
+          "需要控制多重比较假阳性率"
+        ],
+        "outputs": [
+          "干净数据集与数据字典",
+          "清洗审计日志",
+          "统计检验结果表（统计量、自由度、p值、效应量、95%CI）",
+          "多重比较校正表"
+        ],
+        "source": "distill"
+      },
+      {
+        "name": "dose-response-cleaning-ic50-pipeline",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.36133,
+        "rank": 18,
+        "rerank_score": null,
+        "note": "",
+        "capability": "从原始剂量-响应表产出带审计日志的干净数据、IC50 点估计与置信区间、稳健性审计报告及出版级矢量图。",
+        "use_when": [
+          "拿到一批剂量-存活率/抑制率原始数据需要清洗并估计 IC50",
+          "需要给出可复现、带审计轨迹的分析产物",
+          "需要评估 IC50 估计量在有限样本与假设违反下的稳健性"
+        ],
+        "outputs": [
+          "干净数据表（含 log10_dose）与数据字典",
+          "清洗审计日志",
+          "EDA 报告与剂量-响应散点图",
+          "IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²、残差标准误）"
+        ],
+        "source": "distill"
+      },
+      {
+        "name": "gh-claude-ab-test-setup-6f7533",
+        "channels": [
+          "bm25"
+        ],
+        "score": 0.3605,
+        "rank": 19,
+        "rerank_score": null,
+        "note": "",
+        "capability": "When the user wants to plan, design, or implement an A/B test or experiment. Also use when the user mentions \"A/B test,\" \"split test,\" \"experiment,\" \"test this change,\" \"variant copy,\" \"multivariate test,\" \"hypothesis,\" \"conversion experiment,\" \"statistical significance,\" or \"test this.\" For tracking implementation, see analytics-tracking.",
+        "use_when": [],
+        "outputs": [],
+        "source": "github"
+      },
+      {
+        "name": "descriptive-stats-csv-and-plot",
+        "channels": [
+          "bm25",
+          "vector"
+        ],
+        "score": 0.29846,
+        "rank": 20,
+        "rerank_score": null,
+        "note": "",
+        "capability": "产出一份可精确回读校验的描述统计 CSV、一张与表格同源的均值对比图，以及一段仅含描述性数值的说明文本。",
+        "use_when": [
+          "任务要求只做描述统计、明确禁止推断统计",
+          "需要同时交付表格与图表且两者数值必须一致",
+          "要求逐条核对数值与表头、可复现的校验流程"
+        ],
+        "outputs": [
+          "summary.csv（固定表头，每组一行）",
+          "figure.png（均值条形图 + 误差条 + n 标注）",
+          "单文件 Python 脚本（无网络与外部文件依赖）",
+          "终端说明文本（含免责声明关键词）"
+        ],
+        "source": "distill"
+      },
+      {
+        "name": "dose-response-curve-analysis",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.29257,
+        "rank": 21,
+        "rerank_score": null,
+        "note": "",
+        "capability": "从原始剂量-存活率数据出发，产出带审计日志的干净数据集、IC50 点估计与置信区间、模型选择依据、稳健性审计报告及出版级剂量-反应曲线图。",
+        "use_when": [
+          "拿到一批剂量-效应实验数据需要估计 IC50/EC50 时",
+          "需要判断 4PL 还是 3PL、Top/Bottom 是否可自由估计时",
+          "需要为剂量-反应结论提供不确定性与稳健性证据时"
+        ],
+        "outputs": [
+          "带审计日志的干净数据表与数据字典",
+          "EDA 报告与剂量-反应散点图",
+          "IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²、残差标准误）",
+          "bootstrap 不确定性与蒙特卡洛稳健性审计报告"
+        ],
+        "source": "distill"
+      },
+      {
+        "name": "dose-response-ic50-robust-estimation",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.24732,
+        "rank": 22,
+        "rerank_score": null,
+        "note": "",
+        "capability": "产出一份带审计日志的干净数据表、IC50 点估计与 95% CI、模型参数表、稳健性审计报告及出版级剂量-响应矢量图。",
+        "use_when": [
+          "拿到一批不同剂量下的存活率/抑制率数据需要估计 IC50",
+          "需要给出 IC50 的置信区间而非仅点估计",
+          "需要判断数据是否覆盖平台期、Top/Bottom 是否可识别"
+        ],
+        "outputs": [
+          "带审计日志的干净数据表与数据字典",
+          "EDA 报告与剂量-响应散点图",
+          "IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²、残差标准误）",
+          "bootstrap 不确定性与蒙特卡洛稳健性审计报告"
+        ],
+        "source": "distill"
+      },
+      {
+        "name": "descriptive-stats-acceptance-audit",
+        "channels": [
+          "vector",
+          "structural"
+        ],
+        "score": 0.24384,
+        "rank": 23,
+        "rerank_score": null,
+        "note": "",
+        "capability": "产出一份验收检查必要性对照表、已支持/未支持结论二分清单、可复现性回放日志与下一步改进清单。",
+        "use_when": [
+          "描述统计交付后需要复核检查项是否冗余或缺失",
+          "需要明确哪些结果不能支撑业务结论",
+          "需要为下一轮分析列出可执行的改进项"
+        ],
+        "outputs": [
+          "验收检查→防御错误→后果对照表",
+          "已支持/未支持结论二分清单",
+          "可复现性回放日志（数值比对、表头断言、图像检查）",
+          "下一步改进清单（补证据项+补设计项，含优先级与前置条件）"
+        ],
+        "source": "distill"
+      },
+      {
+        "name": "gh-scientific-scikit-survival-e853c1",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.18946,
+        "rank": 24,
+        "rerank_score": null,
+        "note": "",
+        "capability": "Builds, evaluates, and audits right-censored or competing-risk survival workflows with scikit-survival, including leakage-safe preprocessing, model selection, probability prediction, and censoring-aware metrics.",
+        "use_when": [],
+        "outputs": [],
+        "source": "github"
+      },
+      {
+        "name": "gh-agentic-codebase-audit-pre-push-30400b",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.17627,
+        "rank": 25,
+        "rerank_score": null,
+        "note": "",
+        "capability": "Deep audit before GitHub push: removes junk files, dead code, security holes, and optimization issues. Checks every file line-by-line for production readiness.",
+        "use_when": [],
+        "outputs": [],
+        "source": "github"
+      },
+      {
+        "name": "dose-response-ic50-estimation",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.1626,
+        "rank": 26,
+        "rerank_score": null,
+        "note": "",
+        "capability": "输入带剂量与响应（含重复）的实验数据，输出 IC50 点估计与 95% 置信区间、HillSlope、Top/Bottom、拟合优度、稳健性审计报告与矢量剂量-响应图。",
+        "use_when": [
+          "需要从多剂量抑制率数据估计 IC50/EC50 时",
+          "需要评估曲线拟合质量与参数不确定性时",
+          "需要判断平台期是否覆盖、Top/Bottom 是否可识别时"
+        ],
+        "outputs": [
+          "带审计日志的干净数据集与数据字典",
+          "EDA 报告与剂量-响应散点图",
+          "IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²、残差标准误）",
+          "bootstrap 不确定性与蒙特卡洛稳健性审计报告"
+        ],
+        "source": "distill"
+      },
+      {
+        "name": "leakage-guard",
+        "channels": [
+          "bm25",
+          "structural"
+        ],
+        "score": 0.16131,
+        "rank": 27,
+        "rerank_score": null,
+        "note": "",
+        "capability": "识别并消除会导致乐观偏差的数据泄漏路径",
+        "use_when": [
+          "模型指标高得不合理",
+          "需要保证评估可信",
+          "投稿前的方法学自检"
+        ],
+        "outputs": [
+          "泄漏审计报告",
+          "修正后的管线",
+          "修正后性能对比"
+        ],
+        "source": "seed"
+      },
+      {
+        "name": "broad-topic-to-evidence-pipeline",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.16102,
+        "rank": 28,
+        "rerank_score": null,
+        "note": "",
+        "capability": "输入一个宽泛主题与可用数据库/数据源，产出可复现的检索式、PRISMA 台账、结构化证据表、清洗数据集与审计日志、EDA 报告、基线模型性能表及出版级矢量图。",
+        "use_when": [
+          "研究主题过宽、无法直接检索或建模时",
+          "需要从文献证据建立定量基线并保证可追溯时",
+          "需要向他人交付可复现证据链（综述+数据+模型+图）时"
+        ],
+        "outputs": [
+          "可复现检索式与各库命中数台账",
+          "PRISMA 筛选流程图与结构化证据抽取表",
+          "BibTeX 文献库",
+          "清洗后数据集、清洗审计日志、数据字典"
+        ],
+        "source": "distill"
+      },
+      {
+        "name": "gh-claude-report-d0382e",
+        "channels": [
+          "bm25"
+        ],
+        "score": 0.16044,
+        "rank": 29,
+        "rerank_score": null,
+        "note": "",
+        "capability": "Generate test report. Use when user says \"test report\", \"results summary\", \"test status\", \"show results\", \"test dashboard\", or \"how did tests go\".",
+        "use_when": [],
+        "outputs": [],
+        "source": "github"
+      },
+      {
+        "name": "gh-agentic-pre-release-review-7cdcdb",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.13762,
+        "rank": 30,
+        "rerank_score": null,
+        "note": "",
+        "capability": "Run a read-only pre-release review for deploy readiness, migrations, config, secrets, rollout order, rollback risk, and launch blockers.",
+        "use_when": [],
+        "outputs": [],
+        "source": "github"
+      }
+    ],
+    "trace": [
+      "BM25 召回 20 条",
+      "dense-onnx 向量召回 20 条",
+      "结构信号召回 16 条",
+      "加权融合后候选池 48 条（BM25 0.35 / 语义 0.55 / 结构 0.10）",
+      "关系图扩展补入 10 条：data-cleaning, eda-profiling, cross-validation-protocol, tabular-ml-baseline, model-interpretability, estimator-robustness-audit",
+      "任务必要性筛选：建议 2 项，最多 5 项；不补入未选候选",
+      "三档对照完成：bm25 5 / hybrid 5 / fabric 2"
+    ],
+    "confidence": 1.0,
+    "confidence_kind": "heuristic_relevance_not_probability",
+    "raw_bm25_top": 103.7018,
+    "fusion_score": 0.6204,
+    "decision": "auto",
+    "decision_reason": "BM25 原始分 103.70 ≥ 15.0：技能匹配明确，可直接执行",
+    "degraded": false,
+    "components": {
+      "bm25": true,
+      "vector": true,
+      "structural": true,
+      "graph_expansion": true,
+      "llm_rerank": true
+    },
+    "degraded_reason": "",
+    "encoder": {
+      "kind": "dense-onnx",
+      "active": true,
+      "model": "Xenova/multilingual-e5-small",
+      "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+      "dimension": 384,
+      "max_tokens": 256
+    },
+    "weights": [
+      0.35,
+      0.55,
+      0.1
+    ],
+    "selection": {
+      "method": "task_utility",
+      "limit": 5,
+      "selected_count": 2,
+      "candidate_count": 30,
+      "library_size": 1881,
+      "abstained": false,
+      "reason_kind": "model_advisory",
+      "rule": "至多 k 项；按任务必要性筛选，允许少选或不选；模型理由待执行检验"
+    }
+  },
+  "orchestration": {
+    "order": [
+      "data-cleaning",
+      "descriptive-stats-csv-summary",
+      "scientific-visualization"
+    ],
+    "workflow": [
+      [
+        "data-cleaning",
+        "descriptive-stats-csv-summary"
+      ],
+      [
+        "descriptive-stats-csv-summary",
+        "scientific-visualization"
+      ]
+    ],
+    "source": "relations+llm",
+    "degraded": false,
+    "reason": "任务本质是三步可审计的清洗—固定阈值指标计算—报告出图，data-cleaning 负责去重/跨 split 删除/缺失删除与审计表，descriptive-stats-csv-summary 负责生成固定结构指标 CSV，scientific-visualization 负责 figure.svg 与报告图表。",
+    "decisions": [
+      {
+        "name": "data-cleaning",
+        "selected": true,
+        "reason": "直接对应第①步：按 sample_id 去重、识别并删除跨 split subject_id、删除 score 缺失记录，并产出 clean_predictions.csv 与 cohort_audit.csv。"
+      },
+      {
+        "name": "descriptive-stats-csv-summary",
+        "selected": true,
+        "reason": "用于第②步生成固定列名 metric,value 的 heldout_metrics.csv，适合小规模、本地、无网络、可回读的统计汇总交付。"
+      },
+      {
+        "name": "scientific-visualization",
+        "selected": true,
+        "reason": "用于第③步生成 figure.svg，并支撑 report.md 中图表与审计结论的可视化表达。"
+      },
+      {
+        "name": "missing-data-baseline-modeling",
+        "selected": false,
+        "reason": "任务不训练模型、不建立基线，仅做清洗、固定阈值指标与审计报告，因此不采用。"
+      },
+      {
+        "name": "dose-response-curve-cleaning-and-ic50-fitting",
+        "selected": false,
+        "reason": "任务数据不是剂量-响应数据，也不估计 IC50，因此不采用。"
+      },
+      {
+        "name": "eda-profiling",
+        "selected": false,
+        "reason": "任务未要求系统性 EDA 报告或候选特征清单，审计表已覆盖所需数据质量检查，因此不采用。"
+      },
+      {
+        "name": "competition-reproducible-ml-pipeline",
+        "selected": false,
+        "reason": "任务不是竞赛建模交付，且明确不训练模型、不计算 AUROC，因此不采用。"
+      },
+      {
+        "name": "tabular-ml-baseline",
+        "selected": false,
+        "reason": "任务禁止训练模型，仅用固定阈值计算指标，因此不采用。"
+      },
+      {
+        "name": "demo-descriptive-stats-report",
+        "selected": false,
+        "reason": "其输出为 summary.csv 与 barplot.png，不符合本任务要求的 heldout_metrics.csv、figure.svg 与 report.md 结构，因此不采用。"
+      },
+      {
+        "name": "cross-validation-protocol",
+        "selected": false,
+        "reason": "任务使用已有 split 且固定阈值评估，不做交叉验证或调参，因此不采用。"
+      },
+      {
+        "name": "model-interpretability",
+        "selected": false,
+        "reason": "任务没有训练模型，也不需要归因分析，因此不采用。"
+      },
+      {
+        "name": "estimator-robustness-audit",
+        "selected": false,
+        "reason": "任务不涉及估计量收敛证明或蒙特卡洛稳健性论证，因此不采用。"
+      },
+      {
+        "name": "competition-data-science-pipeline",
+        "selected": false,
+        "reason": "任务不是竞赛型建模流水线，且不训练模型、不计算 AUROC，因此不采用。"
+      },
+      {
+        "name": "demo-descriptive-stats-summary",
+        "selected": false,
+        "reason": "能力与 descriptive-stats-csv-summary 重复，且本任务需要固定 metric,value 指标表而非 group,n,mean,std_sample，因此不采用。"
+      },
+      {
+        "name": "xlsx",
+        "selected": false,
+        "reason": "任务输入为 CSV 文本且输出 CSV/SVG/MD，不需要 Excel 公式、图表或 .xlsx 处理，因此不采用。"
+      },
+      {
+        "name": "statistical-testing",
+        "selected": false,
+        "reason": "任务只计算固定阈值下的分类指标，不做组间显著性检验或效应量推断，因此不采用。"
+      },
+      {
+        "name": "descriptive-stats-csv-summary",
+        "selected": true,
+        "reason": "采用：其固定结构 CSV 与本地可复现脚本能力最贴合第②步 heldout_metrics.csv 的生成与精度要求。"
+      },
+      {
+        "name": "two-group-statistical-testing-with-effect-size",
+        "selected": false,
+        "reason": "任务不比较两组实验差异，也不报告 p 值、效应量或置信区间，因此不采用。"
+      },
+      {
+        "name": "dose-response-cleaning-ic50-pipeline",
+        "selected": false,
+        "reason": "任务数据与剂量-响应、IC50 无关，因此不采用。"
+      },
+      {
+        "name": "gh-claude-ab-test-setup-6f7533",
+        "selected": false,
+        "reason": "任务不是 A/B 实验设计或转化实验规划，因此不采用。"
+      },
+      {
+        "name": "descriptive-stats-csv-and-plot",
+        "selected": false,
+        "reason": "其 CSV 与图结构面向 group,n,mean,std_sample，不符合本任务 metric,value 指标表与审计报告要求，因此不采用。"
+      }
+    ],
+    "candidate_names": [
+      "data-cleaning",
+      "scientific-visualization",
+      "missing-data-baseline-modeling",
+      "dose-response-curve-cleaning-and-ic50-fitting",
+      "eda-profiling",
+      "competition-reproducible-ml-pipeline",
+      "tabular-ml-baseline",
+      "demo-descriptive-stats-report",
+      "cross-validation-protocol",
+      "model-interpretability",
+      "estimator-robustness-audit",
+      "competition-data-science-pipeline",
+      "demo-descriptive-stats-summary",
+      "xlsx",
+      "statistical-testing",
+      "descriptive-stats-csv-summary",
+      "two-group-statistical-testing-with-effect-size",
+      "dose-response-cleaning-ic50-pipeline",
+      "gh-claude-ab-test-setup-6f7533",
+      "descriptive-stats-csv-and-plot"
+    ]
+  },
+  "steps": [
+    {
+      "idx": 0,
+      "skill": "data-cleaning",
+      "action": "读取原始 CSV，按 sample_id 去重保留首次出现记录；统计同时出现在多个 split 的 subject_id 并删除其全部记录；在删除跨 split 受试者后统计 score 缺失行并删除；输出 clean_predictions.csv（保留原列与原值）与 cohort_audit.csv（列名 check,count，仅含 raw_rows,duplicate_rows,cross_split_subjects,cross_split_rows,missing_score_rows,eligible_test_rows 六行）。",
+      "status": "done"
+    },
+    {
+      "idx": 1,
+      "skill": "manual",
+      "action": "读取 clean_predictions.csv 与 cohort_audit.csv，仅取清洗后 split == 'test' 的行，以固定阈值 score >= 0.5 判为阳性，与 label 比较计算 tp/fp/tn/fn，再计算 accuracy、precision、recall、f1，输出 heldout_metrics.csv（列名 metric,value，仅含 n,tp,fp,tn,fn,accuracy,precision,recall,f1 九行，至少 10 位有效数字）。",
+      "status": "done"
+    },
+    {
+      "idx": 2,
+      "skill": "scientific-visualization",
+      "action": "读取 cohort_audit.csv 与 heldout_metrics.csv，绘制审计计数与 heldout 指标图并导出 figure.svg，同时撰写 report.md，明确写明“模拟数据”“固定阈值”“不代表临床有效性”，并解释数据泄漏风险与复用边界。",
+      "status": "done"
+    }
+  ],
+  "independent_reference": {
+    "score": 1.0,
+    "checks": [
+      {
+        "name": "cohort_audit.schema",
+        "output": "cohort_audit.csv",
+        "passed": true,
+        "artifact_name": "step1_cohort_audit.csv"
+      },
+      {
+        "name": "cohort_audit.raw_rows",
+        "output": "cohort_audit.csv",
+        "passed": true,
+        "expected": 14,
+        "actual": "14",
+        "artifact_name": "step1_cohort_audit.csv"
+      },
+      {
+        "name": "cohort_audit.duplicate_rows",
+        "output": "cohort_audit.csv",
+        "passed": true,
+        "expected": 1,
+        "actual": "1",
+        "artifact_name": "step1_cohort_audit.csv"
+      },
+      {
+        "name": "cohort_audit.cross_split_subjects",
+        "output": "cohort_audit.csv",
+        "passed": true,
+        "expected": 1,
+        "actual": "1",
+        "artifact_name": "step1_cohort_audit.csv"
+      },
+      {
+        "name": "cohort_audit.cross_split_rows",
+        "output": "cohort_audit.csv",
+        "passed": true,
+        "expected": 2,
+        "actual": "2",
+        "artifact_name": "step1_cohort_audit.csv"
+      },
+      {
+        "name": "cohort_audit.missing_score_rows",
+        "output": "cohort_audit.csv",
+        "passed": true,
+        "expected": 1,
+        "actual": "1",
+        "artifact_name": "step1_cohort_audit.csv"
+      },
+      {
+        "name": "cohort_audit.eligible_test_rows",
+        "output": "cohort_audit.csv",
+        "passed": true,
+        "expected": 6,
+        "actual": "6",
+        "artifact_name": "step1_cohort_audit.csv"
+      },
+      {
+        "name": "heldout_metrics.schema",
+        "output": "heldout_metrics.csv",
+        "passed": true,
+        "artifact_name": "step2_heldout_metrics.csv"
+      },
+      {
+        "name": "heldout_metrics.n",
+        "output": "heldout_metrics.csv",
+        "passed": true,
+        "expected": 6,
+        "actual": "6.0",
+        "artifact_name": "step2_heldout_metrics.csv"
+      },
+      {
+        "name": "heldout_metrics.tp",
+        "output": "heldout_metrics.csv",
+        "passed": true,
+        "expected": 2,
+        "actual": "2.0",
+        "artifact_name": "step2_heldout_metrics.csv"
+      },
+      {
+        "name": "heldout_metrics.fp",
+        "output": "heldout_metrics.csv",
+        "passed": true,
+        "expected": 1,
+        "actual": "1.0",
+        "artifact_name": "step2_heldout_metrics.csv"
+      },
+      {
+        "name": "heldout_metrics.tn",
+        "output": "heldout_metrics.csv",
+        "passed": true,
+        "expected": 2,
+        "actual": "2.0",
+        "artifact_name": "step2_heldout_metrics.csv"
+      },
+      {
+        "name": "heldout_metrics.fn",
+        "output": "heldout_metrics.csv",
+        "passed": true,
+        "expected": 1,
+        "actual": "1.0",
+        "artifact_name": "step2_heldout_metrics.csv"
+      },
+      {
+        "name": "heldout_metrics.accuracy",
+        "output": "heldout_metrics.csv",
+        "passed": true,
+        "expected": 0.6666666666666666,
+        "actual": "0.6666666666666666",
+        "artifact_name": "step2_heldout_metrics.csv"
+      },
+      {
+        "name": "heldout_metrics.precision",
+        "output": "heldout_metrics.csv",
+        "passed": true,
+        "expected": 0.6666666666666666,
+        "actual": "0.6666666666666666",
+        "artifact_name": "step2_heldout_metrics.csv"
+      },
+      {
+        "name": "heldout_metrics.recall",
+        "output": "heldout_metrics.csv",
+        "passed": true,
+        "expected": 0.6666666666666666,
+        "actual": "0.6666666666666666",
+        "artifact_name": "step2_heldout_metrics.csv"
+      },
+      {
+        "name": "heldout_metrics.f1",
+        "output": "heldout_metrics.csv",
+        "passed": true,
+        "expected": 0.6666666666666666,
+        "actual": "0.6666666666666666",
+        "artifact_name": "step2_heldout_metrics.csv"
+      },
+      {
+        "name": "clean_predictions.original_values",
+        "output": "clean_predictions.csv",
+        "passed": true,
+        "artifact_name": "step1_clean_predictions.csv"
+      },
+      {
+        "name": "report.scope_labels",
+        "output": null,
+        "passed": true,
+        "artifact_name": null
+      },
+      {
+        "name": "figure.present",
+        "output": null,
+        "passed": true,
+        "artifact_name": null
+      }
+    ],
+    "evaluator": "independent synthetic cohort/threshold arithmetic; figure presence and scope labels only; no clinical validity",
+    "artifact_hashes": {
+      "step1_clean_predictions.csv": "f0d13b6c91404558e755f0ed2773653a07e014a9f167a92abf25c12e0748d639",
+      "step1_cohort_audit.csv": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7",
+      "step2_heldout_metrics.csv": "9b4018abf3313010c3cf5c455f2e09fb78c06026f790ff069ebb52222b7100b3",
+      "step3_figure.svg": "9d75f178564f98315520bb9c85d5e0caf129f090790272ee6098ba3e176c5443",
+      "step3_report.md": "98f8088d122ccf924068927f7281524a837b3915ae7ec71c23fe60358c80c3ff"
+    }
+  },
+  "same_candidate_pool": true,
+  "policy_unchanged": true,
+  "policy_before_sha256": "bc60c6945a9af22b2443d24b507cbb58de28deda51a7acc7b893246226851003",
+  "policy_after_sha256": "bc60c6945a9af22b2443d24b507cbb58de28deda51a7acc7b893246226851003",
+  "policy_check_scope": "read_only_recheck",
+  "reward_applied": false,
+  "capsule_sha256": "cc42b6aaddf80dadf239a1edd1370664dc5fba0458780518786789b04eac8de4",
+  "handoff_ready": true,
+  "limits": [
+    "三个检索探针与一项模拟科研任务，不能推断全库最优组合或总体检索准确率",
+    "模型选择理由是建议，实际参与不证明因果贡献或质量增益",
+    "浏览器工具不可用；未完成真实滚动截图验收"
+  ]
+}

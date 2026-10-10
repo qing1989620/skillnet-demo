@@ -1,0 +1,104 @@
+/* One continuous canvas and surface system, from the hero to the footer.
+   Scoped to the briefing: execution workspaces retain their own reading theme. */
+html[data-product=briefing] {
+  color-scheme: dark;
+  --bg:#091f2b; --ink:#e1efec; --ink2:#adc4c8; --ink3:#9bb7bb;
+  --brand:#def1e9; --brand2:#9de5cc; --ok:#9cdbbc; --warn:#dec18b; --bad:#f0ae9f;
+  --line:#426167; --card:#102c38eb; --soft:#193842d9;
+  --page-w:1380px; --page-pad:32px; --surface:#102c38ed;
+}
+html[data-product=briefing] body {
+  background:#091f2b; isolation:isolate;
+}
+html[data-product=briefing] body::before {
+  content:''; position:fixed; inset:0; width:100%; height:100%; opacity:1; z-index:-1; pointer-events:none;
+  background:linear-gradient(90deg,#061c2bef,#082632ba 58%,#0a2630c9),url('/static/assets/bg-flow.jpg') center / cover no-repeat;
+}
+html[data-product=briefing] body::after { content:''; position:fixed; top:0; left:0; right:0; height:2px; z-index:120; pointer-events:none; background:linear-gradient(90deg,#467f87,#a9ddc4 65%,#d1b781); }
+html[data-product=briefing] .hero { background:transparent!important; border-bottom:1px solid #9de5cc22; }
+html[data-product=briefing] .chapter-nav { position:sticky; top:52px; z-index:35; background:#0c2934eb; border-bottom:1px solid #689b8c55; backdrop-filter:blur(12px); }
+html[data-product=briefing] .chapter-nav>.wrap { display:flex; gap:22px; align-items:center; min-height:48px; overflow:auto; scrollbar-width:thin; }
+html[data-product=briefing] .chapter-nav span { font-size:11px; color:#adc9c1; margin-right:auto; white-space:nowrap; }
+html[data-product=briefing] .chapter-nav a { font-size:12px; color:#c3dcd5; white-space:nowrap; text-decoration:none; padding:12px 0; }
+html[data-product=briefing] .chapter-nav a:hover { color:#eddbad; }
+html[data-product=briefing] body>.wrap { padding-top:72px!important; padding-bottom:18px!important; scroll-margin-top:124px; }
+html[data-product=briefing] #s3 { padding-top:42px!important; }
+html[data-product=briefing] .wrap>h2 { color:#e6f1ec; font-size:clamp(25px,2.5vw,34px)!important; font-weight:500; letter-spacing:-.8px; line-height:1.45!important; margin:10px 0 16px!important; }
+html[data-product=briefing] .wrap>.kicker { color:#a9c9ba; font:11px/1.8 Consolas,monospace; letter-spacing:2px; }
+html[data-product=briefing] .wrap>.kicker::before { content:''; display:inline-block; width:22px; height:1px; background:#bda878; vertical-align:middle; margin-right:12px; }
+html[data-product=briefing] .wrap>.sub { color:#b3c8ca; max-width:90ch; font-size:14px!important; line-height:1.95!important; margin-bottom:26px!important; }
+html[data-product=briefing] .show-stage { background:linear-gradient(130deg,#102c38ed,#091e2aee); border-color:#4e7376; box-shadow:0 24px 70px #020e1840; }
+html[data-product=briefing] :is(.pain,.arch,.m4,.shot,.uq,.kp,.next,.script,.show-answer,.show-files,.show-history,.show-impact button,.evpanel,.ws,.ws-card,.ai-reply,.tl-card,.artcard,.task-summary,.demo-box,.runbox,.runsum,.es,.evibar) {
+  background:var(--surface); color:var(--ink2); border-color:var(--line); border-radius:14px; box-shadow:0 12px 36px #04151d18;
+}
+html[data-product=briefing] :is(.pain,.m4,.uq,.kp) { padding:24px; }
+html[data-product=briefing] .pain { border-top:1px solid #72ac9c; }
+html[data-product=briefing] :is(.pain h4,.m4 b,.uq b,.kp .n,.show-answer>h3,.show-files>h3,.show-impact b,.evpanel h5,.ts-head,.ai-reply h5,.show-answer .rp-body h5) { color:#d5eee3; }
+html[data-product=briefing] :is(.pain p,.pain .src,.m4 span,.uq span,.kp .t,.show-impact span,.show-impact small,.shot-cap,.show-history>summary,.show-answer .rp-body,.show-file p,.ws-foot,.ws-item .m) { color:#adc4c6; }
+html[data-product=briefing] :is(.show-file b,.show-files .show-evidence-link,.shot-cap b,.m4 .cov,.uq b,.next b,.evibar b) { color:#afe8d2; }
+html[data-product=briefing] .show-answer,.show-files { padding:28px; }
+html[data-product=briefing] .show-impact button { transition:border-color .2s,background .2s; }
+html[data-product=briefing] .show-impact button:hover { background:#21444be0; border-color:#90cbb7; }
+html[data-product=briefing] :is(.show-value,.show-output .show-value,.task-summary .ts-metrics,.ws-side,.ws-composer,.shot-chrome,.cap-strip,.ws-item.on,.ai-reply .rp-body pre,.show-answer .rp-body pre,.show-answer .rp-body code,.cite) {
+  background:#193941; color:#bfe1d6; border-color:#426167;
+}
+html[data-product=briefing] .show-composer .ws-composer { background:transparent; }
+html[data-product=briefing] .shot-chrome span { background:#24434a; color:#c1d7d3; }
+html[data-product=briefing] :is(.ws-new,.ws-q .txt) { background:#244f53; color:#e0f4eb; }
+html[data-product=briefing] :is(.btn,.evtag,.abtn,.show-file button,.show-file a,#demo-seven) {
+  background:#183a42!important; border:1px solid #638a83!important; color:#d4eee4!important; border-radius:8px;
+}
+html[data-product=briefing] :is(.btn-primary,.runbtn) { background:#9de5cc!important; color:#102f36!important; border-color:#c7f5e2!important; }
+html[data-product=briefing] :is(button,a,summary,input,select):focus-visible { outline:2px solid #e0c18b; outline-offset:4px; }
+html[data-product=briefing] .value-capsule { background:linear-gradient(125deg,#1c403f,#15353e); color:#e4f0e7; border-color:#688c7b; box-shadow:none; }
+html[data-product=briefing] :is(.value-heading h3,.value-cells b,.value-scope>b,.value-handoff b) { color:#d4edda; }
+html[data-product=briefing] :is(.value-capsule p,.value-heading small,.value-cells small,.value-handoff small,.assessment-expand>summary) { color:#b7cfc3; }
+html[data-product=briefing] :is(.value-cells>div,.value-handoff,.value-heading>span,.assessment-expand) { border-color:#64877b; }
+html[data-product=briefing] .value-handoff button { background:#a9dbc3; color:#183c3d; border-color:#bedec9; }
+html[data-product=briefing] .show-routing { grid-column:1/-1; min-width:0; }
+html[data-product=briefing] .route-principle { display:flex; flex-wrap:wrap; align-items:center; gap:12px 24px; margin:-4px 0 24px; color:#bdd8d2; font-size:12px; }
+html[data-product=briefing] .route-principle b { color:#e0c58f; font-weight:400; }
+html[data-product=briefing] :is(table.vs,table.vs.dense) { border:1px solid var(--line); border-radius:12px; border-collapse:separate; border-spacing:0; overflow:hidden; }
+html[data-product=briefing] table.vs th { background:#173d45; color:#d2e9e1; border-color:#52736d; font-weight:500; }
+html[data-product=briefing] table.vs td { background:#102c38ed; color:#b8cdd0; border-color:#426167; line-height:1.9; }
+html[data-product=briefing] table.vs td.ours { background:#21453fee; color:#d2e9da; }
+html[data-product=briefing] table.vs tr:hover td { background:#23434d; }
+html[data-product=briefing] table.vs tr:hover td.ours { background:#2a5147; }
+html[data-product=briefing] .table-scroll { overflow-x:auto; margin:22px 0; border-radius:12px; scrollbar-color:#739d91 #16343e; }
+html[data-product=briefing] .table-scroll>table { min-width:780px; margin:0; width:100%; }
+html[data-product=briefing] :is(.product-experiments .product-block,.experiment-note) { background:var(--surface)!important; border-color:var(--line); }
+html[data-product=briefing] .product-experiments :is(h3,b) { color:#d3ecdf; }
+html[data-product=briefing] .product-experiments :is(p,small,.experiment-meta,.experiment-meter,.experiment-curves) { color:#b1c9c6; }
+html[data-product=briefing] :is(.experiment-warning,.experiment-table th,.ts-metrics) { background:#233c3c; color:#d6c497; border-color:#738071; }
+html[data-product=briefing] :is(.experiment-table td,.experiment-table th,.show-file,.show-answer .rp-body td,.show-answer .rp-body th) { border-color:#4e6b6b; }
+html[data-product=briefing] :is(table.cmp th,.ai-reply .rp-body th,.task-summary th) { background:#193e46; color:#c4dcd2; }
+html[data-product=briefing] :is(table.cmp td,.ai-reply .rp-body td,.task-summary td) { color:#bad2ce; border-color:#4e6b6b; }
+html[data-product=briefing] .experiment-meter>div { background:#365650; }
+html[data-product=briefing] .arch { padding:28px; overflow:auto; }
+html[data-product=briefing] .arch>svg { min-width:720px; }
+html[data-product=briefing] .arch :is(rect[fill='#1a3a5c'],rect[fill='#f2f5f8']) { fill:#224b53; stroke:#6d9290; }
+html[data-product=briefing] .arch :is(text[fill='#5b6b7c'],text[fill='#2e7d4f']) { fill:#bdd7c8; }
+html[data-product=briefing] .arch [stroke='#24557a'] { stroke:#8caeaa; }
+html[data-product=briefing] .arch [fill='#24557a'] { fill:#8caeaa; }
+html[data-product=briefing] #runcenter .card { border-radius:14px!important; background:var(--surface)!important; }
+html[data-product=briefing] #runlist :is(td,th) { border-color:var(--line); }
+html[data-product=briefing] #ver-badge { background:#163540ed!important; color:#b6cdd0!important; border-color:#638880!important; }
+html[data-product=briefing] .script .in { background:transparent; color:#b9cfc9; }
+html[data-product=briefing] footer { color:#abc6bf; border-color:#4a6b66; padding:28px 0 40px; margin-top:48px; }
+/* Modal previews use a paper surface for reading raw files. They are a separate layer. */
+html[data-product=briefing] :is(.product-preview,.show-preview-dialog,.ui-dialog) { color-scheme:light; color:#254652; background:#f6faf7; --ink:#254652; --ink2:#527371; --brand:#214e50; --brand2:#286f5e; --soft:#eaf3ee; --line:#bdd2c6; --card:#f6faf7; }
+@media(max-width:860px) {
+  html[data-product=briefing] { --page-pad:20px; }
+  html[data-product=briefing] .chapter-nav { position:static; }
+  html[data-product=briefing] .chapter-nav>.wrap { gap:20px; }
+  html[data-product=briefing] .chapter-nav span { display:none; }
+  html[data-product=briefing] body>.wrap { padding-top:48px!important; scroll-margin-top:84px; }
+  html[data-product=briefing] #s3 { padding-top:30px!important; }
+  html[data-product=briefing] :is(.pain,.m4,.uq,.kp,.show-answer,.show-files,.arch) { padding:20px; }
+  html[data-product=briefing] .route-principle { gap:10px 16px; font-size:11px; line-height:1.8; }
+  html[data-product=briefing] .show-routing .route-cards { grid-template-columns:1fr; }
+  html[data-product=briefing] :is(.pain3,.map4,.uniq,.kpi) { gap:12px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  html[data-product=briefing] *,html[data-product=briefing] *::before,html[data-product=briefing] *::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; }
+}

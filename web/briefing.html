@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" data-page="briefing">
+<html lang="zh-CN" data-page="briefing" data-product="briefing">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -581,13 +581,14 @@
   }
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=20261010.3"></script>
+<script src="/static/assets/ui.js?v=20261010.4"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=20261010.3"></script>
-<link rel="stylesheet" href="/static/assets/showcase.css?v=20261010.3">
-<link rel="stylesheet" href="/static/assets/refinement.css?v=20261010.3">
-<link rel="stylesheet" href="/static/assets/quality.css?v=20261010.3">
-<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261010.3">
+<script src="/static/assets/product.js?v=20261010.4"></script>
+<link rel="stylesheet" href="/static/assets/showcase.css?v=20261010.4">
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261010.4">
+<link rel="stylesheet" href="/static/assets/quality.css?v=20261010.4">
+<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261010.4">
+<link rel="stylesheet" href="/static/assets/presentation.css?v=20261010.4">
 </head>
 <body>
 
@@ -612,7 +613,7 @@
     <div>
       <div class="h-kicker">SKILLNET-S1 · 科研能力生态</div>
       <h1>让一次提问，<br>调动一整个<br><span class="em">能力网络。</span></h1>
-      <div class="h-sub">从找到能力，到协作执行，再到验收与进化。<br>让你看到 Agent <b>如何做成这件事，<br>经验如何被核验，何时才有资格影响网络。</b></div>
+      <div class="h-sub">从能力网络里，自检索出对问题有用的几个 Skill。<br>让你看到 Agent <b>为什么选它们、如何协作交付，<br>结果如何被核验，经验何时能回到网络。</b></div>
       <div class="h-actions">
         <a class="btn btn-primary" href="#s3">提出问题，展开内核 ↗</a>
         <button type="button" class="btn btn-ghost" onclick="Showcase.replay()">回放一次真实任务</button>
@@ -635,11 +636,14 @@
   <div class="hero-foot"><span>QUESTION → CAPABILITY → EXECUTION → EVIDENCE → EVOLUTION</span><span>右侧每个节点，都是当前技能库中的真实能力 · 可拖拽与探索</span></div>
 </header>
 
+<nav class="chapter-nav" aria-label="演示章节"><div class="wrap"><span>沿一次提问，看见能力如何协作</span><a href="#s3">内核现场</a><a href="#s1">问题</a><a href="#s2">框架</a><a href="#runcenter">运行</a><a href="#sproduct">界面</a><a href="#s4">能力</a><a href="#s5">验证</a><a href="#s6">交付</a><a href="#top" aria-label="回到首屏">↑</a></div></nav>
+
 <!-- ==================== 幕 3 · 现场演示（对话式） ==================== -->
 <section class="wrap wide" id="s3">
   <div class="kicker">THE ENGINE, REVEALED · 内核现场</div>
   <h2>问一个问题，看见整个框架如何工作。</h2>
   <div class="sub">能力网络随任务收束为真实执行路径。每一步，都能看见<b>正在做什么、实际证据、为什么有用</b>。可继续追问，也可点击任一阶段检查细节。</div>
+  <div class="route-principle" aria-label="技能自检索流程"><span><b>01</b> 关键词与语义发现候选</span><span><b>02</b> 关系补齐协作能力</span><span><b>03</b> 按任务必要性选少量技能</span><span><b>04</b> 用执行与产物核对选择</span></div>
 
   <div class="show-stage" id="show-stage" data-running="false">
     <div class="show-head">
@@ -667,7 +671,7 @@
     <div class="show-budget"><span>运行耗时 <b id="show-elapsed">—</b></span><span>模型费用 <b id="show-cost">—</b></span><span id="show-calls">—</span><span id="show-record-note">S1 接入契约已就绪 · 生产联调待验证</span></div>
     <div class="show-results" id="show-results" hidden></div>
   </div>
-  <div class="show-output" id="show-output" hidden><div class="show-impact" id="show-impact" aria-label="本次任务的七项内核贡献"></div><article class="show-answer"><h3>回答与本次价值</h3><div id="show-answer-body"></div></article><aside class="show-files"><h3>已经做出来的交付物</h3><div id="show-files-body"></div><a class="show-evidence-link" id="show-evidence-link" target="_blank" rel="noopener">打开完整运行记录 · 代码 / 尝试 / 验收 / 成本 ↗</a></aside></div>
+  <div class="show-output" id="show-output" hidden><div class="show-routing" id="show-routing"></div><div class="show-impact" id="show-impact" aria-label="本次任务的七项内核贡献"></div><article class="show-answer"><h3>回答与本次价值</h3><div id="show-answer-body"></div></article><aside class="show-files"><h3>已经做出来的交付物</h3><div id="show-files-body"></div><a class="show-evidence-link" id="show-evidence-link" target="_blank" rel="noopener">打开完整运行记录 · 代码 / 尝试 / 验收 / 成本 ↗</a></aside></div>
   <details class="show-history" id="show-history"><summary>对话记录与逐步证据 · 保留上下文，可继续追问</summary>
 
   <div class="ws">
@@ -685,7 +689,7 @@
     </div>
   </div>
   </details>
-  <div class="show-tools"><button class="btn" type="button" data-show-run="f11ad204-20261010-100815-58a8">科研复现 · 泄漏排查与指标重算</button><button class="btn" type="button" data-show-run="b5492bb7-20261010-083743-1b37">同为 9 分 · 执行失败不发奖</button><button class="btn" type="button" data-show-run="b5492bb7-20261010-083955-a445">十二门核验 · 经营月报 4/12</button><button class="btn" type="button" data-show-run="1624c869-20261010-084055-eeaf">缺少标准答案 · 3/12 不发奖</button><button class="btn" type="button" data-show-run="b5492bb7-20261009-232823-34fe">独立判据通过 · 经营月报</button><button class="btn" type="button" data-show-run="1624c869-20261009-232919-0fe0">同为 8 分，为何不学习？</button><button class="btn" type="button" data-show-run="b5492bb7-20261008-174014-44aa">历史经营任务 · 3 步回放</button><button class="btn" type="button" data-show-run="02f80093-20261008-175420-f527">历史同文件追问 · 原值已核验</button><button class="btn" type="button" data-show-run="7356cc57-20261008-012151-3b64">历史科研任务 · 3 步回放</button><button class="btn" type="button" data-show-run="7c29f741-20261008-163216-a4ef">内核记录 · 1 步真实执行</button><button class="btn" id="demo-seven" style="background:#fff;color:var(--brand2);border:1px solid var(--brand2);font-size:12px" onclick="runDemo()">七阶段完整演示（本页）</button><p>对照两次真实任务的判据、结果和影子观察。原有完整演示、同题对照、代码、文件预览与会话历史均可继续使用。</p></div>
+  <div class="show-tools"><button class="btn" type="button" data-show-run="f11ad204-20261010-110841-6d42">科研复现 · 泄漏排查与指标重算</button><button class="btn" type="button" data-show-run="f11ad204-20261010-100815-58a8">上一版科研复核 · 原始记录</button><button class="btn" type="button" data-show-run="b5492bb7-20261010-083743-1b37">同为 9 分 · 执行失败不发奖</button><button class="btn" type="button" data-show-run="b5492bb7-20261010-083955-a445">十二门核验 · 经营月报 4/12</button><button class="btn" type="button" data-show-run="1624c869-20261010-084055-eeaf">缺少标准答案 · 3/12 不发奖</button><button class="btn" type="button" data-show-run="b5492bb7-20261009-232823-34fe">独立判据通过 · 经营月报</button><button class="btn" type="button" data-show-run="1624c869-20261009-232919-0fe0">同为 8 分，为何不学习？</button><button class="btn" type="button" data-show-run="b5492bb7-20261008-174014-44aa">历史经营任务 · 3 步回放</button><button class="btn" type="button" data-show-run="02f80093-20261008-175420-f527">历史同文件追问 · 原值已核验</button><button class="btn" type="button" data-show-run="7356cc57-20261008-012151-3b64">历史科研任务 · 3 步回放</button><button class="btn" type="button" data-show-run="7c29f741-20261008-163216-a4ef">内核记录 · 1 步真实执行</button><button class="btn" id="demo-seven" style="background:#fff;color:var(--brand2);border:1px solid var(--brand2);font-size:12px" onclick="runDemo()">七阶段完整演示（本页）</button><p>对照两次真实任务的判据、结果和影子观察。原有完整演示、同题对照、代码、文件预览与会话历史均可继续使用。</p></div>
   <div id="ver-badge" title="当前页面版本；点击可强制刷新" onclick="forceRefresh()"
        style="position:fixed;right:14px;bottom:14px;z-index:99;font:11px/1 var(--mono,monospace);
        color:#9aa7b3;background:rgba(255,255,255,.85);border:1px solid var(--line);
@@ -809,22 +813,22 @@
 <!-- ==================== 幕 4 · 对比论文 ==================== -->
 <section class="wrap" id="s4">
   <div class="kicker">COMPARISON · 与 SkillNet 论文逐项对照</div>
-  <h2>复现了它的核心，补上了它没有的</h2>
-  <div class="sub">对照对象：SkillNet: Create, Evaluate, and Connect AI Skills（arXiv 2603.04448，浙大 + 阿里 / 蚂蚁 / 腾讯）。</div>
-  <table class="vs">
-    <tr><th style="width:20%">能力</th><th style="width:26%">SkillNet 论文</th><th>SkillNet-S1（本项目）</th><th style="width:9%">证据</th></tr>
+  <h2>让技能发现，连上可执行与可复核的交付</h2>
+  <div class="sub">参考 SkillNet 的技能发现、关系图和任务路由设计，列出本项目当前实现与证据。这是工程落地范围说明；不同规模、数据集与口径下的数字不能直接比较。<a href="https://github.com/zjunlp/SkillNet" target="_blank" rel="noopener">上游公开项目 ↗</a></div>
+  <div class="table-scroll" role="region" aria-label="能力对照表，可横向滚动" tabindex="0"><table class="vs">
+    <tr><th style="width:20%">能力</th><th style="width:26%">参考设计与比较范围</th><th>SkillNet-S1（本项目）</th><th style="width:9%">证据</th></tr>
     <tr><td>技能契约</td><td class="no3">4 字段卡片</td><td class="ours">扩展为完整契约：能力/输入输出 + <b>陷阱提示</b> + <b>验证方式</b> + 五维质量分</td><td><button class="evtag" data-ev="quality">展开</button></td></tr>
     <tr><td>三层本体</td><td class="no3">分类 / 关系图 / 打包</td><td class="ours"><span data-live="domains">—</span> 个领域 · <span data-live="edges">—</span> 条类型化关系边，<b>图驱动编排</b></td><td><button class="evtag" data-ev="library">展开</button></td></tr>
-    <tr><td>Fabric 式路由</td><td class="no3">检索 67.9% @ K=5</td><td class="ours">三档（BM25 / 混合 / 图扩展），且<b>降级显式可观测</b>：缺密钥时明示哪些组件未执行</td><td><button class="evtag" data-ev="gating">展开</button></td></tr>
-    <tr><td>技能选择（RL）</td><td class="no3">未涉及</td><td class="ours">Shared LinUCB：任务条件化，实测跨技能泛化 <b>≈<span data-live="linucb_ratio">1.25</span>×</b>（同领域 vs 异领域响应）</td><td><button class="evtag" data-ev="linucb">展开</button></td></tr>
-    <tr><td>技能进化</td><td class="no3">未涉及</td><td class="ours">四种算子（蒸馏 / 变异 / 交叉 / 再生）+ 质量准入，闭环可现场演示</td><td><button class="evtag" data-ev="evolver">展开</button></td></tr>
+    <tr><td>Fabric 式路由</td><td class="no3">多路检索与任务 Wiki</td><td class="ours">三档（BM25 / 混合 / 图扩展）+ 必要性筛选，且<b>降级显式可观测</b>：缺密钥时明示哪些组件未执行</td><td><button class="evtag" data-ev="gating">展开</button></td></tr>
+    <tr><td>技能选择（RL）</td><td class="no3">本表仅列本项目实现范围</td><td class="ours">Shared LinUCB：任务条件化的影子观察；独立机制自检的同领域响应 ≈<span data-live="linucb_ratio">1.25</span>×，不代表实际质量提升</td><td><button class="evtag" data-ev="linucb">展开</button></td></tr>
+    <tr><td>技能进化</td><td class="no3">本表仅列本项目实现范围</td><td class="ours">四种候选生成算子；运行经验先隔离，独立对照与十二门全部通过后才奖励</td><td><button class="evtag" data-ev="evolver">展开</button></td></tr>
     <tr><td>评估体系</td><td class="no3">库级质量评估</td><td class="ours">主客分离双线评估 + 任务集与原始口径溯源 + <b>配对 bootstrap 95% CI</b></td><td><button class="evtag" data-ev="stats">展开</button></td></tr>
-    <tr><td>置信度分流</td><td class="no3">未涉及（仅检索排序）</td><td class="ours">Top-1 相关度三档：自动执行 / 人工确认 / 无匹配直答，阈值按 42 条查询实测标定</td><td><button class="evtag" data-ev="gating">展开</button></td></tr>
-    <tr><td>技能库构成</td><td class="no3">本文对照所述配置</td><td class="ours"><span data-live="skills">—</span> 个技能 / 51 科研方法 + 24 交付工具（来自开发组另一成员项目）+ <span data-live="evolved">—</span> 演化</td><td><button class="evtag" data-ev="library">展开</button></td></tr>
-    <tr><td>成本核算</td><td class="no3">未核算</td><td class="ours">请求级 Token / 费用账本（contextvar 隔离，跨线程不串账），页面实时可见</td><td><button class="evtag" data-ev="ledger">展开</button></td></tr>
-    <tr><td>跨框架互操作</td><td class="no3">未涉及</td><td class="ours">一键导出 Claude Code / Cursor / Gemini / AGENTS 四种落点</td><td><button class="evtag" data-ev="frameworks">展开</button></td></tr>
-    <tr><td>可复现工程</td><td class="no3">未开放</td><td class="ours">31 项交付自检 · pytest（不联网）· manifest 数字溯源（git commit / 库哈希 / 数据集哈希）</td><td><button class="evtag" data-ev="repro">展开</button></td></tr>
-  </table>
+    <tr><td>置信度分流</td><td class="no3">未涉及（仅检索排序）</td><td class="ours">启发式三档建议；阈值来自早期种子库查询，尚未完成扩容后全库重新标定；显式空选不补足</td><td><button class="evtag" data-ev="gating">展开</button></td></tr>
+    <tr><td>技能库构成</td><td class="no3">本文对照所述配置</td><td class="ours"><span data-live="skills">—</span> 个技能 / 76 种子 + 1769 去重社区导入 + <span data-live="evolved">—</span> 演化</td><td><button class="evtag" data-ev="library">展开</button></td></tr>
+    <tr><td>成本核算</td><td class="no3">本表不比较上游成本</td><td class="ours">请求级 Token / 费用账本（contextvar 隔离，跨线程不串账），页面实时可见</td><td><button class="evtag" data-ev="ledger">展开</button></td></tr>
+    <tr><td>跨框架互操作</td><td class="no3">本表仅列本项目实现范围</td><td class="ours">一键导出 Claude Code / Cursor / Gemini / AGENTS 四种落点</td><td><button class="evtag" data-ev="frameworks">展开</button></td></tr>
+    <tr><td>可复现工程</td><td class="no3">上游代码与资源已公开</td><td class="ours">31 项交付自检 · pytest（不联网）· manifest 数字溯源（git commit / 库哈希 / 数据集哈希）</td><td><button class="evtag" data-ev="repro">展开</button></td></tr>
+  </table></div>
   <div class="sub" style="margin-top:8px;font-size:12px">「展开」= 现场显示该项能力的实时计算值、实现位置、测试名与自核命令 —— 也可直接访问
     <a href="/api/capabilities" target="_blank" style="color:var(--brand2)">/api/capabilities</a> 自行核对；技能规模与关系实时读取，实验与测试数字注明来源。</div>
   <div id="evpanel"></div>
@@ -844,7 +848,7 @@
   <h2>四种做法放在一起看</h2>
   <div class="sub">下表说明本项目的配置边界，不代表裸模型、RAG 或其它产品的能力上限。历史方案盲评与新的真实执行对照分开展示；真实执行三组共用执行器及数值验收。</div>
 
-  <table class="vs dense">
+  <div class="table-scroll" role="region" aria-label="方案配置对照表，可横向滚动" tabindex="0"><table class="vs dense">
     <tr><th style="width:13%">能力</th><th style="width:21%">裸模型</th><th style="width:21%">提示词塞技能</th><th style="width:21%">单路向量配置（结构示意）</th><th>SkillNet（本项目）</th></tr>
     <tr><td><b>技能组织</b></td>
       <td class="no3">该基线不提供外部技能资产</td>
@@ -870,7 +874,7 @@
       <td class="no3">该配置不更新技能选择策略</td>
       <td class="no3">本次背景技能组使用固定供给</td>
       <td class="no3">此配置按相似度排序，不启用反馈学习</td>
-      <td class="ours"><b>Shared LinUCB</b> + 反馈回流：本次成败改变下次排序（泛化 ≈<span data-live="linucb_ratio">1.25</span>×）</td></tr>
+      <td class="ours"><b>Shared LinUCB</b> 保留收益与探索分项；本次经验进入影子观察，正式排序未自动更新</td></tr>
     <tr><td><b>技能进化</b></td>
       <td class="no3">该配置不生成技能候选</td>
       <td class="no3">该配置不生成技能候选</td>
@@ -881,7 +885,7 @@
       <td class="no3">同题真实运行与独立数值检查</td>
       <td class="no3">目前仅为配置示意，暂无此组执行证据</td>
       <td class="ours">有 / 无技能<b>对照实验</b> + 开发 / 冻结任务集 + 配对 bootstrap 95% CI（含负面结果）</td></tr>
-  </table>
+  </table></div>
 
   <div class="uniq" style="grid-template-columns:repeat(3,1fr)">
     <div class="uq">
@@ -892,15 +896,14 @@
     </div>
     <div class="uq">
       <b>检索沿关系图补漏</b>
-      <span>关键词检索漏掉的技能，沿 <b><span data-live="edges">—</span> 条类型化关系边</b>补回来。
-      同一份任务实测：BM25 召回 66.7% → Fabric 100%。</span>
-      <div style="margin-top:8px;font-size:11.5px;color:var(--brand2)">演示页第 1 阶段可直接看到「补回了哪几条」</div>
+      <span>沿 <b><span data-live="edges">—</span> 条类型化关系边</b>寻找协作能力，再按任务必要性筛选。
+      允许少选或不选，不再把模型未选的候选补进推荐集。</span>
+      <div style="margin-top:8px;font-size:11.5px;color:var(--brand2)">本轮真实探针：CSV 2 项 / RDKit 1 项 / 晚安问候 0 项；不能据此推断总体准确率</div>
     </div>
     <div class="uq">
-      <b>反馈改变下次选择</b>
-      <span>本次任务的评分写回共享参数 θ，<b>同领域技能的预测随之变化</b>。
-      实测：一次任务后预测值 0 → 0.73，探索奖励同步衰减。</span>
-      <div style="margin-top:8px;font-size:11.5px;color:var(--brand2)">演示页第 6 阶段有「更新前 → 更新后」对比表</div>
+      <b>经验先进入影子观察</b>
+      <span>模型评分只供参考，<b>已测产物按责任步骤单独复核</b>。候选必须通过全部十二道门，才有资格获得版本积分。</span>
+      <div style="margin-top:8px;font-size:11.5px;color:var(--brand2)">当前真实配对未测出质量增益；正式排序仍未部署学习后的参数</div>
     </div>
   </div>
 
@@ -936,7 +939,7 @@
     <div class="kp"><div class="n"><span data-live="edges">—</span></div><div class="t">类型化关系边 · 图驱动编排</div></div>
     <div class="kp"><div class="n">160</div><div class="t">维任务-技能联合上下文（当前 LinUCB 实现）</div></div>
     <div class="kp"><div class="n">31</div><div class="t">项交付自检（verify.py）</div></div>
-    <div class="kp"><div class="n">315</div><div class="t">项自动化回归（当前交付验证）</div></div>
+    <div class="kp"><div class="n">326</div><div class="t">项自动化回归（当前交付验证）</div></div>
     <div class="kp"><div class="n">7</div><div class="t">项真实运行内核证据</div></div>
     <div class="kp"><div class="n">8</div><div class="t">个框架 / 目录导出落点</div></div>
     <div class="kp"><div class="n">2</div><div class="t">套任务集（历史划分元数据待复核）</div></div>
@@ -971,7 +974,7 @@
 </section>
 
 <script>
-const PAGE_VER = "2026-10-10.ecosystem.3";
+const PAGE_VER = "2026-10-10.retrieval.4";
 const API = location.origin;
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -2056,9 +2059,9 @@ async function loadRunCenter(){
     let runs = [];
     try { runs = (await (await fetch(API + "/api/runs?limit=8")).json()).runs || []; } catch {}
     if (!runs.length){ host.innerHTML = '<div style="font-size:12.5px;color:#8a97a4;padding:8px 0">还没有运行记录 —— 在上方输入任务，点「实时运行」创建第一条。</div>'; return; }
-    const ST = {COMPLETED:["已完成","#2e7d4f"],PARTIAL:["部分完成","#b0781a"],FAILED:["失败","#a8433a"],
-                RUNNING:["运行中","#1f5f9e"],EXECUTING:["执行中","#1f5f9e"],RETRIEVING:["检索中","#1f5f9e"],
-                ORCHESTRATING:["编排中","#1f5f9e"],VERIFYING:["验收中","#1f5f9e"],EVOLVING:["进化中","#1f5f9e"],
+    const ST = {COMPLETED:["已完成","#9cdbbc"],PARTIAL:["部分完成","#dec18b"],FAILED:["失败","#f0ae9f"],
+                RUNNING:["运行中","#9ccee1"],EXECUTING:["执行中","#9ccee1"],RETRIEVING:["检索中","#9ccee1"],
+                ORCHESTRATING:["编排中","#9ccee1"],VERIFYING:["验收中","#9ccee1"],EVOLVING:["进化中","#9ccee1"],
                 CANCELLED:["已取消","#8a97a4"],INTERRUPTED:["已中断","#8a97a4"],CREATED:["已创建","#8a97a4"],BUDGET_EXCEEDED:["超预算","#a8433a"]};
     host.innerHTML = '<table style="width:100%;border-collapse:collapse;font:12px/1.7 var(--mono)">' +
       '<tr><th style="text-align:left;color:#8a97a4;padding:4px 8px;border-bottom:1px solid var(--line)">状态</th>' +
@@ -2614,6 +2617,6 @@ window.__SELFTEST__ = function(){
   }, 4000);
 })();
 </script>
-<script src="/static/assets/showcase.js?v=20261010.3"></script>
+<script src="/static/assets/showcase.js?v=20261010.4"></script>
 </body>
 </html>
