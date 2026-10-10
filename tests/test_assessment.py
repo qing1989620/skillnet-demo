@@ -376,3 +376,15 @@ def test_read_only_audit_does_not_create_a_missing_run_store(tmp_path,monkeypatc
     report.write_text(json.dumps(dict(pairs=[])))
     decision=inspect_promotion(candidate,report,SkillLibrary([]))
     assert not decision['eligible'] and not (tmp_path/'uncreated').exists()
+
+
+def test_cli_keeps_catalog_diagnostics_out_of_audit_json(monkeypatch,capsys):
+    from tools.promote_candidate import load_library
+    sentinel=object()
+    def noisy_load():
+        print('catalog diagnostic')
+        return sentinel
+    monkeypatch.setattr(SkillLibrary,'load',noisy_load)
+    assert load_library() is sentinel
+    captured=capsys.readouterr()
+    assert captured.out=='' and captured.err=='catalog diagnostic\n'

@@ -9,7 +9,13 @@ from skillnet.promotion import inspect_promotion
 from skillnet import config
 import json
 import os
-from contextlib import contextmanager
+from contextlib import contextmanager, redirect_stdout
+
+
+def load_library():
+    # Keep audit stdout valid JSON; catalog diagnostics belong on stderr.
+    with redirect_stdout(sys.stderr):
+        return SkillLibrary.load()
 
 
 @contextmanager
@@ -43,9 +49,9 @@ if __name__=='__main__':
     parser.add_argument('--audit-only',action='store_true',help='Read physical evidence and print every gate; no writes or model calls')
     args=parser.parse_args()
     if args.audit_only:
-        decision=inspect_promotion(args.candidate,args.report,SkillLibrary.load())
+        decision=inspect_promotion(args.candidate,args.report,load_library())
         print(json.dumps(decision,ensure_ascii=False,indent=2))
         sys.exit(0 if decision['eligible'] else 2)
     with promotion_lock():
-        skill=promote(args.candidate,args.report,SkillLibrary.load())
+        skill=promote(args.candidate,args.report,load_library())
         print(json.dumps(dict(promoted=skill.name,receipt=skill.stats['verified_improvement_receipt']),ensure_ascii=False,indent=2))
