@@ -2,6 +2,7 @@
 import copy
 import hashlib
 import json
+import subprocess
 
 import httpx
 import pytest
@@ -47,6 +48,17 @@ def test_resource_transfer_verifies_all_bytes_without_executing_script(package):
     assert len(resources.package_manifest(skill)['files'])==3
     (directory/'scripts/danger.py').write_bytes(b'changed')
     with pytest.raises(resources.ResourceIntegrityError):resources.read_resource(skill,'scripts/danger.py')
+
+
+def test_resource_snapshot_excludes_local_caches_and_hidden_files(package):
+    _,directory=package
+    (directory/'scripts/__pycache__').mkdir()
+    (directory/'scripts/__pycache__/danger.pyc').write_bytes(b'local cache')
+    (directory/'.pytest_cache').mkdir()
+    (directory/'.pytest_cache/state').write_bytes(b'local state')
+    (directory/'scripts/loose.pyc').write_bytes(b'local bytecode')
+    record=resources.build_snapshots(directory.parents[3])['example']
+    assert {r['path'] for r in record['files']}=={'SKILL.md','scripts/danger.py','LICENSE'}
 
 
 @pytest.mark.parametrize('path',['../LICENSE','/LICENSE','scripts/../LICENSE','scripts\\danger.py',
@@ -113,12 +125,14 @@ def test_optional_resource_tools_are_progressive_readonly_and_digest_checked(pac
 def test_all_delivered_packages_match_recorded_resource_snapshot():
     snapshots=resources._snapshots()
     assert len(snapshots)==1769
+    tracked=set(subprocess.check_output(['git','ls-files','-z'],cwd=resources.ROOT).decode('utf-8').split('\0'))
     total=0
     for record in snapshots.values():
         assert record['package_sha256']==digest({k:v for k,v in record.items() if k!='package_sha256'})
         root=resources.ROOT/record['package_path']
         for item in record['files']:
+            assert record['package_path']+'/'+item['path'] in tracked
             raw=(root/item['path']).read_bytes()
             assert len(raw)==item['bytes'] and hashlib.sha256(raw).hexdigest()==item['sha256']
             total+=1
-    assert total==10917
+    assert total==10898

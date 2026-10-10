@@ -72,10 +72,14 @@ def build_snapshots(root=ROOT):
         if not package.is_relative_to(base):raise ValueError('Package outside community root')
         files=[]
         for target in sorted(package.rglob('*')):
+            relative=target.relative_to(package)
+            if (any(part=='__pycache__' or part.startswith('.') for part in relative.parts)
+                or target.suffix in {'.pyc','.pyo'}):
+                continue
             if not target.is_file():continue
             if target.is_symlink() or not target.resolve().is_relative_to(package):
                 raise ValueError('Linked resource is not supported')
-            name=resource_path(target.relative_to(package).as_posix())
+            name=resource_path(relative.as_posix())
             if target.stat().st_size>MAX_FILE_BYTES:raise ValueError('Oversized resource')
             raw=target.read_bytes()
             files.append(dict(path=name,bytes=len(raw),sha256=hashlib.sha256(raw).hexdigest()))
