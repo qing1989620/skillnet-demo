@@ -191,7 +191,13 @@
       if ((event.key === "Enter" || event.key === " ") && event.target.matches(interactive)) { event.preventDefault(); event.target.click(); }
     });
   }
-  window.UI = { fetch: apiFetch, json, esc, qualityLabel, toast, errorHTML, consumeSSE, connectionSettings, getToken: storage.get,
+  function provenanceHTML(skill){
+    if(skill.source!=='github')return '';
+    const m=skill.metadata||{};
+    const url=String(m.source_url||'');const safe=url.startsWith('https://github.com/')?url:'#';
+    return `<section class="skill-provenance"><b>GitHub 社区技能 · 原始资料已收录</b><div><a href="${esc(safe)}" target="_blank" rel="noopener">${esc(m.repository)} / ${esc(m.original_path)} ↗</a></div><div>来源仓库 ${Number(m.stars||0).toLocaleString()} Stars · ${esc(skill.license)} · ${esc(m.resource_count)} 个包内文件</div><small>提交 ${esc(m.commit)}<br>正文 SHA-256 ${esc(m.content_sha256)}<br>导入状态：${esc(m.import_status)}。收录不代表该技能已在当前环境执行成功；依赖与兼容性以原文为准。</small></section>`;
+  }
+  window.UI = { provenanceHTML, fetch: apiFetch, json, esc, qualityLabel, toast, errorHTML, consumeSSE, connectionSettings, getToken: storage.get,
     setToken: value => storage.set(String(value || "").trim()), productNav, mark,
     reveal: initReveal, progress: initProgress, glow: initGlow };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();

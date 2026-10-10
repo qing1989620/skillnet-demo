@@ -22,6 +22,7 @@ import ast
 import csv
 import io
 import json
+import math
 import pathlib
 import struct
 from typing import Any
@@ -155,7 +156,7 @@ def check_numeric_ranges(csv_path: pathlib.Path,
             except ValueError:
                 continue
             vals += 1
-            if v < lo or v > hi:
+            if not math.isfinite(v) or v < lo or v > hi:
                 bad += 1
         out.append((f"{csv_path.name} 列 {col} 在 [{lo}, {hi}]",
                     bad == 0 and vals > 0, f"{vals} 个数值，越界 {bad} 个"))
@@ -179,7 +180,8 @@ def run_checks(artifact_paths: list[pathlib.Path], sandbox_result: dict[str, Any
             results += check_image(p)
         elif ext == ".py":
             results += check_python(p)
-    return [{"name": n, "passed": bool(ok), "detail": d} for n, ok, d in results]
+    return [{"name": n, "passed": bool(ok), "detail": d,
+             "required": n not in ('运行有实质输出', '产生至少一个文件产物')} for n, ok, d in results]
 
 
 # ----------------------------------------------------------------------
@@ -215,6 +217,11 @@ def checks_from_skill(items: list[str], artifact_paths: list[pathlib.Path]) -> l
     """把技能里的 machine-readable 断言变成真实检查（L2）。"""
     out: list[dict[str, Any]] = []
     for kind, args in parse_assertions(items):
+        required_suffix = {"csv_columns": '.csv', "numeric_range": '.csv', "min_rows": '.csv',
+                           "image_min": '.png', "json_keys": '.json'}.get(kind)
+        if required_suffix and not any(p.suffix.lower() == required_suffix for p in artifact_paths):
+            out.append(dict(name=f'[技能断言] {kind}', passed=False, detail=f'缺少 {required_suffix} 产物'))
+            continue
         if kind == "artifact_exists":
             pat = args[0] if args else "*"
             hit = [p for p in artifact_paths if p.match(pat) or p.name.endswith(pat.replace("*", ""))]

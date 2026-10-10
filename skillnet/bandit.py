@@ -42,6 +42,8 @@ per-arm 实现在数学上**不可能**做到这件事。v0.3 改为 **shared Li
 from __future__ import annotations
 
 import math
+import hashlib
+import json
 import random
 import threading
 import zlib
@@ -341,6 +343,32 @@ class SharedLinUCB:
             rows.append((n, p, exploit, explore))
         rows.sort(key=lambda r: -r[1])
         return rows
+
+    @_locked
+    def preview_feedback(self, task: str, rewards: dict[str, float]) -> dict:
+        """Bounded association preview on copies; never change the serving policy.
+
+        One trajectory has total weight 0.25, irrespective of its step count.
+        This is a diagnostic, not a counterfactual estimate or measured gain.
+        """
+        valid = {name: float(value) for name, value in rewards.items()
+                 if self.lib.get(name) is not None and type(value) in (int, float)
+                 and math.isfinite(value) and 0 <= value <= 1}
+        state_hash = hashlib.sha256(json.dumps(self.state_dict(), sort_keys=True,
+            separators=(',', ':')).encode()).hexdigest()
+        original = self.theta
+        shadow_A, shadow_b = self.A.copy(), self.b.copy()
+        weight = 0.25 / max(1, len(valid))
+        vectors = {name: self._phi(task, name) for name in valid}
+        for name, phi in vectors.items():
+            shadow_A += weight * np.outer(phi, phi)
+            shadow_b += weight * valid[name] * phi
+        theta = np.linalg.solve(shadow_A, shadow_b)
+        return dict(mode='shadow', applied=False, policy_state_sha256=state_hash,
+                    rows=[dict(name=name, before=float(original @ phi),
+                        after=float(theta @ phi), delta=float((theta-original) @ phi),
+                        observed_score=valid[name], weight=weight)
+                        for name, phi in vectors.items()])
 
     @_locked
     def update(

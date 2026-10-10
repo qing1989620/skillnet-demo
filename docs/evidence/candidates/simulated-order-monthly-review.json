@@ -1,0 +1,130 @@
+{
+  "skill": {
+    "name": "simulated-order-monthly-review",
+    "description": "对模拟订单明细做去重与缺失清洗，按月汇总收入/成本/毛利，并产出趋势图与管理层报告，全程标注模拟数据与元单位。适用于仅凭本地 CSV、不联网、禁止编造真实经营结论的经营复盘类任务。",
+    "domain": "数据分析与商业报告",
+    "tags": [
+      "数据清洗",
+      "月度汇总",
+      "毛利分析",
+      "模拟数据",
+      "管理层报告",
+      "趋势图",
+      "CSV"
+    ],
+    "capability": "从原始订单明细 CSV 出发，产出主键唯一且无缺失的 clean.csv、列名严格固定的 monthly_summary.csv、矢量趋势图 figure.svg 与标注模拟数据的 report.md。",
+    "inputs": [
+      "原始订单明细 CSV（含 order_id, month, revenue, cost 等列）",
+      "清洗规则（去重保留首条、缺失剔除、负毛利保留）",
+      "月度汇总列名契约",
+      "报告与图表要求（模拟数据标注、金额单位元）"
+    ],
+    "outputs": [
+      "clean.csv（去重且无缺失的明细）",
+      "monthly_summary.csv（month,revenue,cost,gross_profit,gross_margin,orders）",
+      "figure.svg（月度趋势矢量图）",
+      "report.md（管理层报告）"
+    ],
+    "use_when": [
+      "需要按固定规则清洗订单明细并给出可核对的重复数与缺失数",
+      "需要按月汇总收入、成本、毛利与订单数并保持列名严格一致",
+      "需要基于汇总结果生成趋势图和管理层报告，且必须声明数据为模拟、金额单位为元"
+    ],
+    "steps": [
+      "读取原始 CSV，用 len(raw) 记录原始行数；用 df.duplicated(subset=['order_id'], keep='first') 标记重复行并统计多余重复数，用 df[['revenue','cost']].isna().any(axis=1) 标记缺失行并统计缺失数。",
+      "按 order_id 去重保留首条、剔除 revenue 或 cost 缺失的行，但保留毛利为负的有效订单；写出 clean.csv（列 order_id,month,revenue,cost），并打印重复数与缺失数。",
+      "回读 clean.csv 自检：df['order_id'].is_unique 为 True、revenue/cost 缺失数为 0、行数等于原始行数减重复数减缺失数，且该等式由脚本实际计数得出而非硬编码。",
+      "只读取 clean.csv，按 month 分组对 revenue、cost 求和、对 order_id 计数得到 orders，计算 gross_profit = revenue - cost、gross_margin = gross_profit / revenue，写出 monthly_summary.csv。",
+      "回读 monthly_summary.csv 校验：list(columns) 精确等于 ['month','revenue','cost','gross_profit','gross_margin','orders']；sum(revenue)、sum(cost) 与 clean.csv 总额一致（atol=1e-8）；sum(orders) == len(clean.csv)；逐行校验 gross_profit 与 gross_margin 公式。",
+      "只读取 monthly_summary.csv，用 matplotlib 绘制 revenue/cost/gross_profit 月度趋势折线图，设置 y 轴下限为 0，x 轴标签含月份、y 轴标签含金额（元），导出 figure.svg。",
+      "撰写 report.md：开头明确标注“模拟订单数据（非真实公司经营数据）”与“金额单位：元”，列出月度汇总表，并给出毛利风险与行动建议；所有数字必须与 monthly_summary.csv 一致。",
+      "逐点回读比对图中数值与 monthly_summary.csv 对应行，确认一致；确认 report.md 中引用的月度数字与汇总表完全一致，且未编造真实经营结论。"
+    ],
+    "pitfalls": [
+      "去重时未按 order_id 保留首条，导致重复行残留或误删有效订单",
+      "把毛利为负的有效订单当作异常剔除，违反“不剔除毛利为负的有效订单”规则",
+      "重复数与缺失数硬编码或未由脚本实际计数得出，导致行数等式不自洽",
+      "monthly_summary.csv 列名顺序或拼写与契约不一致（如 gross_margin 写成 margin）",
+      "汇总时未校验总额守恒，导致月度合计与清洗明细不一致",
+      "图表 y 轴未从 0 开始或缺少月份/金额（元）标签，造成视觉误导",
+      "report.md 未标注模拟数据或金额单位，或引用了汇总表以外的编造数字"
+    ],
+    "verification": [
+      "clean.csv 中 order_id 唯一（is_unique 为 True），revenue/cost 无缺失，行数 == 原始行数 - 重复数 - 缺失数，且负毛利订单仍在",
+      "monthly_summary.csv 列名精确等于 ['month','revenue','cost','gross_profit','gross_margin','orders']",
+      "sum(monthly_summary.revenue) 与 sum(monthly_summary.cost) 分别等于 clean.csv 的 revenue/cost 总额（atol=1e-8）",
+      "sum(monthly_summary.orders) == len(clean.csv)",
+      "逐行校验 gross_profit == revenue - cost 且 gross_margin == gross_profit/revenue（atol=1e-8）",
+      "figure.svg 为矢量 SVG，坐标轴含月份与金额（元）标签，y 轴下限为 0，图中各月数值与 monthly_summary.csv 逐点一致",
+      "report.md 明确标注模拟数据与金额单位为元，列出毛利风险与行动建议，且引用的月度数字与 monthly_summary.csv 完全一致"
+    ],
+    "quality": {
+      "safety": {
+        "level": "Good",
+        "reason": "未见危险系统操作或越权指令"
+      },
+      "completeness": {
+        "level": "Good",
+        "reason": "8 个步骤 + 7 条陷阱 + 7 条验证，覆盖完整"
+      },
+      "executability": {
+        "level": "Good",
+        "reason": "8/8 个步骤含具体工具或参数，无模糊表述"
+      },
+      "maintainability": {
+        "level": "Good",
+        "reason": "与 3 个技能建立关联，步骤数适中"
+      },
+      "cost_awareness": {
+        "level": "Good",
+        "reason": "提及资源约束 ['成本']"
+      }
+    },
+    "relations": [
+      [
+        "compose_with",
+        "data-cleaning"
+      ],
+      [
+        "compose_with",
+        "business-metrics-audit"
+      ],
+      [
+        "compose_with",
+        "scientific-visualization"
+      ]
+    ],
+    "source": "distill",
+    "origin_task": null,
+    "parent": [
+      "business-metrics-audit"
+    ],
+    "generation": 1,
+    "version": 1,
+    "license": "MIT",
+    "compatibility": "",
+    "metadata": {
+      "evidence_context": {
+        "assessment_version": "outcome-evidence-v1",
+        "origin_task_sha256": "b5492bb7b5a5c2b7dfd234478bc51e6634c6bb129400dfbbbfdc219815096027",
+        "evidence_sha256": "3333ab9ee5c5d513e22027c1d473e391805b7ddb793e26279ba38bc8e8ee7d3c",
+        "training_task_sha256": [
+          "b5492bb7b5a5c2b7dfd234478bc51e6634c6bb129400dfbbbfdc219815096027"
+        ],
+        "scope": "月度汇总的独立算术、图表存在和模拟数据标记；不评价报告洞察",
+        "causal_attribution": false
+      }
+    },
+    "allowed_tools": "",
+    "stats": {
+      "pulls": 0.0,
+      "reward_sum": 0.0,
+      "best": 0.0
+    }
+  },
+  "sha256": "cc8a2bf064700a0102f873eccae3ac07aa7c5af463a6c63ff911c5c9a4a9662a",
+  "state": "candidate",
+  "origin_run_id": "b5492bb7-20261009-232823-34fe",
+  "created_at": 1791559752.5243695,
+  "promotion_policy": "5 held-out tasks x 2 pairs; matched budget; no regression; mean gain >= .02; task-cluster sign test p <= .05; scoped claims only"
+}

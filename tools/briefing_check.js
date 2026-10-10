@@ -49,7 +49,7 @@ async function main() {
   assert.ok(unavailable.includes("不可用"));
   assert.ok(!unavailable.includes("0.00/10"));
   const feedback={reward:null,accepted:false,library_size:108,skip_reason:"评审不可用",feedback:[]};
-  assert.ok(api.renderFeedback(feedback).includes("未写回策略参数"));
+  assert.ok(api.renderFeedback(feedback).includes("未写回正式策略参数"));
   assert.ok(api.renderFeedback({...feedback,reward:0,feedback:[{name:"demo",exploit_before:0,exploit_after:0,delta:0}]}).includes("0.00/1.0"));
   const sandbox=api.renderSandbox({step_index:0,final_ok:true,n_attempts:1,attempts:[{n:1,ok:true}],
     artifacts:[{name:"figure.png",bytes:100}]}, "demo",[{name:"step1_figure.png"}]);

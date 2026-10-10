@@ -299,7 +299,7 @@ def test_deterministic_checks_appear_in_step(tmp_path, monkeypatch):
 # ======================================================================
 DAG_WORKFLOW = [["s-a", "s-b"], ["s-a", "s-c"], ["s-b", "s-d"], ["s-c", "s-d"]]
 
-GOOD_A = ("```python" + NL + 'open("shared.csv","w",encoding="utf-8").write("v")' + NL + "print('A ok')" + "```")
+GOOD_A = ("```python" + NL + 'open("shared.csv","w",encoding="utf-8").write("v\\n1\\n")' + NL + "print('A ok')" + "```")
 GOOD_B = ("```python" + NL + "import time" + NL + 'rows = open("shared.csv",encoding="utf-8").read()' + NL
           + "time.sleep(0.5)" + NL + 'open("out_b.csv","w",encoding="utf-8").write("b:"+rows)' + NL + "print('B ok')" + "```")
 GOOD_C = ("```python" + NL + "import time" + NL + 'rows = open("shared.csv",encoding="utf-8").read()' + NL
@@ -369,7 +369,7 @@ def test_build_steps_workflow_mapping():
 # ======================================================================
 DAG_WORKFLOW = [["s-a", "s-b"], ["s-a", "s-c"], ["s-b", "s-d"], ["s-c", "s-d"]]
 
-GOOD_A = ("```python" + NL + 'open("shared.csv","w",encoding="utf-8").write("v")' + NL + "print('A ok')" + "```")
+GOOD_A = ("```python" + NL + 'open("shared.csv","w",encoding="utf-8").write("v\\n1\\n")' + NL + "print('A ok')" + "```")
 GOOD_B = ("```python" + NL + "import time" + NL + 'rows = open("shared.csv",encoding="utf-8").read()' + NL
           + "time.sleep(0.5)" + NL + 'open("out_b.csv","w",encoding="utf-8").write("b:"+rows)' + NL + "print('B ok')" + "```")
 GOOD_C = ("```python" + NL + "import time" + NL + 'rows = open("shared.csv",encoding="utf-8").read()' + NL
@@ -396,7 +396,7 @@ def test_dag_parallel_branch_and_artifact_flow(tmp_path, monkeypatch):
                          max_steps=4, workflow=DAG_WORKFLOW)
     pipeline.finalize_status(r)
     s = r.steps
-    assert r.status == "COMPLETED", r.error
+    assert r.status == "COMPLETED", [(st.status, st.error, [c.to_dict() for c in st.checks if not c.passed]) for st in s]
     assert all(x.status == "done" for x in s)
     assert s[0].started_at_ms < s[1].started_at_ms      # A 先于 B/C
     assert s[0].started_at_ms < s[2].started_at_ms

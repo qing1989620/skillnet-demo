@@ -1,0 +1,1779 @@
+{
+ "run_id": "b5492bb7-20261008-155955-599c",
+ "task": "仅使用下面的公开模拟订单数据，不联网，禁止编造公司真实经营结论。完成 3 步真实执行：①按规则清洗明细生成 clean.csv 并打印重复数、缺失数；②读取 clean.csv 按 month 汇总成 monthly_summary.csv，列名严格为 month,revenue,cost,gross_profit,gross_margin,orders；③读取 monthly_summary.csv，生成 figure.svg 趋势图和 report.md 管理层报告，明确标注模拟数据、金额单位为元、毛利风险与行动建议。每步只负责本步交付，使用 depends_on 和 input_files/output_files 表达真实文件传递。规则：按 order_id 去重保留首条；revenue 或 cost 缺失的订单剔除；不剔除毛利为负的有效订单。\nCSV：\norder_id,month,revenue,cost\nA01,2026-01,1200,720\nA02,2026-01,800,560\nA03,2026-01,1500,900\nA03,2026-01,1500,900\nB01,2026-02,1800,1200\nB02,2026-02,900,720\nB03,2026-02,,300\nB04,2026-02,1300,780\nC01,2026-03,2200,1430\nC02,2026-03,1400,980\nC03,2026-03,700,770\nD01,2026-04,2600,1690\nD02,2026-04,1700,1020\nD03,2026-04,900,630\nD04,2026-04,500,\n",
+ "task_fp": "b5492bb7",
+ "status": "COMPLETED",
+ "model": "",
+ "skills": [],
+ "retrieval": {},
+ "ranking": [],
+ "plan": {
+  "steps": [
+   {
+    "skill": "business-metrics-audit",
+    "action": "按给定订单规则清洗公开模拟 CSV，打印重复和缺失数量，写 clean.csv",
+    "depends_on": [],
+    "input_files": [],
+    "output_files": [
+     "clean.csv"
+    ],
+    "verification": [
+     "记录重复数与缺失数，明确标注模拟数据"
+    ]
+   },
+   {
+    "skill": "business-metrics-audit",
+    "action": "直接读取 clean.csv 按 month 汇总收入成本、毛利毛利率及 orders；写 monthly_summary.csv；不得重新生成原始数据",
+    "depends_on": [
+     0
+    ],
+    "input_files": [
+     "clean.csv"
+    ],
+    "output_files": [
+     "monthly_summary.csv"
+    ],
+    "verification": [
+     "按月汇总之和等于清洗明细合计；毛利率为总毛利除以总收入"
+    ]
+   },
+   {
+    "skill": "business-metrics-audit",
+    "action": "读取 monthly_summary.csv 绘制 figure.svg，写 report.md 包含经营结果、模拟数据标记、元单位、风险与行动建议",
+    "depends_on": [
+     1
+    ],
+    "input_files": [
+     "monthly_summary.csv"
+    ],
+    "output_files": [
+     "figure.svg",
+     "report.md"
+    ],
+    "verification": [
+     "矢量图与报告均存在并明确说明数据为模拟数据"
+    ]
+   }
+  ]
+ },
+ "judge": {},
+ "steps": [
+  {
+   "idx": 0,
+   "action": "按给定订单规则清洗公开模拟 CSV，打印重复和缺失数量，写 clean.csv",
+   "skill": "business-metrics-audit",
+   "status": "done",
+   "depends_on": [],
+   "inputs": [],
+   "input_artifacts": [],
+   "contract": {
+    "input_files": [],
+    "output_files": [
+     "clean.csv"
+    ],
+    "verification": [
+     "记录重复数与缺失数，明确标注模拟数据"
+    ]
+   },
+   "dependency_reason": "步骤显式声明的数据流",
+   "code": "# -*- coding: utf-8 -*-\n\"\"\"\n步骤 1/3：清洗公开模拟订单明细 -> clean.csv\n【重要声明】本数据为公开模拟数据，不代表任何公司真实经营情况。\n规则：\n  - 按 order_id 去重，保留首条\n  - revenue 或 cost 缺失的订单剔除\n  - 不剔除毛利为负的有效订单\n\"\"\"\nimport io\nimport pandas as pd\n\n# ---- 输入：模拟订单数据（内嵌，无外部依赖） ----\nRAW_CSV = \"\"\"order_id,month,revenue,cost\nA01,2026-01,1200,720\nA02,2026-01,800,560\nA03,2026-01,1500,900\nA03,2026-01,1500,900\nB01,2026-02,1800,1200\nB02,2026-02,900,720\nB03,2026-02,,300\nB04,2026-02,1300,780\nC01,2026-03,2200,1430\nC02,2026-03,1400,980\nC03,2026-03,700,770\nD01,2026-04,2600,1690\nD02,2026-04,1700,1020\nD03,2026-04,900,630\nD04,2026-04,500,\n\"\"\"\n\nprint(\"=\" * 60)\nprint(\"【模拟数据】订单明细清洗（非真实公司经营数据）\")\nprint(\"=\" * 60)\n\nraw = pd.read_csv(io.StringIO(RAW_CSV), dtype={\"order_id\": str, \"month\": str})\nprint(f\"原始记录数: {len(raw)}\")\n\n# ---- 规避陷阱：先记录重复，再按 order_id 去重保留首条 ----\ndup_mask = raw.duplicated(subset=[\"order_id\"], keep=\"first\")\ndup_count = int(dup_mask.sum())\nprint(f\"重复记录数(按 order_id，保留首条): {dup_count}\")\nif dup_count > 0:\n    print(\"被删除的重复记录 order_id:\", raw.loc[dup_mask, \"order_id\"].tolist())\n\ndedup = raw.drop_duplicates(subset=[\"order_id\"], keep=\"first\").copy()\n\n# ---- 规避陷阱：revenue/cost 缺失的订单剔除（不用 0 冒充） ----\nmissing_mask = dedup[\"revenue\"].isna() | dedup[\"cost\"].isna()\nmissing_count = int(missing_mask.sum())\nprint(f\"收入或成本缺失被剔除的订单数: {missing_count}\")\nif missing_count > 0:\n    print(\"被剔除的缺失订单 order_id:\", dedup.loc[missing_mask, \"order_id\"].tolist())\n\nclean = dedup.loc[~missing_mask].copy()\n\n# ---- 类型与派生字段 ----\nclean[\"revenue\"] = clean[\"revenue\"].astype(float)\nclean[\"cost\"] = clean[\"cost\"].astype(float)\nclean[\"gross_profit\"] = clean[\"revenue\"] - clean[\"cost\"]\n\n# ---- 规避陷阱：不剔除毛利为负的有效订单，仅提示 ----\nneg = clean[clean[\"gross_profit\"] < 0]\nprint(f\"毛利为负的有效订单数(保留): {len(neg)}\")\nif len(neg) > 0:\n    print(\"负毛利订单 order_id:\", neg[\"order_id\"].tolist())\n\nclean = clean[[\"order_id\", \"month\", \"revenue\", \"cost\", \"gross_profit\"]]\nclean = clean.sort_values([\"month\", \"order_id\"]).reset_index(drop=True)\n\nprint(f\"清洗后记录数: {len(clean)}\")\nprint(f\"清洗后总收入: {clean['revenue'].sum():.2f} 元\")\nprint(f\"清洗后总成本: {clean['cost'].sum():.2f} 元\")\nprint(f\"清洗后总毛利: {clean['gross_profit'].sum():.2f} 元\")\nprint(\"数据来源标注: 模拟数据（非真实经营结论）\")\n\n# ---- 落盘 ----\nclean.to_csv(\"clean.csv\", index=False, encoding=\"utf-8-sig\")\nprint(\"已写出: clean.csv\")",
+   "n_attempts": 1,
+   "fixed": false,
+   "exhausted": false,
+   "attempts": [
+    {
+     "n": 1,
+     "ok": true,
+     "stdout": "============================================================\n【模拟数据】订单明细清洗（非真实公司经营数据）\n============================================================\n原始记录数: 15\n重复记录数(按 order_id，保留首条): 1\n被删除的重复记录 order_id: ['A03']\n收入或成本缺失被剔除的订单数: 2\n被剔除的缺失订单 order_id: ['B03', 'D04']\n毛利为负的有效订单数(保留): 1\n负毛利订单 order_id: ['C03']\n清洗后记录数: 12\n清洗后总收入: 17000.00 元\n清洗后总成本: 11400.00 元\n清洗后总毛利: 5600.00 元\n数据来源标注: 模拟数据（非真实经营结论）\n已写出: clean.csv\n",
+     "stderr": "",
+     "error_kind": "",
+     "duration_ms": 1340,
+     "truncated": false,
+     "code": "# -*- coding: utf-8 -*-\n\"\"\"\n步骤 1/3：清洗公开模拟订单明细 -> clean.csv\n【重要声明】本数据为公开模拟数据，不代表任何公司真实经营情况。\n规则：\n  - 按 order_id 去重，保留首条\n  - revenue 或 cost 缺失的订单剔除\n  - 不剔除毛利为负的有效订单\n\"\"\"\nimport io\nimport pandas as pd\n\n# ---- 输入：模拟订单数据（内嵌，无外部依赖） ----\nRAW_CSV = \"\"\"order_id,month,revenue,cost\nA01,2026-01,1200,720\nA02,2026-01,800,560\nA03,2026-01,1500,900\nA03,2026-01,1500,900\nB01,2026-02,1800,1200\nB02,2026-02,900,720\nB03,2026-02,,300\nB04,2026-02,1300,780\nC01,2026-03,2200,1430\nC02,2026-03,1400,980\nC03,2026-03,700,770\nD01,2026-04,2600,1690\nD02,2026-04,1700,1020\nD03,2026-04,900,630\nD04,2026-04,500,\n\"\"\"\n\nprint(\"=\" * 60)\nprint(\"【模拟数据】订单明细清洗（非真实公司经营数据）\")\nprint(\"=\" * 60)\n\nraw = pd.read_csv(io.StringIO(RAW_CSV), dtype={\"order_id\": str, \"month\": str})\nprint(f\"原始记录数: {len(raw)}\")\n\n# ---- 规避陷阱：先记录重复，再按 order_id 去重保留首条 ----\ndup_mask = raw.duplicated(subset=[\"order_id\"], keep=\"first\")\ndup_count = int(dup_mask.sum())\nprint(f\"重复记录数(按 order_id，保留首条): {dup_count}\")\nif dup_count > 0:\n    print(\"被删除的重复记录 order_id:\", raw.loc[dup_mask, \"order_id\"].tolist())\n\ndedup = raw.drop_duplicates(subset=[\"order_id\"], keep=\"first\").copy()\n\n# ---- 规避陷阱：revenue/cost 缺失的订单剔除（不用 0 冒充） ----\nmissing_mask = dedup[\"revenue\"].isna() | dedup[\"cost\"].isna()\nmissing_count = int(missing_mask.sum())\nprint(f\"收入或成本缺失被剔除的订单数: {missing_count}\")\nif missing_count > 0:\n    print(\"被剔除的缺失订单 order_id:\", dedup.loc[missing_mask, \"order_id\"].tolist())\n\nclean = dedup.loc[~missing_mask].copy()\n\n# ---- 类型与派生字段 ----\nclean[\"revenue\"] = clean[\"revenue\"].astype(float)\nclean[\"cost\"] = clean[\"cost\"].astype(float)\nclean[\"gross_profit\"] = clean[\"revenue\"] - clean[\"cost\"]\n\n# ---- 规避陷阱：不剔除毛利为负的有效订单，仅提示 ----\nneg = clean[clean[\"gross_profit\"] < 0]\nprint(f\"毛利为负的有效订单数(保留): {len(neg)}\")\nif len(neg) > 0:\n    print(\"负毛利订单 order_id:\", neg[\"order_id\"].tolist())\n\nclean = clean[[\"order_id\", \"month\", \"revenue\", \"cost\", \"gross_profit\"]]\nclean = clean.sort_values([\"month\", \"order_id\"]).reset_index(drop=True)\n\nprint(f\"清洗后记录数: {len(clean)}\")\nprint(f\"清洗后总收入: {clean['revenue'].sum():.2f} 元\")\nprint(f\"清洗后总成本: {clean['cost'].sum():.2f} 元\")\nprint(f\"清洗后总毛利: {clean['gross_profit'].sum():.2f} 元\")\nprint(\"数据来源标注: 模拟数据（非真实经营结论）\")\n\n# ---- 落盘 ----\nclean.to_csv(\"clean.csv\", index=False, encoding=\"utf-8-sig\")\nprint(\"已写出: clean.csv\")",
+     "repair_reason": "",
+     "code_diff": "",
+     "acceptance": {
+      "checks": [
+       {
+        "name": "执行退出码为 0",
+        "passed": true,
+        "detail": "returncode=0",
+        "required": true
+       },
+       {
+        "name": "运行有实质输出",
+        "passed": true,
+        "detail": "407 字符 / 16 行",
+        "required": false
+       },
+       {
+        "name": "产生至少一个文件产物",
+        "passed": true,
+        "detail": "1 个",
+        "required": false
+       },
+       {
+        "name": "clean.csv 存在",
+        "passed": true,
+        "detail": "429 字节",
+        "required": true
+       },
+       {
+        "name": "clean.csv 非空",
+        "passed": true,
+        "detail": "429 字节",
+        "required": true
+       },
+       {
+        "name": "clean.csv 是可解析 CSV",
+        "passed": true,
+        "detail": "13 行（含表头）",
+        "required": true
+       },
+       {
+        "name": "clean.csv 含表头且列数 > 0",
+        "passed": true,
+        "detail": "列：﻿order_id, month, revenue, cost, gross_profit",
+        "required": true
+       },
+       {
+        "name": "clean.csv 含数据行",
+        "passed": true,
+        "detail": "12 行数据",
+        "required": true
+       },
+       {
+        "name": "clean.csv 各行列数一致",
+        "passed": true,
+        "detail": "列数集合 [5]",
+        "required": true
+       },
+       {
+        "name": "步骤交付：clean.csv",
+        "passed": true,
+        "detail": "存在"
+       }
+      ],
+      "verifications": [
+       {
+        "item": "记录重复数与缺失数，明确标注模拟数据",
+        "passed": true,
+        "state": "passed",
+        "evidence": "运行输出打印“重复记录数(按 order_id，保留首条): 1”和“收入或成本缺失被剔除的订单数: 2”，并多次标注“模拟数据（非真实经营结论）”；落盘 clean.csv 为 12 行，列 order_id,month,revenue,cost,gross_profit，与清洗规则一致。"
+       }
+      ],
+      "state": "passed"
+     }
+    }
+   ],
+   "artifacts": [
+    {
+     "name": "step1_clean.csv",
+     "kind": "真实运行产物",
+     "bytes": 429,
+     "sha256": "0f956a4928d2bef6572c623fc0966dc88db32b46b30b308abeb2d8c2345db6a0",
+     "from_step": 0,
+     "url": "",
+     "logical_name": "clean.csv",
+     "source_run_id": "b5492bb7-20261008-155955-599c",
+     "version": 1
+    }
+   ],
+   "checks": [
+    {
+     "name": "执行退出码为 0",
+     "passed": true,
+     "detail": "returncode=0",
+     "required": true
+    },
+    {
+     "name": "运行有实质输出",
+     "passed": true,
+     "detail": "407 字符 / 16 行",
+     "required": false
+    },
+    {
+     "name": "产生至少一个文件产物",
+     "passed": true,
+     "detail": "1 个",
+     "required": false
+    },
+    {
+     "name": "clean.csv 存在",
+     "passed": true,
+     "detail": "429 字节",
+     "required": true
+    },
+    {
+     "name": "clean.csv 非空",
+     "passed": true,
+     "detail": "429 字节",
+     "required": true
+    },
+    {
+     "name": "clean.csv 是可解析 CSV",
+     "passed": true,
+     "detail": "13 行（含表头）",
+     "required": true
+    },
+    {
+     "name": "clean.csv 含表头且列数 > 0",
+     "passed": true,
+     "detail": "列：﻿order_id, month, revenue, cost, gross_profit",
+     "required": true
+    },
+    {
+     "name": "clean.csv 含数据行",
+     "passed": true,
+     "detail": "12 行数据",
+     "required": true
+    },
+    {
+     "name": "clean.csv 各行列数一致",
+     "passed": true,
+     "detail": "列数集合 [5]",
+     "required": true
+    },
+    {
+     "name": "步骤交付：clean.csv",
+     "passed": true,
+     "detail": "存在",
+     "required": true
+    }
+   ],
+   "checks_passed": 10,
+   "checks_total": 10,
+   "verifications": [
+    {
+     "item": "记录重复数与缺失数，明确标注模拟数据",
+     "passed": true,
+     "evidence": "运行输出打印“重复记录数(按 order_id，保留首条): 1”和“收入或成本缺失被剔除的订单数: 2”，并多次标注“模拟数据（非真实经营结论）”；落盘 clean.csv 为 12 行，列 order_id,month,revenue,cost,gross_profit，与清洗规则一致。",
+     "layer": "llm",
+     "state": "passed"
+    }
+   ],
+   "verification_passed": 1,
+   "verification_total": 1,
+   "verify_skip_reason": "该技能的验收条目已全部由程序化断言覆盖（L1/L2）",
+   "error": "",
+   "duration_ms": 5846,
+   "started_at_ms": 1791446395633,
+   "ended_at_ms": 1791446401479,
+   "stages": {
+    "code_gen_ms": 3470,
+    "llm_calls": 1,
+    "llm_cost_yuan": 0.0,
+    "syntax_check_ms": 1,
+    "sandbox_try1_ms": 1344,
+    "verify_sem_ms": 1012,
+    "verify_det_ms": 0
+   }
+  },
+  {
+   "idx": 1,
+   "action": "直接读取 clean.csv 按 month 汇总收入成本、毛利毛利率及 orders；写 monthly_summary.csv；不得重新生成原始数据",
+   "skill": "business-metrics-audit",
+   "status": "done",
+   "depends_on": [
+    0
+   ],
+   "inputs": [
+    "clean.csv"
+   ],
+   "input_artifacts": [
+    {
+     "logical_name": "clean.csv",
+     "name": "step1_clean.csv",
+     "from_step": 0,
+     "sha256": "0f956a4928d2bef6572c623fc0966dc88db32b46b30b308abeb2d8c2345db6a0"
+    }
+   ],
+   "contract": {
+    "input_files": [
+     "clean.csv"
+    ],
+    "output_files": [
+     "monthly_summary.csv"
+    ],
+    "verification": [
+     "按月汇总之和等于清洗明细合计；毛利率为总毛利除以总收入"
+    ]
+   },
+   "dependency_reason": "真实文件读写依赖：clean.csv",
+   "code": "# -*- coding: utf-8 -*-\n\"\"\"\n步骤2：读取 clean.csv，按 month 汇总生成 monthly_summary.csv\n数据性质：模拟数据（非真实公司经营数据）\n金额单位：元\n本步骤只读取 clean.csv，不重新生成原始数据。\n\"\"\"\nimport os\nimport sys\nimport numpy as np\nimport pandas as pd\n\n# 中文字体（本机可用 Microsoft YaHei / SimHei）\nimport matplotlib\nmatplotlib.use('Agg')\nimport matplotlib.pyplot as plt\nplt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'DejaVu Sans']\nplt.rcParams['axes.unicode_minus'] = False\n\nINPUT_FILE = \"clean.csv\"\nOUTPUT_FILE = \"monthly_summary.csv\"\nTOL = 1e-8\n\n# ---------- 1. 读取前序产物 clean.csv（缺失则报错，禁止重造数据） ----------\nif not os.path.exists(INPUT_FILE):\n    sys.exit(f\"[ERROR] 缺少约定输入文件 {INPUT_FILE}，本步骤不重造数据，终止。\")\n\nclean = pd.read_csv(INPUT_FILE)\nprint(f\"[INFO] 已读取 {INPUT_FILE}，行数={len(clean)}，列={list(clean.columns)}\")\n\nrequired_cols = {\"order_id\", \"month\", \"revenue\", \"cost\"}\nmissing_cols = required_cols - set(clean.columns)\nif missing_cols:\n    sys.exit(f\"[ERROR] clean.csv 缺少必要列: {missing_cols}\")\n\n# ---------- 2. 防御性检查：确认 clean.csv 已清洗（不重复计数、无缺失收入/成本） ----------\ndup_cnt = int(clean[\"order_id\"].duplicated().sum())\nprint(f\"[CHECK] clean.csv 中重复 order_id 数 = {dup_cnt}（应为 0，避免重复计数）\")\nif dup_cnt != 0:\n    sys.exit(\"[ERROR] clean.csv 仍含重复 order_id，血缘异常，终止。\")\n\nna_rev = int(clean[\"revenue\"].isna().sum())\nna_cost = int(clean[\"cost\"].isna().sum())\nprint(f\"[CHECK] clean.csv 中 revenue 缺失数 = {na_rev}，cost 缺失数 = {na_cost}（应为 0，避免用 0 冒充真实收入）\")\nif na_rev != 0 or na_cost != 0:\n    sys.exit(\"[ERROR] clean.csv 仍含缺失 revenue/cost，终止。\")\n\n# 毛利为负的有效订单必须保留（不剔除）\nneg_mask = (clean[\"revenue\"] - clean[\"cost\"]) < 0\nprint(f\"[CHECK] clean.csv 中毛利为负的有效订单数 = {int(neg_mask.sum())}（按规则保留，不剔除）\")\n\n# ---------- 3. 按 month 汇总（毛利=总收入-总成本；毛利率=总毛利/总收入，禁止平均单笔毛利率） ----------\nclean = clean.copy()\nclean[\"gross_profit\"] = clean[\"revenue\"] - clean[\"cost\"]\n\nmonthly = (\n    clean.groupby(\"month\", as_index=False)\n    .agg(\n        revenue=(\"revenue\", \"sum\"),\n        cost=(\"cost\", \"sum\"),\n        orders=(\"order_id\", \"nunique\"),\n    )\n    .sort_values(\"month\")\n    .reset_index(drop=True)\n)\n\nmonthly[\"gross_profit\"] = monthly[\"revenue\"] - monthly[\"cost\"]\n# 毛利率 = 总毛利 / 总收入（加权口径），避免平均单笔毛利率造成加权错误\nmonthly[\"gross_margin\"] = np.where(\n    monthly[\"revenue\"] != 0,\n    monthly[\"gross_profit\"] / monthly[\"revenue\"],\n    np.nan,\n)\n\n# 列名严格为 month,revenue,cost,gross_profit,gross_margin,orders\nmonthly = monthly[[\"month\", \"revenue\", \"cost\", \"gross_profit\", \"gross_margin\", \"orders\"]]\n\nprint(\"\\n[RESULT] 月度汇总（模拟数据，金额单位：元）\")\nprint(monthly.to_string(index=False))\n\n# ---------- 4. 核对：按月汇总之和 == 清洗明细合计（绝对容差 1e-8） ----------\nsum_rev_detail = float(clean[\"revenue\"].sum())\nsum_cost_detail = float(clean[\"cost\"].sum())\nsum_gp_detail = float(clean[\"gross_profit\"].sum())\n\nsum_rev_month = float(monthly[\"revenue\"].sum())\nsum_cost_month = float(monthly[\"cost\"].sum())\nsum_gp_month = float(monthly[\"gross_profit\"].sum())\n\nok_rev = abs(sum_rev_detail - sum_rev_month) <= TOL\nok_cost = abs(sum_cost_detail - sum_cost_month) <= TOL\nok_gp = abs(sum_gp_detail - sum_gp_month) <= TOL\nprint(f\"\\n[VERIFY] 收入合计 明细={sum_rev_detail:.6f} 汇总={sum_rev_month:.6f} 一致={ok_rev}\")\nprint(f\"[VERIFY] 成本合计 明细={sum_cost_detail:.6f} 汇总={sum_cost_month:.6f} 一致={ok_cost}\")\nprint(f\"[VERIFY] 毛利合计 明细={sum_gp_detail:.6f} 汇总={sum_gp_month:.6f} 一致={ok_gp}\")\n\n# 毛利率口径核对：总毛利 / 总收入\noverall_margin = sum_gp_month / sum_rev_month if sum_rev_month != 0 else np.nan\nprint(f\"[VERIFY] 整体毛利率(总毛利/总收入) = {overall_margin:.6f}\")\n\nif not (ok_rev and ok_cost and ok_gp):\n    sys.exit(\"[ERROR] 汇总与明细不一致，终止落盘。\")\n\n# ---------- 5. 落盘 ----------\nmonthly.to_csv(OUTPUT_FILE, index=False, encoding=\"utf-8-sig\")\nprint(f\"\\n[SAVED] {OUTPUT_FILE}（模拟数据，金额单位：元）\")",
+   "n_attempts": 1,
+   "fixed": false,
+   "exhausted": false,
+   "attempts": [
+    {
+     "n": 1,
+     "ok": true,
+     "stdout": "[INFO] 已读取 clean.csv，行数=12，列=['order_id', 'month', 'revenue', 'cost', 'gross_profit']\n[CHECK] clean.csv 中重复 order_id 数 = 0（应为 0，避免重复计数）\n[CHECK] clean.csv 中 revenue 缺失数 = 0，cost 缺失数 = 0（应为 0，避免用 0 冒充真实收入）\n[CHECK] clean.csv 中毛利为负的有效订单数 = 1（按规则保留，不剔除）\n\n[RESULT] 月度汇总（模拟数据，金额单位：元）\n  month  revenue   cost  gross_profit  gross_margin  orders\n2026-01   3500.0 2180.0        1320.0      0.377143       3\n2026-02   4000.0 2700.0        1300.0      0.325000       3\n2026-03   4300.0 3180.0        1120.0      0.260465       3\n2026-04   5200.0 3340.0        1860.0      0.357692       3\n\n[VERIFY] 收入合计 明细=17000.000000 汇总=17000.000000 一致=True\n[VERIFY] 成本合计 明细=11400.000000 汇总=11400.000000 一致=True\n[VERIFY] 毛利合计 明细=5600.000000 汇总=5600.000000 一致=True\n[VERIFY] 整体毛利率(总毛利/总收入) = 0.329412\n\n[SAVED] monthly_summary.csv（模拟数据，金额单位：元）\n",
+     "stderr": "",
+     "error_kind": "",
+     "duration_ms": 2600,
+     "truncated": false,
+     "code": "# -*- coding: utf-8 -*-\n\"\"\"\n步骤2：读取 clean.csv，按 month 汇总生成 monthly_summary.csv\n数据性质：模拟数据（非真实公司经营数据）\n金额单位：元\n本步骤只读取 clean.csv，不重新生成原始数据。\n\"\"\"\nimport os\nimport sys\nimport numpy as np\nimport pandas as pd\n\n# 中文字体（本机可用 Microsoft YaHei / SimHei）\nimport matplotlib\nmatplotlib.use('Agg')\nimport matplotlib.pyplot as plt\nplt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'DejaVu Sans']\nplt.rcParams['axes.unicode_minus'] = False\n\nINPUT_FILE = \"clean.csv\"\nOUTPUT_FILE = \"monthly_summary.csv\"\nTOL = 1e-8\n\n# ---------- 1. 读取前序产物 clean.csv（缺失则报错，禁止重造数据） ----------\nif not os.path.exists(INPUT_FILE):\n    sys.exit(f\"[ERROR] 缺少约定输入文件 {INPUT_FILE}，本步骤不重造数据，终止。\")\n\nclean = pd.read_csv(INPUT_FILE)\nprint(f\"[INFO] 已读取 {INPUT_FILE}，行数={len(clean)}，列={list(clean.columns)}\")\n\nrequired_cols = {\"order_id\", \"month\", \"revenue\", \"cost\"}\nmissing_cols = required_cols - set(clean.columns)\nif missing_cols:\n    sys.exit(f\"[ERROR] clean.csv 缺少必要列: {missing_cols}\")\n\n# ---------- 2. 防御性检查：确认 clean.csv 已清洗（不重复计数、无缺失收入/成本） ----------\ndup_cnt = int(clean[\"order_id\"].duplicated().sum())\nprint(f\"[CHECK] clean.csv 中重复 order_id 数 = {dup_cnt}（应为 0，避免重复计数）\")\nif dup_cnt != 0:\n    sys.exit(\"[ERROR] clean.csv 仍含重复 order_id，血缘异常，终止。\")\n\nna_rev = int(clean[\"revenue\"].isna().sum())\nna_cost = int(clean[\"cost\"].isna().sum())\nprint(f\"[CHECK] clean.csv 中 revenue 缺失数 = {na_rev}，cost 缺失数 = {na_cost}（应为 0，避免用 0 冒充真实收入）\")\nif na_rev != 0 or na_cost != 0:\n    sys.exit(\"[ERROR] clean.csv 仍含缺失 revenue/cost，终止。\")\n\n# 毛利为负的有效订单必须保留（不剔除）\nneg_mask = (clean[\"revenue\"] - clean[\"cost\"]) < 0\nprint(f\"[CHECK] clean.csv 中毛利为负的有效订单数 = {int(neg_mask.sum())}（按规则保留，不剔除）\")\n\n# ---------- 3. 按 month 汇总（毛利=总收入-总成本；毛利率=总毛利/总收入，禁止平均单笔毛利率） ----------\nclean = clean.copy()\nclean[\"gross_profit\"] = clean[\"revenue\"] - clean[\"cost\"]\n\nmonthly = (\n    clean.groupby(\"month\", as_index=False)\n    .agg(\n        revenue=(\"revenue\", \"sum\"),\n        cost=(\"cost\", \"sum\"),\n        orders=(\"order_id\", \"nunique\"),\n    )\n    .sort_values(\"month\")\n    .reset_index(drop=True)\n)\n\nmonthly[\"gross_profit\"] = monthly[\"revenue\"] - monthly[\"cost\"]\n# 毛利率 = 总毛利 / 总收入（加权口径），避免平均单笔毛利率造成加权错误\nmonthly[\"gross_margin\"] = np.where(\n    monthly[\"revenue\"] != 0,\n    monthly[\"gross_profit\"] / monthly[\"revenue\"],\n    np.nan,\n)\n\n# 列名严格为 month,revenue,cost,gross_profit,gross_margin,orders\nmonthly = monthly[[\"month\", \"revenue\", \"cost\", \"gross_profit\", \"gross_margin\", \"orders\"]]\n\nprint(\"\\n[RESULT] 月度汇总（模拟数据，金额单位：元）\")\nprint(monthly.to_string(index=False))\n\n# ---------- 4. 核对：按月汇总之和 == 清洗明细合计（绝对容差 1e-8） ----------\nsum_rev_detail = float(clean[\"revenue\"].sum())\nsum_cost_detail = float(clean[\"cost\"].sum())\nsum_gp_detail = float(clean[\"gross_profit\"].sum())\n\nsum_rev_month = float(monthly[\"revenue\"].sum())\nsum_cost_month = float(monthly[\"cost\"].sum())\nsum_gp_month = float(monthly[\"gross_profit\"].sum())\n\nok_rev = abs(sum_rev_detail - sum_rev_month) <= TOL\nok_cost = abs(sum_cost_detail - sum_cost_month) <= TOL\nok_gp = abs(sum_gp_detail - sum_gp_month) <= TOL\nprint(f\"\\n[VERIFY] 收入合计 明细={sum_rev_detail:.6f} 汇总={sum_rev_month:.6f} 一致={ok_rev}\")\nprint(f\"[VERIFY] 成本合计 明细={sum_cost_detail:.6f} 汇总={sum_cost_month:.6f} 一致={ok_cost}\")\nprint(f\"[VERIFY] 毛利合计 明细={sum_gp_detail:.6f} 汇总={sum_gp_month:.6f} 一致={ok_gp}\")\n\n# 毛利率口径核对：总毛利 / 总收入\noverall_margin = sum_gp_month / sum_rev_month if sum_rev_month != 0 else np.nan\nprint(f\"[VERIFY] 整体毛利率(总毛利/总收入) = {overall_margin:.6f}\")\n\nif not (ok_rev and ok_cost and ok_gp):\n    sys.exit(\"[ERROR] 汇总与明细不一致，终止落盘。\")\n\n# ---------- 5. 落盘 ----------\nmonthly.to_csv(OUTPUT_FILE, index=False, encoding=\"utf-8-sig\")\nprint(f\"\\n[SAVED] {OUTPUT_FILE}（模拟数据，金额单位：元）\")",
+     "repair_reason": "",
+     "code_diff": "",
+     "acceptance": {
+      "checks": [
+       {
+        "name": "执行退出码为 0",
+        "passed": true,
+        "detail": "returncode=0",
+        "required": true
+       },
+       {
+        "name": "运行有实质输出",
+        "passed": true,
+        "detail": "815 字符 / 15 行",
+        "required": false
+       },
+       {
+        "name": "产生至少一个文件产物",
+        "passed": true,
+        "detail": "1 个",
+        "required": false
+       },
+       {
+        "name": "monthly_summary.csv 存在",
+        "passed": true,
+        "detail": "249 字节",
+        "required": true
+       },
+       {
+        "name": "monthly_summary.csv 非空",
+        "passed": true,
+        "detail": "249 字节",
+        "required": true
+       },
+       {
+        "name": "monthly_summary.csv 是可解析 CSV",
+        "passed": true,
+        "detail": "5 行（含表头）",
+        "required": true
+       },
+       {
+        "name": "monthly_summary.csv 含表头且列数 > 0",
+        "passed": true,
+        "detail": "列：﻿month, revenue, cost, gross_profit, gross_margin, orders",
+        "required": true
+       },
+       {
+        "name": "monthly_summary.csv 含数据行",
+        "passed": true,
+        "detail": "4 行数据",
+        "required": true
+       },
+       {
+        "name": "monthly_summary.csv 各行列数一致",
+        "passed": true,
+        "detail": "列数集合 [6]",
+        "required": true
+       },
+       {
+        "name": "步骤交付：monthly_summary.csv",
+        "passed": true,
+        "detail": "存在"
+       },
+       {
+        "name": "输入版本：clean.csv",
+        "passed": true,
+        "detail": "已携带已登记版本"
+       }
+      ],
+      "verifications": [
+       {
+        "item": "按月汇总之和等于清洗明细合计；毛利率为总毛利除以总收入",
+        "passed": true,
+        "state": "passed",
+        "evidence": "运行输出显示收入合计 明细=17000.000000 汇总=17000.000000 一致=True；成本合计 明细=11400.000000 汇总=11400.000000 一致=True；毛利合计 明细=5600.000000 汇总=5600.000000 一致=True。毛利率按总毛利/总收入计算：monthly['gross_margin'] = gross_profit / revenue，且整体毛利率=5600/17000=0.329412。落盘 monthly_summary.csv 列名严格为 month,revenue,cost,gross_profit,gross_margin,orders，4 行数据与汇总结果一致。"
+       }
+      ],
+      "state": "passed"
+     }
+    }
+   ],
+   "artifacts": [
+    {
+     "name": "step2_monthly_summary.csv",
+     "kind": "真实运行产物",
+     "bytes": 249,
+     "sha256": "a2a0524e5ba15ad02d37b77ae6b6fd3ade0c4450dd93d55b1bab18009e1b7027",
+     "from_step": 1,
+     "url": "",
+     "logical_name": "monthly_summary.csv",
+     "source_run_id": "b5492bb7-20261008-155955-599c",
+     "version": 1
+    }
+   ],
+   "checks": [
+    {
+     "name": "执行退出码为 0",
+     "passed": true,
+     "detail": "returncode=0",
+     "required": true
+    },
+    {
+     "name": "运行有实质输出",
+     "passed": true,
+     "detail": "815 字符 / 15 行",
+     "required": false
+    },
+    {
+     "name": "产生至少一个文件产物",
+     "passed": true,
+     "detail": "1 个",
+     "required": false
+    },
+    {
+     "name": "monthly_summary.csv 存在",
+     "passed": true,
+     "detail": "249 字节",
+     "required": true
+    },
+    {
+     "name": "monthly_summary.csv 非空",
+     "passed": true,
+     "detail": "249 字节",
+     "required": true
+    },
+    {
+     "name": "monthly_summary.csv 是可解析 CSV",
+     "passed": true,
+     "detail": "5 行（含表头）",
+     "required": true
+    },
+    {
+     "name": "monthly_summary.csv 含表头且列数 > 0",
+     "passed": true,
+     "detail": "列：﻿month, revenue, cost, gross_profit, gross_margin, orders",
+     "required": true
+    },
+    {
+     "name": "monthly_summary.csv 含数据行",
+     "passed": true,
+     "detail": "4 行数据",
+     "required": true
+    },
+    {
+     "name": "monthly_summary.csv 各行列数一致",
+     "passed": true,
+     "detail": "列数集合 [6]",
+     "required": true
+    },
+    {
+     "name": "步骤交付：monthly_summary.csv",
+     "passed": true,
+     "detail": "存在",
+     "required": true
+    },
+    {
+     "name": "输入版本：clean.csv",
+     "passed": true,
+     "detail": "已携带已登记版本",
+     "required": true
+    }
+   ],
+   "checks_passed": 11,
+   "checks_total": 11,
+   "verifications": [
+    {
+     "item": "按月汇总之和等于清洗明细合计；毛利率为总毛利除以总收入",
+     "passed": true,
+     "evidence": "运行输出显示收入合计 明细=17000.000000 汇总=17000.000000 一致=True；成本合计 明细=11400.000000 汇总=11400.000000 一致=True；毛利合计 明细=5600.000000 汇总=5600.000000 一致=True。毛利率按总毛利/总收入计算：monthly['gross_margin'] = gross_profit / revenue，且整体毛利率=5600/17000=0.329412。落盘 monthly_summary.csv 列名严格为 month,revenue,cost,gross_profit,gross_margin,orders，4 行数据与汇总结果一致。",
+     "layer": "llm",
+     "state": "passed"
+    }
+   ],
+   "verification_passed": 1,
+   "verification_total": 1,
+   "verify_skip_reason": "该技能的验收条目已全部由程序化断言覆盖（L1/L2）",
+   "error": "",
+   "duration_ms": 8514,
+   "started_at_ms": 1791446401484,
+   "ended_at_ms": 1791446409998,
+   "stages": {
+    "code_gen_ms": 4587,
+    "llm_calls": 1,
+    "llm_cost_yuan": 0.0,
+    "syntax_check_ms": 3,
+    "sandbox_try1_ms": 2612,
+    "verify_sem_ms": 1282,
+    "verify_det_ms": 0
+   }
+  },
+  {
+   "idx": 2,
+   "action": "读取 monthly_summary.csv 绘制 figure.svg，写 report.md 包含经营结果、模拟数据标记、元单位、风险与行动建议",
+   "skill": "business-metrics-audit",
+   "status": "done",
+   "depends_on": [
+    1
+   ],
+   "inputs": [
+    "clean.csv",
+    "monthly_summary.csv"
+   ],
+   "input_artifacts": [
+    {
+     "logical_name": "clean.csv",
+     "name": "step1_clean.csv",
+     "from_step": 0,
+     "sha256": "0f956a4928d2bef6572c623fc0966dc88db32b46b30b308abeb2d8c2345db6a0"
+    },
+    {
+     "logical_name": "monthly_summary.csv",
+     "name": "step2_monthly_summary.csv",
+     "from_step": 1,
+     "sha256": "a2a0524e5ba15ad02d37b77ae6b6fd3ade0c4450dd93d55b1bab18009e1b7027"
+    }
+   ],
+   "contract": {
+    "input_files": [
+     "monthly_summary.csv"
+    ],
+    "output_files": [
+     "figure.svg",
+     "report.md"
+    ],
+    "verification": [
+     "矢量图与报告均存在并明确说明数据为模拟数据"
+    ]
+   },
+   "dependency_reason": "真实文件读写依赖：monthly_summary.csv",
+   "code": "# -*- coding: utf-8 -*-\n\"\"\"\n步骤3：读取 monthly_summary.csv，生成 figure.svg 趋势图与 report.md 管理层报告。\n数据来源：模拟订单数据（非真实经营数据）。\n金额单位：元。\n\"\"\"\nimport os\nimport numpy as np\nimport pandas as pd\nimport matplotlib\nmatplotlib.use('Agg')\nimport matplotlib.pyplot as plt\n\nplt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'DejaVu Sans']\nplt.rcParams['axes.unicode_minus'] = False\n\nINPUT_SUMMARY = 'monthly_summary.csv'\nINPUT_CLEAN = 'clean.csv'\nOUT_FIG = 'figure.svg'\nOUT_REPORT = 'report.md'\n\n# ---------- 契约校验：缺失约定输入必须报错，禁止重造数据 ----------\nfor f in (INPUT_SUMMARY, INPUT_CLEAN):\n    if not os.path.exists(f):\n        raise FileNotFoundError(f\"缺少约定输入文件：{f}，本步骤不重造数据。\")\n\n# ---------- 读取月度汇总（唯一数据源，不复制原始数据重算） ----------\ndf = pd.read_csv(INPUT_SUMMARY)\nrequired_cols = ['month', 'revenue', 'cost', 'gross_profit', 'gross_margin', 'orders']\nmissing = [c for c in required_cols if c not in df.columns]\nif missing:\n    raise ValueError(f\"monthly_summary.csv 缺少列：{missing}\")\ndf = df.sort_values('month').reset_index(drop=True)\n\n# ---------- 血缘一致性核对：月度汇总 vs 清洗明细（绝对容差 1e-8） ----------\nclean = pd.read_csv(INPUT_CLEAN)\nrev_sum = float(clean['revenue'].sum())\ncost_sum = float(clean['cost'].sum())\norders_sum = int(len(clean))\nrev_m = float(df['revenue'].sum())\ncost_m = float(df['cost'].sum())\norders_m = int(df['orders'].sum())\ntol = 1e-8\nchk_rev = abs(rev_sum - rev_m) <= tol\nchk_cost = abs(cost_sum - cost_m) <= tol\nchk_ord = orders_sum == orders_m\nprint(\"=== 血缘一致性核对（clean.csv vs monthly_summary.csv）===\")\nprint(f\"收入: 明细={rev_sum:.2f} 汇总={rev_m:.2f} 一致={chk_rev}\")\nprint(f\"成本: 明细={cost_sum:.2f} 汇总={cost_m:.2f} 一致={chk_cost}\")\nprint(f\"订单数: 明细={orders_sum} 汇总={orders_m} 一致={chk_ord}\")\nif not (chk_rev and chk_cost and chk_ord):\n    raise AssertionError(\"月度汇总与清洗明细不一致，血缘校验失败。\")\n\n# ---------- 规避陷阱：毛利率必须用总额加权，不能平均单笔毛利率 ----------\nrecalc_margin = df['gross_profit'] / df['revenue']\nmargin_ok = np.allclose(recalc_margin.values, df['gross_margin'].values, atol=tol)\nprint(f\"毛利率加权口径核对（总额法）: 一致={margin_ok}\")\nif not margin_ok:\n    raise AssertionError(\"毛利率口径异常：疑似使用了平均单笔毛利率。\")\n\n# ---------- 关键指标 ----------\ntotal_rev = rev_m\ntotal_cost = cost_m\ntotal_gp = total_rev - total_cost\ntotal_margin = total_gp / total_rev if total_rev else float('nan')\nneg_months = df[df['gross_profit'] < 0]['month'].tolist()\nprint(\"=== 模拟数据月度经营结果（单位：元）===\")\nfor _, r in df.iterrows():\n    print(f\"{r['month']}: 收入={r['revenue']:.2f} 成本={r['cost']:.2f} \"\n          f\"毛利={r['gross_profit']:.2f} 毛利率={r['gross_margin']*100:.2f}% 订单={int(r['orders'])}\")\nprint(f\"合计: 收入={total_rev:.2f} 成本={total_cost:.2f} 毛利={total_gp:.2f} \"\n      f\"毛利率={total_margin*100:.2f}% 订单={orders_m}\")\nprint(f\"毛利为负的月份: {neg_months if neg_months else '无'}\")\n\n# ---------- 趋势图（矢量 SVG） ----------\nfig, ax1 = plt.subplots(figsize=(9, 5))\nx = np.arange(len(df))\nax1.bar(x - 0.2, df['revenue'], width=0.4, label='收入(元)', color='#4C72B0')\nax1.bar(x + 0.2, df['cost'], width=0.4, label='成本(元)', color='#DD8452')\nax1.set_xticks(x)\nax1.set_xticklabels(df['month'])\nax1.set_ylabel('金额（元）')\nax1.set_title('月度收入/成本与毛利率趋势（模拟数据，单位：元）')\nax2 = ax1.twinx()\nax2.plot(x, df['gross_margin'] * 100, color='#C44E52', marker='o', label='毛利率(%)')\nax2.axhline(0, color='gray', linestyle='--', linewidth=0.8)\nax2.set_ylabel('毛利率（%）')\nlines1, labels1 = ax1.get_legend_handles_labels()\nlines2, labels2 = ax2.get_legend_handles_labels()\nax1.legend(lines1 + lines2, labels1 + labels2, loc='upper left', fontsize=8)\nfig.tight_layout()\nfig.savefig(OUT_FIG, format='svg')\nplt.close(fig)\nprint(f\"已生成矢量图：{OUT_FIG}\")\n\n# ---------- 管理层报告 ----------\nrisk_lines = []\nif neg_months:\n    risk_lines.append(f\"- 毛利为负月份：{', '.join(neg_months)}，存在亏损风险，需核查定价与成本结构。\")\nelse:\n    risk_lines.append(\"- 各月毛利均为正，但需持续监控成本波动。\")\nmin_m = df.loc[df['gross_margin'].idxmin()]\nrisk_lines.append(f\"- 最低毛利率月份：{min_m['month']}（{min_m['gross_margin']*100:.2f}%），为薄弱环节。\")\nrisk_lines.append(\"- 数据为模拟数据，仅用于流程演示，不代表任何公司真实经营情况。\")\n\nreport = f\"\"\"# 月度经营分析报告（模拟数据）\n\n> **重要声明**：本报告基于**模拟订单数据**生成，**非真实经营数据**，不得用于任何真实经营结论。\n> 金额单位：**元**。数据血缘：clean.csv → monthly_summary.csv → 本报告。\n\n## 一、经营结果概览（单位：元）\n\n| 月份 | 收入 | 成本 | 毛利 | 毛利率 | 订单数 |\n|---|---:|---:|---:|---:|---:|\n\"\"\"\nfor _, r in df.iterrows():\n    report += (f\"| {r['month']} | {r['revenue']:.2f} | {r['cost']:.2f} | \"\n               f\"{r['gross_profit']:.2f} | {r['gross_margin']*100:.2f}% | {int(r['orders'])} |\\n\")\nreport += (f\"| **合计** | **{total_rev:.2f}** | **{total_cost:.2f}** | \"\n           f\"**{total_gp:.2f}** | **{total_margin*100:.2f}%** | **{orders_m}** |\\n\")\n\nreport += f\"\"\"\n## 二、数据质量与口径说明\n- 数据来源：模拟订单数据，已按 order_id 去重（保留首条），剔除收入或成本缺失订单。\n- 毛利率口径：**总额法**（总毛利 / 总收入），未使用平均单笔毛利率，避免加权错误。\n- 血缘核对：月度汇总与清洗明细总额一致（绝对容差 1e-8），校验通过。\n\n## 三、毛利风险\n{chr(10).join(risk_lines)}\n\n## 四、行动建议\n1. 对毛利为负或偏低的月份，复核定价策略与成本构成，识别可优化项。\n2. 建立月度毛利率监控阈值，低于阈值自动预警。\n3. 补齐缺失的收入/成本字段采集，减少因数据缺失导致的样本损失。\n4. 本报告结论仅适用于模拟数据演示，真实决策需以真实数据复核。\n\n## 五、图表\n趋势图见 `figure.svg`（收入/成本柱状 + 毛利率折线，模拟数据，单位：元）。\n\"\"\"\n\nwith open(OUT_REPORT, 'w', encoding='utf-8') as f:\n    f.write(report)\nprint(f\"已生成报告：{OUT_REPORT}\")\n\n# ---------- 验收清单输出 ----------\nprint(\"=== 验收清单 ===\")\nprint(f\"figure.svg 存在: {os.path.exists(OUT_FIG)}\")\nprint(f\"report.md 存在: {os.path.exists(OUT_REPORT)}\")\nwith open(OUT_REPORT, encoding='utf-8') as f:\n    txt = f.read()\nprint(f\"报告含'模拟数据'标记: {'模拟数据' in txt}\")\nprint(f\"报告含'元'单位标记: {'元' in txt}\")",
+   "n_attempts": 1,
+   "fixed": false,
+   "exhausted": false,
+   "attempts": [
+    {
+     "n": 1,
+     "ok": true,
+     "stdout": "=== 血缘一致性核对（clean.csv vs monthly_summary.csv）===\n收入: 明细=17000.00 汇总=17000.00 一致=True\n成本: 明细=11400.00 汇总=11400.00 一致=True\n订单数: 明细=12 汇总=12 一致=True\n毛利率加权口径核对（总额法）: 一致=True\n=== 模拟数据月度经营结果（单位：元）===\n2026-01: 收入=3500.00 成本=2180.00 毛利=1320.00 毛利率=37.71% 订单=3\n2026-02: 收入=4000.00 成本=2700.00 毛利=1300.00 毛利率=32.50% 订单=3\n2026-03: 收入=4300.00 成本=3180.00 毛利=1120.00 毛利率=26.05% 订单=3\n2026-04: 收入=5200.00 成本=3340.00 毛利=1860.00 毛利率=35.77% 订单=3\n合计: 收入=17000.00 成本=11400.00 毛利=5600.00 毛利率=32.94% 订单=12\n毛利为负的月份: 无\n已生成矢量图：figure.svg\n已生成报告：report.md\n=== 验收清单 ===\nfigure.svg 存在: True\nreport.md 存在: True\n报告含'模拟数据'标记: True\n报告含'元'单位标记: True\n",
+     "stderr": "",
+     "error_kind": "",
+     "duration_ms": 2910,
+     "truncated": false,
+     "code": "# -*- coding: utf-8 -*-\n\"\"\"\n步骤3：读取 monthly_summary.csv，生成 figure.svg 趋势图与 report.md 管理层报告。\n数据来源：模拟订单数据（非真实经营数据）。\n金额单位：元。\n\"\"\"\nimport os\nimport numpy as np\nimport pandas as pd\nimport matplotlib\nmatplotlib.use('Agg')\nimport matplotlib.pyplot as plt\n\nplt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'DejaVu Sans']\nplt.rcParams['axes.unicode_minus'] = False\n\nINPUT_SUMMARY = 'monthly_summary.csv'\nINPUT_CLEAN = 'clean.csv'\nOUT_FIG = 'figure.svg'\nOUT_REPORT = 'report.md'\n\n# ---------- 契约校验：缺失约定输入必须报错，禁止重造数据 ----------\nfor f in (INPUT_SUMMARY, INPUT_CLEAN):\n    if not os.path.exists(f):\n        raise FileNotFoundError(f\"缺少约定输入文件：{f}，本步骤不重造数据。\")\n\n# ---------- 读取月度汇总（唯一数据源，不复制原始数据重算） ----------\ndf = pd.read_csv(INPUT_SUMMARY)\nrequired_cols = ['month', 'revenue', 'cost', 'gross_profit', 'gross_margin', 'orders']\nmissing = [c for c in required_cols if c not in df.columns]\nif missing:\n    raise ValueError(f\"monthly_summary.csv 缺少列：{missing}\")\ndf = df.sort_values('month').reset_index(drop=True)\n\n# ---------- 血缘一致性核对：月度汇总 vs 清洗明细（绝对容差 1e-8） ----------\nclean = pd.read_csv(INPUT_CLEAN)\nrev_sum = float(clean['revenue'].sum())\ncost_sum = float(clean['cost'].sum())\norders_sum = int(len(clean))\nrev_m = float(df['revenue'].sum())\ncost_m = float(df['cost'].sum())\norders_m = int(df['orders'].sum())\ntol = 1e-8\nchk_rev = abs(rev_sum - rev_m) <= tol\nchk_cost = abs(cost_sum - cost_m) <= tol\nchk_ord = orders_sum == orders_m\nprint(\"=== 血缘一致性核对（clean.csv vs monthly_summary.csv）===\")\nprint(f\"收入: 明细={rev_sum:.2f} 汇总={rev_m:.2f} 一致={chk_rev}\")\nprint(f\"成本: 明细={cost_sum:.2f} 汇总={cost_m:.2f} 一致={chk_cost}\")\nprint(f\"订单数: 明细={orders_sum} 汇总={orders_m} 一致={chk_ord}\")\nif not (chk_rev and chk_cost and chk_ord):\n    raise AssertionError(\"月度汇总与清洗明细不一致，血缘校验失败。\")\n\n# ---------- 规避陷阱：毛利率必须用总额加权，不能平均单笔毛利率 ----------\nrecalc_margin = df['gross_profit'] / df['revenue']\nmargin_ok = np.allclose(recalc_margin.values, df['gross_margin'].values, atol=tol)\nprint(f\"毛利率加权口径核对（总额法）: 一致={margin_ok}\")\nif not margin_ok:\n    raise AssertionError(\"毛利率口径异常：疑似使用了平均单笔毛利率。\")\n\n# ---------- 关键指标 ----------\ntotal_rev = rev_m\ntotal_cost = cost_m\ntotal_gp = total_rev - total_cost\ntotal_margin = total_gp / total_rev if total_rev else float('nan')\nneg_months = df[df['gross_profit'] < 0]['month'].tolist()\nprint(\"=== 模拟数据月度经营结果（单位：元）===\")\nfor _, r in df.iterrows():\n    print(f\"{r['month']}: 收入={r['revenue']:.2f} 成本={r['cost']:.2f} \"\n          f\"毛利={r['gross_profit']:.2f} 毛利率={r['gross_margin']*100:.2f}% 订单={int(r['orders'])}\")\nprint(f\"合计: 收入={total_rev:.2f} 成本={total_cost:.2f} 毛利={total_gp:.2f} \"\n      f\"毛利率={total_margin*100:.2f}% 订单={orders_m}\")\nprint(f\"毛利为负的月份: {neg_months if neg_months else '无'}\")\n\n# ---------- 趋势图（矢量 SVG） ----------\nfig, ax1 = plt.subplots(figsize=(9, 5))\nx = np.arange(len(df))\nax1.bar(x - 0.2, df['revenue'], width=0.4, label='收入(元)', color='#4C72B0')\nax1.bar(x + 0.2, df['cost'], width=0.4, label='成本(元)', color='#DD8452')\nax1.set_xticks(x)\nax1.set_xticklabels(df['month'])\nax1.set_ylabel('金额（元）')\nax1.set_title('月度收入/成本与毛利率趋势（模拟数据，单位：元）')\nax2 = ax1.twinx()\nax2.plot(x, df['gross_margin'] * 100, color='#C44E52', marker='o', label='毛利率(%)')\nax2.axhline(0, color='gray', linestyle='--', linewidth=0.8)\nax2.set_ylabel('毛利率（%）')\nlines1, labels1 = ax1.get_legend_handles_labels()\nlines2, labels2 = ax2.get_legend_handles_labels()\nax1.legend(lines1 + lines2, labels1 + labels2, loc='upper left', fontsize=8)\nfig.tight_layout()\nfig.savefig(OUT_FIG, format='svg')\nplt.close(fig)\nprint(f\"已生成矢量图：{OUT_FIG}\")\n\n# ---------- 管理层报告 ----------\nrisk_lines = []\nif neg_months:\n    risk_lines.append(f\"- 毛利为负月份：{', '.join(neg_months)}，存在亏损风险，需核查定价与成本结构。\")\nelse:\n    risk_lines.append(\"- 各月毛利均为正，但需持续监控成本波动。\")\nmin_m = df.loc[df['gross_margin'].idxmin()]\nrisk_lines.append(f\"- 最低毛利率月份：{min_m['month']}（{min_m['gross_margin']*100:.2f}%），为薄弱环节。\")\nrisk_lines.append(\"- 数据为模拟数据，仅用于流程演示，不代表任何公司真实经营情况。\")\n\nreport = f\"\"\"# 月度经营分析报告（模拟数据）\n\n> **重要声明**：本报告基于**模拟订单数据**生成，**非真实经营数据**，不得用于任何真实经营结论。\n> 金额单位：**元**。数据血缘：clean.csv → monthly_summary.csv → 本报告。\n\n## 一、经营结果概览（单位：元）\n\n| 月份 | 收入 | 成本 | 毛利 | 毛利率 | 订单数 |\n|---|---:|---:|---:|---:|---:|\n\"\"\"\nfor _, r in df.iterrows():\n    report += (f\"| {r['month']} | {r['revenue']:.2f} | {r['cost']:.2f} | \"\n               f\"{r['gross_profit']:.2f} | {r['gross_margin']*100:.2f}% | {int(r['orders'])} |\\n\")\nreport += (f\"| **合计** | **{total_rev:.2f}** | **{total_cost:.2f}** | \"\n           f\"**{total_gp:.2f}** | **{total_margin*100:.2f}%** | **{orders_m}** |\\n\")\n\nreport += f\"\"\"\n## 二、数据质量与口径说明\n- 数据来源：模拟订单数据，已按 order_id 去重（保留首条），剔除收入或成本缺失订单。\n- 毛利率口径：**总额法**（总毛利 / 总收入），未使用平均单笔毛利率，避免加权错误。\n- 血缘核对：月度汇总与清洗明细总额一致（绝对容差 1e-8），校验通过。\n\n## 三、毛利风险\n{chr(10).join(risk_lines)}\n\n## 四、行动建议\n1. 对毛利为负或偏低的月份，复核定价策略与成本构成，识别可优化项。\n2. 建立月度毛利率监控阈值，低于阈值自动预警。\n3. 补齐缺失的收入/成本字段采集，减少因数据缺失导致的样本损失。\n4. 本报告结论仅适用于模拟数据演示，真实决策需以真实数据复核。\n\n## 五、图表\n趋势图见 `figure.svg`（收入/成本柱状 + 毛利率折线，模拟数据，单位：元）。\n\"\"\"\n\nwith open(OUT_REPORT, 'w', encoding='utf-8') as f:\n    f.write(report)\nprint(f\"已生成报告：{OUT_REPORT}\")\n\n# ---------- 验收清单输出 ----------\nprint(\"=== 验收清单 ===\")\nprint(f\"figure.svg 存在: {os.path.exists(OUT_FIG)}\")\nprint(f\"report.md 存在: {os.path.exists(OUT_REPORT)}\")\nwith open(OUT_REPORT, encoding='utf-8') as f:\n    txt = f.read()\nprint(f\"报告含'模拟数据'标记: {'模拟数据' in txt}\")\nprint(f\"报告含'元'单位标记: {'元' in txt}\")",
+     "repair_reason": "",
+     "code_diff": "",
+     "acceptance": {
+      "checks": [
+       {
+        "name": "执行退出码为 0",
+        "passed": true,
+        "detail": "returncode=0",
+        "required": true
+       },
+       {
+        "name": "运行有实质输出",
+        "passed": true,
+        "detail": "614 字符 / 19 行",
+        "required": false
+       },
+       {
+        "name": "产生至少一个文件产物",
+        "passed": true,
+        "detail": "2 个",
+        "required": false
+       },
+       {
+        "name": "figure.svg 存在",
+        "passed": true,
+        "detail": "47604 字节",
+        "required": true
+       },
+       {
+        "name": "figure.svg 非空",
+        "passed": true,
+        "detail": "47604 字节",
+        "required": true
+       },
+       {
+        "name": "figure.svg 是图片产物",
+        "passed": true,
+        "detail": "47604 字节",
+        "required": true
+       },
+       {
+        "name": "report.md 存在",
+        "passed": true,
+        "detail": "1853 字节",
+        "required": true
+       },
+       {
+        "name": "report.md 非空",
+        "passed": true,
+        "detail": "1853 字节",
+        "required": true
+       },
+       {
+        "name": "步骤交付：figure.svg",
+        "passed": true,
+        "detail": "存在"
+       },
+       {
+        "name": "步骤交付：report.md",
+        "passed": true,
+        "detail": "存在"
+       },
+       {
+        "name": "输入版本：monthly_summary.csv",
+        "passed": true,
+        "detail": "已携带已登记版本"
+       }
+      ],
+      "verifications": [
+       {
+        "item": "矢量图与报告均存在并明确说明数据为模拟数据",
+        "passed": true,
+        "state": "passed",
+        "evidence": "落盘文件包含 figure.svg（47604 bytes，SVG 矢量格式，含 <svg> 根元素）和 report.md（1853 bytes）。report.md 标题为“# 月度经营分析报告（模拟数据）”，正文含“本报告基于**模拟订单数据**生成，**非真实经营数据**”及“数据为模拟数据，仅用于流程演示”；figure.svg 标题为“月度收入/成本与毛利率趋势（模拟数据，单位：元）”，均明确标注模拟数据。"
+       }
+      ],
+      "state": "passed"
+     }
+    }
+   ],
+   "artifacts": [
+    {
+     "name": "step3_figure.svg",
+     "kind": "真实运行产物",
+     "bytes": 47604,
+     "sha256": "434281403295d21d7727bf24508a4474d669328d4e372dd166cb475fd88664dc",
+     "from_step": 2,
+     "url": "",
+     "logical_name": "figure.svg",
+     "source_run_id": "b5492bb7-20261008-155955-599c",
+     "version": 1
+    },
+    {
+     "name": "step3_report.md",
+     "kind": "真实运行产物",
+     "bytes": 1853,
+     "sha256": "5e733c4c02145ee978ce690148886d93d31add91cdc69796abf78dde8319ff7d",
+     "from_step": 2,
+     "url": "",
+     "logical_name": "report.md",
+     "source_run_id": "b5492bb7-20261008-155955-599c",
+     "version": 1
+    }
+   ],
+   "checks": [
+    {
+     "name": "执行退出码为 0",
+     "passed": true,
+     "detail": "returncode=0",
+     "required": true
+    },
+    {
+     "name": "运行有实质输出",
+     "passed": true,
+     "detail": "614 字符 / 19 行",
+     "required": false
+    },
+    {
+     "name": "产生至少一个文件产物",
+     "passed": true,
+     "detail": "2 个",
+     "required": false
+    },
+    {
+     "name": "figure.svg 存在",
+     "passed": true,
+     "detail": "47604 字节",
+     "required": true
+    },
+    {
+     "name": "figure.svg 非空",
+     "passed": true,
+     "detail": "47604 字节",
+     "required": true
+    },
+    {
+     "name": "figure.svg 是图片产物",
+     "passed": true,
+     "detail": "47604 字节",
+     "required": true
+    },
+    {
+     "name": "report.md 存在",
+     "passed": true,
+     "detail": "1853 字节",
+     "required": true
+    },
+    {
+     "name": "report.md 非空",
+     "passed": true,
+     "detail": "1853 字节",
+     "required": true
+    },
+    {
+     "name": "步骤交付：figure.svg",
+     "passed": true,
+     "detail": "存在",
+     "required": true
+    },
+    {
+     "name": "步骤交付：report.md",
+     "passed": true,
+     "detail": "存在",
+     "required": true
+    },
+    {
+     "name": "输入版本：monthly_summary.csv",
+     "passed": true,
+     "detail": "已携带已登记版本",
+     "required": true
+    }
+   ],
+   "checks_passed": 11,
+   "checks_total": 11,
+   "verifications": [
+    {
+     "item": "矢量图与报告均存在并明确说明数据为模拟数据",
+     "passed": true,
+     "evidence": "落盘文件包含 figure.svg（47604 bytes，SVG 矢量格式，含 <svg> 根元素）和 report.md（1853 bytes）。report.md 标题为“# 月度经营分析报告（模拟数据）”，正文含“本报告基于**模拟订单数据**生成，**非真实经营数据**”及“数据为模拟数据，仅用于流程演示”；figure.svg 标题为“月度收入/成本与毛利率趋势（模拟数据，单位：元）”，均明确标注模拟数据。",
+     "layer": "llm",
+     "state": "passed"
+    }
+   ],
+   "verification_passed": 1,
+   "verification_total": 1,
+   "verify_skip_reason": "该技能的验收条目已全部由程序化断言覆盖（L1/L2）",
+   "error": "",
+   "duration_ms": 11698,
+   "started_at_ms": 1791446410006,
+   "ended_at_ms": 1791446421704,
+   "stages": {
+    "code_gen_ms": 7440,
+    "llm_calls": 1,
+    "llm_cost_yuan": 0.0,
+    "syntax_check_ms": 4,
+    "sandbox_try1_ms": 2921,
+    "verify_sem_ms": 1285,
+    "verify_det_ms": 0
+   }
+  }
+ ],
+ "step_stats": {
+  "total": 3,
+  "done": 3,
+  "failed": 0,
+  "skipped": 0,
+  "retried": 0
+ },
+ "artifacts": [
+  {
+   "name": "step1_clean.csv",
+   "kind": "真实运行产物",
+   "bytes": 429,
+   "sha256": "0f956a4928d2bef6572c623fc0966dc88db32b46b30b308abeb2d8c2345db6a0",
+   "from_step": 0,
+   "url": "",
+   "logical_name": "clean.csv",
+   "source_run_id": "b5492bb7-20261008-155955-599c",
+   "version": 1
+  },
+  {
+   "name": "step2_monthly_summary.csv",
+   "kind": "真实运行产物",
+   "bytes": 249,
+   "sha256": "a2a0524e5ba15ad02d37b77ae6b6fd3ade0c4450dd93d55b1bab18009e1b7027",
+   "from_step": 1,
+   "url": "",
+   "logical_name": "monthly_summary.csv",
+   "source_run_id": "b5492bb7-20261008-155955-599c",
+   "version": 1
+  },
+  {
+   "name": "step3_figure.svg",
+   "kind": "真实运行产物",
+   "bytes": 47604,
+   "sha256": "434281403295d21d7727bf24508a4474d669328d4e372dd166cb475fd88664dc",
+   "from_step": 2,
+   "url": "",
+   "logical_name": "figure.svg",
+   "source_run_id": "b5492bb7-20261008-155955-599c",
+   "version": 1
+  },
+  {
+   "name": "step3_report.md",
+   "kind": "真实运行产物",
+   "bytes": 1853,
+   "sha256": "5e733c4c02145ee978ce690148886d93d31add91cdc69796abf78dde8319ff7d",
+   "from_step": 2,
+   "url": "",
+   "logical_name": "report.md",
+   "source_run_id": "b5492bb7-20261008-155955-599c",
+   "version": 1
+  }
+ ],
+ "feedback": [],
+ "evolution": {},
+ "staged": {
+  "execution_mode": "contract",
+  "picked_steps": [
+   0,
+   1,
+   2
+  ],
+  "execution_scope": {
+   "planned": 3,
+   "executed": 3,
+   "max_steps": 3,
+   "selected": [
+    0,
+    1,
+    2
+   ],
+   "omitted": []
+  },
+  "scheduler": "dag-serial",
+  "critical_path": {
+   "steps": [
+    0,
+    1,
+    2
+   ],
+   "ms": 26058
+  },
+  "acceptance": {
+   "state": "passed",
+   "failed": 0,
+   "unknown": 0,
+   "checks_passed": 26,
+   "checks_total": 26,
+   "semantic_passed": 3,
+   "semantic_total": 3
+  },
+  "independent_evaluation": {
+   "score": 1.0,
+   "checks": [
+    {
+     "name": "月份完整且无额外月份",
+     "passed": true
+    },
+    {
+     "name": "2026-01.revenue",
+     "passed": true,
+     "expected": 3500.0,
+     "actual": "3500.0"
+    },
+    {
+     "name": "2026-01.cost",
+     "passed": true,
+     "expected": 2180.0,
+     "actual": "2180.0"
+    },
+    {
+     "name": "2026-01.orders",
+     "passed": true,
+     "expected": 3,
+     "actual": "3"
+    },
+    {
+     "name": "2026-01.gross_profit",
+     "passed": true,
+     "expected": 1320.0,
+     "actual": "1320.0"
+    },
+    {
+     "name": "2026-01.gross_margin",
+     "passed": true,
+     "expected": 0.37714285714285717,
+     "actual": "0.37714285714285717"
+    },
+    {
+     "name": "2026-02.revenue",
+     "passed": true,
+     "expected": 4000.0,
+     "actual": "4000.0"
+    },
+    {
+     "name": "2026-02.cost",
+     "passed": true,
+     "expected": 2700.0,
+     "actual": "2700.0"
+    },
+    {
+     "name": "2026-02.orders",
+     "passed": true,
+     "expected": 3,
+     "actual": "3"
+    },
+    {
+     "name": "2026-02.gross_profit",
+     "passed": true,
+     "expected": 1300.0,
+     "actual": "1300.0"
+    },
+    {
+     "name": "2026-02.gross_margin",
+     "passed": true,
+     "expected": 0.325,
+     "actual": "0.325"
+    },
+    {
+     "name": "2026-03.revenue",
+     "passed": true,
+     "expected": 4300.0,
+     "actual": "4300.0"
+    },
+    {
+     "name": "2026-03.cost",
+     "passed": true,
+     "expected": 3180.0,
+     "actual": "3180.0"
+    },
+    {
+     "name": "2026-03.orders",
+     "passed": true,
+     "expected": 3,
+     "actual": "3"
+    },
+    {
+     "name": "2026-03.gross_profit",
+     "passed": true,
+     "expected": 1120.0,
+     "actual": "1120.0"
+    },
+    {
+     "name": "2026-03.gross_margin",
+     "passed": true,
+     "expected": 0.26046511627906976,
+     "actual": "0.26046511627906976"
+    },
+    {
+     "name": "2026-04.revenue",
+     "passed": true,
+     "expected": 5200.0,
+     "actual": "5200.0"
+    },
+    {
+     "name": "2026-04.cost",
+     "passed": true,
+     "expected": 3340.0,
+     "actual": "3340.0"
+    },
+    {
+     "name": "2026-04.orders",
+     "passed": true,
+     "expected": 3,
+     "actual": "3"
+    },
+    {
+     "name": "2026-04.gross_profit",
+     "passed": true,
+     "expected": 1860.0,
+     "actual": "1860.0"
+    },
+    {
+     "name": "2026-04.gross_margin",
+     "passed": true,
+     "expected": 0.3576923076923077,
+     "actual": "0.3576923076923077"
+    },
+    {
+     "name": "矢量图存在",
+     "passed": true
+    },
+    {
+     "name": "报告标注模拟数据",
+     "passed": true
+    }
+   ],
+   "evaluator": "independent arithmetic + artifact presence; report insight not scored",
+   "artifact_hashes": {
+    "step1_clean.csv": "0f956a4928d2bef6572c623fc0966dc88db32b46b30b308abeb2d8c2345db6a0",
+    "step2_monthly_summary.csv": "a2a0524e5ba15ad02d37b77ae6b6fd3ade0c4450dd93d55b1bab18009e1b7027",
+    "step3_figure.svg": "434281403295d21d7727bf24508a4474d669328d4e372dd166cb475fd88664dc",
+    "step3_report.md": "5e733c4c02145ee978ce690148886d93d31add91cdc69796abf78dde8319ff7d"
+   }
+  },
+  "learning_gate": {
+   "eligible": false,
+   "skip_reason": "冻结评测任务不更新生产反馈与技能库"
+  }
+ },
+ "budget": {
+  "max_cost_yuan": 1.5,
+  "max_llm_calls": 40,
+  "max_seconds": 600,
+  "max_attempts_per_step": 3
+ },
+ "cost_yuan": 0.0762,
+ "tokens": 23628,
+ "llm_calls": 6,
+ "cancel_requested": false,
+ "duration_ms": 26084,
+ "started_at_ms": 1791446395631,
+ "ended_at_ms": 1791446421715,
+ "error": "",
+ "events": [
+  {
+   "ts_ms": 1791446395632,
+   "type": "dag.ready",
+   "step": null,
+   "data": {
+    "nodes": [
+     {
+      "idx": 0,
+      "skill": "business-metrics-audit",
+      "action": "按给定订单规则清洗公开模拟 CSV，打印重复和缺失数量，写 clean.csv",
+      "depends_on": []
+     },
+     {
+      "idx": 1,
+      "skill": "business-metrics-audit",
+      "action": "直接读取 clean.csv 按 month 汇总收入成本、毛利毛利率及 orders；写 monthly_summary.csv；不得重新生成原始数据",
+      "depends_on": [
+       0
+      ]
+     },
+     {
+      "idx": 2,
+      "skill": "business-metrics-audit",
+      "action": "读取 monthly_summary.csv 绘制 figure.svg，写 report.md 包含经营结果、模拟数据标记、元单位、风险与行动建议",
+      "depends_on": [
+       1
+      ]
+     }
+    ],
+    "workflow_source": "linear-fallback"
+   },
+   "seq": 1
+  },
+  {
+   "ts_ms": 1791446395632,
+   "type": "run.executing",
+   "step": null,
+   "data": {
+    "steps": 3,
+    "picked": [
+     0,
+     1,
+     2
+    ]
+   },
+   "seq": 2
+  },
+  {
+   "ts_ms": 1791446395633,
+   "type": "step.started",
+   "step": 0,
+   "data": {
+    "action": "按给定订单规则清洗公开模拟 CSV，打印重复和缺失数量，写 clean.csv",
+    "skill": "business-metrics-audit"
+   },
+   "seq": 3
+  },
+  {
+   "ts_ms": 1791446395637,
+   "type": "code.generating",
+   "step": 0,
+   "data": {
+    "attempt": 1
+   },
+   "seq": 4
+  },
+  {
+   "ts_ms": 1791446399107,
+   "type": "code.generated",
+   "step": 0,
+   "data": {
+    "attempt": 1,
+    "code": "# -*- coding: utf-8 -*-\n\"\"\"\n步骤 1/3：清洗公开模拟订单明细 -> clean.csv\n【重要声明】本数据为公开模拟数据，不代表任何公司真实经营情况。\n规则：\n  - 按 order_id 去重，保留首条\n  - revenue 或 cost 缺失的订单剔除\n  - 不剔除毛利为负的有效订单\n\"\"\"\nimport io\nimport pandas as pd\n\n# ---- 输入：模拟订单数据（内嵌，无外部依赖） ----\nRAW_CSV = \"\"\"order_id,month,revenue,cost\nA01,2026-01,1200,720\nA02,2026-01,800,560\nA03,2026-01,1500,900\nA03,2026-01,1500,900\nB01,2026-02,1800,1200\nB02,2026-02,900,720\nB03,2026-02,,300\nB04,2026-02,1300,780\nC01,2026-03,2200,1430\nC02,2026-03,1400,980\nC03,2026-03,700,770\nD01,2026-04,2600,1690\nD02,2026-04,1700,1020\nD03,2026-04,900,630\nD04,2026-04,500,\n\"\"\"\n\nprint(\"=\" * 60)\nprint(\"【模拟数据】订单明细清洗（非真实公司经营数据）\")\nprint(\"=\" * 60)\n\nraw = pd.read_csv(io.StringIO(RAW_CSV), dtype={\"order_id\": str, \"month\": str})\nprint(f\"原始记录数: {len(raw)}\")\n\n# ---- 规避陷阱：先记录重复，再按 order_id 去重保留首条 ----\ndup_mask = raw.duplicated(subset=[\"order_id\"], keep=\"first\")\ndup_count = int(dup_mask.sum())\nprint(f\"重复记录数(按 order_id，保留首条): {dup_count}\")\nif dup_count > 0:\n    print(\"被删除的重复记录 order_id:\", raw.loc[dup_mask, \"order_id\"].tolist())\n\ndedup = raw.drop_duplicates(subset=[\"order_id\"], keep=\"first\").copy()\n\n# ---- 规避陷阱：revenue/cost 缺失的订单剔除（不用 0 冒充） ----\nmissing_mask = dedup[\"revenue\"].isna() | dedup[\"cost\"].isna()\nmissing_count = int(missing_mask.sum())\nprint(f\"收入或成本缺失被剔除的订单数: {missing_count}\")\nif missing_count > 0:\n    print(\"被剔除的缺失订单 order_id:\", dedup.loc[missing_mask, \"order_id\"].tolist())\n\nclean = dedup.loc[~missing_mask].copy()\n\n# ---- 类型与派生字段 ----\nclean[\"revenue\"] = clean[\"revenue\"].astype(float)\nclean[\"cost\"] = clean[\"cost\"].astype(float)\nclean[\"gross_profit\"] = clean[\"revenue\"] - clean[\"cost\"]\n\n# ---- 规避陷阱：不剔除毛利为负的有效订单，仅提示 ----\nneg = clean[clean[\"gross_profit\"] < 0]\nprint(f\"毛利为负的有效订单数(保留): {len(neg)}\")\nif len(neg) > 0:\n    print(\"负毛利订单 order_id:\", neg[\"order_id\"].tolist())\n\nclean = clean[[\"order_id\", \"month\", \"revenue\", \"cost\", \"gross_profit\"]]\nclean = clean.sort_values([\"month\", \"order_id\"]).reset_index(drop=True)\n\nprint(f\"清洗后记录数: {len(clean)}\")\nprint(f\"清洗后总收入: {clean['revenue'].sum():.2f} 元\")\nprint(f\"清洗后总成本: {clean['cost'].sum():.2f} 元\")\nprint(f\"清洗后总毛利: {clean['gross_profit'].sum():.2f} 元\")\nprint(\"数据来源标注: 模拟数据（非真实经营结论）\")\n\n# ---- 落盘 ----\nclean.to_csv(\"clean.csv\", index=False, encoding=\"utf-8-sig\")\nprint(\"已写出: clean.csv\")",
+    "chars": 2243,
+    "truncated": false
+   },
+   "seq": 5
+  },
+  {
+   "ts_ms": 1791446399111,
+   "type": "sandbox.started",
+   "step": 0,
+   "data": {
+    "attempt": 1
+   },
+   "seq": 6
+  },
+  {
+   "ts_ms": 1791446401468,
+   "type": "step.attempt",
+   "step": 0,
+   "data": {
+    "attempt": 1,
+    "ok": true,
+    "error_kind": "",
+    "duration_ms": 1340,
+    "stdout": "============================================================\n【模拟数据】订单明细清洗（非真实公司经营数据）\n============================================================\n原始记录数: 15\n重复记录数(按 order_id，保留首条): 1\n被删除的重复记录 order_id: ['A03']\n收入或成本缺失被剔除的订单数: 2\n被剔除的缺失订单 order_id: ['B03', 'D04']\n毛利为负的有效订单数(保留): 1\n负毛利订单 order_id: ['C03']\n清洗后记录数: 12\n清洗后总收入: 17000.00 元\n清洗后总成本: 11400.00 元\n清洗后总毛利: 5600.00 元\n数据来源标注: 模拟数据（非真实经营结论）\n已写出: clean.csv\n",
+    "stderr": ""
+   },
+   "seq": 7
+  },
+  {
+   "ts_ms": 1791446401474,
+   "type": "artifact.created",
+   "step": 0,
+   "data": {
+    "name": "step1_clean.csv",
+    "bytes": 429,
+    "sha256": "0f956a4928d2bef6572c623fc0966dc88db32b46b30b308abeb2d8c2345db6a0",
+    "kind": "真实运行产物"
+   },
+   "seq": 8
+  },
+  {
+   "ts_ms": 1791446401479,
+   "type": "verification.started",
+   "step": 0,
+   "data": {},
+   "seq": 9
+  },
+  {
+   "ts_ms": 1791446401479,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "执行退出码为 0",
+    "passed": true,
+    "detail": "returncode=0"
+   },
+   "seq": 10
+  },
+  {
+   "ts_ms": 1791446401479,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "运行有实质输出",
+    "passed": true,
+    "detail": "407 字符 / 16 行"
+   },
+   "seq": 11
+  },
+  {
+   "ts_ms": 1791446401479,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "产生至少一个文件产物",
+    "passed": true,
+    "detail": "1 个"
+   },
+   "seq": 12
+  },
+  {
+   "ts_ms": 1791446401479,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "clean.csv 存在",
+    "passed": true,
+    "detail": "429 字节"
+   },
+   "seq": 13
+  },
+  {
+   "ts_ms": 1791446401479,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "clean.csv 非空",
+    "passed": true,
+    "detail": "429 字节"
+   },
+   "seq": 14
+  },
+  {
+   "ts_ms": 1791446401479,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "clean.csv 是可解析 CSV",
+    "passed": true,
+    "detail": "13 行（含表头）"
+   },
+   "seq": 15
+  },
+  {
+   "ts_ms": 1791446401479,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "clean.csv 含表头且列数 > 0",
+    "passed": true,
+    "detail": "列：﻿order_id, month, revenue, cost, gross_profit"
+   },
+   "seq": 16
+  },
+  {
+   "ts_ms": 1791446401479,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "clean.csv 含数据行",
+    "passed": true,
+    "detail": "12 行数据"
+   },
+   "seq": 17
+  },
+  {
+   "ts_ms": 1791446401479,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "clean.csv 各行列数一致",
+    "passed": true,
+    "detail": "列数集合 [5]"
+   },
+   "seq": 18
+  },
+  {
+   "ts_ms": 1791446401479,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "步骤交付：clean.csv",
+    "passed": true,
+    "detail": "存在"
+   },
+   "seq": 19
+  },
+  {
+   "ts_ms": 1791446401479,
+   "type": "verification.result",
+   "step": 0,
+   "data": {
+    "item": "记录重复数与缺失数，明确标注模拟数据",
+    "passed": true,
+    "evidence": "运行输出打印“重复记录数(按 order_id，保留首条): 1”和“收入或成本缺失被剔除的订单数: 2”，并多次标注“模拟数据（非真实经营结论）”；落盘 clean.csv 为 12 行，列 order_id,month,revenue,cost,gross_profit，与清洗规则一致。",
+    "layer": "llm"
+   },
+   "seq": 20
+  },
+  {
+   "ts_ms": 1791446401479,
+   "type": "step.completed",
+   "step": 0,
+   "data": {
+    "status": "done",
+    "duration_ms": 5846,
+    "n_attempts": 1,
+    "artifacts": 1,
+    "checks": "10/10"
+   },
+   "seq": 21
+  },
+  {
+   "ts_ms": 1791446401484,
+   "type": "step.started",
+   "step": 1,
+   "data": {
+    "action": "直接读取 clean.csv 按 month 汇总收入成本、毛利毛利率及 orders；写 monthly_summary.csv；不得重新生成原始数据",
+    "skill": "business-metrics-audit"
+   },
+   "seq": 22
+  },
+  {
+   "ts_ms": 1791446401492,
+   "type": "step.inputs",
+   "step": 1,
+   "data": {
+    "files": [
+     "clean.csv"
+    ],
+    "artifacts": [
+     {
+      "logical_name": "clean.csv",
+      "name": "step1_clean.csv",
+      "from_step": 0,
+      "sha256": "0f956a4928d2bef6572c623fc0966dc88db32b46b30b308abeb2d8c2345db6a0"
+     }
+    ]
+   },
+   "seq": 23
+  },
+  {
+   "ts_ms": 1791446401492,
+   "type": "code.generating",
+   "step": 1,
+   "data": {
+    "attempt": 1
+   },
+   "seq": 24
+  },
+  {
+   "ts_ms": 1791446406079,
+   "type": "code.generated",
+   "step": 1,
+   "data": {
+    "attempt": 1,
+    "code": "# -*- coding: utf-8 -*-\n\"\"\"\n步骤2：读取 clean.csv，按 month 汇总生成 monthly_summary.csv\n数据性质：模拟数据（非真实公司经营数据）\n金额单位：元\n本步骤只读取 clean.csv，不重新生成原始数据。\n\"\"\"\nimport os\nimport sys\nimport numpy as np\nimport pandas as pd\n\n# 中文字体（本机可用 Microsoft YaHei / SimHei）\nimport matplotlib\nmatplotlib.use('Agg')\nimport matplotlib.pyplot as plt\nplt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'DejaVu Sans']\nplt.rcParams['axes.unicode_minus'] = False\n\nINPUT_FILE = \"clean.csv\"\nOUTPUT_FILE = \"monthly_summary.csv\"\nTOL = 1e-8\n\n# ---------- 1. 读取前序产物 clean.csv（缺失则报错，禁止重造数据） ----------\nif not os.path.exists(INPUT_FILE):\n    sys.exit(f\"[ERROR] 缺少约定输入文件 {INPUT_FILE}，本步骤不重造数据，终止。\")\n\nclean = pd.read_csv(INPUT_FILE)\nprint(f\"[INFO] 已读取 {INPUT_FILE}，行数={len(clean)}，列={list(clean.columns)}\")\n\nrequired_cols = {\"order_id\", \"month\", \"revenue\", \"cost\"}\nmissing_cols = required_cols - set(clean.columns)\nif missing_cols:\n    sys.exit(f\"[ERROR] clean.csv 缺少必要列: {missing_cols}\")\n\n# ---------- 2. 防御性检查：确认 clean.csv 已清洗（不重复计数、无缺失收入/成本） ----------\ndup_cnt = int(clean[\"order_id\"].duplicated().sum())\nprint(f\"[CHECK] clean.csv 中重复 order_id 数 = {dup_cnt}（应为 0，避免重复计数）\")\nif dup_cnt != 0:\n    sys.exit(\"[ERROR] clean.csv 仍含重复 order_id，血缘异常，终止。\")\n\nna_rev = int(clean[\"revenue\"].isna().sum())\nna_cost = int(clean[\"cost\"].isna().sum())\nprint(f\"[CHECK] clean.csv 中 revenue 缺失数 = {na_rev}，cost 缺失数 = {na_cost}（应为 0，避免用 0 冒充真实收入）\")\nif na_rev != 0 or na_cost != 0:\n    sys.exit(\"[ERROR] clean.csv 仍含缺失 revenue/cost，终止。\")\n\n# 毛利为负的有效订单必须保留（不剔除）\nneg_mask = (clean[\"revenue\"] - clean[\"cost\"]) < 0\nprint(f\"[CHECK] clean.csv 中毛利为负的有效订单数 = {int(neg_mask.sum())}（按规则保留，不剔除）\")\n\n# ---------- 3. 按 month 汇总（毛利=总收入-总成本；毛利率=总毛利/总收入，禁止平均单笔毛利率） ----------\nclean = clean.copy()\nclean[\"gross_profit\"] = clean[\"revenue\"] - clean[\"cost\"]\n\nmonthly = (\n    clean.groupby(\"month\", as_index=False)\n    .agg(\n        revenue=(\"revenue\", \"sum\"),\n        cost=(\"cost\", \"sum\"),\n        orders=(\"order_id\", \"nunique\"),\n    )\n    .sort_values(\"month\")\n    .reset_index(drop=True)\n)\n\nmonthly[\"gross_profit\"] = monthly[\"revenue\"] - monthly[\"cost\"]\n# 毛利率 = 总毛利 / 总收入（加权口径），避免平均单笔毛利率造成加权错误\nmonthly[\"gross_margin\"] = np.where(\n    monthly[\"revenue\"] != 0,\n    monthly[\"gross_profit\"] / monthly[\"revenue\"],\n    np.nan,\n)\n\n# 列名严格为 month,revenue,cost,gross_profit,gross_margin,orders\nmonthly = monthly[[\"month\", \"revenue\", \"cost\", \"gross_profit\", \"gross_margin\", \"orders\"]]\n\nprint(\"\\n[RESULT] 月度汇总（模拟数据，金额单位：元）\")\nprint(monthly.to_string(index=False))\n\n# ---------- 4. 核对：按月汇总之和 == 清洗明细合计（绝对容差 1e-8） ----------\nsum_rev_detail = float(clean[\"revenue\"].sum())\nsum_cost_detail = float(clean[\"cost\"].sum())\nsum_gp_detail = float(clean[\"gross_profit\"].sum())\n\nsum_rev_month = float(monthly[\"revenue\"].sum())\nsum_cost_month = float(monthly[\"cost\"].sum())\nsum_gp_month = float(monthly[\"gross_profit\"].sum())\n\nok_rev = abs(sum_rev_detail - sum_rev_month) <= TOL\nok_cost = abs(sum_cost_detail - sum_cost_month) <= TOL\nok_gp = abs(sum_gp_detail - sum_gp_month) <= TOL\nprint(f\"\\n[VERIFY] 收入合计 明细={sum_rev_detail:.6f} 汇总={sum_rev_month:.6f} 一致={ok_rev}\")\nprint(f\"[VERIFY] 成本合计 明细={sum_cost_detail:.6f} 汇总={sum_cost_month:.6f} 一致={ok_cost}\")\nprint(f\"[VERIFY] 毛利合计 明细={sum_gp_detail:.6f} 汇总={sum_gp_month:.6f} 一致={ok_gp}\")\n\n# 毛利率口径核对：总毛利 / 总收入\noverall_margin = sum_gp_month / sum_rev_month if sum_rev_month != 0 else np.nan\nprint(f\"[VERIFY] 整体毛利率(总毛利/总收入) = {overall_margin:.6f}\")\n\nif not (ok_rev and ok_cost and ok_gp):\n    sys.exit(\"[ERROR] 汇总与明细不一致，终止落盘。\")\n\n# ---------- 5. 落盘 ----------\nmonthly.to_csv(OUTPUT_FILE, index=False, encoding=\"utf-8-sig\")\nprint(f\"\\n[SAVED] {OUTPUT_FILE}（模拟数据，金额单位：元）\")",
+    "chars": 3603,
+    "truncated": false
+   },
+   "seq": 25
+  },
+  {
+   "ts_ms": 1791446406087,
+   "type": "sandbox.started",
+   "step": 1,
+   "data": {
+    "attempt": 1
+   },
+   "seq": 26
+  },
+  {
+   "ts_ms": 1791446409982,
+   "type": "step.attempt",
+   "step": 1,
+   "data": {
+    "attempt": 1,
+    "ok": true,
+    "error_kind": "",
+    "duration_ms": 2600,
+    "stdout": "[INFO] 已读取 clean.csv，行数=12，列=['order_id', 'month', 'revenue', 'cost', 'gross_profit']\n[CHECK] clean.csv 中重复 order_id 数 = 0（应为 0，避免重复计数）\n[CHECK] clean.csv 中 revenue 缺失数 = 0，cost 缺失数 = 0（应为 0，避免用 0 冒充真实收入）\n[CHECK] clean.csv 中毛利为负的有效订单数 = 1（按规则保留，不剔除）\n\n[RESULT] 月度汇总（模拟数据，金额单位：元）\n  month  revenue   cost  gross_profit  gross_margin  orders\n2026-01   3500.0 2180.0        1320.0      0.377143       3\n2026-02   4000.0 2700.0        1300.0      0.325000       3\n2026-03   4300.0 3180.0        1120.0      0.260465       3\n2026-04   5200.0 3340.0        1860.0      0.357692       3\n\n[VERIFY] 收入合计 明细=17000.000000 汇总=17000.000000 一致=True\n[VERIFY] 成本合计 明细=11400.000000 汇总=11400.000000 一致=True\n[VERIFY] 毛利合计 明细=5600.000000 汇总=5600.000000 一致=True\n[VERIFY] 整体毛利率(总毛利/总收入) = 0.329412\n\n[SAVED] monthly_summary.csv（模拟数据，金额单位：元）\n",
+    "stderr": ""
+   },
+   "seq": 27
+  },
+  {
+   "ts_ms": 1791446409992,
+   "type": "artifact.created",
+   "step": 1,
+   "data": {
+    "name": "step2_monthly_summary.csv",
+    "bytes": 249,
+    "sha256": "a2a0524e5ba15ad02d37b77ae6b6fd3ade0c4450dd93d55b1bab18009e1b7027",
+    "kind": "真实运行产物"
+   },
+   "seq": 28
+  },
+  {
+   "ts_ms": 1791446409998,
+   "type": "verification.started",
+   "step": 1,
+   "data": {},
+   "seq": 29
+  },
+  {
+   "ts_ms": 1791446409998,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "执行退出码为 0",
+    "passed": true,
+    "detail": "returncode=0"
+   },
+   "seq": 30
+  },
+  {
+   "ts_ms": 1791446409998,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "运行有实质输出",
+    "passed": true,
+    "detail": "815 字符 / 15 行"
+   },
+   "seq": 31
+  },
+  {
+   "ts_ms": 1791446409998,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "产生至少一个文件产物",
+    "passed": true,
+    "detail": "1 个"
+   },
+   "seq": 32
+  },
+  {
+   "ts_ms": 1791446409998,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "monthly_summary.csv 存在",
+    "passed": true,
+    "detail": "249 字节"
+   },
+   "seq": 33
+  },
+  {
+   "ts_ms": 1791446409998,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "monthly_summary.csv 非空",
+    "passed": true,
+    "detail": "249 字节"
+   },
+   "seq": 34
+  },
+  {
+   "ts_ms": 1791446409998,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "monthly_summary.csv 是可解析 CSV",
+    "passed": true,
+    "detail": "5 行（含表头）"
+   },
+   "seq": 35
+  },
+  {
+   "ts_ms": 1791446409998,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "monthly_summary.csv 含表头且列数 > 0",
+    "passed": true,
+    "detail": "列：﻿month, revenue, cost, gross_profit, gross_margin, orders"
+   },
+   "seq": 36
+  },
+  {
+   "ts_ms": 1791446409998,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "monthly_summary.csv 含数据行",
+    "passed": true,
+    "detail": "4 行数据"
+   },
+   "seq": 37
+  },
+  {
+   "ts_ms": 1791446409998,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "monthly_summary.csv 各行列数一致",
+    "passed": true,
+    "detail": "列数集合 [6]"
+   },
+   "seq": 38
+  },
+  {
+   "ts_ms": 1791446409998,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "步骤交付：monthly_summary.csv",
+    "passed": true,
+    "detail": "存在"
+   },
+   "seq": 39
+  },
+  {
+   "ts_ms": 1791446409998,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "输入版本：clean.csv",
+    "passed": true,
+    "detail": "已携带已登记版本"
+   },
+   "seq": 40
+  },
+  {
+   "ts_ms": 1791446409998,
+   "type": "verification.result",
+   "step": 1,
+   "data": {
+    "item": "按月汇总之和等于清洗明细合计；毛利率为总毛利除以总收入",
+    "passed": true,
+    "evidence": "运行输出显示收入合计 明细=17000.000000 汇总=17000.000000 一致=True；成本合计 明细=11400.000000 汇总=11400.000000 一致=True；毛利合计 明细=5600.000000 汇总=5600.000000 一致=True。毛利率按总毛利/总收入计算：monthly['gross_margin'] = gross_profit / revenue，且整体毛利率=5600/17000=0.329412。落盘 monthly_summary.csv 列名严格为 month,revenue,cost,gross_profit,gross_margin,orders，4 行数据与汇总结果一致。",
+    "layer": "llm"
+   },
+   "seq": 41
+  },
+  {
+   "ts_ms": 1791446409998,
+   "type": "step.completed",
+   "step": 1,
+   "data": {
+    "status": "done",
+    "duration_ms": 8514,
+    "n_attempts": 1,
+    "artifacts": 1,
+    "checks": "11/11"
+   },
+   "seq": 42
+  },
+  {
+   "ts_ms": 1791446410006,
+   "type": "step.started",
+   "step": 2,
+   "data": {
+    "action": "读取 monthly_summary.csv 绘制 figure.svg，写 report.md 包含经营结果、模拟数据标记、元单位、风险与行动建议",
+    "skill": "business-metrics-audit"
+   },
+   "seq": 43
+  },
+  {
+   "ts_ms": 1791446410016,
+   "type": "step.inputs",
+   "step": 2,
+   "data": {
+    "files": [
+     "clean.csv",
+     "monthly_summary.csv"
+    ],
+    "artifacts": [
+     {
+      "logical_name": "clean.csv",
+      "name": "step1_clean.csv",
+      "from_step": 0,
+      "sha256": "0f956a4928d2bef6572c623fc0966dc88db32b46b30b308abeb2d8c2345db6a0"
+     },
+     {
+      "logical_name": "monthly_summary.csv",
+      "name": "step2_monthly_summary.csv",
+      "from_step": 1,
+      "sha256": "a2a0524e5ba15ad02d37b77ae6b6fd3ade0c4450dd93d55b1bab18009e1b7027"
+     }
+    ]
+   },
+   "seq": 44
+  },
+  {
+   "ts_ms": 1791446410016,
+   "type": "code.generating",
+   "step": 2,
+   "data": {
+    "attempt": 1
+   },
+   "seq": 45
+  },
+  {
+   "ts_ms": 1791446417456,
+   "type": "code.generated",
+   "step": 2,
+   "data": {
+    "attempt": 1,
+    "code": "# -*- coding: utf-8 -*-\n\"\"\"\n步骤3：读取 monthly_summary.csv，生成 figure.svg 趋势图与 report.md 管理层报告。\n数据来源：模拟订单数据（非真实经营数据）。\n金额单位：元。\n\"\"\"\nimport os\nimport numpy as np\nimport pandas as pd\nimport matplotlib\nmatplotlib.use('Agg')\nimport matplotlib.pyplot as plt\n\nplt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'DejaVu Sans']\nplt.rcParams['axes.unicode_minus'] = False\n\nINPUT_SUMMARY = 'monthly_summary.csv'\nINPUT_CLEAN = 'clean.csv'\nOUT_FIG = 'figure.svg'\nOUT_REPORT = 'report.md'\n\n# ---------- 契约校验：缺失约定输入必须报错，禁止重造数据 ----------\nfor f in (INPUT_SUMMARY, INPUT_CLEAN):\n    if not os.path.exists(f):\n        raise FileNotFoundError(f\"缺少约定输入文件：{f}，本步骤不重造数据。\")\n\n# ---------- 读取月度汇总（唯一数据源，不复制原始数据重算） ----------\ndf = pd.read_csv(INPUT_SUMMARY)\nrequired_cols = ['month', 'revenue', 'cost', 'gross_profit', 'gross_margin', 'orders']\nmissing = [c for c in required_cols if c not in df.columns]\nif missing:\n    raise ValueError(f\"monthly_summary.csv 缺少列：{missing}\")\ndf = df.sort_values('month').reset_index(drop=True)\n\n# ---------- 血缘一致性核对：月度汇总 vs 清洗明细（绝对容差 1e-8） ----------\nclean = pd.read_csv(INPUT_CLEAN)\nrev_sum = float(clean['revenue'].sum())\ncost_sum = float(clean['cost'].sum())\norders_sum = int(len(clean))\nrev_m = float(df['revenue'].sum())\ncost_m = float(df['cost'].sum())\norders_m = int(df['orders'].sum())\ntol = 1e-8\nchk_rev = abs(rev_sum - rev_m) <= tol\nchk_cost = abs(cost_sum - cost_m) <= tol\nchk_ord = orders_sum == orders_m\nprint(\"=== 血缘一致性核对（clean.csv vs monthly_summary.csv）===\")\nprint(f\"收入: 明细={rev_sum:.2f} 汇总={rev_m:.2f} 一致={chk_rev}\")\nprint(f\"成本: 明细={cost_sum:.2f} 汇总={cost_m:.2f} 一致={chk_cost}\")\nprint(f\"订单数: 明细={orders_sum} 汇总={orders_m} 一致={chk_ord}\")\nif not (chk_rev and chk_cost and chk_ord):\n    raise AssertionError(\"月度汇总与清洗明细不一致，血缘校验失败。\")\n\n# ---------- 规避陷阱：毛利率必须用总额加权，不能平均单笔毛利率 ----------\nrecalc_margin = df['gross_profit'] / df['revenue']\nmargin_ok = np.allclose(recalc_margin.values, df['gross_margin'].values, atol=tol)\nprint(f\"毛利率加权口径核对（总额法）: 一致={margin_ok}\")\nif not margin_ok:\n    raise AssertionError(\"毛利率口径异常：疑似使用了平均单笔毛利率。\")\n\n# ---------- 关键指标 ----------\ntotal_rev = rev_m\ntotal_cost = cost_m\ntotal_gp = total_rev - total_cost\ntotal_margin = total_gp / total_rev if total_rev else float('nan')\nneg_months = df[df['gross_profit'] < 0]['month'].tolist()\nprint(\"=== 模拟数据月度经营结果（单位：元）===\")\nfor _, r in df.iterrows():\n    print(f\"{r['month']}: 收入={r['revenue']:.2f} 成本={r['cost']:.2f} \"\n          f\"毛利={r['gross_profit']:.2f} 毛利率={r['gross_margin']*100:.2f}% 订单={int(r['orders'])}\")\nprint(f\"合计: 收入={total_rev:.2f} 成本={total_cost:.2f} 毛利={total_gp:.2f} \"\n      f\"毛利率={total_margin*100:.2f}% 订单={orders_m}\")\nprint(f\"毛利为负的月份: {neg_months if neg_months else '无'}\")\n\n# ---------- 趋势图（矢量 SVG） ----------\nfig, ax1 = plt.subplots(figsize=(9, 5))\nx = np.arange(len(df))\nax1.bar(x - 0.2, df['revenue'], width=0.4, label='收入(元)', color='#4C72B0')\nax1.bar(x + 0.2, df['cost'], width=0.4, label='成本(元)', color='#DD8452')\nax1.set_xticks(x)\nax1.set_xticklabels(df['month'])\nax1.set_ylabel('金额（元）')\nax1.set_title('月度收入/成本与毛利率趋势（模拟数据，单位：元）')\nax2 = ax1.twinx()\nax2.plot(x, df['gross_margin'] * 100, color='#C44E52', marker='o', label='毛利率(%)')\nax2.axhline(0, color='gray', linestyle='--', linewidth=0.8)\nax2.set_ylabel('毛利率（%）')\nlines1, labels1 = ax1.get_legend_handles_labels()\nlines2, labels2 = ax2.get_legend_handles_labels()\nax1.legend(lines1 + lines2, labels1 + labels2, loc='upper left', fontsize=8)\nfig.tight_layout()\nfig.savefig(OUT_FIG, format='svg')\nplt.close(fig)\nprint(f\"已生成矢量图：{OUT_FIG}\")\n\n# ---------- 管理层报告 ----------\nrisk_lines = []\nif neg_months:\n    risk_lines.append(f\"- 毛利为负月份：{', '.join(neg_months)}，存在亏损风险，需核查定价与成本结构。\")\nelse:\n    risk_lines.append(\"- 各月毛利均为正，但需持续监控成本波动。\")\nmin_m = df.loc[df['gross_margin'].idxmin()]\nrisk_lines.append(f\"- 最低毛利率月份：{min_m['month']}（{min_m['gross_margin']*100:.2f}%），为薄弱环节。\")\nrisk_lines.append(\"- 数据为模拟数据，仅用于流程演示，不代表任何公司真实经营情况。\")\n\nreport = f\"\"\"# 月度经营分析报告（模拟数据）\n\n> **重要声明**：本报告基于**模拟订单数据**生成，**非真实经营数据**，不得用于任何真实经营结论。\n> 金额单位：**元**。数据血缘：clean.csv → monthly_summary.csv → 本报告。\n\n## 一、经营结果概览（单位：元）\n\n| 月份 | 收入 | 成本 | 毛利 | 毛利率 | 订单数 |\n|---|---:|---:|---:|---:|---:|\n\"\"\"\nfor _, r in df.iterrows():\n    report += (f\"| {r['month']} | {r['revenue']:.2f} | {r['cost']:.2f} | \"\n               f\"{r['gross_profit']:.2f} | {r['gross_margin']*100:.2f}% | {int(r['orders'])} |\\n\")\nreport += (f\"| **合计** | **{total_rev:.2f}** | **{total_cost:.2f}** | \"\n           f\"**{total_gp:.2f}** | **{total_margin*100:.2f}%** | **{orders_m}** |\\n\")\n\nreport += f\"\"\"\n## 二、数据质量与口径说明\n- 数据来源：模拟订单数据，已按 order_id 去重（保留首条），剔除收入或成本缺失订单。\n- 毛利率口径：**总额法**（总毛利 / 总收入），未使用平均单笔毛利率，避免加权错误。\n- 血缘核对：月度汇总与清洗明细总额一致（绝对容差 1e-8），校验通过。\n\n## 三、毛利风险\n{chr(10).join(risk_lines)}\n\n## 四、行动建议\n1. 对毛利为负或偏低的月份，复核定价策略与成本构成，识别可优化项。\n2. 建立月度毛利率监控阈值，低于阈值自动预警。\n3. 补齐缺失的收入/成本字段采集，减少因数据缺失导致的样本损失。\n4. 本报告结论仅适用于模拟数据演示，真实决策需以真实数据复核。\n\n## 五、图表\n趋势图见 `figure.svg`（收入/成本柱状 + 毛利率折线，模拟数据，单位：元）。\n\"\"\"\n\nwith open(OUT_REPORT, 'w', encoding='utf-8') as f:\n    f.write(report)\nprint(f\"已生成报告：{OUT_REPORT}\")\n\n# ---------- 验收清单输出 ----------\nprint(\"=== 验收清单 ===\")\nprint(f\"figure.svg 存在: {os.path.exists(OUT_FIG)}\")\nprint(f\"report.md 存在: {os.path.exists(OUT_REPORT)}\")\nwith open(OUT_REPORT, encoding='utf-8') as f:\n    txt = f.read()\nprint(f\"报告含'模拟数据'标记: {'模拟数据' in txt}\")\nprint(f\"报告含'元'单位标记: {'元' in txt}\")",
+    "chars": 5274,
+    "truncated": false
+   },
+   "seq": 46
+  },
+  {
+   "ts_ms": 1791446417467,
+   "type": "sandbox.started",
+   "step": 2,
+   "data": {
+    "attempt": 1
+   },
+   "seq": 47
+  },
+  {
+   "ts_ms": 1791446421675,
+   "type": "step.attempt",
+   "step": 2,
+   "data": {
+    "attempt": 1,
+    "ok": true,
+    "error_kind": "",
+    "duration_ms": 2910,
+    "stdout": "=== 血缘一致性核对（clean.csv vs monthly_summary.csv）===\n收入: 明细=17000.00 汇总=17000.00 一致=True\n成本: 明细=11400.00 汇总=11400.00 一致=True\n订单数: 明细=12 汇总=12 一致=True\n毛利率加权口径核对（总额法）: 一致=True\n=== 模拟数据月度经营结果（单位：元）===\n2026-01: 收入=3500.00 成本=2180.00 毛利=1320.00 毛利率=37.71% 订单=3\n2026-02: 收入=4000.00 成本=2700.00 毛利=1300.00 毛利率=32.50% 订单=3\n2026-03: 收入=4300.00 成本=3180.00 毛利=1120.00 毛利率=26.05% 订单=3\n2026-04: 收入=5200.00 成本=3340.00 毛利=1860.00 毛利率=35.77% 订单=3\n合计: 收入=17000.00 成本=11400.00 毛利=5600.00 毛利率=32.94% 订单=12\n毛利为负的月份: 无\n已生成矢量图：figure.svg\n已生成报告：report.md\n=== 验收清单 ===\nfigure.svg 存在: True\nreport.md 存在: True\n报告含'模拟数据'标记: True\n报告含'元'单位标记: True\n",
+    "stderr": ""
+   },
+   "seq": 48
+  },
+  {
+   "ts_ms": 1791446421686,
+   "type": "artifact.created",
+   "step": 2,
+   "data": {
+    "name": "step3_figure.svg",
+    "bytes": 47604,
+    "sha256": "434281403295d21d7727bf24508a4474d669328d4e372dd166cb475fd88664dc",
+    "kind": "真实运行产物"
+   },
+   "seq": 49
+  },
+  {
+   "ts_ms": 1791446421697,
+   "type": "artifact.created",
+   "step": 2,
+   "data": {
+    "name": "step3_report.md",
+    "bytes": 1853,
+    "sha256": "5e733c4c02145ee978ce690148886d93d31add91cdc69796abf78dde8319ff7d",
+    "kind": "真实运行产物"
+   },
+   "seq": 50
+  },
+  {
+   "ts_ms": 1791446421704,
+   "type": "verification.started",
+   "step": 2,
+   "data": {},
+   "seq": 51
+  },
+  {
+   "ts_ms": 1791446421704,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "执行退出码为 0",
+    "passed": true,
+    "detail": "returncode=0"
+   },
+   "seq": 52
+  },
+  {
+   "ts_ms": 1791446421704,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "运行有实质输出",
+    "passed": true,
+    "detail": "614 字符 / 19 行"
+   },
+   "seq": 53
+  },
+  {
+   "ts_ms": 1791446421704,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "产生至少一个文件产物",
+    "passed": true,
+    "detail": "2 个"
+   },
+   "seq": 54
+  },
+  {
+   "ts_ms": 1791446421704,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "figure.svg 存在",
+    "passed": true,
+    "detail": "47604 字节"
+   },
+   "seq": 55
+  },
+  {
+   "ts_ms": 1791446421704,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "figure.svg 非空",
+    "passed": true,
+    "detail": "47604 字节"
+   },
+   "seq": 56
+  },
+  {
+   "ts_ms": 1791446421704,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "figure.svg 是图片产物",
+    "passed": true,
+    "detail": "47604 字节"
+   },
+   "seq": 57
+  },
+  {
+   "ts_ms": 1791446421704,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "report.md 存在",
+    "passed": true,
+    "detail": "1853 字节"
+   },
+   "seq": 58
+  },
+  {
+   "ts_ms": 1791446421704,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "report.md 非空",
+    "passed": true,
+    "detail": "1853 字节"
+   },
+   "seq": 59
+  },
+  {
+   "ts_ms": 1791446421704,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "步骤交付：figure.svg",
+    "passed": true,
+    "detail": "存在"
+   },
+   "seq": 60
+  },
+  {
+   "ts_ms": 1791446421704,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "步骤交付：report.md",
+    "passed": true,
+    "detail": "存在"
+   },
+   "seq": 61
+  },
+  {
+   "ts_ms": 1791446421704,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "输入版本：monthly_summary.csv",
+    "passed": true,
+    "detail": "已携带已登记版本"
+   },
+   "seq": 62
+  },
+  {
+   "ts_ms": 1791446421704,
+   "type": "verification.result",
+   "step": 2,
+   "data": {
+    "item": "矢量图与报告均存在并明确说明数据为模拟数据",
+    "passed": true,
+    "evidence": "落盘文件包含 figure.svg（47604 bytes，SVG 矢量格式，含 <svg> 根元素）和 report.md（1853 bytes）。report.md 标题为“# 月度经营分析报告（模拟数据）”，正文含“本报告基于**模拟订单数据**生成，**非真实经营数据**”及“数据为模拟数据，仅用于流程演示”；figure.svg 标题为“月度收入/成本与毛利率趋势（模拟数据，单位：元）”，均明确标注模拟数据。",
+    "layer": "llm"
+   },
+   "seq": 63
+  },
+  {
+   "ts_ms": 1791446421705,
+   "type": "step.completed",
+   "step": 2,
+   "data": {
+    "status": "done",
+    "duration_ms": 11698,
+    "n_attempts": 1,
+    "artifacts": 2,
+    "checks": "11/11"
+   },
+   "seq": 64
+  },
+  {
+   "ts_ms": 1791446421715,
+   "type": "execution.finished",
+   "step": null,
+   "data": {
+    "done": 3,
+    "failed": 0,
+    "duration_ms": 26084,
+    "artifacts": 4
+   },
+   "seq": 65
+  }
+ ]
+}

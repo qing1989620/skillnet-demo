@@ -109,18 +109,43 @@ def run_python(code: str, timeout: int = 90, keep_dir: bool = False,
     before = {rel: _fingerprint(p) for rel, p in _artifact_files(tmp)}
 
     t0 = time.time()
+    isolation = os.environ.get('SKILLNET_SANDBOX', 'process')
+    container_name = ''
+    command = [sys.executable, '-I', '-B', '-X', 'utf8', str(script)]
+    if isolation == 'docker':
+        import uuid
+        container_name = 'skillnet-' + uuid.uuid4().hex
+        image = os.environ.get('SKILLNET_SANDBOX_IMAGE', 'skillnet-executor:local')
+        if not shutil.which('docker'):
+            raise RuntimeError('请求 Docker 隔离，但 Docker 不可用；拒绝降级为宿主机执行')
+        # Match the non-root Linux worker: bind mounts retain host ownership.
+        uid = os.getuid() if hasattr(os, 'getuid') else 65534
+        gid = os.getgid() if hasattr(os, 'getgid') else 65534
+        if uid == 0:
+            raise RuntimeError('Docker 执行 worker 必须以非 root 宿主用户运行')
+        command = ['docker', 'run', '--rm', '--name', container_name, '--network', 'none',
+                   '--read-only', '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges',
+                   '--memory', '768m', '--cpus', '2', '--pids-limit', '64',
+                   '--user', f'{uid}:{gid or 65534}', '--tmpfs', '/tmp:rw,noexec,nosuid,size=128m',
+                   '--mount', f'type=bind,source={tmp},target=/work', '--workdir', '/work',
+                   '--env', 'MPLCONFIGDIR=/tmp/mpl', '--env', 'HOME=/tmp', image,
+                   'python', '-I', '-B', '-X', 'utf8', '/work/main.py']
+    elif isolation != 'process':
+        raise ValueError('Unknown SKILLNET_SANDBOX mode')
     try:
         proc = subprocess.run(
             # -I 隔离模式（蕴含 -E：忽略 PYTHON* 环境变量）——因此 PYTHONIOENCODING
             # 在这里**不生效**，必须用 -X utf8 强制 UTF-8，否则中文 Windows 下
             # 子进程 stdout 走 GBK，父进程按 UTF-8 解码就是满屏乱码（实测踩过）
-            [sys.executable, "-I", "-B", "-X", "utf8", str(script)],
+            command,
             cwd=str(tmp), capture_output=True, text=True,
             timeout=timeout, env=_clean_env(tmp), encoding="utf-8", errors="replace",
         )
         rc, out, err = proc.returncode, proc.stdout or "", proc.stderr or ""
         timed_out = False
     except subprocess.TimeoutExpired as exc:
+        if container_name:
+            subprocess.run(['docker', 'rm', '-f', container_name], capture_output=True, timeout=15)
         rc, timed_out = -1, True
         out = (exc.stdout or b"").decode("utf-8", "replace") if isinstance(exc.stdout, bytes) else (exc.stdout or "")
         err = f"执行超时（超过 {timeout}s 被强制终止）"
@@ -157,6 +182,7 @@ def run_python(code: str, timeout: int = 90, keep_dir: bool = False,
         "stdout": out_t, "stderr": err_t, "returncode": rc,
         "duration": duration, "artifacts": artifacts,
         "error_kind": kind, "workdir": str(tmp),
+        "isolation": isolation,
     }
     if not keep_dir and not artifacts:
         # 没有产物且不要求保留 -> 清理（有产物时保留，供 /api 预览）

@@ -1,0 +1,1365 @@
+{
+  "version": "skillnet-evidence-v1",
+  "run_id": "f11ad204-20261010-110841-6d42",
+  "task": "使用下方公开模拟科研预测数据，完成 3 步真实执行，不联网、不训练模型。这是科研复现审计，不是医学诊断或真实模型性能。①按 sample_id 去重保留首次记录；识别同时出现在多个 split 的 subject_id；删除这些受试者的全部记录，再删除 score 缺失记录。生成 clean_predictions.csv（保留原列与原值）和 cohort_audit.csv，后者列名 check,count，且只含 raw_rows,duplicate_rows,cross_split_subjects,cross_split_rows,missing_score_rows,eligible_test_rows 六行；missing_score_rows 在删除跨 split 受试者后统计。②读取两个前序文件，仅用清洗后的 test 行，固定阈值 score >= 0.5 为阳性，生成 heldout_metrics.csv，列名 metric,value，且只含 n,tp,fp,tn,fn,accuracy,precision,recall,f1 九行，保留充分精度（至少 10 位有效数字）；不能用测试集选择阈值，不计算 AUROC。③读取审计表和指标表，生成 figure.svg 与 report.md，报告必须写明“模拟数据”“固定阈值”“不代表临床有效性”，解释数据泄漏风险与复用边界。每步只负责本步交付，使用 depends_on、input_files、output_files 传递真实文件。\nCSV：\nsample_id,subject_id,split,label,score\ns01,p01,train,0,0.10\ns02,p02,train,1,0.90\ns03,p03,train,1,0.80\ns04,p04,validation,0,0.20\ns05,p05,validation,1,0.70\ns06,p06,test,1,0.90\ns07,p07,test,0,0.20\ns08,p08,test,1,0.40\ns09,p09,test,0,0.80\ns10,p10,test,1,0.70\ns11,p11,test,0,0.30\ns12,p01,test,1,0.95\ns13,p12,test,1,\ns06,p06,test,1,0.90",
+  "status": "COMPLETED",
+  "task_sha256": "f11ad2049bdf8bdfd9876d3000d635e1235eb10782b165b2248456baad7b3798",
+  "run_record_sha256": "6ce381abc2ec2743cc83b359efc6682aff4097063e9d8ed5a2aed8b63d6737c9",
+  "verification": "registered_files_rehashed_on_read",
+  "handoff_ready": true,
+  "scope_verified": true,
+  "delivery": {
+    "completed_steps": 3,
+    "total_steps": 3,
+    "output_files": 5,
+    "cost_yuan": 0.2097,
+    "model": "deepseek-chat",
+    "llm_calls": 11,
+    "duration_ms": 65400,
+    "omitted_steps": []
+  },
+  "files": [
+    {
+      "name": "step1_clean_predictions.csv",
+      "logical_name": "clean_predictions.csv",
+      "sha256": "f0d13b6c91404558e755f0ed2773653a07e014a9f167a92abf25c12e0748d639",
+      "bytes": 264,
+      "integrity": "passed",
+      "actual_sha256": "f0d13b6c91404558e755f0ed2773653a07e014a9f167a92abf25c12e0748d639",
+      "role": "output",
+      "producer_step": 0,
+      "consumed_by": [
+        1,
+        2
+      ],
+      "source_run_id": "f11ad204-20261010-110841-6d42",
+      "download_path": "/api/runs/f11ad204-20261010-110841-6d42/artifacts/step1_clean_predictions.csv"
+    },
+    {
+      "name": "step1_cohort_audit.csv",
+      "logical_name": "cohort_audit.csv",
+      "sha256": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7",
+      "bytes": 132,
+      "integrity": "passed",
+      "actual_sha256": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7",
+      "role": "output",
+      "producer_step": 0,
+      "consumed_by": [
+        1,
+        2
+      ],
+      "source_run_id": "f11ad204-20261010-110841-6d42",
+      "download_path": "/api/runs/f11ad204-20261010-110841-6d42/artifacts/step1_cohort_audit.csv"
+    },
+    {
+      "name": "step2_heldout_metrics.csv",
+      "logical_name": "heldout_metrics.csv",
+      "sha256": "9b4018abf3313010c3cf5c455f2e09fb78c06026f790ff069ebb52222b7100b3",
+      "bytes": 162,
+      "integrity": "passed",
+      "actual_sha256": "9b4018abf3313010c3cf5c455f2e09fb78c06026f790ff069ebb52222b7100b3",
+      "role": "output",
+      "producer_step": 1,
+      "consumed_by": [
+        2
+      ],
+      "source_run_id": "f11ad204-20261010-110841-6d42",
+      "download_path": "/api/runs/f11ad204-20261010-110841-6d42/artifacts/step2_heldout_metrics.csv"
+    },
+    {
+      "name": "step3_figure.svg",
+      "logical_name": "figure.svg",
+      "sha256": "9d75f178564f98315520bb9c85d5e0caf129f090790272ee6098ba3e176c5443",
+      "bytes": 26033,
+      "integrity": "passed",
+      "actual_sha256": "9d75f178564f98315520bb9c85d5e0caf129f090790272ee6098ba3e176c5443",
+      "role": "output",
+      "producer_step": 2,
+      "consumed_by": [],
+      "source_run_id": "f11ad204-20261010-110841-6d42",
+      "download_path": "/api/runs/f11ad204-20261010-110841-6d42/artifacts/step3_figure.svg"
+    },
+    {
+      "name": "step3_report.md",
+      "logical_name": "report.md",
+      "sha256": "98f8088d122ccf924068927f7281524a837b3915ae7ec71c23fe60358c80c3ff",
+      "bytes": 2951,
+      "integrity": "passed",
+      "actual_sha256": "98f8088d122ccf924068927f7281524a837b3915ae7ec71c23fe60358c80c3ff",
+      "role": "output",
+      "producer_step": 2,
+      "consumed_by": [],
+      "source_run_id": "f11ad204-20261010-110841-6d42",
+      "download_path": "/api/runs/f11ad204-20261010-110841-6d42/artifacts/step3_report.md"
+    }
+  ],
+  "chain": [
+    {
+      "idx": 0,
+      "action": "读取原始 CSV，按 sample_id 去重保留首次出现记录；统计同时出现在多个 split 的 subject_id 并删除其全部记录；在删除跨 split 受试者后统计 score 缺失行并删除；输出 clean_predictions.csv（保留原列与原值）与 cohort_audit.csv（列名 check,count，仅含 raw_rows,duplicate_rows,cross_split_subjects,cross_split_rows,missing_score_rows,eligible_test_rows 六行）。",
+      "skill": "data-cleaning",
+      "status": "done",
+      "depends_on": [],
+      "skill_sha256": "3b234cb8dc2c52709178f6013330acc0797350c7c4a005ae06d467eb416edca1",
+      "version_capture": "before_execution",
+      "code_sha256": "cc44f05a4c522f45c5cb9a5aad8b4924608ad566adf356fd838baf75eeb077f8",
+      "attempts": 1,
+      "inputs": [],
+      "outputs": [
+        "step1_clean_predictions.csv",
+        "step1_cohort_audit.csv"
+      ],
+      "checks": [
+        {
+          "name": "执行退出码为 0",
+          "passed": true,
+          "detail": "returncode=0",
+          "required": true
+        },
+        {
+          "name": "运行有实质输出",
+          "passed": true,
+          "detail": "461 字符 / 18 行",
+          "required": false
+        },
+        {
+          "name": "产生至少一个文件产物",
+          "passed": true,
+          "detail": "2 个",
+          "required": false
+        },
+        {
+          "name": "clean_predictions.csv 存在",
+          "passed": true,
+          "detail": "264 字节",
+          "required": true
+        },
+        {
+          "name": "clean_predictions.csv 非空",
+          "passed": true,
+          "detail": "264 字节",
+          "required": true
+        },
+        {
+          "name": "clean_predictions.csv 是可解析 CSV",
+          "passed": true,
+          "detail": "11 行（含表头）",
+          "required": true
+        },
+        {
+          "name": "clean_predictions.csv 含表头且列数 > 0",
+          "passed": true,
+          "detail": "列：sample_id, subject_id, split, label, score",
+          "required": true
+        },
+        {
+          "name": "clean_predictions.csv 含数据行",
+          "passed": true,
+          "detail": "10 行数据",
+          "required": true
+        },
+        {
+          "name": "clean_predictions.csv 各行列数一致",
+          "passed": true,
+          "detail": "列数集合 [5]",
+          "required": true
+        },
+        {
+          "name": "cohort_audit.csv 存在",
+          "passed": true,
+          "detail": "132 字节",
+          "required": true
+        },
+        {
+          "name": "cohort_audit.csv 非空",
+          "passed": true,
+          "detail": "132 字节",
+          "required": true
+        },
+        {
+          "name": "cohort_audit.csv 是可解析 CSV",
+          "passed": true,
+          "detail": "7 行（含表头）",
+          "required": true
+        },
+        {
+          "name": "cohort_audit.csv 含表头且列数 > 0",
+          "passed": true,
+          "detail": "列：check, count",
+          "required": true
+        },
+        {
+          "name": "cohort_audit.csv 含数据行",
+          "passed": true,
+          "detail": "6 行数据",
+          "required": true
+        },
+        {
+          "name": "cohort_audit.csv 各行列数一致",
+          "passed": true,
+          "detail": "列数集合 [2]",
+          "required": true
+        },
+        {
+          "name": "步骤交付：clean_predictions.csv",
+          "passed": true,
+          "detail": "存在",
+          "required": true
+        },
+        {
+          "name": "步骤交付：cohort_audit.csv",
+          "passed": true,
+          "detail": "存在",
+          "required": true
+        }
+      ],
+      "independent_checks": [
+        {
+          "name": "cohort_audit.schema",
+          "output": "cohort_audit.csv",
+          "passed": true,
+          "artifact_name": "step1_cohort_audit.csv"
+        },
+        {
+          "name": "cohort_audit.raw_rows",
+          "output": "cohort_audit.csv",
+          "passed": true,
+          "expected": 14,
+          "actual": "14",
+          "artifact_name": "step1_cohort_audit.csv"
+        },
+        {
+          "name": "cohort_audit.duplicate_rows",
+          "output": "cohort_audit.csv",
+          "passed": true,
+          "expected": 1,
+          "actual": "1",
+          "artifact_name": "step1_cohort_audit.csv"
+        },
+        {
+          "name": "cohort_audit.cross_split_subjects",
+          "output": "cohort_audit.csv",
+          "passed": true,
+          "expected": 1,
+          "actual": "1",
+          "artifact_name": "step1_cohort_audit.csv"
+        },
+        {
+          "name": "cohort_audit.cross_split_rows",
+          "output": "cohort_audit.csv",
+          "passed": true,
+          "expected": 2,
+          "actual": "2",
+          "artifact_name": "step1_cohort_audit.csv"
+        },
+        {
+          "name": "cohort_audit.missing_score_rows",
+          "output": "cohort_audit.csv",
+          "passed": true,
+          "expected": 1,
+          "actual": "1",
+          "artifact_name": "step1_cohort_audit.csv"
+        },
+        {
+          "name": "cohort_audit.eligible_test_rows",
+          "output": "cohort_audit.csv",
+          "passed": true,
+          "expected": 6,
+          "actual": "6",
+          "artifact_name": "step1_cohort_audit.csv"
+        },
+        {
+          "name": "clean_predictions.original_values",
+          "output": "clean_predictions.csv",
+          "passed": true,
+          "artifact_name": "step1_clean_predictions.csv"
+        }
+      ],
+      "semantic_advisory": [
+        {
+          "item": "回读 clean_predictions.csv：sample_id 唯一（nunique == len），无 score 缺失，且不存在跨 split 的 subject_id",
+          "passed": true,
+          "evidence": "clean_predictions.csv 共 10 行，sample_id 为 s02,s03,s04,s05,s06,s07,s08,s09 等（截取部分），代码断言 clean['sample_id'].nunique()==len(clean) 通过；无 score 缺失（s13 缺失行已被删除，且断言无缺失通过）；跨 split 受试者 p01 的全部记录（s01、s12）已被删除，断言 groupby('subject_id')['split'].nunique().max()==1 通过。",
+          "layer": "llm",
+          "state": "passed"
+        },
+        {
+          "item": "回读 cohort_audit.csv：列名恰为 ['check','count']，check 集合恰为六个指定值且顺序一致，行数为 6",
+          "passed": true,
+          "evidence": "cohort_audit.csv columns=['check','count']，rows=6，check 依次为 raw_rows,duplicate_rows,cross_split_subjects,cross_split_rows,missing_score_rows,eligible_test_rows，与指定六项及顺序完全一致。",
+          "layer": "llm",
+          "state": "passed"
+        },
+        {
+          "item": "用实际输入重算并比对：raw_rows 等于原始 CSV 数据行数；duplicate_rows 等于原始行数减去去重后行数；cross_split_subjects 等于跨 split 受试者数；cross_split_rows 等于这些受试者在原始数据中的行数；missing_score_rows 等于删除跨 split 受试者后 score 缺失行数；eligible_test_rows 等于清洗后 test 行数",
+          "passed": true,
+          "evidence": "原始 CSV 14 行，raw_rows=14 一致；重复 sample_id 为 s06（出现两次），去重后 13 行，duplicate_rows=1 一致；p01 同时出现在 train 与 test，cross_split_subjects=1 一致；p01 在原始数据中 s01、s12 共 2 行，cross_split_rows=2 一致；删除 p01 后剩余 s13 的 score 为空，missing_score_rows=1 一致；清洗后 test 行为 s06,s07,s08,s09,s10,s11 共 6 行，eligible_test_rows=6 一致。",
+          "layer": "llm",
+          "state": "passed"
+        },
+        {
+          "item": "断言 raw_rows - duplicate_rows - cross_split_rows - missing_score_rows == len(clean_predictions.csv)",
+          "passed": true,
+          "evidence": "14 - 1 - 2 - 1 = 10，clean_predictions.csv rows=10，守恒断言通过。",
+          "layer": "llm",
+          "state": "passed"
+        }
+      ]
+    },
+    {
+      "idx": 1,
+      "action": "读取 clean_predictions.csv 与 cohort_audit.csv，仅取清洗后 split == 'test' 的行，以固定阈值 score >= 0.5 判为阳性，与 label 比较计算 tp/fp/tn/fn，再计算 accuracy、precision、recall、f1，输出 heldout_metrics.csv（列名 metric,value，仅含 n,tp,fp,tn,fn,accuracy,precision,recall,f1 九行，至少 10 位有效数字）。",
+      "skill": "manual",
+      "status": "done",
+      "depends_on": [
+        0
+      ],
+      "skill_sha256": null,
+      "version_capture": "unrecorded",
+      "code_sha256": "35c5af4ced96f39d6fbd7af9e783eafabbab246238b0caf8a9c7c5b6eaee9ceb",
+      "attempts": 1,
+      "inputs": [
+        {
+          "logical_name": "clean_predictions.csv",
+          "name": "step1_clean_predictions.csv",
+          "from_step": 0,
+          "sha256": "f0d13b6c91404558e755f0ed2773653a07e014a9f167a92abf25c12e0748d639"
+        },
+        {
+          "logical_name": "cohort_audit.csv",
+          "name": "step1_cohort_audit.csv",
+          "from_step": 0,
+          "sha256": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7"
+        }
+      ],
+      "outputs": [
+        "step2_heldout_metrics.csv"
+      ],
+      "checks": [
+        {
+          "name": "执行退出码为 0",
+          "passed": true,
+          "detail": "returncode=0",
+          "required": true
+        },
+        {
+          "name": "运行有实质输出",
+          "passed": true,
+          "detail": "366 字符 / 15 行",
+          "required": false
+        },
+        {
+          "name": "产生至少一个文件产物",
+          "passed": true,
+          "detail": "1 个",
+          "required": false
+        },
+        {
+          "name": "heldout_metrics.csv 存在",
+          "passed": true,
+          "detail": "162 字节",
+          "required": true
+        },
+        {
+          "name": "heldout_metrics.csv 非空",
+          "passed": true,
+          "detail": "162 字节",
+          "required": true
+        },
+        {
+          "name": "heldout_metrics.csv 是可解析 CSV",
+          "passed": true,
+          "detail": "10 行（含表头）",
+          "required": true
+        },
+        {
+          "name": "heldout_metrics.csv 含表头且列数 > 0",
+          "passed": true,
+          "detail": "列：metric, value",
+          "required": true
+        },
+        {
+          "name": "heldout_metrics.csv 含数据行",
+          "passed": true,
+          "detail": "9 行数据",
+          "required": true
+        },
+        {
+          "name": "heldout_metrics.csv 各行列数一致",
+          "passed": true,
+          "detail": "列数集合 [2]",
+          "required": true
+        },
+        {
+          "name": "步骤交付：heldout_metrics.csv",
+          "passed": true,
+          "detail": "存在",
+          "required": true
+        },
+        {
+          "name": "输入版本：clean_predictions.csv",
+          "passed": true,
+          "detail": "已携带已登记版本",
+          "required": true
+        },
+        {
+          "name": "输入版本：cohort_audit.csv",
+          "passed": true,
+          "detail": "已携带已登记版本",
+          "required": true
+        }
+      ],
+      "independent_checks": [
+        {
+          "name": "heldout_metrics.schema",
+          "output": "heldout_metrics.csv",
+          "passed": true,
+          "artifact_name": "step2_heldout_metrics.csv"
+        },
+        {
+          "name": "heldout_metrics.n",
+          "output": "heldout_metrics.csv",
+          "passed": true,
+          "expected": 6,
+          "actual": "6.0",
+          "artifact_name": "step2_heldout_metrics.csv"
+        },
+        {
+          "name": "heldout_metrics.tp",
+          "output": "heldout_metrics.csv",
+          "passed": true,
+          "expected": 2,
+          "actual": "2.0",
+          "artifact_name": "step2_heldout_metrics.csv"
+        },
+        {
+          "name": "heldout_metrics.fp",
+          "output": "heldout_metrics.csv",
+          "passed": true,
+          "expected": 1,
+          "actual": "1.0",
+          "artifact_name": "step2_heldout_metrics.csv"
+        },
+        {
+          "name": "heldout_metrics.tn",
+          "output": "heldout_metrics.csv",
+          "passed": true,
+          "expected": 2,
+          "actual": "2.0",
+          "artifact_name": "step2_heldout_metrics.csv"
+        },
+        {
+          "name": "heldout_metrics.fn",
+          "output": "heldout_metrics.csv",
+          "passed": true,
+          "expected": 1,
+          "actual": "1.0",
+          "artifact_name": "step2_heldout_metrics.csv"
+        },
+        {
+          "name": "heldout_metrics.accuracy",
+          "output": "heldout_metrics.csv",
+          "passed": true,
+          "expected": 0.6666666666666666,
+          "actual": "0.6666666666666666",
+          "artifact_name": "step2_heldout_metrics.csv"
+        },
+        {
+          "name": "heldout_metrics.precision",
+          "output": "heldout_metrics.csv",
+          "passed": true,
+          "expected": 0.6666666666666666,
+          "actual": "0.6666666666666666",
+          "artifact_name": "step2_heldout_metrics.csv"
+        },
+        {
+          "name": "heldout_metrics.recall",
+          "output": "heldout_metrics.csv",
+          "passed": true,
+          "expected": 0.6666666666666666,
+          "actual": "0.6666666666666666",
+          "artifact_name": "step2_heldout_metrics.csv"
+        },
+        {
+          "name": "heldout_metrics.f1",
+          "output": "heldout_metrics.csv",
+          "passed": true,
+          "expected": 0.6666666666666666,
+          "actual": "0.6666666666666666",
+          "artifact_name": "step2_heldout_metrics.csv"
+        }
+      ],
+      "semantic_advisory": []
+    },
+    {
+      "idx": 2,
+      "action": "读取 cohort_audit.csv 与 heldout_metrics.csv，绘制审计计数与 heldout 指标图并导出 figure.svg，同时撰写 report.md，明确写明“模拟数据”“固定阈值”“不代表临床有效性”，并解释数据泄漏风险与复用边界。",
+      "skill": "scientific-visualization",
+      "status": "done",
+      "depends_on": [
+        0,
+        1
+      ],
+      "skill_sha256": "2d2d8637f4064d52bbdbad35734def7138f2e8d118b8bf91108d8f84726b5efa",
+      "version_capture": "before_execution",
+      "code_sha256": "37a573180600fe3edd20a5c4d5a7dcda5a28a9c10c702f1cdc589886b7aa3e3a",
+      "attempts": 1,
+      "inputs": [
+        {
+          "logical_name": "clean_predictions.csv",
+          "name": "step1_clean_predictions.csv",
+          "from_step": 0,
+          "sha256": "f0d13b6c91404558e755f0ed2773653a07e014a9f167a92abf25c12e0748d639"
+        },
+        {
+          "logical_name": "cohort_audit.csv",
+          "name": "step1_cohort_audit.csv",
+          "from_step": 0,
+          "sha256": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7"
+        },
+        {
+          "logical_name": "heldout_metrics.csv",
+          "name": "step2_heldout_metrics.csv",
+          "from_step": 1,
+          "sha256": "9b4018abf3313010c3cf5c455f2e09fb78c06026f790ff069ebb52222b7100b3"
+        }
+      ],
+      "outputs": [
+        "step3_figure.svg",
+        "step3_report.md"
+      ],
+      "checks": [
+        {
+          "name": "执行退出码为 0",
+          "passed": true,
+          "detail": "returncode=0",
+          "required": true
+        },
+        {
+          "name": "运行有实质输出",
+          "passed": true,
+          "detail": "685 字符 / 12 行",
+          "required": false
+        },
+        {
+          "name": "产生至少一个文件产物",
+          "passed": true,
+          "detail": "2 个",
+          "required": false
+        },
+        {
+          "name": "figure.svg 存在",
+          "passed": true,
+          "detail": "26033 字节",
+          "required": true
+        },
+        {
+          "name": "figure.svg 非空",
+          "passed": true,
+          "detail": "26033 字节",
+          "required": true
+        },
+        {
+          "name": "figure.svg 是图片产物",
+          "passed": true,
+          "detail": "26033 字节",
+          "required": true
+        },
+        {
+          "name": "report.md 存在",
+          "passed": true,
+          "detail": "2951 字节",
+          "required": true
+        },
+        {
+          "name": "report.md 非空",
+          "passed": true,
+          "detail": "2951 字节",
+          "required": true
+        },
+        {
+          "name": "步骤交付：figure.svg",
+          "passed": true,
+          "detail": "存在",
+          "required": true
+        },
+        {
+          "name": "步骤交付：report.md",
+          "passed": true,
+          "detail": "存在",
+          "required": true
+        },
+        {
+          "name": "输入版本：cohort_audit.csv",
+          "passed": true,
+          "detail": "已携带已登记版本",
+          "required": true
+        },
+        {
+          "name": "输入版本：heldout_metrics.csv",
+          "passed": true,
+          "detail": "已携带已登记版本",
+          "required": true
+        }
+      ],
+      "independent_checks": [],
+      "semantic_advisory": [
+        {
+          "item": "figure.svg 可被解析为合法 SVG，且图中数值与 cohort_audit.csv、heldout_metrics.csv 一致",
+          "passed": true,
+          "evidence": "figure.svg 内容以 '<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>' 开头并含 '<svg ... viewBox=\"0 0 703.020625 375.831375\" ...>' 标签，可解析为合法 SVG。图中数值可回溯：左图条形图 x 轴刻度 0,2,...,16，原始记录数条形延伸至 x≈314.01（对应 14），重复记录数/跨split受试者数条形延伸至 x≈98.59（对应 1），跨split记录数条形延伸至 x≈115.16（对应 2），与 cohort_audit.csv 的 raw_rows=14, duplicate_rows=1, cross_split_subjects=1, cross_split_rows=2 一致；右图标题含 'n=6，固定阈值 0.5'，混淆矩阵标注 TP=2 FP=1 TN=2 FN=1，与 heldout_metrics.csv 的 n=6,tp=2,fp=1,tn=2,fn=1 一致。",
+          "layer": "llm",
+          "state": "passed"
+        },
+        {
+          "item": "report.md 含“模拟数据”“固定阈值”“不代表临床有效性”三个关键词",
+          "passed": true,
+          "evidence": "report.md 正文含 '本报告基于模拟数据（simulated data）完成'、'所有阳性判定采用固定阈值 score ≥ 0.5'、'本结果不代表临床有效性'，三个关键词均出现；代码运行输出亦打印 '[CHECK] report.md 含三项强制声明关键词'。",
+          "layer": "llm",
+          "state": "passed"
+        },
+        {
+          "item": "report.md 说明数据泄漏风险（跨 split 受试者）与复用边界（仅限本模拟数据审计，不可外推）",
+          "passed": true,
+          "evidence": "report.md 第 4 节 '数据泄漏风险' 明确说明 '跨 split 受试者泄漏：同一 subject_id 若同时出现在 train / validation / test 中……本流程已识别并删除全部跨 split 受试者的记录（共 1 名受试者、2 条记录）'；第 5 节 '复用边界' 写明 '本审计仅适用于本模拟数据集的流程正确性验证，不可外推到任何真实临床数据、真实患者群体或真实模型性能评估'。",
+          "layer": "llm",
+          "state": "passed"
+        },
+        {
+          "item": "报告中的 n 与 heldout_metrics.csv 的 n 一致",
+          "passed": true,
+          "evidence": "report.md 第 3 节写明 '样本量 n = 6'，表格中 'n | 6'；上游 heldout_metrics.csv 中 metric=n 的 value 为 '6.0'，二者一致（6=6.0）。",
+          "layer": "llm",
+          "state": "passed"
+        }
+      ]
+    }
+  ],
+  "routing": {
+    "source": "recorded_at_execution",
+    "reason_kind": "model_advisory_not_contribution_proof",
+    "library_size": 1881,
+    "method": "task_utility",
+    "recommended": [
+      "data-cleaning",
+      "scientific-visualization"
+    ],
+    "adopted": [
+      "data-cleaning",
+      "descriptive-stats-csv-summary",
+      "scientific-visualization"
+    ],
+    "entered_execution": [
+      "data-cleaning",
+      "scientific-visualization"
+    ],
+    "generic_steps": [
+      1
+    ],
+    "candidates": [
+      {
+        "name": "data-cleaning",
+        "channels": [
+          "structural"
+        ],
+        "score": 0.62039,
+        "rank": 1,
+        "capability": "把原始数据转为可分析数据集，并记录每一步清洗决策",
+        "outputs": [
+          "干净数据集",
+          "清洗审计日志",
+          "数据字典"
+        ],
+        "source": "seed",
+        "note": "第①步需要按 sample_id 去重、识别跨 split 受试者、删除记录并统计缺失，产出 clean_predictions.csv 与 cohort_audit.csv，属于带审计日志的数据清洗，直接匹配。"
+      },
+      {
+        "name": "scientific-visualization",
+        "channels": [
+          "fused"
+        ],
+        "score": 0.60821,
+        "rank": 2,
+        "capability": "生成可直接用于发表的矢量图表，含统计标注与可复现脚本",
+        "outputs": [
+          "矢量图（PDF/SVG）",
+          "绘图脚本",
+          "图注文本"
+        ],
+        "source": "seed",
+        "note": "第③步需要生成 figure.svg 矢量图，该技能可产出 SVG 与绘图脚本，匹配交付物要求。"
+      },
+      {
+        "name": "missing-data-baseline-modeling",
+        "channels": [
+          "bm25",
+          "vector"
+        ],
+        "score": 0.64516,
+        "rank": 3,
+        "capability": "产出一套带审计轨迹的干净数据集、可复现的基线模型性能表（含子群指标与波动范围）以及误差归因与可解释性报告。",
+        "outputs": [
+          "干净数据集与数据字典",
+          "清洗审计日志",
+          "EDA 报告与分布/相关性图组",
+          "验证协议说明与评估脚本"
+        ],
+        "source": "distill",
+        "note": "任务明确不训练模型，且不需要缺失机制判断或子群归因；其清洗能力被更专用的 data-cleaning 覆盖，故不采用。"
+      },
+      {
+        "name": "dose-response-curve-cleaning-and-ic50-fitting",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.6325,
+        "rank": 4,
+        "capability": "从原始剂量-响应表产出带审计日志的干净数据集、IC50 点估计与置信区间、稳健性审计报告及出版级矢量图。",
+        "outputs": [
+          "带审计日志的干净数据集与数据字典",
+          "EDA 报告与剂量-响应散点图",
+          "IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²、残差标准误）",
+          "bootstrap 不确定性与蒙特卡洛稳健性审计报告"
+        ],
+        "source": "distill",
+        "note": "任务数据是分类预测分数表，不涉及剂量-响应或 IC50 拟合，领域与交付物均不匹配。"
+      },
+      {
+        "name": "eda-profiling",
+        "channels": [
+          "structural"
+        ],
+        "score": 0.62039,
+        "rank": 5,
+        "capability": "系统性刻画数据集的分布、关系与质量风险",
+        "outputs": [
+          "EDA 报告",
+          "分布与相关性图组",
+          "候选特征清单"
+        ],
+        "source": "seed",
+        "note": "任务未要求分布刻画、相关性图或特征初筛，交付物中无 EDA 报告，故不需要。"
+      },
+      {
+        "name": "competition-reproducible-ml-pipeline",
+        "channels": [
+          "bm25",
+          "vector"
+        ],
+        "score": 0.61882,
+        "rank": 6,
+        "capability": "产出一套对齐官方指标、防泄漏、含统计验证与出版级图表的可复现建模交付包。",
+        "outputs": [
+          "指标对齐检查表",
+          "清洗后数据集与清洗审计日志、数据字典",
+          "EDA报告与候选特征清单、风险项",
+          "基线模型文件与模型对比表、特征重要性、误差分析"
+        ],
+        "source": "distill",
+        "note": "任务不训练模型、不追求竞赛指标对齐，且明确禁止模型训练；其清洗与审计能力可由 data-cleaning 覆盖，故不采用。"
+      },
+      {
+        "name": "tabular-ml-baseline",
+        "channels": [
+          "fused"
+        ],
+        "score": 0.60232,
+        "rank": 7,
+        "capability": "在表格数据上产出可信的预测基线并给出误差归因",
+        "outputs": [
+          "基线模型与性能表",
+          "特征重要性",
+          "误差分析报告"
+        ],
+        "source": "seed",
+        "note": "任务明确不训练模型，仅做固定阈值指标计算，不需要预测基线或误差归因。"
+      },
+      {
+        "name": "demo-descriptive-stats-report",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.57533,
+        "rank": 8,
+        "capability": "从内存中的分组数值产出一份可解析的统计对照CSV、一张带样本量标注与误差条的条形图，以及一段仅含可核验数值的描述文本。",
+        "outputs": [
+          "summary.csv（列：group,n,mean,std_sample）",
+          "barplot.png（含误差条与n标注的条形图）",
+          "单文件Python脚本",
+          "终端结果说明文本（含免责声明）"
+        ],
+        "source": "distill",
+        "note": "任务不需要分组描述统计条形图或 summary.csv，其输出结构与 cohort_audit.csv、heldout_metrics.csv 不匹配。"
+      },
+      {
+        "name": "cross-validation-protocol",
+        "channels": [
+          "fused"
+        ],
+        "score": 0.56774,
+        "rank": 9,
+        "capability": "为给定数据结构设计无偏的验证与外部验证协议",
+        "outputs": [
+          "验证协议说明",
+          "评估脚本",
+          "性能不确定性估计"
+        ],
+        "source": "seed",
+        "note": "任务不报告泛化性能、不做超参搜索，仅用清洗后的 test 行计算固定阈值指标，不需要验证协议设计。"
+      },
+      {
+        "name": "model-interpretability",
+        "channels": [
+          "fused"
+        ],
+        "score": 0.56774,
+        "rank": 10,
+        "capability": "产出可辩护的模型归因分析并识别其局限",
+        "outputs": [
+          "全局重要性排序",
+          "局部归因图",
+          "部分依赖曲线"
+        ],
+        "source": "seed",
+        "note": "任务不训练模型，也不需要全局重要性、局部归因或部分依赖分析。"
+      },
+      {
+        "name": "estimator-robustness-audit",
+        "channels": [
+          "fused"
+        ],
+        "score": 0.5566,
+        "rank": 11,
+        "capability": "产出一份含公理化前提表、带收敛模式标注的严格证明、预注册蒙特卡洛验证报告、泄漏审计报告与适用范围表的完整稳健性论证包。",
+        "outputs": [
+          "公理化基础与前提闭合性核验表",
+          "含定理引用与收敛模式标注的严格证明文本",
+          "预注册蒙特卡洛协议与收敛曲线、拟合检验结果表",
+          "泄漏审计报告（种子记录、样本流分配、参数预注册清单）"
+        ],
+        "source": "distill",
+        "note": "任务不涉及估计量收敛性证明或蒙特卡洛稳健性验证，仅需固定阈值指标与审计表。"
+      },
+      {
+        "name": "competition-data-science-pipeline",
+        "channels": [
+          "bm25",
+          "vector",
+          "structural"
+        ],
+        "score": 0.53536,
+        "rank": 12,
+        "capability": "产出一套指标对齐、可复现、含审计轨迹与统计支撑的建模交付物（清洗数据、基线模型、统计结果、矢量图与结论报告）。",
+        "outputs": [
+          "清洗后数据集与清洗审计日志、数据字典",
+          "EDA 报告与候选特征清单、风险项",
+          "基线模型文件与模型对比表、特征重要性、误差分析",
+          "统计检验结果表与方法段落"
+        ],
+        "source": "distill",
+        "note": "任务不训练模型、不对齐竞赛评分口径，且交付物为审计表、指标表、图和报告，非建模交付包；清洗能力由 data-cleaning 覆盖。"
+      },
+      {
+        "name": "demo-descriptive-stats-summary",
+        "channels": [
+          "bm25"
+        ],
+        "score": 0.50629,
+        "rank": 13,
+        "capability": "产出一份包含每组样本量、均值和样本标准差的 CSV 文件及一段明确声明数据不可用于科学结论的简短说明。",
+        "outputs": [
+          "summary.csv（列：group,n,mean,std_sample）",
+          "终端打印的结果说明文本（含免责声明）",
+          "单文件 Python 脚本"
+        ],
+        "source": "distill",
+        "note": ""
+      },
+      {
+        "name": "xlsx",
+        "channels": [
+          "fused"
+        ],
+        "score": 0.46027,
+        "rank": 14,
+        "capability": "依据原文 SKILL.md 提供Excel 表格处理能力（member-import 导入，契约字段由原文提炼）",
+        "outputs": [
+          "生成的表格文件",
+          "公式重算校验结果"
+        ],
+        "source": "seed",
+        "note": "输入为 CSV 文本且交付物为 CSV/SVG/MD，不需要 Excel 公式、格式化或图表处理。"
+      },
+      {
+        "name": "statistical-testing",
+        "channels": [
+          "structural"
+        ],
+        "score": 0.4574,
+        "rank": 15,
+        "capability": "为研究设计选择正确的检验并给出完整的统计报告",
+        "outputs": [
+          "检验结果表",
+          "效应量与置信区间",
+          "统计方法说明段"
+        ],
+        "source": "seed",
+        "note": "任务不比较组间差异、不做推断统计，仅计算固定阈值下的混淆矩阵指标。"
+      },
+      {
+        "name": "descriptive-stats-csv-summary",
+        "channels": [
+          "bm25",
+          "vector"
+        ],
+        "score": 0.43406,
+        "rank": 16,
+        "capability": "产出一个含 group,n,mean,std_sample 列的 summary.csv、对应单文件 Python 脚本，以及带免责声明的结果说明文本。",
+        "outputs": [
+          "summary.csv（列：group,n,mean,std_sample）",
+          "单文件 Python 脚本（无网络/外部依赖）",
+          "终端结果说明文本（含免责声明）"
+        ],
+        "source": "distill",
+        "note": "任务不需要 group,n,mean,std_sample 结构的 summary.csv，其输出与 cohort_audit.csv、heldout_metrics.csv 的列名和行结构不匹配。"
+      },
+      {
+        "name": "two-group-statistical-testing-with-effect-size",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.3943,
+        "rank": 17,
+        "capability": "产出一套可复现的组间比较分析包：干净数据集、检验结果表（含效应量与95%CI）、多重比较校正表、矢量图与稳健性复核记录。",
+        "outputs": [
+          "干净数据集与数据字典",
+          "清洗审计日志",
+          "统计检验结果表（统计量、自由度、p值、效应量、95%CI）",
+          "多重比较校正表"
+        ],
+        "source": "distill",
+        "note": ""
+      },
+      {
+        "name": "dose-response-cleaning-ic50-pipeline",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.36133,
+        "rank": 18,
+        "capability": "从原始剂量-响应表产出带审计日志的干净数据、IC50 点估计与置信区间、稳健性审计报告及出版级矢量图。",
+        "outputs": [
+          "干净数据表（含 log10_dose）与数据字典",
+          "清洗审计日志",
+          "EDA 报告与剂量-响应散点图",
+          "IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²、残差标准误）"
+        ],
+        "source": "distill",
+        "note": ""
+      },
+      {
+        "name": "gh-claude-ab-test-setup-6f7533",
+        "channels": [
+          "bm25"
+        ],
+        "score": 0.3605,
+        "rank": 19,
+        "capability": "When the user wants to plan, design, or implement an A/B test or experiment. Also use when the user mentions \"A/B test,\" \"split test,\" \"experiment,\" \"test this change,\" \"variant copy,\" \"multivariate test,\" \"hypothesis,\" \"conversion experiment,\" \"statistical significance,\" or \"test this.\" For tracking implementation, see analytics-tracking.",
+        "outputs": [],
+        "source": "github",
+        "note": ""
+      },
+      {
+        "name": "descriptive-stats-csv-and-plot",
+        "channels": [
+          "bm25",
+          "vector"
+        ],
+        "score": 0.29846,
+        "rank": 20,
+        "capability": "产出一份可精确回读校验的描述统计 CSV、一张与表格同源的均值对比图，以及一段仅含描述性数值的说明文本。",
+        "outputs": [
+          "summary.csv（固定表头，每组一行）",
+          "figure.png（均值条形图 + 误差条 + n 标注）",
+          "单文件 Python 脚本（无网络与外部文件依赖）",
+          "终端说明文本（含免责声明关键词）"
+        ],
+        "source": "distill",
+        "note": ""
+      },
+      {
+        "name": "dose-response-curve-analysis",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.29257,
+        "rank": 21,
+        "capability": "从原始剂量-存活率数据出发，产出带审计日志的干净数据集、IC50 点估计与置信区间、模型选择依据、稳健性审计报告及出版级剂量-反应曲线图。",
+        "outputs": [
+          "带审计日志的干净数据表与数据字典",
+          "EDA 报告与剂量-反应散点图",
+          "IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²、残差标准误）",
+          "bootstrap 不确定性与蒙特卡洛稳健性审计报告"
+        ],
+        "source": "distill",
+        "note": ""
+      },
+      {
+        "name": "dose-response-ic50-robust-estimation",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.24732,
+        "rank": 22,
+        "capability": "产出一份带审计日志的干净数据表、IC50 点估计与 95% CI、模型参数表、稳健性审计报告及出版级剂量-响应矢量图。",
+        "outputs": [
+          "带审计日志的干净数据表与数据字典",
+          "EDA 报告与剂量-响应散点图",
+          "IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²、残差标准误）",
+          "bootstrap 不确定性与蒙特卡洛稳健性审计报告"
+        ],
+        "source": "distill",
+        "note": ""
+      },
+      {
+        "name": "descriptive-stats-acceptance-audit",
+        "channels": [
+          "vector",
+          "structural"
+        ],
+        "score": 0.24384,
+        "rank": 23,
+        "capability": "产出一份验收检查必要性对照表、已支持/未支持结论二分清单、可复现性回放日志与下一步改进清单。",
+        "outputs": [
+          "验收检查→防御错误→后果对照表",
+          "已支持/未支持结论二分清单",
+          "可复现性回放日志（数值比对、表头断言、图像检查）",
+          "下一步改进清单（补证据项+补设计项，含优先级与前置条件）"
+        ],
+        "source": "distill",
+        "note": ""
+      },
+      {
+        "name": "gh-scientific-scikit-survival-e853c1",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.18946,
+        "rank": 24,
+        "capability": "Builds, evaluates, and audits right-censored or competing-risk survival workflows with scikit-survival, including leakage-safe preprocessing, model selection, probability prediction, and censoring-aware metrics.",
+        "outputs": [],
+        "source": "github",
+        "note": ""
+      },
+      {
+        "name": "gh-agentic-codebase-audit-pre-push-30400b",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.17627,
+        "rank": 25,
+        "capability": "Deep audit before GitHub push: removes junk files, dead code, security holes, and optimization issues. Checks every file line-by-line for production readiness.",
+        "outputs": [],
+        "source": "github",
+        "note": ""
+      },
+      {
+        "name": "dose-response-ic50-estimation",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.1626,
+        "rank": 26,
+        "capability": "输入带剂量与响应（含重复）的实验数据，输出 IC50 点估计与 95% 置信区间、HillSlope、Top/Bottom、拟合优度、稳健性审计报告与矢量剂量-响应图。",
+        "outputs": [
+          "带审计日志的干净数据集与数据字典",
+          "EDA 报告与剂量-响应散点图",
+          "IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²、残差标准误）",
+          "bootstrap 不确定性与蒙特卡洛稳健性审计报告"
+        ],
+        "source": "distill",
+        "note": ""
+      },
+      {
+        "name": "leakage-guard",
+        "channels": [
+          "bm25",
+          "structural"
+        ],
+        "score": 0.16131,
+        "rank": 27,
+        "capability": "识别并消除会导致乐观偏差的数据泄漏路径",
+        "outputs": [
+          "泄漏审计报告",
+          "修正后的管线",
+          "修正后性能对比"
+        ],
+        "source": "seed",
+        "note": ""
+      },
+      {
+        "name": "broad-topic-to-evidence-pipeline",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.16102,
+        "rank": 28,
+        "capability": "输入一个宽泛主题与可用数据库/数据源，产出可复现的检索式、PRISMA 台账、结构化证据表、清洗数据集与审计日志、EDA 报告、基线模型性能表及出版级矢量图。",
+        "outputs": [
+          "可复现检索式与各库命中数台账",
+          "PRISMA 筛选流程图与结构化证据抽取表",
+          "BibTeX 文献库",
+          "清洗后数据集、清洗审计日志、数据字典"
+        ],
+        "source": "distill",
+        "note": ""
+      },
+      {
+        "name": "gh-claude-report-d0382e",
+        "channels": [
+          "bm25"
+        ],
+        "score": 0.16044,
+        "rank": 29,
+        "capability": "Generate test report. Use when user says \"test report\", \"results summary\", \"test status\", \"show results\", \"test dashboard\", or \"how did tests go\".",
+        "outputs": [],
+        "source": "github",
+        "note": ""
+      },
+      {
+        "name": "gh-agentic-pre-release-review-7cdcdb",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.13762,
+        "rank": 30,
+        "capability": "Run a read-only pre-release review for deploy readiness, migrations, config, secrets, rollout order, rollback risk, and launch blockers.",
+        "outputs": [],
+        "source": "github",
+        "note": ""
+      }
+    ],
+    "orchestration_candidate_names": [
+      "data-cleaning",
+      "scientific-visualization",
+      "missing-data-baseline-modeling",
+      "dose-response-curve-cleaning-and-ic50-fitting",
+      "eda-profiling",
+      "competition-reproducible-ml-pipeline",
+      "tabular-ml-baseline",
+      "demo-descriptive-stats-report",
+      "cross-validation-protocol",
+      "model-interpretability",
+      "estimator-robustness-audit",
+      "competition-data-science-pipeline",
+      "demo-descriptive-stats-summary",
+      "xlsx",
+      "statistical-testing",
+      "descriptive-stats-csv-summary",
+      "two-group-statistical-testing-with-effect-size",
+      "dose-response-cleaning-ic50-pipeline",
+      "gh-claude-ab-test-setup-6f7533",
+      "descriptive-stats-csv-and-plot"
+    ],
+    "decisions": [
+      {
+        "name": "data-cleaning",
+        "selected": true,
+        "reason": "直接对应第①步：按 sample_id 去重、识别并删除跨 split subject_id、删除 score 缺失记录，并产出 clean_predictions.csv 与 cohort_audit.csv。"
+      },
+      {
+        "name": "descriptive-stats-csv-summary",
+        "selected": true,
+        "reason": "用于第②步生成固定列名 metric,value 的 heldout_metrics.csv，适合小规模、本地、无网络、可回读的统计汇总交付。"
+      },
+      {
+        "name": "scientific-visualization",
+        "selected": true,
+        "reason": "用于第③步生成 figure.svg，并支撑 report.md 中图表与审计结论的可视化表达。"
+      },
+      {
+        "name": "missing-data-baseline-modeling",
+        "selected": false,
+        "reason": "任务不训练模型、不建立基线，仅做清洗、固定阈值指标与审计报告，因此不采用。"
+      },
+      {
+        "name": "dose-response-curve-cleaning-and-ic50-fitting",
+        "selected": false,
+        "reason": "任务数据不是剂量-响应数据，也不估计 IC50，因此不采用。"
+      },
+      {
+        "name": "eda-profiling",
+        "selected": false,
+        "reason": "任务未要求系统性 EDA 报告或候选特征清单，审计表已覆盖所需数据质量检查，因此不采用。"
+      },
+      {
+        "name": "competition-reproducible-ml-pipeline",
+        "selected": false,
+        "reason": "任务不是竞赛建模交付，且明确不训练模型、不计算 AUROC，因此不采用。"
+      },
+      {
+        "name": "tabular-ml-baseline",
+        "selected": false,
+        "reason": "任务禁止训练模型，仅用固定阈值计算指标，因此不采用。"
+      },
+      {
+        "name": "demo-descriptive-stats-report",
+        "selected": false,
+        "reason": "其输出为 summary.csv 与 barplot.png，不符合本任务要求的 heldout_metrics.csv、figure.svg 与 report.md 结构，因此不采用。"
+      },
+      {
+        "name": "cross-validation-protocol",
+        "selected": false,
+        "reason": "任务使用已有 split 且固定阈值评估，不做交叉验证或调参，因此不采用。"
+      },
+      {
+        "name": "model-interpretability",
+        "selected": false,
+        "reason": "任务没有训练模型，也不需要归因分析，因此不采用。"
+      },
+      {
+        "name": "estimator-robustness-audit",
+        "selected": false,
+        "reason": "任务不涉及估计量收敛证明或蒙特卡洛稳健性论证，因此不采用。"
+      },
+      {
+        "name": "competition-data-science-pipeline",
+        "selected": false,
+        "reason": "任务不是竞赛型建模流水线，且不训练模型、不计算 AUROC，因此不采用。"
+      },
+      {
+        "name": "demo-descriptive-stats-summary",
+        "selected": false,
+        "reason": "能力与 descriptive-stats-csv-summary 重复，且本任务需要固定 metric,value 指标表而非 group,n,mean,std_sample，因此不采用。"
+      },
+      {
+        "name": "xlsx",
+        "selected": false,
+        "reason": "任务输入为 CSV 文本且输出 CSV/SVG/MD，不需要 Excel 公式、图表或 .xlsx 处理，因此不采用。"
+      },
+      {
+        "name": "statistical-testing",
+        "selected": false,
+        "reason": "任务只计算固定阈值下的分类指标，不做组间显著性检验或效应量推断，因此不采用。"
+      },
+      {
+        "name": "descriptive-stats-csv-summary",
+        "selected": true,
+        "reason": "采用：其固定结构 CSV 与本地可复现脚本能力最贴合第②步 heldout_metrics.csv 的生成与精度要求。"
+      },
+      {
+        "name": "two-group-statistical-testing-with-effect-size",
+        "selected": false,
+        "reason": "任务不比较两组实验差异，也不报告 p 值、效应量或置信区间，因此不采用。"
+      },
+      {
+        "name": "dose-response-cleaning-ic50-pipeline",
+        "selected": false,
+        "reason": "任务数据与剂量-响应、IC50 无关，因此不采用。"
+      },
+      {
+        "name": "gh-claude-ab-test-setup-6f7533",
+        "selected": false,
+        "reason": "任务不是 A/B 实验设计或转化实验规划，因此不采用。"
+      },
+      {
+        "name": "descriptive-stats-csv-and-plot",
+        "selected": false,
+        "reason": "其 CSV 与图结构面向 group,n,mean,std_sample，不符合本任务 metric,value 指标表与审计报告要求，因此不采用。"
+      }
+    ],
+    "reason": "任务本质是三步可审计的清洗—固定阈值指标计算—报告出图，data-cleaning 负责去重/跨 split 删除/缺失删除与审计表，descriptive-stats-csv-summary 负责生成固定结构指标 CSV，scientific-visualization 负责 figure.svg 与报告图表。",
+    "degraded": false,
+    "degraded_reason": "",
+    "encoder": {
+      "kind": "dense-onnx",
+      "active": true,
+      "model": "Xenova/multilingual-e5-small",
+      "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+      "dimension": 384,
+      "max_tokens": 256
+    },
+    "weights": [
+      0.35,
+      0.55,
+      0.1
+    ],
+    "boundary": "推荐、编排采用和进入执行分别记录；缺失的历史理由保留未知，不证明已找到全库最优组合"
+  },
+  "acceptance": {
+    "source": "recorded_at_execution",
+    "protocol": "outcome-evidence-v4",
+    "verdict": "passed",
+    "scope": "模拟预测数据的样本去重、跨集合受试者排除、固定阈值测试集混淆矩阵与派生指标；不评价模型或临床有效性",
+    "contract": {
+      "version": "outcome-evidence-v4",
+      "reward_policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+      "profile": {
+        "model": "deepseek-chat",
+        "sandbox": "local",
+        "sources": {
+          "pipeline.py": "38ecff9a87bd9ad2dbc4dcf33be755d4a284b15a55277d0d8edb964d23b9e8e7",
+          "executor.py": "b295e9a9edcbcaf17131cda3c74ca373dee2ab4f88eacac1e444b81c44c7a104",
+          "contracts.py": "c1f2bf934b1f6692690511945cb5dc665170621208857f4d315a59b3b148b2c0",
+          "checks.py": "61cff8b4e254190641394be36ec7f03edef595a190f093c1ab3b7b6fdc3dcc79",
+          "scenarios.py": "a5666675a88d3c1ba24dad6bfe1e4e5283c572853deefd19c549cf7ff81d4151",
+          "research.py": "f510cc7e5dc27d2d8acd6a29c93b1e3eb5cdc54241f13c59f5416a60930302ae",
+          "llm.py": "ee897a9c1250052c3ed608c21752616e03935409397605f0d33f3316f01df915",
+          "governance.py": "aaa9b217529d10a2e47726304792c3645d97bd6f9f8de1a515cba3aa35061533",
+          "promotion.py": "685a78b65268b8169c155615497e63932d4284e1fae88f578e90df1454f2cf03",
+          "reward_gates.py": "6f3812086709054dfaf8e1bba766fbdaf42d6c1d2eb5bc0b91d5d9dd4d1e82db",
+          "assessment.py": "350ad8077281ec87891298d84ad133ba0b2e0187bef26f2b78297ef209b673e7",
+          "runtime.py": "26d6b5fbb74ea4ed5e147c31574a37d61d547e71ab2a4ea02366fb434f71250d",
+          "schema.py": "4ecad1593940833d15f4931229123af84d033b0a92c945cc748e57e7043e5783"
+        }
+      },
+      "task_sha256": "f11ad2049bdf8bdfd9876d3000d635e1235eb10782b165b2248456baad7b3798",
+      "source": "frozen_research_reference",
+      "case_id": "research-reproducibility-v1",
+      "reference_sha256": "5ebd1355e5147ea4617153ffa987289b729dabb19e1db4937336a6eaafbdf214",
+      "scope": "模拟预测数据的样本去重、跨集合受试者排除、固定阈值测试集混淆矩阵与派生指标；不评价模型或临床有效性",
+      "unverified": [
+        "用户满意度",
+        "报告洞察与业务价值",
+        "技能的因果贡献",
+        "网络是否整体提升"
+      ]
+    },
+    "evidence_sha256": "a57a858f4e3ec4c992ce042af413e7a4beb287932d53c3d8d0d86ccd1bd54166",
+    "unverified": [
+      "用户满意度",
+      "报告洞察与业务价值",
+      "技能的因果贡献",
+      "网络是否整体提升"
+    ]
+  },
+  "reuse": {
+    "candidate": true,
+    "skill_name": "leakage-safe-heldout-metrics-audit",
+    "gates_passed": 4,
+    "gates_total": 12,
+    "improvement_proven": false,
+    "reward_applied": false,
+    "policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+    "ranking_weights_deployed": false
+  },
+  "host_product": {
+    "target": "立理 S1",
+    "production_connection_verified": false,
+    "mapping": {
+      "task": "project conversation",
+      "routing": "capability selection evidence",
+      "chain": "execution timeline",
+      "files": "project attachments",
+      "acceptance": "result evidence",
+      "reuse": "candidate capability asset"
+    },
+    "next_action": "S1 backend verifies capsule digest, downloads files with expected SHA-256, and applies its project permissions"
+  },
+  "limitations": [
+    "文件指纹证明文件一致性，不证明研究结论正确",
+    "独立结果评价沿用执行时已冻结的范围，未对历史任务重新评分",
+    "单次任务不证明技能贡献或网络增益，候选技能不自动准入"
+  ],
+  "capsule_sha256": "cc42b6aaddf80dadf239a1edd1370664dc5fba0458780518786789b04eac8de4"
+}

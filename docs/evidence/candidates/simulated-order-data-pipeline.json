@@ -1,0 +1,119 @@
+{
+  "skill": {
+    "name": "simulated-order-data-pipeline",
+    "description": "从原始模拟订单明细出发，按固定清洗规则生成 clean.csv，再按月汇总为 monthly_summary.csv，最后产出趋势图 SVG 与管理层报告，全程只用文件传递、不联网、不编造真实经营结论。",
+    "domain": "数据分析与报告自动化",
+    "tags": [
+      "数据清洗",
+      "按月汇总",
+      "毛利分析",
+      "模拟数据",
+      "文件流水线",
+      "管理层报告",
+      "SVG 趋势图"
+    ],
+    "capability": "把一份含重复与缺失的订单明细，经清洗、汇总、可视化三步，产出可审计的 clean.csv、monthly_summary.csv、figure.svg 与 report.md。",
+    "inputs": [
+      "原始订单明细 CSV（含 order_id, month, revenue, cost 等列）",
+      "清洗规则（去重键、缺失剔除列、负毛利保留策略）",
+      "汇总列名与指标定义（gross_profit、gross_margin、orders）",
+      "报告与图表要求（模拟数据标注、金额单位、风险与建议章节）"
+    ],
+    "outputs": [
+      "clean.csv（去重且无缺失的明细）",
+      "monthly_summary.csv（严格列名的按月汇总表）",
+      "figure.svg（矢量趋势图）",
+      "report.md（管理层报告）",
+      "终端打印的重复数与缺失数"
+    ],
+    "use_when": [
+      "拿到一份需要先清洗再汇总的订单/交易明细",
+      "要求按固定列名输出月度汇总表并做毛利分析",
+      "需要生成带模拟数据声明的图表与管理层报告",
+      "要求各步骤用 input_files/output_files 显式表达文件依赖"
+    ],
+    "steps": [
+      "读取原始 CSV 文本，记录原始行数 n_raw；用 order_id 去重保留首条，得到去重后行数 n_dedup，重复数 n_dup = n_raw - n_dedup（脚本实际计算，不写死）。",
+      "构造缺失掩码 missing_mask = revenue.isna() | cost.isna()，缺失数 n_missing = missing_mask.sum()；剔除缺失行，保留毛利为负的有效订单，写出 clean.csv。",
+      "在脚本内断言 n_clean == n_raw - n_dup - n_missing，并打印重复数与缺失数；回读 clean.csv 校验 order_id 唯一、revenue/cost 无缺失。",
+      "仅读取 clean.csv，按 month 分组聚合 revenue、cost、orders（orders 为行数），计算 gross_profit = revenue - cost、gross_margin = gross_profit / revenue，写出 monthly_summary.csv。",
+      "回读 monthly_summary.csv，校验列名精确等于 ['month','revenue','cost','gross_profit','gross_margin','orders']，并做合计与逐行公式校验（1e-8 容差）。",
+      "仅读取 monthly_summary.csv，用 matplotlib 绘制 revenue、cost、gross_profit 随 month 变化的折线图，x 轴标签含 month、y 轴标签含金额（元），标题标注模拟数据，保存为 figure.svg。",
+      "撰写 report.md：标题与正文明确标注「模拟数据」与「金额单位：元」，包含毛利风险章节（列出各月毛利率、最低/平均毛利率）与行动建议章节，并声明不代表任何公司真实经营结论。"
+    ],
+    "pitfalls": [
+      "把重复数与缺失数写死为常数，而不是由脚本从原始数据实际计算，导致数据变化后数字失真。",
+      "先剔除缺失再计算重复数，或先剔重再算缺失，导致 n_clean = n_raw - n_dup - n_missing 断言不成立。",
+      "误将毛利为负的有效订单当作异常剔除，违反「不剔除负毛利有效订单」规则。",
+      "汇总时重新读取原始数据而非 clean.csv，导致口径不一致、无法追溯。",
+      "列名顺序或拼写与要求不符（如把 gross_margin 写成 margin），导致下游校验失败。",
+      "图表或报告未标注「模拟数据」与「金额单位：元」，或把模拟结论表述为公司真实经营结论。",
+      "gross_margin 用整数除法或未处理 revenue 为 0 的情况，导致精度或除零错误。"
+    ],
+    "verification": [
+      "回读 clean.csv：order_id 唯一（is_unique 为 True），revenue 与 cost 缺失总数为 0，负毛利订单仍在。",
+      "脚本内断言清洗后行数 = 原始行数 - 重复数 - 缺失数，且打印的重复数与缺失数由脚本实际计算。",
+      "回读 monthly_summary.csv：列名精确匹配，revenue/cost 合计与 clean.csv 在 1e-8 容差内一致，orders 合计等于 clean.csv 行数。",
+      "逐行校验 gross_profit == revenue - cost 且 gross_margin == gross_profit / revenue（1e-8 容差），且无缺失值。",
+      "figure.svg 为矢量格式，坐标轴含 month 与金额（元）标注，图中数值与 monthly_summary.csv 逐月一致。",
+      "report.md 含「模拟数据」与「金额单位：元」标注、毛利风险与行动建议章节，且无将模拟数据表述为公司真实经营结论的语句。"
+    ],
+    "quality": {
+      "safety": {
+        "level": "Good",
+        "reason": "未见危险系统操作或越权指令"
+      },
+      "completeness": {
+        "level": "Good",
+        "reason": "7 个步骤 + 7 条陷阱 + 6 条验证，覆盖完整"
+      },
+      "executability": {
+        "level": "Good",
+        "reason": "7/7 个步骤含具体工具或参数，无模糊表述"
+      },
+      "maintainability": {
+        "level": "Good",
+        "reason": "与 3 个技能建立关联，步骤数适中"
+      },
+      "cost_awareness": {
+        "level": "Average",
+        "reason": "未说明资源或耗时约束"
+      }
+    },
+    "relations": [
+      [
+        "compose_with",
+        "data-cleaning"
+      ],
+      [
+        "compose_with",
+        "business-metrics-audit"
+      ],
+      [
+        "compose_with",
+        "scientific-visualization"
+      ]
+    ],
+    "source": "distill",
+    "origin_task": null,
+    "parent": [
+      "business-metrics-audit"
+    ],
+    "generation": 1,
+    "version": 1,
+    "license": "MIT",
+    "compatibility": "",
+    "metadata": {},
+    "allowed_tools": "",
+    "stats": {
+      "pulls": 0.0,
+      "reward_sum": 0.0,
+      "best": 0.0
+    }
+  },
+  "sha256": "4b94348ae885aceae7b0dd08679a1feafa8503353496ecc67c611078145cc2a2",
+  "state": "candidate",
+  "origin_run_id": "b5492bb7-20261008-174014-44aa",
+  "created_at": 1791452477.029255,
+  "promotion_policy": "frozen paired real executions; no regression; positive quality gain"
+}

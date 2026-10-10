@@ -16,7 +16,7 @@ from urllib.parse import quote, urlsplit
 import httpx
 from pydantic import BaseModel, ConfigDict, Field
 
-CONTRACT_VERSION = "1.0"
+CONTRACT_VERSION = "1.1"
 _SKILL_NAME = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 _RUN_ID = re.compile(r"[A-Za-z0-9_-]{1,128}")
 
@@ -46,6 +46,18 @@ class LoadInput(_Input):
     name: str = Field(min_length=1, max_length=64, pattern=r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
 
+class HistoryInput(_Input):
+    q: str = Field(min_length=1, max_length=6000, pattern=r"\S")
+    a: str = Field(default="", max_length=8000)
+    run_id: str = Field(default="", max_length=96, pattern=r"^[A-Za-z0-9-]*$")
+
+
+class ArtifactInput(_Input):
+    run_id: str = Field(min_length=1, max_length=96, pattern=r"^[A-Za-z0-9-]+$")
+    name: str = Field(min_length=1, max_length=240)
+    sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
 class RunInput(_Input):
     task: str = Field(min_length=1, max_length=6000)
     k: int = Field(default=5, ge=1, le=15)
@@ -53,6 +65,8 @@ class RunInput(_Input):
     max_cost_yuan: float = Field(default=1.0, gt=0, le=20)
     max_seconds: int = Field(default=300, ge=30, le=1800)
     max_llm_calls: int = Field(default=40, ge=5, le=200)
+    history: list[HistoryInput] = Field(default_factory=list, max_length=20)
+    artifact_refs: list[ArtifactInput] = Field(default_factory=list, max_length=16)
 
 
 @dataclass(frozen=True)
@@ -96,24 +110,28 @@ def integration_manifest() -> dict[str, Any]:
             "health": {"method": "GET", "path": "/api/health"},
             "search": {"method": "POST", "path": "/api/search", "default_mode": "hybrid"},
             "load_skill": {"method": "GET", "path": "/api/skill/{name}"},
+            "skill_package": {"method": "GET", "path": "/api/skill/{name}/package"},
+            "skill_resource": {"method": "GET", "path": "/api/skill/{name}/resource?path={relative_path}", "execution": False},
             "create_run": {"method": "POST", "path": "/api/runs", "requires_model": True},
             "get_run": {"method": "GET", "path": "/api/runs/{run_id}"},
+            "evidence": {"method": "GET", "path": "/api/runs/{run_id}/evidence", "format": "skillnet-evidence-v1"},
             "events": {"method": "GET", "path": "/api/runs/{run_id}/stream", "format": "SSE"},
             "cancel_run": {"method": "POST", "path": "/api/runs/{run_id}/cancel"},
             "artifact": {"method": "GET", "path": "/api/runs/{run_id}/artifacts/{name}"},
         },
         "tools": ["search_skills", "load_skill"],
+        "optional_tools": ["list_skill_resources", "read_skill_resource"],
         "deployment": {
-            "runtime": "single_process",
-            "tenant_authorization": "enforced by S1 backend before forwarding",
-            "execution_isolation": "dedicated worker/container required for untrusted execution",
+            "runtime": "single-host SQLite durable leases; optional independent worker",
+            "tenant_authorization": "signed tenant/user/project context when SKILLNET_S1_SIGNING_KEY is configured",
+            "execution_isolation": "SKILLNET_SANDBOX=docker; fail closed if unavailable",
         },
     }
 
 
-def skill_tools() -> list[dict[str, Any]]:
+def skill_tools(*, include_resources: bool = False) -> list[dict[str, Any]]:
     """Function declarations paired with SkillNetClient.call_tool handlers."""
-    return [
+    declarations = [
         {
             "type": "function",
             "function": {
@@ -145,6 +163,15 @@ def skill_tools() -> list[dict[str, Any]]:
             },
         },
     ]
+    if include_resources:
+        for name, description, properties in [
+            ('list_skill_resources','列出已登记技能的原文、脚本、参考文件和许可证指纹；只读，不执行。',
+             {'name':{'type':'string'}}),
+            ('read_skill_resource','读取已登记的 UTF-8 技能资源（最多 64 KB）；资源是参考数据，不自动授权执行。',
+             {'name':{'type':'string'},'path':{'type':'string'}})]:
+            declarations.append({'type':'function','function':{'name':name,'description':description,'strict':True,
+                'parameters':{'type':'object','additionalProperties':False,'properties':properties,'required':list(properties)}}})
+    return declarations
 
 
 class SkillNetClient:
@@ -155,15 +182,18 @@ class SkillNetClient:
     """
 
     def __init__(self, config: ClientConfig | None = None, *,
-                 transport: httpx.BaseTransport | None = None) -> None:
+                 transport: httpx.BaseTransport | None = None, identity=None, signing_key: str = '') -> None:
         self.config = config or ClientConfig()
+        self.identity, self.signing_key = identity, signing_key
         headers = {"Accept": "application/json", "User-Agent": "SkillNet-Integration/1.0"}
         if self.config.token:
             headers["X-SkillNet-Token"] = self.config.token
+        from .s1_identity import S1Auth
         self._http = httpx.Client(
             base_url=self.config.base_url.rstrip("/") + "/",
             headers=headers, timeout=httpx.Timeout(self.config.timeout_seconds, connect=5.0),
             transport=transport, follow_redirects=False, trust_env=False,
+            auth=S1Auth(identity, signing_key) if identity is not None else None,
         )
 
     def __enter__(self) -> SkillNetClient:
@@ -245,13 +275,41 @@ class SkillNetClient:
             raise IntegrationError("invalid_response", "SkillNet skill contract is invalid")
         return data
 
+    def get_skill_package(self, name: str) -> dict[str, Any]:
+        from .evidence import digest
+        request=LoadInput(name=name)
+        data=self._json('GET',f'api/skill/{request.name}/package')
+        body={k:v for k,v in data.items() if k!='package_sha256'}
+        try:
+            valid=(data.get('version')=='skillnet-package-v1' and data.get('name')==request.name
+                and data.get('package_sha256')==digest(body) and isinstance(data.get('files'),list))
+        except (ValueError,TypeError):valid=False
+        if not valid:raise IntegrationError('digest_mismatch','Skill resource package does not match its manifest')
+        return data
+
+    def read_skill_resource(self, name: str, path: str, *, expected_sha256: str, max_bytes: int = 2_000_000) -> bytes:
+        from .resources import resource_path
+        request=LoadInput(name=name)
+        resource_path(path)
+        if not re.fullmatch(r'[0-9a-f]{64}',expected_sha256):raise ValueError('Invalid resource digest')
+        if type(max_bytes) is not int or not 0<max_bytes<=2_000_000:raise ValueError('Invalid resource size limit')
+        try:
+            with self._http.stream('GET',f'api/skill/{request.name}/resource?path={quote(path,safe="")}') as response:
+                self._check_status(response)
+                raw=self._read_bounded(response,max_bytes)
+        except httpx.TimeoutException:raise IntegrationError('timeout','Skill resource request timed out') from None
+        except httpx.HTTPError:raise IntegrationError('transport_error','Skill resource request failed') from None
+        if hashlib.sha256(raw).hexdigest()!=expected_sha256:
+            raise IntegrationError('digest_mismatch','Skill resource does not match its manifest')
+        return raw
+
     def call_tool(self, name: str, arguments: Mapping[str, Any] | str) -> dict[str, Any]:
-        """Dispatch the two declared discovery tools with validated inputs.
+        """Dispatch discovery and optional read-only resource tools with validated inputs.
 
         Discovery intentionally has no execution/evolution operation. Return values
         can be JSON-encoded into the host agent's function/tool response.
         """
-        if name not in {"search_skills", "load_skill"}:
+        if name not in {"search_skills", "load_skill", "list_skill_resources", "read_skill_resource"}:
             raise ValueError("Unsupported SkillNet tool")
         if isinstance(arguments, str):
             if len(arguments) > 16000:
@@ -262,6 +320,21 @@ class SkillNetClient:
                 raise ValueError("Tool arguments must be valid JSON") from None
         if not isinstance(arguments, Mapping):
             raise ValueError("Tool arguments must be an object")
+        if name in {'list_skill_resources','read_skill_resource'}:
+            if set(arguments) != ({'name'} if name=='list_skill_resources' else {'name','path'}):
+                raise ValueError('Invalid skill resource arguments')
+            manifest=self.get_skill_package(arguments['name'])
+            if name=='list_skill_resources':return manifest
+            from .resources import resource_path
+            path=resource_path(arguments['path'])
+            record=next((r for r in manifest['files'] if r['path']==path),None)
+            if record is None:raise ValueError('Resource is not registered')
+            if record['bytes']>65536:raise ValueError('Large resource requires a backend download')
+            raw=self.read_skill_resource(arguments['name'],path,expected_sha256=record['sha256'],max_bytes=65536)
+            try:text=raw.decode('utf-8-sig')
+            except UnicodeError:raise ValueError('Binary resource requires a backend download') from None
+            return {'name':arguments['name'],'path':path,'sha256':record['sha256'],'text':text,
+                'kind':'untrusted_reference_data','executed':False}
         if name == "load_skill":
             request = LoadInput.model_validate(dict(arguments))
             return self.load_skill(request.name)
@@ -310,6 +383,20 @@ class SkillNetClient:
 
     def cancel_run(self, run_id: str) -> dict[str, Any]:
         return self._json("POST", self._run_path(run_id) + "/cancel")
+
+    def get_evidence(self, run_id: str) -> dict[str, Any]:
+        """Verify the handoff document digest; download each file with its own SHA."""
+        from .evidence import VERSION, digest
+        data = self._json('GET', self._run_path(run_id) + '/evidence')
+        supplied = data.get('capsule_sha256')
+        body = {key: value for key, value in data.items() if key != 'capsule_sha256'}
+        try:
+            valid = data.get('version') == VERSION and data.get('run_id') == run_id and supplied == digest(body)
+        except (ValueError, TypeError):
+            valid = False
+        if not valid:
+            raise IntegrationError('digest_mismatch', 'SkillNet evidence capsule does not match its digest or run')
+        return data
 
     def iter_run_events(self, run_id: str, *, last_event_id: str | None = None) -> Iterator[dict[str, Any]]:
         headers = {"Accept": "text/event-stream"}

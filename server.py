@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import asyncio
 import logging
 import mimetypes
@@ -29,7 +30,7 @@ from fastapi.responses import (FileResponse, JSONResponse, Response,
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
-from skillnet import config, llm, runtime
+from skillnet import assessment, config, llm, runtime
 from skillnet.integration import integration_manifest
 from skillnet.adapters import export_all
 from skillnet.agent import ResearchAgent, STYLE_BARE, STYLE_CARDS, STYLE_GUIDED
@@ -37,6 +38,8 @@ from skillnet.artifacts import (collect_execution_artifacts, generate_deliverabl
                                    render_bundle, save_bundle, task_slug)
 from skillnet.executor import execute_step, pick_executable_step
 from skillnet import pipeline
+from skillnet.jobs import JobQueue
+from skillnet.s1_identity import verify as verify_s1_identity
 from skillnet.runtime import (BUS, STEP_DONE, STEP_FAILED, STATUS_BUDGET_EXCEEDED,
                               STATUS_CANCELLED, STATUS_COMPLETED, STATUS_FAILED,
                               STATUS_PARTIAL, Budget, Run, RunStore, TERMINAL,
@@ -61,9 +64,18 @@ WEB_DIR = ROOT / "web"
 
 @asynccontextmanager
 async def _lifespan(application: FastAPI):
-    _startup()
-    _startup_sweep()
-    yield
+    writer_lock = None
+    if WORKER_MODE != 'external':
+        from skillnet.worker import acquire_writer_lock
+        config.OUT_DIR.mkdir(parents=True,exist_ok=True)
+        writer_lock = acquire_writer_lock(config.OUT_DIR/'worker.lock')
+    try:
+        _startup()
+        _startup_sweep()
+        yield
+    finally:
+        if writer_lock is not None:
+            writer_lock.close()
 
 
 app = FastAPI(
@@ -81,6 +93,17 @@ ACCESS_TOKEN = os.environ.get("SKILLNET_TOKEN", "").strip()
 MAX_ACTIVE_RUNS = max(1, min(32, int(os.environ.get("SKILLNET_MAX_ACTIVE_RUNS", "4"))))
 _RUN_SLOTS = threading.BoundedSemaphore(MAX_ACTIVE_RUNS)
 _RUN_THREADS: dict[str, threading.Thread] = {}
+WORKER_MODE = os.environ.get('SKILLNET_WORKER_MODE', 'thread')
+S1_SIGNING_KEY = os.environ.get('SKILLNET_S1_SIGNING_KEY', '')
+if S1_SIGNING_KEY and len(S1_SIGNING_KEY) < 32:
+    raise ValueError('SKILLNET_S1_SIGNING_KEY must contain at least 32 characters')
+
+
+def job_queue() -> JobQueue:
+    with _STATE_LOCK:
+        if 'job_queue' not in STATE:
+            STATE['job_queue'] = JobQueue(config.OUT_DIR / 'jobs.sqlite3')
+        return STATE['job_queue']
 
 
 def _startup() -> None:
@@ -194,11 +217,39 @@ def _ui_version() -> str:
 def _startup_sweep() -> None:
     """服务启动即清扫非终态 Run（进程重启留下的），避免"永远在跑"的假象。"""
     try:
+        if WORKER_MODE == 'external':
+            return  # Worker leases, not an API restart, determine interruption.
         n = run_store().sweep_interrupted()
+        job_queue().interrupt_unfinished()
         if n:
             log.info("启动清扫：%d 个中断 Run 标记为 INTERRUPTED", n)
     except Exception as exc:      # 清扫失败不影响服务启动
         log.error("启动清扫失败：%s", exc)
+
+
+@app.middleware("http")
+async def s1_authorization(request: Request, call_next):
+    if S1_SIGNING_KEY and (request.url.path.startswith('/api/runs') or request.url.path == '/api/candidates'):
+        try:
+            body = bytearray()
+            async for chunk in request.stream():
+                body.extend(chunk)
+                if len(body) > 131072:
+                    return JSONResponse(status_code=413, content={'detail':'请求体过大'})
+            request._body = bytes(body)
+            context = verify_s1_identity(S1_SIGNING_KEY, request.method, request.url.path,
+                                         bytes(body), request.headers).to_dict()
+        except ValueError:
+            return JSONResponse(status_code=401, content={'detail':'S1 后端身份签名无效或已过期'})
+        if request.method not in ('GET','HEAD','OPTIONS') and not job_queue().consume_nonce(request.headers['X-S1-Nonce']):
+            return JSONResponse(status_code=409, content={'detail':'重复的 S1 签名请求，请使用新签名'})
+        request.state.s1_identity = context
+        match = re.match(r'^/api/runs/([A-Za-z0-9-]+)(?:/|$)', request.url.path)
+        if match:
+            existing = run_store().get(match[1])
+            if existing is None or existing.staged.get('s1_identity') != context:
+                return JSONResponse(status_code=404, content={'detail':'Run 不存在'})
+    return await call_next(request)
 
 
 @app.middleware("http")
@@ -242,20 +293,57 @@ def health() -> dict[str, Any]:
         "ok": True,
         "version": app.version,
         "skills": len(lib()),
-        "evolved": sum(1 for s in lib() if s.source != "seed"),
+        "evolved": lib().stats()['evolved'],
+        "community_skills": lib().stats()['community'],
+        "encoder": getattr(getattr(STATE.get('retriever'), 'vec', None), 'status', {}),
         "model": config.MODEL,
         "api_key_configured": bool(config.API_KEY),
         "token_required": bool(ACCESS_TOKEN),
         "ui_version": _ui_version(),
         "library_path": "data/library.json",
         "runtime": {"active_runs": _active_run_count(),
-                    "max_active_runs": MAX_ACTIVE_RUNS, "deployment": "single-process"},
+                    "max_active_runs": MAX_ACTIVE_RUNS, "deployment": WORKER_MODE,
+                    "queue": job_queue().snapshot(), "isolation": os.environ.get('SKILLNET_SANDBOX', 'process')},
     }
 
 
 @app.get("/api/stats")
 def stats() -> dict[str, Any]:
     return lib().stats()
+
+
+@app.get('/api/scenarios')
+def business_scenarios():
+    from skillnet.scenarios import scenarios
+    from skillnet.research import research_scenario
+    return {'items': [{k:r[k] for k in ('id','title','task','task_sha256')} for r in [research_scenario(), *scenarios()]]}
+
+
+@app.get('/api/candidates', dependencies=[Depends(require_token)])
+def learning_candidates(request: Request):
+    rows = []
+    for path in sorted((config.OUT_DIR / 'candidates').glob('*.json')):
+        record = json.loads(path.read_text(encoding='utf-8'))
+        identity = getattr(request.state, 's1_identity', None)
+        if identity:
+            origin = run_store().get(record.get('origin_run_id',''))
+            if origin is None or origin.staged.get('s1_identity') != identity:
+                continue
+        published = lib().get(record['skill']['name'])
+        receipt = published.stats.get('verified_improvement_receipt') if published else None
+        if receipt and receipt.get('candidate_sha256') != record['sha256']:
+            receipt = None
+        rows.append({'name':record['skill']['name'],'state':record['state'], 'sha256':record['sha256'],
+                     'origin_run_id':record.get('origin_run_id'), 'promotion_policy':record.get('promotion_policy'),
+                     'reward_receipt':receipt or record.get('reward_receipt'), 'reward_audit':record.get('reward_audit'),
+                     'reward_committed':bool(receipt)})
+    return {'items':rows, 'total':len(rows)}
+
+
+@app.get('/api/learning/reward-policy', dependencies=[Depends(require_token)])
+def reward_policy():
+    from skillnet import reward_gates
+    return dict(policy=reward_gates.policy(), sha256=reward_gates.policy_sha256())
 
 
 @app.get("/api/auth/check", dependencies=[Depends(require_token)])
@@ -271,10 +359,13 @@ def s1_integration() -> dict[str, Any]:
 
 
 @app.get("/api/skills")
-def skills(domain: str | None = None, q: str | None = None) -> dict[str, Any]:
+def skills(domain: str | None = None, q: str | None = None, source: str | None = None,
+           offset: int = Query(default=0, ge=0), limit: int | None = Query(default=None, ge=1, le=500)) -> dict[str, Any]:
     items = lib().all()
     if domain:
         items = [s for s in items if s.domain == domain]
+    if source:
+        items = [s for s in items if (s.source == source if source != 'evolved' else s.generation > 0)]
     if q:
         ql = q.lower()
         items = [
@@ -284,6 +375,7 @@ def skills(domain: str | None = None, q: str | None = None) -> dict[str, Any]:
         ]
     return {
         "total": len(items),
+        "offset": offset, "limit": limit,
         "items": [
             {
                 "name": s.name, "domain": s.domain, "description": s.description,
@@ -292,8 +384,9 @@ def skills(domain: str | None = None, q: str | None = None) -> dict[str, Any]:
                 "source": s.source, "generation": s.generation,
                 "quality": s.quality, "relations": [list(r) for r in s.relations],
                 "stats": s.stats,
+                "provenance": s.metadata if s.source == 'github' else {},
             }
-            for s in sorted(items, key=lambda x: (x.domain, x.name))
+            for s in sorted(items, key=lambda x: (x.domain, x.name))[offset:offset + limit if limit else None]
         ],
     }
 
@@ -306,6 +399,31 @@ def skill_detail(name: str) -> dict[str, Any]:
     return {"skill": s.to_dict(), "markdown": s.to_skill_md()}
 
 
+@app.get('/api/skill/{name}/package', dependencies=[Depends(require_token)])
+def skill_package(name: str):
+    from skillnet.resources import package_manifest, ResourceIntegrityError
+    skill=lib().get(name)
+    if skill is None:raise HTTPException(404,'技能不存在')
+    try:return package_manifest(skill)
+    except FileNotFoundError:raise HTTPException(404,'该技能没有已登记的社区资源包') from None
+    except ResourceIntegrityError:raise HTTPException(409,'技能元数据与已登记资源包不一致') from None
+
+
+@app.get('/api/skill/{name}/resource', dependencies=[Depends(require_token)])
+def skill_resource(name: str, path: str = Query(min_length=1,max_length=400)):
+    from skillnet.resources import read_resource, ResourceIntegrityError
+    skill=lib().get(name)
+    if skill is None:raise HTTPException(404,'技能不存在')
+    try:raw=read_resource(skill,path)
+    except FileNotFoundError:raise HTTPException(404,'资源未登记或不存在') from None
+    except ResourceIntegrityError:raise HTTPException(409,'资源指纹不一致，已停止交付') from None
+    except ValueError:raise HTTPException(422,'非法资源路径') from None
+    return Response(content=raw,media_type='application/octet-stream',headers={
+        'X-Content-Type-Options':'nosniff','Content-Security-Policy':"sandbox; default-src 'none'",
+        'Content-Disposition':"attachment; filename*=UTF-8''"+quote(Path(path).name),
+        'X-Content-SHA256':hashlib.sha256(raw).hexdigest()})
+
+
 @app.get("/api/graph")
 def graph() -> dict[str, Any]:
     nodes = [
@@ -313,6 +431,7 @@ def graph() -> dict[str, Any]:
             "id": s.name, "domain": s.domain, "generation": s.generation,
             "source": s.source, "pulls": int(s.stats.get("pulls", 0)),
             "mean_reward": round(s.mean_reward, 3),
+            "verified_improvement_points": s.stats.get('verified_improvement_points', 0),
         }
         for s in lib()
     ]
@@ -385,7 +504,7 @@ def route(req: RouteReq) -> dict[str, Any]:
 
 def _resolve_orchestration(wiki: dict[str, Any], fallback: list[str] | None = None) -> dict[str, Any]:
     """让路由响应、规划上下文与执行 DAG 使用同一组经过验证的依赖边。"""
-    names = wiki.get("skills") or fallback or []
+    names = wiki["skills"] if isinstance(wiki.get("skills"), list) else fallback or []
     return STATE["orchestrator"].merge_workflow(names, wiki.get("workflow"))
 
 
@@ -406,17 +525,8 @@ def _judge_reward(evaluation: dict[str, Any]) -> float | None:
 
 def _demo_learning_reward(evaluation: dict[str, Any], execution: dict[str, Any],
                           planned_steps: int) -> tuple[float | None, str]:
-    """A one-step research experiment cannot certify a multi-step trajectory."""
-    reward = _judge_reward(evaluation)
-    if reward is None:
-        return None, "评审不可用，未更新反馈"
-    if execution.get("final_ok") is not True:
-        return None, "真实执行未成功，未更新反馈或进行技能准入"
-    if planned_steps != 1:
-        return None, "仅验证了方案中的单步，未验证完整轨迹，未更新反馈或进行技能准入"
-    if any(v.get("passed") is not True for v in execution.get("verification") or []):
-        return None, "技能语义验收存在未通过项，未更新反馈或进行技能准入"
-    return reward, ""
+    """Legacy plan comparison has no independent result reference."""
+    return None, "方案模型评分仅供参考；演示缺少执行前独立结果判据，不分配学习奖励或更新正式网络"
 
 
 # ======================================================================
@@ -487,6 +597,10 @@ def evolve(req: EvolveReq) -> dict[str, Any]:
 
     agent: ResearchAgent = STATE["agent"]
     evolver = SkillEvolver(lib())
+    evolver.candidate_dir = config.OUT_DIR / 'candidates'
+    evolver.evidence_context = dict(mode='unexecuted_proposal',
+        origin_task_sha256=hashlib.sha256(req.task.strip().encode()).hexdigest(),
+        causal_attribution=False, scope='方案提案；尚无真实执行或独立结果证据')
 
     with llm.ledger_scope() as led:
         # 先让 Agent 在无技能条件下跑一次，得到用于蒸馏的轨迹
@@ -498,10 +612,10 @@ def evolve(req: EvolveReq) -> dict[str, Any]:
         if score is None:
             pass                        # 没有有效评审证据，不能把轨迹视为成功样本入库
         elif req.op == "distill":
-            new_skill = evolver.distill(req.task, run.trajectory, score=score)
+            new_skill = evolver.distill(req.task, run.trajectory, score=None)
         elif req.op == "mutate":
             new_skill = evolver.mutate(
-                req.base_skill, successes=[run.trajectory], failures=[]
+                req.base_skill, successes=[], failures=[]
             )
         elif req.op == "crossover":
             new_skill = evolver.crossover(req.base_skill, req.donor_skill, req.negatives)
@@ -516,8 +630,12 @@ def evolve(req: EvolveReq) -> dict[str, Any]:
         "op": req.op,
         "chat_score": score,
         "evaluation": evaluation,
-        "skip_reason": "评审不可用，未进行技能准入" if score is None else "",
-        "accepted": new_skill is not None,
+        "skip_reason": "评审不可用，未进行技能准入" if score is None else "仅生成未执行的候选提案，无独立结果证据，不准入正式库",
+        "evidence_mode": "unexecuted_proposal",
+        "score_role": "plan_advisory",
+        "network_updated": False,
+        "accepted": False,
+        "candidate": new_skill is not None,
         "new_skill": new_skill.to_dict() if new_skill else None,
         "markdown": new_skill.to_skill_md() if new_skill else None,
         "records": evolver.summary()["records"],
@@ -553,7 +671,7 @@ def run_store() -> RunStore:
         rs = STATE.get("run_store")
         if rs is None:
             rs = RunStore(config.OUT_DIR / "runs")
-            swept = rs.sweep_interrupted()
+            swept = rs.sweep_interrupted() if WORKER_MODE != 'external' else 0
             if swept:
                 log.info("清扫 %d 个中断的 Run（非终态 -> INTERRUPTED）", swept)
             STATE["run_store"] = rs
@@ -561,10 +679,10 @@ def run_store() -> RunStore:
 
 
 def _bandit() -> SharedLinUCB:
-    """服务运行期共享的 LinUCB 单例：反馈在多次请求间持续累积。
+    """Serving LinUCB. Live requests preview observations on detached copies.
 
-    服务重启后从零开始（A=I, b=0），依赖探索机制重新积累——
-    这是有意为之：策略参数不持久化，演示状态不污染正式库。
+    Weights start from identity/zero and are not deployed by single-run feedback
+    or candidate promotion. Offline experiments retain the explicit update API.
     """
     with _STATE_LOCK:
         b = STATE.get("bandit")
@@ -572,6 +690,16 @@ def _bandit() -> SharedLinUCB:
             b = SharedLinUCB(lib(), alpha=0.3)
             STATE["bandit"] = b
         return b
+
+
+@app.get("/api/learning/policy", dependencies=[Depends(require_token)])
+def learning_policy() -> dict[str, Any]:
+    """Serving state digest for verification, without exposing raw parameters."""
+    state = _bandit().state_dict()
+    return dict(mode='shadow', single_run_updates_serving_policy=False,
+                policy=state['policy'], updates=state['n_updates'],
+                state_sha256=assessment.digest(state), assessment_version=assessment.VERSION,
+                release_scope='held-out task suite only; candidate promotion does not deploy ranking weights')
 
 
 def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
@@ -673,15 +801,12 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
                           "attempts": [], "artifacts": [], "verification": []}
     stages.append({"stage": "真实执行（沙箱）", "detail": sandbox_result})
 
-    # 3.5) 反馈写回：本次盲评奖励更新共享参数 θ——影响所有技能的下一次预测
+    # 3.5) 记录观察：模型的方案评分不能训练正式排序参数。
     reward, learning_skip = _demo_learning_reward(j, sandbox_result, len(run.response.get("steps") or []))
     # Research comparison executes only one step. Selected but unexecuted
     # skills must not receive that step's reward or become its parents.
     executed_skill = sandbox_result.get("skill")
     adopted = [executed_skill] if isinstance(executed_skill, str) and executed_skill in skills else []
-    if reward is not None:
-        for s in adopted:
-            bandit.update(req.task, s, reward)
     after_rows = bandit.rank(req.task, cand) if cand else []
     after_map = {r[0]: (r[2], r[3]) for r in after_rows}
     feedback = []
@@ -700,6 +825,7 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
 
     # 4) 从执行轨迹蒸馏新技能
     evolver = SkillEvolver(lib())
+    evolver.candidate_dir = config.OUT_DIR / 'candidates'
     before = len(lib())
     new_skill = (evolver.distill(req.task, run.trajectory, score=reward, parent=adopted[:1])
                  if reward is not None else None)
@@ -714,9 +840,12 @@ def _run_demo(req: DemoReq, led: llm.UsageLedger) -> dict[str, Any]:
             "detail": {
                 "feedback": feedback,
                 "reward": round(reward, 4) if reward is not None else None,
+                "mode": "observation_only",
+                "network_updated": False,
                 "skip_reason": learning_skip,
                 "adopted": adopted,
-                "accepted": new_skill is not None,
+                "accepted": False,
+        "candidate": new_skill is not None,
                 "name": new_skill.name if new_skill else None,
                 "generation": new_skill.generation if new_skill else None,
                 "capability": new_skill.capability if new_skill else None,
@@ -814,7 +943,7 @@ def adapters() -> dict[str, Any]:
 @app.get("/api/results")
 def results() -> dict[str, Any]:
     out: dict[str, Any] = {}
-    for f in sorted(config.OUT_DIR.glob("exp*.json")):
+    for f in sorted([*config.OUT_DIR.glob("exp*.json"), *config.OUT_DIR.glob('execution-benchmark-[0-9]*.json')]):
         try:
             out[f.stem] = json.loads(f.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
@@ -1043,6 +1172,13 @@ def artifact(slug: str, fname: str, download: int = 0) -> Any:
 class HistoryTurn(BaseModel):
     q: str = Field(min_length=1, max_length=6000, pattern=r"\S")
     a: str = Field(default="", max_length=8000)
+    run_id: str = Field(default='', max_length=96, pattern=r'^[A-Za-z0-9-]*$')
+
+
+class ArtifactRef(BaseModel):
+    run_id: str = Field(max_length=96, pattern=r'^[A-Za-z0-9-]+$')
+    name: str = Field(min_length=1, max_length=240)
+    sha256: str = Field(pattern=r'^[0-9a-f]{64}$')
 
 
 class RunReq(BaseModel):
@@ -1055,6 +1191,7 @@ class RunReq(BaseModel):
     # 追问上下文：同一会话此前轮次的 [{q, a}]（a 为上一轮回复摘要）。
     # 只用于规划阶段与最终回复，不污染检索（检索必须用当前问题本身）。
     history: list[HistoryTurn] = Field(default_factory=list, max_length=20)
+    artifact_refs: list[ArtifactRef] = Field(default_factory=list, max_length=16)
 
 
 def _artifact_digest(run: Any, limit_chars: int = 4200, per_file: int = 900) -> str:
@@ -1229,6 +1366,8 @@ def _compose_final_reply(run: Any, led: Any) -> str:
 【交付产物】{arts_line}
 【验收与评审】{judged}
 【产物语义复核】{semantic_line}
+【独立结果判断及边界】{json.dumps((run.staged or {}).get('quality_assessment') or {'overall_verdict':'unconfirmed'}, ensure_ascii=False)[:12000]}
+模型方案评分不是学习奖励。整体满意度、报告洞察、技能因果贡献和网络整体提升均未被证实；不得声称问一次就优化了网络。独立判据通过只支持已测范围。
 【学习准入】{gate.get('reason') or gate.get('skip_reason') or '未记录'}。必须如实说明未确认项；程序运行完成不等于全部验收通过。
 【报告生成前累计（不是最终运行总额）】耗时 {run.duration_ms / 1000:.1f}s · 成本 ¥{float(run.cost_yuan or 0):.3f} · Token {run.tokens} · 步骤结果：完成 {sum(1 for s in run.steps if s.status == 'done')} · 失败 {sum(1 for s in run.steps if s.status == 'failed')} · 跳过 {sum(1 for s in run.steps if s.status == 'skipped')}
 （注意：此刻 Run 的终态判定尚未执行，不要在回复里写具体终态词，按上述步骤结果如实描述）
@@ -1248,17 +1387,21 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
     if run is None:
         return
     led = llm.UsageLedger()
+    run._checkpoint_writer = lambda: store.save(run)
     lib_before_snapshot: dict[str, dict[str, Any]] = {}
     lib_size_before = 0
     evolved_before = 0
     new_skill_records: list[dict[str, Any]] = []
     def checkpoint() -> None:
         pipeline.sync_usage(run, led)
+        if WORKER_MODE == 'external' and job_queue().cancelled(run_id):
+            run.cancel_requested = True
+        store.save(run)
         runtime.check_budget(run)
     try:
         lib_before_snapshot = _skill_snapshot(lib())
         lib_size_before = len(lib())
-        evolved_before = sum(1 for s in lib() if s.source != "seed")
+        evolved_before = sum(1 for s in lib() if s.generation > 0)
         with llm.ledger_scope(led), llm.guard_scope(checkpoint):
             checkpoint()
             r = STATE["retriever"]
@@ -1281,7 +1424,8 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                         confidence=res.get("confidence"), raw_bm25_top=res.get("raw_bm25_top"),
                         modes={m: {key: run.retrieval[m].get(key) for key in
                                    ("selected", "components", "decision", "decision_reason",
-                                    "degraded", "degraded_reason", "confidence_kind")}
+                                    "degraded", "degraded_reason", "confidence_kind", "selection",
+                                    "candidates", "encoder", "weights")}
                                for m in MODES},
                         duration_ms=run.staged["retrieval_ms"])
             pipeline.sync_usage(run, led)
@@ -1304,13 +1448,16 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
             # 3) 编排
             t0 = time.time()
             run.status = "ORCHESTRATING"
-            wiki = r.route_with_wiki(run.task, k=req.k)
+            wiki = r.route_with_wiki(run.task, k=req.k,
+                                     candidate_names=[c['name'] for c in res.get('candidates', [])])
             orch = _resolve_orchestration(wiki, fabric_selected)
             run.skills = orch["skills"]
             run.staged["orchestration"] = {
                 "order": run.skills, "workflow": orch["workflow"],
                 "source": wiki.get("source", orch.get("source", "")),
                 "degraded": bool(wiki.get("degraded") or orch.get("degraded")),
+                "reason": wiki.get('reason',''), "decisions": wiki.get('decisions',[]),
+                "candidate_names": wiki.get('candidate_names', []),
             }
             run.staged["orchestration_ms"] = int((time.time() - t0) * 1000)
             BUS.publish(run, "orchestration.completed",
@@ -1318,6 +1465,7 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                         workflow=len(orch.get("workflow") or []),
                         edges=orch["workflow"],
                         source=run.staged["orchestration"]["source"],
+                        reason=wiki.get('reason',''),decisions=wiki.get('decisions',[]),
                         degraded=run.staged["orchestration"]["degraded"],
                         duration_ms=run.staged["orchestration_ms"])
             checkpoint()
@@ -1339,8 +1487,16 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                 plan_task = (run.task + "\n\n【这是同一会话的后续追问，前文如下（请结合前文回答，"
                              "但研究步骤只针对当前问题）】\n" + "\n".join(ctx_lines))
             run.staged["history_turns"] = len(hist)
-            arun = agent.run(plan_task, skills=run.skills, style=STYLE_GUIDED)
+            if req.artifact_refs:
+                plan_task += '\n已携带上一轮的真实文件版本，禁止重新生成原始数据：\n' + '\n'.join(
+                    f"{a.logical_name} (SHA-256 {a.sha256})" for a in run.artifacts if a.kind == '跨轮输入')
+            arun = agent.run(plan_task, skills=run.skills, style=STYLE_GUIDED, max_steps=req.max_steps)
             run.plan = arun.response or {}
+            from skillnet.governance import fingerprint
+            run.staged['skill_versions'] = {name: {'sha256': fingerprint(lib().get(name)),
+                'source': lib().get(name).source} for name in run.skills if lib().get(name)}
+            run.staged["evaluation_contract"] = assessment.prepare_contract(run.task)
+            BUS.publish(run, "evaluation.prepared", contract=run.staged["evaluation_contract"])
             run.status = "EXECUTING"
             run.staged["planning_ms"] = int((time.time() - t0) * 1000)
             pipeline.sync_usage(run, led)
@@ -1360,55 +1516,64 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
             checkpoint()
             store.save(run)
 
-            # 6) 盲评 + 反馈回流 + 蒸馏
+            # 6) 独立结果核验 + 影子观察；方案模型评分只作为建议。
             t0 = time.time()
+            quality = assessment.assess(run, workspace, lib())
+            shadow = assessment.shadow_feedback(b, run.task, quality)
+            run.staged["quality_assessment"] = quality
+            from skillnet import reward_gates
+            gates = reward_gates.observation_gates(run, quality)
+            run.staged["reward_gates"] = gates
+            run.staged["shadow_feedback"] = shadow
+            run.feedback = shadow["rows"]
+            BUS.publish(run, "evaluation.completed", assessment=quality, shadow=shadow, reward_gates=gates)
             j = _judge_evidence(score_plan(run.task, run.plan, []))
             run.judge = j
-            reward = _judge_reward(j)
-            # A good plan is not proof of a successful execution. Do not feed an
-            # incomplete/failed or rejected execution into positive learning.
-            learning_skip = "评审不可用，未更新反馈" if reward is None else ""
-            if reward is not None:
-                if not run.steps or any(s.status != runtime.STEP_DONE for s in run.steps):
-                    learning_skip = "真实执行未完整完成，未更新反馈或进行技能准入"
-                elif any(not c.passed for s in run.steps for c in s.checks
-                         if c.name != "产生至少一个文件产物"):
-                    learning_skip = "实际产物检查未全部通过，未更新反馈或进行技能准入"
-                elif any(not v.passed for s in run.steps for v in s.verifications):
-                    learning_skip = "技能语义验收存在未通过项，未更新反馈或进行技能准入"
-                if learning_skip:
-                    reward = None
-            run.staged["learning_gate"] = {"eligible": reward is not None,
-                                           "skip_reason": learning_skip}
-            adopted = [s for s in run.skills if s]
-            before_rows = {x["name"]: x["exploit"] for x in run.ranking}
-            if reward is not None:
-                for s in adopted:
-                    try:
-                        b.update(run.task, s, reward)
-                    except Exception:
-                        pass
-            after = {n: e for n, _p, e, _x in b.rank(run.task, adopted)}
-            run.feedback = [
-                {"name": n, "exploit_before": before_rows.get(n, 0.0),
-                 "exploit_after": after.get(n, before_rows.get(n, 0.0)),
-                 "delta": round(after.get(n, before_rows.get(n, 0.0)) - before_rows.get(n, 0.0), 4),
-                 "nudged": reward is not None and n in adopted,
-                 "skip_reason": learning_skip}
-                for n in adopted
-            ]
+            reward = None
+            learning_skip = assessment.NETWORK_REASON
+            candidate_score = quality["candidate_score"]
+            run.staged["learning_gate"] = {"eligible": False, "mode": "shadow",
+                "network_updated": False, "candidate_eligible": quality["candidate_eligible"],
+                "reward_eligible": gates['eligible'], "reward_points": 0, "blockers": gates['blockers'],
+                "evidence_sha256": quality["evidence_sha256"], "skip_reason": learning_skip}
+            adopted = sorted({s.skill for s in run.steps if s.skill and s.status == runtime.STEP_DONE})
             BUS.publish(run, "judge.completed", weighted=j.get("weighted") if j.get("score_valid", True) else None,
                         coverage=j.get("coverage"), reward=round(reward, 4) if reward is not None else None,
                         score_valid=j.get("score_valid", True), coverage_valid=j.get("coverage_valid", True),
-                        learning_eligible=reward is not None, skip_reason=learning_skip)
+                        learning_eligible=False, role="plan_advisory", mode="shadow", skip_reason=learning_skip)
             run.status = "EVOLVING"
             evolver = SkillEvolver(lib())
-            new_skill = (evolver.distill(run.task, getattr(arun, "trajectory", []) or [],
-                                         score=reward, parent=adopted[:1])
-                         if reward is not None else None)
-            if new_skill:
+            evolver.candidate_dir = config.OUT_DIR / 'candidates'
+            evolver.origin_run_id = run.run_id
+            from skillnet.governance import known_training_tasks
+            training_tasks = known_training_tasks(lib(), adopted)
+            training_tasks.add(quality['task_sha256'])
+            training_tasks.update(hashlib.sha256(str(h.get('q', '')).strip().encode()).hexdigest() for h in hist)
+            for artifact in run.artifacts:
+                origin = store.get(artifact.source_run_id) if artifact.source_run_id else None
+                if origin:training_tasks.add(hashlib.sha256(origin.task.strip().encode()).hexdigest())
+            evolver.evidence_context = dict(assessment_version=quality['version'],
+                reward_policy_sha256=gates['policy_sha256'],
+                origin_task_sha256=quality['task_sha256'], evidence_sha256=quality['evidence_sha256'],
+                training_task_sha256=sorted(training_tasks), scope=quality['scope'], causal_attribution=False)
+            execution_trajectory = json.dumps({'task': run.task, 'steps': [
+                {'idx':s.idx,'action':s.action,'skill':s.skill,'contract':s.contract,
+                 'status':s.status,'repairs':[a.repair_reason for a in s.attempts if a.repair_reason],
+                 'checks':[c.to_dict() for c in s.checks if c.required],
+                 'semantic':[v.to_dict() for v in s.verifications],
+                 'files':[{'name':a.logical_name or a.name,'sha256':a.sha256} for a in s.artifacts]}
+                for s in run.steps],
+                'acceptance': pipeline.contracts.acceptance(run),
+                'independent_assessment': quality}, ensure_ascii=False)
+            measured_parents = [row['skill'] for row in quality['observations']
+                                if row['skill'] and row['observed_score'] is not None]
+            new_skill = (evolver.distill(run.task, execution_trajectory,
+                                         score=candidate_score, parent=measured_parents[:1])
+                         if candidate_score is not None else None)
+            is_candidate = bool(new_skill and getattr(new_skill, 'metadata', {}).get('governance_status') == 'candidate')
+            if new_skill and not is_candidate:
                 refresh_runtime()
-            # 即使本次没有新技能，真实反馈更新也需要落盘。
+            # 执行次数等事实统计仍需落盘；正式排序参数未更新。
             if new_skill or adopted:
                 persist_library()
             if new_skill is not None:
@@ -1421,16 +1586,18 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                     "origin_task": (getattr(new_skill, "origin_task", "") or "")[:200],
                 })
             run.evolution = {
-                "accepted": new_skill is not None,
+                "accepted": new_skill is not None and not is_candidate,
+                "candidate": {"name": new_skill.name, "state": "pending_frozen_evaluation"} if is_candidate else None,
                 "name": getattr(new_skill, "name", None),
                 "generation": getattr(new_skill, "generation", 0),
                 "capability": (getattr(new_skill, "capability", "") or "")[:200],
                 "library_size": len(lib()),
                 "records": evolver.summary().get("records", []),
-                "skipped": reward is None,
-                "skip_reason": learning_skip,
+                "skipped": candidate_score is None,
+                "skip_reason": "缺少独立合格的完整执行证据，只保留观察" if candidate_score is None else "候选仅隔离保存，尚未证明跨任务增益",
             }
             BUS.publish(run, "evolution.proposed", accepted=run.evolution["accepted"],
+                        candidate=run.evolution.get("candidate"),
                         name=run.evolution["name"], library_size=run.evolution["library_size"],
                         generation=run.evolution["generation"], feedback=run.feedback,
                         skipped=run.evolution["skipped"], skip_reason=run.evolution["skip_reason"])
@@ -1450,7 +1617,7 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                 lib_before_snapshot, _skill_snapshot(lib()),
                 list(run.skills or []), new_skill_records,
                 lib_size_before, len(lib()), evolved_before,
-                sum(1 for s in lib() if s.source != "seed"))
+                sum(1 for s in lib() if s.generation > 0))
         except Exception as exc:
             run.staged["skill_impact_error"] = f"{type(exc).__name__}: {exc}"
 
@@ -1501,6 +1668,15 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
         except Exception as exc:            # 落盘都失败时，至少把错误写进内存对象
             run.error = f"收尾失败：{type(exc).__name__}: {exc}"
         try:
+            if run.staged.get('quality_assessment'):
+                from skillnet import reward_gates
+                gates = reward_gates.observation_gates(run,run.staged['quality_assessment'])
+                run.staged['reward_gates'] = gates
+                run.staged['learning_gate']['blockers'] = gates['blockers']
+                BUS.publish(run,'evaluation.gates_updated',reward_gates=gates)
+        except Exception:
+            log.exception("run_id=%s 奖励门禁收尾核验失败",run.run_id)
+        try:
             BUS.publish(run, "run.finished", status=run.status, duration_ms=run.duration_ms,
                         cost=run.cost_yuan, tokens=run.tokens,
                         steps=run.step_stats(), artifacts=len(run.artifacts))
@@ -1516,7 +1692,12 @@ def _active_run_count() -> int:
 
 def _bounded_run_worker(run_id: str, req: RunReq) -> None:
     try:
-        _run_worker(run_id, req)
+        from skillnet.worker import execute_job
+        owner = f'{os.getpid()}-{secrets.token_hex(6)}'
+        job = job_queue().claim(owner, run_id=run_id)
+        if job:
+            job['worker_owner'] = owner
+            execute_job(job_queue(), job, lambda rid, payload: _run_worker(rid, RunReq.model_validate(payload)))
     finally:
         with _STATE_LOCK:
             _RUN_THREADS.pop(run_id, None)
@@ -1524,17 +1705,62 @@ def _bounded_run_worker(run_id: str, req: RunReq) -> None:
 
 
 @app.post("/api/runs", dependencies=[Depends(require_token)])
-def create_run(req: RunReq) -> Any:
+def create_run(req: RunReq, request: Request = None) -> Any:
     """创建并**后台执行**一个 Run，立即返回 run_id（前端随后订阅事件流）。"""
     require_llm()
-    if not _RUN_SLOTS.acquire(blocking=False):
+    if WORKER_MODE != 'external' and not _RUN_SLOTS.acquire(blocking=False):
         raise HTTPException(429, "当前运行已达到并发上限，请稍后提交。", headers={"Retry-After": "10"})
     fp = task_fingerprint(req.task)
     run = Run(run_id=new_run_id(fp), task=req.task, task_fp=fp, model=config.MODEL)
+    identity = getattr(request.state, 's1_identity', None) if request else None
+    if identity:
+        run.staged['s1_identity'] = identity
     run.budget = Budget(max_cost_yuan=req.max_cost_yuan, max_llm_calls=req.max_llm_calls,
                         max_seconds=req.max_seconds, max_attempts_per_step=3)
     try:
+        refs = list(req.artifact_refs)
+        if not refs and req.history and req.history[-1].run_id:
+            previous = run_store().get(req.history[-1].run_id)
+            if previous is None or identity and previous.staged.get('s1_identity') != identity:
+                raise HTTPException(404, '上一轮运行不存在或无权访问')
+            if previous:
+                latest = {}
+                for artifact in sorted(previous.artifacts, key=lambda a:(a.version,a.from_step if a.from_step is not None else -1,a.name)):
+                    if artifact.kind != '跨轮输入' and artifact.sha256:
+                        latest[artifact.logical_name or artifact.name] = artifact
+                refs = [ArtifactRef(run_id=previous.run_id, name=a.name, sha256=a.sha256)
+                        for a in latest.values()][:16]
+        seen_destinations = set()
+        for ref in refs:
+            previous = run_store().get(ref.run_id)
+            if identity and (previous is None or previous.staged.get('s1_identity') != identity):
+                raise HTTPException(404, '跨轮文件不存在')
+            artifact = next((a for a in previous.artifacts if a.name == ref.name), None) if previous else None
+            if not artifact or artifact.sha256 != ref.sha256:
+                raise HTTPException(409, '跨轮文件版本已变化或不存在')
+            origin = config.OUT_DIR / 'runs' / ref.run_id / 'artifacts' / ref.name
+            if not origin.resolve().is_relative_to((config.OUT_DIR / 'runs' / ref.run_id / 'artifacts').resolve()):
+                raise HTTPException(400, '非法的文件引用')
+            if not origin.is_file() or pipeline._sha256_file(origin) != ref.sha256:
+                raise HTTPException(409, '跨轮文件内容校验失败')
+            history_name = 'history_' + ref.run_id[-8:] + '_' + ref.name
+            logical = artifact.logical_name or re.sub(r'^step\d+_', '', artifact.name)
+            if logical in seen_destinations:
+                raise HTTPException(409, '同一逻辑文件存在多个历史版本，请明确选择一个版本')
+            seen_destinations.add(logical)
+            destination = config.OUT_DIR / 'runs' / run.run_id / 'artifacts' / history_name
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            import shutil
+            shutil.copy2(origin, destination)
+            run.artifacts.append(runtime.Artifact(name=destination.name, kind='跨轮输入', bytes=artifact.bytes,
+                sha256=artifact.sha256, logical_name=logical,
+                source_run_id=ref.run_id, version=artifact.version))
+        req.artifact_refs = refs
+        run.staged['history_artifacts'] = [r.model_dump() for r in refs]
         run_store().save(run)
+        job_queue().enqueue(run.run_id, req.model_dump())
+        if WORKER_MODE == 'external':
+            return {"run_id": run.run_id, "status": runtime.STATUS_CREATED, "task_fp": fp, "queued": True}
         thread = threading.Thread(target=_bounded_run_worker, args=(run.run_id, req),
                                   name=f"run-{run.run_id}", daemon=True)
         with _STATE_LOCK:
@@ -1543,13 +1769,14 @@ def create_run(req: RunReq) -> Any:
     except Exception:
         with _STATE_LOCK:
             _RUN_THREADS.pop(run.run_id, None)
-        _RUN_SLOTS.release()
+        if WORKER_MODE != 'external':
+            _RUN_SLOTS.release()
         raise
     return {"run_id": run.run_id, "status": runtime.STATUS_CREATED, "task_fp": fp}
 
 
 @app.get("/api/runs")
-def list_runs(limit: int = Query(default=50, ge=1, le=200),
+def list_runs(request: Request, limit: int = Query(default=50, ge=1, le=200),
               task_fp: str | None = Query(default=None, max_length=64),
               offset: int = Query(default=0, ge=0, le=100000),
               q: str = Query(default="", max_length=200),
@@ -1559,7 +1786,8 @@ def list_runs(limit: int = Query(default=50, ge=1, le=200),
                                 runtime.STATUS_ORCHESTRATING, runtime.STATUS_EXECUTING,
                                 runtime.STATUS_VERIFYING, runtime.STATUS_EVOLVING, *TERMINAL}:
         raise HTTPException(422, "未知的运行状态")
-    return run_store().list_page(limit=limit, offset=offset, task_fp=task_fp, q=q, status=status)
+    return run_store().list_page(limit=limit, offset=offset, task_fp=task_fp, q=q, status=status,
+                                identity=getattr(request.state, 's1_identity', None))
 
 
 @app.get("/api/runs/{run_id}")
@@ -1579,9 +1807,23 @@ def cancel_run(run_id: str) -> Any:
     if run.status in TERMINAL:
         return {"run_id": run_id, "status": run.status, "note": "已终止，无需取消"}
     run.cancel_requested = True
+    job_queue().cancel(run_id)
     BUS.publish(run, "run.cancel_requested")
+    if run.status == runtime.STATUS_CREATED:
+        run.status = STATUS_CANCELLED
+        run.ended_at_ms = now_ms()
+        BUS.publish(run, 'run.cancelled', reason='队列中取消，未执行模型调用')
     run_store().save(run)
     return {"run_id": run_id, "status": "CANCEL_REQUESTED"}
+
+
+@app.get('/api/runs/{run_id}/evidence', dependencies=[Depends(require_token)])
+def run_evidence(run_id: str):
+    from skillnet.evidence import capsule
+    run = run_store().get(run_id)
+    if run is None:
+        raise HTTPException(404, 'Run 不存在')
+    return capsule(run, config.OUT_DIR/'runs'/run_id)
 
 
 @app.get("/api/runs/{run_id}/stream")
@@ -1600,17 +1842,23 @@ async def stream_run(run_id: str, request: Request,
 
     async def gen():
         cursor = after
+        current = run
         heartbeat_at = time.monotonic()
         while True:
+            if WORKER_MODE == 'external':
+                refreshed = store.load(run_id)
+                if refreshed is not None:
+                    # The worker owns mutations; the API observes atomic checkpoints.
+                    current = refreshed
             # 回放与实时均使用同一游标快照：发布发生在 yield 期间，也会在下次
             # 轮询补上；无「回放完成 → 注册订阅」之间的事件丢失窗口。
-            for ev in BUS.replay(run, cursor):
+            for ev in BUS.replay(current, cursor):
                 yield f"id: {ev.seq}\ndata: {json.dumps(ev.to_dict(), ensure_ascii=False)}\n\n"
                 cursor = ev.seq
             with _STATE_LOCK:
                 worker_alive = run_id in _RUN_THREADS
-            if run.status in TERMINAL and not BUS.replay(run, cursor):
-                if not worker_alive or any(e.type == "run.finished" and e.seq <= cursor for e in run.events):
+            if current.status in TERMINAL and not BUS.replay(current, cursor):
+                if not worker_alive or any(e.type == "run.finished" and e.seq <= cursor for e in current.events):
                     yield "event: end\ndata: {}\n\n"
                     break
             if await request.is_disconnected():

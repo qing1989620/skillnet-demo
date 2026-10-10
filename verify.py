@@ -401,7 +401,7 @@ def main() -> int:
             probe.stats.update({"pulls": 7, "reward_sum": 5.6, "best": 0.9})
             lib.save(tmp)
             assert tmp.exists(), "落盘失败"
-            back = SkillLibrary.load(tmp)
+            back = SkillLibrary.load(tmp, include_community=False)
             assert set(back.names()) == set(lib.names()), "往返后技能集合不一致"
             assert back.get("literature-review").stats.get("pulls") == 7, "运行统计未持久化"
             assert "scrna-qc-clustering" in back, "种子技能丢失"

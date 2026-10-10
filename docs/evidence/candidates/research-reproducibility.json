@@ -1,0 +1,138 @@
+{
+  "skill": {
+    "name": "leakage-audited-heldout-eval",
+    "description": "对含 split 划分的预测结果表做去重、跨集合受试者排除与缺失值清洗，生成审计计数表，并在清洗后的 test 子集上用固定阈值计算混淆矩阵与派生指标，最后产出图表与限定性报告。适用于科研复现审计、数据泄漏排查与固定阈值评估场景。",
+    "domain": "科研复现与评估审计",
+    "tags": [
+      "数据泄漏",
+      "去重",
+      "跨split受试者",
+      "固定阈值",
+      "混淆矩阵",
+      "复现审计",
+      "heldout评估"
+    ],
+    "capability": "从原始预测 CSV 产出一份无泄漏的清洗数据、一份六项审计计数表、一份九项固定阈值指标表，以及配套矢量图与限定性报告。",
+    "inputs": [
+      "原始预测 CSV（含 sample_id, subject_id, split, label, score 等列）",
+      "指定的固定阈值（如 0.5）",
+      "指定的审计项清单与指标项清单"
+    ],
+    "outputs": [
+      "clean_predictions.csv（保留原列原值）",
+      "cohort_audit.csv（check,count 六行）",
+      "heldout_metrics.csv（metric,value 九行）",
+      "figure.svg",
+      "report.md"
+    ],
+    "use_when": [
+      "需要审计预测数据是否存在跨 split 受试者泄漏时",
+      "需要在固定阈值下报告 held-out 混淆矩阵与指标时",
+      "需要产出可复现的科研审计报告与图表时",
+      "禁止用测试集调阈值或计算 AUROC 的合规评估场景"
+    ],
+    "steps": [
+      "读取原始 CSV，记录 raw_rows = 原始数据行数。",
+      "按 sample_id 去重保留首次出现记录，duplicate_rows = raw_rows - 去重后行数。",
+      "按 subject_id 聚合 split 集合，找出 split 集合大小 > 1 的受试者，cross_split_subjects = 其数量，cross_split_rows = 这些受试者在原始数据中的记录数。",
+      "删除所有跨 split 受试者的全部记录（train/validation/test 一并删除）。",
+      "在剩余记录中删除 score 缺失行，missing_score_rows = 删除跨 split 受试者后 score 缺失的行数。",
+      "输出 clean_predictions.csv，列名与原始 CSV 完全一致，保留行原值不改写。",
+      "输出 cohort_audit.csv，列名 check,count，六行依次为 raw_rows, duplicate_rows, cross_split_subjects, cross_split_rows, missing_score_rows, eligible_test_rows；eligible_test_rows = 清洗后 split=test 的行数。",
+      "读取 clean_predictions.csv 与 cohort_audit.csv，仅取清洗后 split=test 的行。",
+      "以固定阈值 score >= 0.5 判为阳性，与 label 比较得到 tp/fp/tn/fn；n = tp+fp+tn+fn，并校验 n == eligible_test_rows。",
+      "计算 accuracy=(tp+tn)/n、precision=tp/(tp+fp)、recall=tp/(tp+fn)、f1=2*precision*recall/(precision+recall)，保留至少 10 位有效数字。",
+      "输出 heldout_metrics.csv，列名 metric,value，九行依次为 n,tp,fp,tn,fn,accuracy,precision,recall,f1。",
+      "读取 cohort_audit.csv 与 heldout_metrics.csv，绘制 figure.svg（矢量格式），图中数值与两张表逐项一致。"
+    ],
+    "pitfalls": [
+      "先删缺失值再删跨 split 受试者，会导致 missing_score_rows 统计口径错误；必须在删除跨 split 受试者之后统计缺失。",
+      "去重与跨 split 判定顺序颠倒：应先按 sample_id 去重，再基于去重后数据判定跨 split 受试者，否则计数不一致。",
+      "跨 split 受试者只删 test 行而保留 train/validation 行，泄漏未真正消除；必须删除该受试者全部记录。",
+      "用测试集选择或微调阈值，违反固定阈值要求；阈值必须硬编码且不随数据变化。",
+      "计算 AUROC 或使用概率排序指标，超出任务范围；只报告固定阈值下的混淆矩阵与派生指标。",
+      "指标精度不足（如只保留 2 位小数），导致复现比对失败；至少保留 10 位有效数字。",
+      "审计表行数或顺序不符（多行、少行、乱序），导致下游解析失败；必须恰好六行且顺序固定。",
+      "报告未写明“模拟数据”“固定阈值”“不代表临床有效性”三处限定语，或把指标表述为真实模型性能/临床结论。"
+    ],
+    "verification": [
+      "回读 clean_predictions.csv，确认 sample_id 唯一，且每个 subject_id 只对应一个 split。",
+      "回读 cohort_audit.csv，确认恰好 6 行且 check 值顺序与指定六项一致。",
+      "用原始 CSV 独立重算六项计数并与审计表逐项比较。",
+      "确认 clean_predictions.csv 列名与原始 CSV 完全一致且保留行 score 原值未被改写。",
+      "回读 heldout_metrics.csv，确认恰好 9 行且 metric 顺序与指定九项一致。",
+      "校验 n == eligible_test_rows 且 n == tp+fp+tn+fn。",
+      "用清洗后 test 行独立重算 tp/fp/tn/fn 并与文件逐项比较。",
+      "确认未使用 train/validation 行，且阈值未被任何数据驱动方式调整。"
+    ],
+    "quality": {
+      "safety": {
+        "level": "Good",
+        "reason": "未见危险系统操作或越权指令"
+      },
+      "completeness": {
+        "level": "Good",
+        "reason": "12 个步骤 + 8 条陷阱 + 8 条验证，覆盖完整"
+      },
+      "executability": {
+        "level": "Good",
+        "reason": "12/12 个步骤含具体工具或参数，无模糊表述"
+      },
+      "maintainability": {
+        "level": "Good",
+        "reason": "与 3 个技能建立关联，步骤数适中"
+      },
+      "cost_awareness": {
+        "level": "Average",
+        "reason": "未说明资源或耗时约束"
+      }
+    },
+    "relations": [
+      [
+        "compose_with",
+        "data-cleaning"
+      ],
+      [
+        "compose_with",
+        "leakage-guard"
+      ],
+      [
+        "compose_with",
+        "scientific-visualization"
+      ]
+    ],
+    "source": "distill",
+    "origin_task": null,
+    "parent": [
+      "data-cleaning"
+    ],
+    "generation": 1,
+    "version": 1,
+    "license": "MIT",
+    "compatibility": "",
+    "metadata": {
+      "evidence_context": {
+        "assessment_version": "outcome-evidence-v4",
+        "reward_policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+        "origin_task_sha256": "f11ad2049bdf8bdfd9876d3000d635e1235eb10782b165b2248456baad7b3798",
+        "evidence_sha256": "4422bf2dfa129427ebd19be2e360762ff893fca92cca1422e1e0a54cc3b9ba60",
+        "training_task_sha256": [
+          "f11ad2049bdf8bdfd9876d3000d635e1235eb10782b165b2248456baad7b3798"
+        ],
+        "scope": "模拟预测数据的样本去重、跨集合受试者排除、固定阈值测试集混淆矩阵与派生指标；不评价模型或临床有效性",
+        "causal_attribution": false
+      }
+    },
+    "allowed_tools": "",
+    "stats": {
+      "pulls": 0.0,
+      "reward_sum": 0.0,
+      "best": 0.0
+    }
+  },
+  "sha256": "a2d9c60a8a4827abecbecdd09f6e2f58548a94b7740cd83a604f1625a5a68d93",
+  "state": "candidate",
+  "origin_run_id": "f11ad204-20261010-100815-58a8",
+  "created_at": 1791598153.3170273,
+  "promotion_policy": "5 held-out tasks x 2 pairs; matched budget; no regression; mean gain >= .02; task-cluster sign test p <= .05; scoped claims only"
+}

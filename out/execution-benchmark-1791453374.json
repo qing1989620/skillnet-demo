@@ -1,0 +1,1230 @@
+{
+  "evaluation_kind": "paired-real-execution",
+  "created_at": 1791453167.1703882,
+  "repeats": 2,
+  "oracle_scope": "numeric correctness, schema, SVG presence, simulation label; does not grade managerial insight",
+  "pairs": [
+    {
+      "task_sha256": "83bc059217f9401aa67b68ea42f0f84239a2324687df6a044e53aaa1922e95b7",
+      "frozen": true,
+      "before_run_id": "b5492bb7-20261008-175247-ed3f",
+      "after_run_id": "b5492bb7-20261008-175320-af6e",
+      "before": 1.0,
+      "after": 1.0
+    },
+    {
+      "task_sha256": "83bc059217f9401aa67b68ea42f0f84239a2324687df6a044e53aaa1922e95b7",
+      "frozen": true,
+      "before_run_id": "b5492bb7-20261008-175343-6f7c",
+      "after_run_id": "b5492bb7-20261008-175409-da9c",
+      "before": 1.0,
+      "after": 1.0
+    },
+    {
+      "task_sha256": "6db3b947829b9cc28b47c0f88a22409233e3c770b3112b685ad662ab150ba2f0",
+      "frozen": true,
+      "before_run_id": "b4ba4ba2-20261008-175432-fe57",
+      "after_run_id": "b4ba4ba2-20261008-175459-7713",
+      "before": 1.0,
+      "after": 1.0
+    },
+    {
+      "task_sha256": "6db3b947829b9cc28b47c0f88a22409233e3c770b3112b685ad662ab150ba2f0",
+      "frozen": true,
+      "before_run_id": "b4ba4ba2-20261008-175525-dd19",
+      "after_run_id": "b4ba4ba2-20261008-175550-2a0e",
+      "before": 1.0,
+      "after": 1.0
+    }
+  ],
+  "cases": [
+    {
+      "id": "operating-review",
+      "task_sha256": "83bc059217f9401aa67b68ea42f0f84239a2324687df6a044e53aaa1922e95b7",
+      "repeat": 0,
+      "mode": "before",
+      "run_id": "b5492bb7-20261008-175247-ed3f",
+      "score": 1.0,
+      "oracle": {
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "月份完整且无额外月份",
+            "passed": true
+          },
+          {
+            "name": "2026-01.revenue",
+            "passed": true,
+            "expected": 3500.0,
+            "actual": "3500.0"
+          },
+          {
+            "name": "2026-01.cost",
+            "passed": true,
+            "expected": 2180.0,
+            "actual": "2180.0"
+          },
+          {
+            "name": "2026-01.orders",
+            "passed": true,
+            "expected": 3,
+            "actual": "3"
+          },
+          {
+            "name": "2026-01.gross_profit",
+            "passed": true,
+            "expected": 1320.0,
+            "actual": "1320.0"
+          },
+          {
+            "name": "2026-01.gross_margin",
+            "passed": true,
+            "expected": 0.37714285714285717,
+            "actual": "0.37714285714285717"
+          },
+          {
+            "name": "2026-02.revenue",
+            "passed": true,
+            "expected": 4000.0,
+            "actual": "4000.0"
+          },
+          {
+            "name": "2026-02.cost",
+            "passed": true,
+            "expected": 2700.0,
+            "actual": "2700.0"
+          },
+          {
+            "name": "2026-02.orders",
+            "passed": true,
+            "expected": 3,
+            "actual": "3"
+          },
+          {
+            "name": "2026-02.gross_profit",
+            "passed": true,
+            "expected": 1300.0,
+            "actual": "1300.0"
+          },
+          {
+            "name": "2026-02.gross_margin",
+            "passed": true,
+            "expected": 0.325,
+            "actual": "0.325"
+          },
+          {
+            "name": "2026-03.revenue",
+            "passed": true,
+            "expected": 4300.0,
+            "actual": "4300.0"
+          },
+          {
+            "name": "2026-03.cost",
+            "passed": true,
+            "expected": 3180.0,
+            "actual": "3180.0"
+          },
+          {
+            "name": "2026-03.orders",
+            "passed": true,
+            "expected": 3,
+            "actual": "3"
+          },
+          {
+            "name": "2026-03.gross_profit",
+            "passed": true,
+            "expected": 1120.0,
+            "actual": "1120.0"
+          },
+          {
+            "name": "2026-03.gross_margin",
+            "passed": true,
+            "expected": 0.26046511627906976,
+            "actual": "0.26046511627906976"
+          },
+          {
+            "name": "2026-04.revenue",
+            "passed": true,
+            "expected": 5200.0,
+            "actual": "5200.0"
+          },
+          {
+            "name": "2026-04.cost",
+            "passed": true,
+            "expected": 3340.0,
+            "actual": "3340.0"
+          },
+          {
+            "name": "2026-04.orders",
+            "passed": true,
+            "expected": 3,
+            "actual": "3"
+          },
+          {
+            "name": "2026-04.gross_profit",
+            "passed": true,
+            "expected": 1860.0,
+            "actual": "1860.0"
+          },
+          {
+            "name": "2026-04.gross_margin",
+            "passed": true,
+            "expected": 0.3576923076923077,
+            "actual": "0.3576923076923077"
+          },
+          {
+            "name": "矢量图存在",
+            "passed": true
+          },
+          {
+            "name": "报告标注模拟数据",
+            "passed": true
+          }
+        ],
+        "evaluator": "independent arithmetic + artifact presence; report insight not scored",
+        "artifact_hashes": {
+          "step1_clean.csv": "7e6cbc82b564f901f3958e2ec28d58fa5ae2867448efd8e06afd1e4cf51c0026",
+          "step2_monthly_summary.csv": "a2a0524e5ba15ad02d37b77ae6b6fd3ade0c4450dd93d55b1bab18009e1b7027",
+          "step3_figure.svg": "27057253b89e53f85da5809941ac37c48535f0d78835e95db886190c60ec2b2a",
+          "step3_report.md": "fa09787a752a90f48b66b6d9ad0715270272be1aa8a9618f4badf2312c9c8263"
+        }
+      },
+      "cost_yuan": 0.081184,
+      "status": "COMPLETED",
+      "acceptance": {
+        "state": "passed",
+        "failed": 0,
+        "unknown": 0,
+        "checks_passed": 26,
+        "checks_total": 26,
+        "semantic_passed": 3,
+        "semantic_total": 3
+      }
+    },
+    {
+      "id": "operating-review",
+      "task_sha256": "83bc059217f9401aa67b68ea42f0f84239a2324687df6a044e53aaa1922e95b7",
+      "repeat": 0,
+      "mode": "after",
+      "run_id": "b5492bb7-20261008-175320-af6e",
+      "score": 1.0,
+      "oracle": {
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "月份完整且无额外月份",
+            "passed": true
+          },
+          {
+            "name": "2026-01.revenue",
+            "passed": true,
+            "expected": 3500.0,
+            "actual": "3500.0"
+          },
+          {
+            "name": "2026-01.cost",
+            "passed": true,
+            "expected": 2180.0,
+            "actual": "2180.0"
+          },
+          {
+            "name": "2026-01.orders",
+            "passed": true,
+            "expected": 3,
+            "actual": "3"
+          },
+          {
+            "name": "2026-01.gross_profit",
+            "passed": true,
+            "expected": 1320.0,
+            "actual": "1320.0"
+          },
+          {
+            "name": "2026-01.gross_margin",
+            "passed": true,
+            "expected": 0.37714285714285717,
+            "actual": "0.37714285714285717"
+          },
+          {
+            "name": "2026-02.revenue",
+            "passed": true,
+            "expected": 4000.0,
+            "actual": "4000.0"
+          },
+          {
+            "name": "2026-02.cost",
+            "passed": true,
+            "expected": 2700.0,
+            "actual": "2700.0"
+          },
+          {
+            "name": "2026-02.orders",
+            "passed": true,
+            "expected": 3,
+            "actual": "3"
+          },
+          {
+            "name": "2026-02.gross_profit",
+            "passed": true,
+            "expected": 1300.0,
+            "actual": "1300.0"
+          },
+          {
+            "name": "2026-02.gross_margin",
+            "passed": true,
+            "expected": 0.325,
+            "actual": "0.325"
+          },
+          {
+            "name": "2026-03.revenue",
+            "passed": true,
+            "expected": 4300.0,
+            "actual": "4300.0"
+          },
+          {
+            "name": "2026-03.cost",
+            "passed": true,
+            "expected": 3180.0,
+            "actual": "3180.0"
+          },
+          {
+            "name": "2026-03.orders",
+            "passed": true,
+            "expected": 3,
+            "actual": "3"
+          },
+          {
+            "name": "2026-03.gross_profit",
+            "passed": true,
+            "expected": 1120.0,
+            "actual": "1120.0"
+          },
+          {
+            "name": "2026-03.gross_margin",
+            "passed": true,
+            "expected": 0.26046511627906976,
+            "actual": "0.26046511627906976"
+          },
+          {
+            "name": "2026-04.revenue",
+            "passed": true,
+            "expected": 5200.0,
+            "actual": "5200.0"
+          },
+          {
+            "name": "2026-04.cost",
+            "passed": true,
+            "expected": 3340.0,
+            "actual": "3340.0"
+          },
+          {
+            "name": "2026-04.orders",
+            "passed": true,
+            "expected": 3,
+            "actual": "3"
+          },
+          {
+            "name": "2026-04.gross_profit",
+            "passed": true,
+            "expected": 1860.0,
+            "actual": "1860.0"
+          },
+          {
+            "name": "2026-04.gross_margin",
+            "passed": true,
+            "expected": 0.3576923076923077,
+            "actual": "0.3576923076923077"
+          },
+          {
+            "name": "矢量图存在",
+            "passed": true
+          },
+          {
+            "name": "报告标注模拟数据",
+            "passed": true
+          }
+        ],
+        "evaluator": "independent arithmetic + artifact presence; report insight not scored",
+        "artifact_hashes": {
+          "step1_clean.csv": "7e6cbc82b564f901f3958e2ec28d58fa5ae2867448efd8e06afd1e4cf51c0026",
+          "step2_monthly_summary.csv": "a2a0524e5ba15ad02d37b77ae6b6fd3ade0c4450dd93d55b1bab18009e1b7027",
+          "step3_figure.svg": "24249874a7ce4c39ef8abad664daa732348870c8ddca8e8e7b584dc40091df88",
+          "step3_report.md": "9c723d138bd1dd0aae886d82d7ed2c9a3c0565d8d4cc191bc4d29fcac8c6acc9"
+        }
+      },
+      "cost_yuan": 0.075712,
+      "status": "COMPLETED",
+      "acceptance": {
+        "state": "passed",
+        "failed": 0,
+        "unknown": 0,
+        "checks_passed": 26,
+        "checks_total": 26,
+        "semantic_passed": 3,
+        "semantic_total": 3
+      }
+    },
+    {
+      "id": "operating-review",
+      "task_sha256": "83bc059217f9401aa67b68ea42f0f84239a2324687df6a044e53aaa1922e95b7",
+      "repeat": 1,
+      "mode": "before",
+      "run_id": "b5492bb7-20261008-175343-6f7c",
+      "score": 1.0,
+      "oracle": {
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "月份完整且无额外月份",
+            "passed": true
+          },
+          {
+            "name": "2026-01.revenue",
+            "passed": true,
+            "expected": 3500.0,
+            "actual": "3500.0"
+          },
+          {
+            "name": "2026-01.cost",
+            "passed": true,
+            "expected": 2180.0,
+            "actual": "2180.0"
+          },
+          {
+            "name": "2026-01.orders",
+            "passed": true,
+            "expected": 3,
+            "actual": "3"
+          },
+          {
+            "name": "2026-01.gross_profit",
+            "passed": true,
+            "expected": 1320.0,
+            "actual": "1320.0"
+          },
+          {
+            "name": "2026-01.gross_margin",
+            "passed": true,
+            "expected": 0.37714285714285717,
+            "actual": "0.37714285714285717"
+          },
+          {
+            "name": "2026-02.revenue",
+            "passed": true,
+            "expected": 4000.0,
+            "actual": "4000.0"
+          },
+          {
+            "name": "2026-02.cost",
+            "passed": true,
+            "expected": 2700.0,
+            "actual": "2700.0"
+          },
+          {
+            "name": "2026-02.orders",
+            "passed": true,
+            "expected": 3,
+            "actual": "3"
+          },
+          {
+            "name": "2026-02.gross_profit",
+            "passed": true,
+            "expected": 1300.0,
+            "actual": "1300.0"
+          },
+          {
+            "name": "2026-02.gross_margin",
+            "passed": true,
+            "expected": 0.325,
+            "actual": "0.325"
+          },
+          {
+            "name": "2026-03.revenue",
+            "passed": true,
+            "expected": 4300.0,
+            "actual": "4300.0"
+          },
+          {
+            "name": "2026-03.cost",
+            "passed": true,
+            "expected": 3180.0,
+            "actual": "3180.0"
+          },
+          {
+            "name": "2026-03.orders",
+            "passed": true,
+            "expected": 3,
+            "actual": "3"
+          },
+          {
+            "name": "2026-03.gross_profit",
+            "passed": true,
+            "expected": 1120.0,
+            "actual": "1120.0"
+          },
+          {
+            "name": "2026-03.gross_margin",
+            "passed": true,
+            "expected": 0.26046511627906976,
+            "actual": "0.26046511627906976"
+          },
+          {
+            "name": "2026-04.revenue",
+            "passed": true,
+            "expected": 5200.0,
+            "actual": "5200.0"
+          },
+          {
+            "name": "2026-04.cost",
+            "passed": true,
+            "expected": 3340.0,
+            "actual": "3340.0"
+          },
+          {
+            "name": "2026-04.orders",
+            "passed": true,
+            "expected": 3,
+            "actual": "3"
+          },
+          {
+            "name": "2026-04.gross_profit",
+            "passed": true,
+            "expected": 1860.0,
+            "actual": "1860.0"
+          },
+          {
+            "name": "2026-04.gross_margin",
+            "passed": true,
+            "expected": 0.3576923076923077,
+            "actual": "0.3576923076923077"
+          },
+          {
+            "name": "矢量图存在",
+            "passed": true
+          },
+          {
+            "name": "报告标注模拟数据",
+            "passed": true
+          }
+        ],
+        "evaluator": "independent arithmetic + artifact presence; report insight not scored",
+        "artifact_hashes": {
+          "step1_clean.csv": "c560d5194964c725da205d34beee29f86e7449849712cb1180e0c3edb26cba13",
+          "step1_orders_raw.csv": "066c50bc103a2f361a951bba1d42ccf2c881a3597a005da840eb401cd8ba03ff",
+          "step2_monthly_summary.csv": "a2a0524e5ba15ad02d37b77ae6b6fd3ade0c4450dd93d55b1bab18009e1b7027",
+          "step3_figure.svg": "4cb24d25f91c00b8a594e7be725ba080022c77440de74957e89c2e360524b7fb",
+          "step3_report.md": "37a5242d7ae06d8775d0e32463690dc79d9bb423df27cdf1195a47e9dbb9e42b"
+        }
+      },
+      "cost_yuan": 0.081466,
+      "status": "COMPLETED",
+      "acceptance": {
+        "state": "passed",
+        "failed": 0,
+        "unknown": 0,
+        "checks_passed": 32,
+        "checks_total": 32,
+        "semantic_passed": 3,
+        "semantic_total": 3
+      }
+    },
+    {
+      "id": "operating-review",
+      "task_sha256": "83bc059217f9401aa67b68ea42f0f84239a2324687df6a044e53aaa1922e95b7",
+      "repeat": 1,
+      "mode": "after",
+      "run_id": "b5492bb7-20261008-175409-da9c",
+      "score": 1.0,
+      "oracle": {
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "月份完整且无额外月份",
+            "passed": true
+          },
+          {
+            "name": "2026-01.revenue",
+            "passed": true,
+            "expected": 3500.0,
+            "actual": "3500.0"
+          },
+          {
+            "name": "2026-01.cost",
+            "passed": true,
+            "expected": 2180.0,
+            "actual": "2180.0"
+          },
+          {
+            "name": "2026-01.orders",
+            "passed": true,
+            "expected": 3,
+            "actual": "3"
+          },
+          {
+            "name": "2026-01.gross_profit",
+            "passed": true,
+            "expected": 1320.0,
+            "actual": "1320.0"
+          },
+          {
+            "name": "2026-01.gross_margin",
+            "passed": true,
+            "expected": 0.37714285714285717,
+            "actual": "0.37714285714285717"
+          },
+          {
+            "name": "2026-02.revenue",
+            "passed": true,
+            "expected": 4000.0,
+            "actual": "4000.0"
+          },
+          {
+            "name": "2026-02.cost",
+            "passed": true,
+            "expected": 2700.0,
+            "actual": "2700.0"
+          },
+          {
+            "name": "2026-02.orders",
+            "passed": true,
+            "expected": 3,
+            "actual": "3"
+          },
+          {
+            "name": "2026-02.gross_profit",
+            "passed": true,
+            "expected": 1300.0,
+            "actual": "1300.0"
+          },
+          {
+            "name": "2026-02.gross_margin",
+            "passed": true,
+            "expected": 0.325,
+            "actual": "0.325"
+          },
+          {
+            "name": "2026-03.revenue",
+            "passed": true,
+            "expected": 4300.0,
+            "actual": "4300.0"
+          },
+          {
+            "name": "2026-03.cost",
+            "passed": true,
+            "expected": 3180.0,
+            "actual": "3180.0"
+          },
+          {
+            "name": "2026-03.orders",
+            "passed": true,
+            "expected": 3,
+            "actual": "3"
+          },
+          {
+            "name": "2026-03.gross_profit",
+            "passed": true,
+            "expected": 1120.0,
+            "actual": "1120.0"
+          },
+          {
+            "name": "2026-03.gross_margin",
+            "passed": true,
+            "expected": 0.26046511627906976,
+            "actual": "0.26046511627906976"
+          },
+          {
+            "name": "2026-04.revenue",
+            "passed": true,
+            "expected": 5200.0,
+            "actual": "5200.0"
+          },
+          {
+            "name": "2026-04.cost",
+            "passed": true,
+            "expected": 3340.0,
+            "actual": "3340.0"
+          },
+          {
+            "name": "2026-04.orders",
+            "passed": true,
+            "expected": 3,
+            "actual": "3"
+          },
+          {
+            "name": "2026-04.gross_profit",
+            "passed": true,
+            "expected": 1860.0,
+            "actual": "1860.0"
+          },
+          {
+            "name": "2026-04.gross_margin",
+            "passed": true,
+            "expected": 0.3576923076923077,
+            "actual": "0.3576923076923077"
+          },
+          {
+            "name": "矢量图存在",
+            "passed": true
+          },
+          {
+            "name": "报告标注模拟数据",
+            "passed": true
+          }
+        ],
+        "evaluator": "independent arithmetic + artifact presence; report insight not scored",
+        "artifact_hashes": {
+          "step1_clean.csv": "7e6cbc82b564f901f3958e2ec28d58fa5ae2867448efd8e06afd1e4cf51c0026",
+          "step2_monthly_summary.csv": "a2a0524e5ba15ad02d37b77ae6b6fd3ade0c4450dd93d55b1bab18009e1b7027",
+          "step3_figure.svg": "aa802336e362338673ed66a6c917a6eeab98a6a1e4d6b62cee0185af7668ac9e",
+          "step3_report.md": "b8b1a1c25aaadacfae40fba795575d08459fabf878ca513f4f188c6ce4b38f94"
+        }
+      },
+      "cost_yuan": 0.076418,
+      "status": "COMPLETED",
+      "acceptance": {
+        "state": "passed",
+        "failed": 0,
+        "unknown": 0,
+        "checks_passed": 26,
+        "checks_total": 26,
+        "semantic_passed": 3,
+        "semantic_total": 3
+      }
+    },
+    {
+      "id": "operating-review-holdout",
+      "task_sha256": "6db3b947829b9cc28b47c0f88a22409233e3c770b3112b685ad662ab150ba2f0",
+      "repeat": 0,
+      "mode": "before",
+      "run_id": "b4ba4ba2-20261008-175432-fe57",
+      "score": 1.0,
+      "oracle": {
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "月份完整且无额外月份",
+            "passed": true
+          },
+          {
+            "name": "2026-05.revenue",
+            "passed": true,
+            "expected": 1000.0,
+            "actual": "1000.0"
+          },
+          {
+            "name": "2026-05.cost",
+            "passed": true,
+            "expected": 720.0,
+            "actual": "720.0"
+          },
+          {
+            "name": "2026-05.orders",
+            "passed": true,
+            "expected": 2,
+            "actual": "2"
+          },
+          {
+            "name": "2026-05.gross_profit",
+            "passed": true,
+            "expected": 280.0,
+            "actual": "280.0"
+          },
+          {
+            "name": "2026-05.gross_margin",
+            "passed": true,
+            "expected": 0.28,
+            "actual": "0.28"
+          },
+          {
+            "name": "2026-06.revenue",
+            "passed": true,
+            "expected": 2000.0,
+            "actual": "2000.0"
+          },
+          {
+            "name": "2026-06.cost",
+            "passed": true,
+            "expected": 1480.0,
+            "actual": "1480.0"
+          },
+          {
+            "name": "2026-06.orders",
+            "passed": true,
+            "expected": 3,
+            "actual": "3"
+          },
+          {
+            "name": "2026-06.gross_profit",
+            "passed": true,
+            "expected": 520.0,
+            "actual": "520.0"
+          },
+          {
+            "name": "2026-06.gross_margin",
+            "passed": true,
+            "expected": 0.26,
+            "actual": "0.26"
+          },
+          {
+            "name": "2026-07.revenue",
+            "passed": true,
+            "expected": 3000.0,
+            "actual": "3000.0"
+          },
+          {
+            "name": "2026-07.cost",
+            "passed": true,
+            "expected": 1900.0,
+            "actual": "1900.0"
+          },
+          {
+            "name": "2026-07.orders",
+            "passed": true,
+            "expected": 2,
+            "actual": "2"
+          },
+          {
+            "name": "2026-07.gross_profit",
+            "passed": true,
+            "expected": 1100.0,
+            "actual": "1100.0"
+          },
+          {
+            "name": "2026-07.gross_margin",
+            "passed": true,
+            "expected": 0.36666666666666664,
+            "actual": "0.36666666666666664"
+          },
+          {
+            "name": "矢量图存在",
+            "passed": true
+          },
+          {
+            "name": "报告标注模拟数据",
+            "passed": true
+          }
+        ],
+        "evaluator": "independent arithmetic + artifact presence; report insight not scored",
+        "artifact_hashes": {
+          "step1_clean.csv": "11f8c678764b8745de2514370277d5e75644e33c6b51c27229c08a82745e0441",
+          "step2_monthly_summary.csv": "27965aaf60bdbf607c16234161f0678b439225d6cfb5063c76c96f3d3608b6bd",
+          "step3_figure.svg": "ccf6d2b6b1d23dd115ffff9e6767af80de6860455eddb0b13a261276440e6b62",
+          "step3_report.md": "6f9f0e63f2bdae67701ccff4e2118ca616ba52385d3d30ef6871a311659a27e4"
+        }
+      },
+      "cost_yuan": 0.079012,
+      "status": "COMPLETED",
+      "acceptance": {
+        "state": "passed",
+        "failed": 0,
+        "unknown": 0,
+        "checks_passed": 26,
+        "checks_total": 26,
+        "semantic_passed": 3,
+        "semantic_total": 3
+      }
+    },
+    {
+      "id": "operating-review-holdout",
+      "task_sha256": "6db3b947829b9cc28b47c0f88a22409233e3c770b3112b685ad662ab150ba2f0",
+      "repeat": 0,
+      "mode": "after",
+      "run_id": "b4ba4ba2-20261008-175459-7713",
+      "score": 1.0,
+      "oracle": {
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "月份完整且无额外月份",
+            "passed": true
+          },
+          {
+            "name": "2026-05.revenue",
+            "passed": true,
+            "expected": 1000.0,
+            "actual": "1000.0"
+          },
+          {
+            "name": "2026-05.cost",
+            "passed": true,
+            "expected": 720.0,
+            "actual": "720.0"
+          },
+          {
+            "name": "2026-05.orders",
+            "passed": true,
+            "expected": 2,
+            "actual": "2"
+          },
+          {
+            "name": "2026-05.gross_profit",
+            "passed": true,
+            "expected": 280.0,
+            "actual": "280.0"
+          },
+          {
+            "name": "2026-05.gross_margin",
+            "passed": true,
+            "expected": 0.28,
+            "actual": "0.28"
+          },
+          {
+            "name": "2026-06.revenue",
+            "passed": true,
+            "expected": 2000.0,
+            "actual": "2000.0"
+          },
+          {
+            "name": "2026-06.cost",
+            "passed": true,
+            "expected": 1480.0,
+            "actual": "1480.0"
+          },
+          {
+            "name": "2026-06.orders",
+            "passed": true,
+            "expected": 3,
+            "actual": "3"
+          },
+          {
+            "name": "2026-06.gross_profit",
+            "passed": true,
+            "expected": 520.0,
+            "actual": "520.0"
+          },
+          {
+            "name": "2026-06.gross_margin",
+            "passed": true,
+            "expected": 0.26,
+            "actual": "0.26"
+          },
+          {
+            "name": "2026-07.revenue",
+            "passed": true,
+            "expected": 3000.0,
+            "actual": "3000.0"
+          },
+          {
+            "name": "2026-07.cost",
+            "passed": true,
+            "expected": 1900.0,
+            "actual": "1900.0"
+          },
+          {
+            "name": "2026-07.orders",
+            "passed": true,
+            "expected": 2,
+            "actual": "2"
+          },
+          {
+            "name": "2026-07.gross_profit",
+            "passed": true,
+            "expected": 1100.0,
+            "actual": "1100.0"
+          },
+          {
+            "name": "2026-07.gross_margin",
+            "passed": true,
+            "expected": 0.36666666666666664,
+            "actual": "0.36666666666666664"
+          },
+          {
+            "name": "矢量图存在",
+            "passed": true
+          },
+          {
+            "name": "报告标注模拟数据",
+            "passed": true
+          }
+        ],
+        "evaluator": "independent arithmetic + artifact presence; report insight not scored",
+        "artifact_hashes": {
+          "step1_clean.csv": "1f4c969bfd2e4bb99714303c11090ed90ae346c6b96400bc4254a718e73b7d38",
+          "step1_orders_raw.csv": "dceefb633ad125e0f86353407387e92b33b97f6f661873a4ac1757f6c0c1135b",
+          "step2_monthly_summary.csv": "27965aaf60bdbf607c16234161f0678b439225d6cfb5063c76c96f3d3608b6bd",
+          "step3_figure.svg": "2ca37ff58a4661bd12b550ff9b65e35d81a79b891bdc9c7d127912fe665f18f7",
+          "step3_report.md": "30ccfedb4e1782847769fd06021e1f21527ed0b4030b96dd23cd794934398d8f"
+        }
+      },
+      "cost_yuan": 0.081532,
+      "status": "COMPLETED",
+      "acceptance": {
+        "state": "passed",
+        "failed": 0,
+        "unknown": 0,
+        "checks_passed": 32,
+        "checks_total": 32,
+        "semantic_passed": 3,
+        "semantic_total": 3
+      }
+    },
+    {
+      "id": "operating-review-holdout",
+      "task_sha256": "6db3b947829b9cc28b47c0f88a22409233e3c770b3112b685ad662ab150ba2f0",
+      "repeat": 1,
+      "mode": "before",
+      "run_id": "b4ba4ba2-20261008-175525-dd19",
+      "score": 1.0,
+      "oracle": {
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "月份完整且无额外月份",
+            "passed": true
+          },
+          {
+            "name": "2026-05.revenue",
+            "passed": true,
+            "expected": 1000.0,
+            "actual": "1000.0"
+          },
+          {
+            "name": "2026-05.cost",
+            "passed": true,
+            "expected": 720.0,
+            "actual": "720.0"
+          },
+          {
+            "name": "2026-05.orders",
+            "passed": true,
+            "expected": 2,
+            "actual": "2"
+          },
+          {
+            "name": "2026-05.gross_profit",
+            "passed": true,
+            "expected": 280.0,
+            "actual": "280.0"
+          },
+          {
+            "name": "2026-05.gross_margin",
+            "passed": true,
+            "expected": 0.28,
+            "actual": "0.28"
+          },
+          {
+            "name": "2026-06.revenue",
+            "passed": true,
+            "expected": 2000.0,
+            "actual": "2000.0"
+          },
+          {
+            "name": "2026-06.cost",
+            "passed": true,
+            "expected": 1480.0,
+            "actual": "1480.0"
+          },
+          {
+            "name": "2026-06.orders",
+            "passed": true,
+            "expected": 3,
+            "actual": "3"
+          },
+          {
+            "name": "2026-06.gross_profit",
+            "passed": true,
+            "expected": 520.0,
+            "actual": "520.0"
+          },
+          {
+            "name": "2026-06.gross_margin",
+            "passed": true,
+            "expected": 0.26,
+            "actual": "0.26"
+          },
+          {
+            "name": "2026-07.revenue",
+            "passed": true,
+            "expected": 3000.0,
+            "actual": "3000.0"
+          },
+          {
+            "name": "2026-07.cost",
+            "passed": true,
+            "expected": 1900.0,
+            "actual": "1900.0"
+          },
+          {
+            "name": "2026-07.orders",
+            "passed": true,
+            "expected": 2,
+            "actual": "2"
+          },
+          {
+            "name": "2026-07.gross_profit",
+            "passed": true,
+            "expected": 1100.0,
+            "actual": "1100.0"
+          },
+          {
+            "name": "2026-07.gross_margin",
+            "passed": true,
+            "expected": 0.36666666666666664,
+            "actual": "0.36666666666666664"
+          },
+          {
+            "name": "矢量图存在",
+            "passed": true
+          },
+          {
+            "name": "报告标注模拟数据",
+            "passed": true
+          }
+        ],
+        "evaluator": "independent arithmetic + artifact presence; report insight not scored",
+        "artifact_hashes": {
+          "step1_clean.csv": "40331a9bcacf2106017b67cedc2bb0283c42cfbbfa168d663d19e2856052733a",
+          "step1_orders_raw.csv": "dceefb633ad125e0f86353407387e92b33b97f6f661873a4ac1757f6c0c1135b",
+          "step2_monthly_summary.csv": "27965aaf60bdbf607c16234161f0678b439225d6cfb5063c76c96f3d3608b6bd",
+          "step3_figure.svg": "ebf689015321ca1a510e2184d5fe3ff46653b7410279b3b433517570a56b0572",
+          "step3_report.md": "c11ffd539392c6a409659033394635494710652ae26893c2d6dd5b3e8c8fbe69"
+        }
+      },
+      "cost_yuan": 0.07665,
+      "status": "COMPLETED",
+      "acceptance": {
+        "state": "passed",
+        "failed": 0,
+        "unknown": 0,
+        "checks_passed": 32,
+        "checks_total": 32,
+        "semantic_passed": 3,
+        "semantic_total": 3
+      }
+    },
+    {
+      "id": "operating-review-holdout",
+      "task_sha256": "6db3b947829b9cc28b47c0f88a22409233e3c770b3112b685ad662ab150ba2f0",
+      "repeat": 1,
+      "mode": "after",
+      "run_id": "b4ba4ba2-20261008-175550-2a0e",
+      "score": 1.0,
+      "oracle": {
+        "score": 1.0,
+        "checks": [
+          {
+            "name": "月份完整且无额外月份",
+            "passed": true
+          },
+          {
+            "name": "2026-05.revenue",
+            "passed": true,
+            "expected": 1000.0,
+            "actual": "1000.0"
+          },
+          {
+            "name": "2026-05.cost",
+            "passed": true,
+            "expected": 720.0,
+            "actual": "720.0"
+          },
+          {
+            "name": "2026-05.orders",
+            "passed": true,
+            "expected": 2,
+            "actual": "2"
+          },
+          {
+            "name": "2026-05.gross_profit",
+            "passed": true,
+            "expected": 280.0,
+            "actual": "280.0"
+          },
+          {
+            "name": "2026-05.gross_margin",
+            "passed": true,
+            "expected": 0.28,
+            "actual": "0.28"
+          },
+          {
+            "name": "2026-06.revenue",
+            "passed": true,
+            "expected": 2000.0,
+            "actual": "2000.0"
+          },
+          {
+            "name": "2026-06.cost",
+            "passed": true,
+            "expected": 1480.0,
+            "actual": "1480.0"
+          },
+          {
+            "name": "2026-06.orders",
+            "passed": true,
+            "expected": 3,
+            "actual": "3"
+          },
+          {
+            "name": "2026-06.gross_profit",
+            "passed": true,
+            "expected": 520.0,
+            "actual": "520.0"
+          },
+          {
+            "name": "2026-06.gross_margin",
+            "passed": true,
+            "expected": 0.26,
+            "actual": "0.26"
+          },
+          {
+            "name": "2026-07.revenue",
+            "passed": true,
+            "expected": 3000.0,
+            "actual": "3000.0"
+          },
+          {
+            "name": "2026-07.cost",
+            "passed": true,
+            "expected": 1900.0,
+            "actual": "1900.0"
+          },
+          {
+            "name": "2026-07.orders",
+            "passed": true,
+            "expected": 2,
+            "actual": "2"
+          },
+          {
+            "name": "2026-07.gross_profit",
+            "passed": true,
+            "expected": 1100.0,
+            "actual": "1100.0"
+          },
+          {
+            "name": "2026-07.gross_margin",
+            "passed": true,
+            "expected": 0.36666666666666664,
+            "actual": "0.36666666666666664"
+          },
+          {
+            "name": "矢量图存在",
+            "passed": true
+          },
+          {
+            "name": "报告标注模拟数据",
+            "passed": true
+          }
+        ],
+        "evaluator": "independent arithmetic + artifact presence; report insight not scored",
+        "artifact_hashes": {
+          "step1_clean.csv": "11f8c678764b8745de2514370277d5e75644e33c6b51c27229c08a82745e0441",
+          "step2_monthly_summary.csv": "27965aaf60bdbf607c16234161f0678b439225d6cfb5063c76c96f3d3608b6bd",
+          "step3_figure.svg": "9f8d17e5f05e9fb279ef21eb86c333ed930fbf801aef88457890767bb358abb5",
+          "step3_report.md": "9adcf999811c43d156563367b49981425f67b25a7deede952d3470d7d188345a"
+        }
+      },
+      "cost_yuan": 0.070962,
+      "status": "COMPLETED",
+      "acceptance": {
+        "state": "passed",
+        "failed": 0,
+        "unknown": 0,
+        "checks_passed": 26,
+        "checks_total": 26,
+        "semantic_passed": 3,
+        "semantic_total": 3
+      }
+    }
+  ],
+  "candidate_sha256": "4b94348ae885aceae7b0dd08679a1feafa8503353496ecc67c611078145cc2a2"
+}

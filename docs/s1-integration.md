@@ -19,7 +19,9 @@ flowchart LR
 
 第一阶段建议只接入 `search_skills` 和 `load_skill` 两个发现工具。S1 保持现有模型、工具和执行流程，SkillNet 提供一层可检索的技能能力。`hybrid` 检索不调用模型；只有 S1 请求某个技能时才读取完整正文。
 
-第二阶段再接入 Run Runtime。S1 保存 `user_id / project_id / conversation_id → run_id` 的权限映射，展示执行事件及验收证据。查询、取消和下载都先检查这个映射，然后转发到 SkillNet。当前 SkillNet 的服务令牌不能提供用户或租户隔离。
+社区技能还提供完整资源包：1,769 个包、10,898 个文件，包含原始 SKILL.md、脚本、参考资料和许可证。服务以交付快照登记每个文件的 SHA-256，读取时重新核验。S1 可按需读取，执行授权与依赖安装仍由 S1 管理。正文不是脚本已经可用或已被验证的证明。
+
+第二阶段再接入 Run Runtime。S1 保存 `user_id / project_id / conversation_id → run_id` 的权限映射，展示执行事件及验收证据。查询、取消和下载都先检查这个映射，然后转发到 SkillNet。服务令牌用于服务级访问；启用下面的签名身份后，SkillNet 会对 Run、产物、列表、跨轮文件和候选进行同一租户/用户/项目检查。S1 仍应在自己的业务权限层验证当前用户可访问的项目。
 
 ## 可运行的技能工具
 
@@ -61,13 +63,46 @@ with SkillNetClient(config) as client:
 | 服务健康 | `GET /api/health` | `health()` | 可检测模型是否已配置、是否需要令牌 |
 | 技能检索 | `POST /api/search` | `search(query, k=5, mode="hybrid")` | 发送单档 `modes`；Fabric 会调用模型，需显式选择 |
 | 技能正文 | `GET /api/skill/{name}` | `load_skill(name)` | 返回 `skill` 与 `markdown` |
+| 社区资源清单 | `GET /api/skill/{name}/package` | `get_skill_package(name)` | 来源、固定提交、许可证、逐文件指纹；SDK 校验清单摘要 |
+| 社区资源读取 | `GET /api/skill/{name}/resource?path=...` | `read_skill_resource(name, path, expected_sha256=...)` | 仅允许登记路径，文件最大 2 MB，篡改后拒绝交付；不会执行 |
 | 创建执行 | `POST /api/runs` | `create_run(task, **budgets)` | 后台执行，立即返回独立 `run_id` |
 | 查询执行 | `GET /api/runs/{run_id}` | `get_run(run_id)` | 含步骤、预算、成本、验收与产物元数据 |
+| 项目证据包 | `GET /api/runs/{run_id}/evidence` | `get_evidence(run_id)` | 交付、版本、文件血缘、验收范围与成本；SDK 核对包摘要 |
 | 实时事件 | `GET /api/runs/{run_id}/stream` | `iter_run_events(run_id)` | SSE，支持 heartbeat、事件 ID 与 `end` |
 | 请求取消 | `POST /api/runs/{run_id}/cancel` | `cancel_run(run_id)` | 在执行检查点停止 |
 | 下载产物 | `GET /api/runs/{run_id}/artifacts/{name}` | `download_artifact(...)` | 有大小上限，可对照 manifest 的 SHA-256 |
 
 契约清单由 `integration_manifest()` 返回，区分已支持的服务能力与尚未验证的线上连接。完整服务请求模型可通过 `/openapi.json` 检查。
+
+## 将完整技能资源接入 S1 Agent
+
+默认仍声明两个发现工具。显式使用 `skill_tools(include_resources=True)`，可增加 `list_skill_resources` 与 `read_skill_resource`，通过同一个 `call_tool` 分发。后者先核对登记清单，再读取至多 64 KB 的 UTF-8 文件，结果标记 `kind="untrusted_reference_data"` 和 `executed=false`。较大的或二进制资源由后端下载：
+
+```python
+manifest = client.get_skill_package("gh-scientific-13c-metabolic-flux-d6d252")
+reference = next(f for f in manifest["files"] if f["path"].startswith("references/"))
+raw = client.read_skill_resource(manifest["name"], reference["path"],
+                                expected_sha256=reference["sha256"])
+# 作为已核对来源的参考文件交给 Agent；依赖安装和代码执行走 S1 的独立授权。
+```
+
+资源被修改返回 HTTP 409，未登记返回 404，非法路径返回 422；没有退回读取任意磁盘文件的路径。资源不来自 S1 私有项目，因此是共享能力目录，运行产物仍走签名项目权限。真实服务传输验证见 [资源包记录](../out/skill-resources-smoke.json)。
+
+## 将执行结果交回 S1 项目
+
+```python
+capsule = client.get_evidence(run_id)
+if capsule["handoff_ready"]:
+    for item in capsule["files"]:
+        raw = client.download_artifact(run_id, item["name"], expected_sha256=item["sha256"])
+        # 将 raw 和来源/验收范围存入当前 S1 项目附件系统。
+```
+
+证据包使用 `skillnet-evidence-v1`：包含任务和步骤、执行前技能指纹（历史未记录则明确留空）、代码指纹、真实输入输出关系、逐文件 SHA-256、结果判据范围、实际费用与候选状态。服务每次读取证据包重新计算登记文件的指纹；SDK 校验文档的 `capsule_sha256`。文件本体不嵌入包中，需另行逐个核验下载。
+
+新增可选 `routing` 字段用于 S1 呈现技能自检索：推荐、编排采用、进入执行、通用步骤、候选与理由分别记录，理由标为模型建议。数据来自运行时记录；历史缺失字段保留为空，不按当前技能库补写。该字段不证明已选出全库最优组合或技能贡献。
+
+`handoff_ready` 只表示终态记录的登记文件完整，部分完成的任务也可以交回已有附件；它不表示整体任务成功。`scope_verified` 只支持执行时冻结的已测范围，不能代替研究结论或用户验收。签名身份沿用现有 Run 权限，包括证据包。真实模拟科研执行、SDK 下载与独立重算见 [科研生态记录](../out/research-ecosystem-smoke.json)。
 
 ## 有预算的运行
 
@@ -102,11 +137,32 @@ with SkillNetClient(config) as client:
 
 客户端不会自动重试创建和取消请求。创建请求超时意味着服务端可能已经接受任务；调用方应查询或对账，避免再次创建并重复扣费。SSE 客户端能发送 `last_event_id`，实际回放行为以部署版本的事件接口为准；S1 的展示端应按事件 ID 去重。
 
+连续追问应携带真实产物引用，摘要只提供对话背景：
+
+```python
+# current 为同一签名身份已完成的上轮 Run。
+source = next(a for a in current["artifacts"] if a["name"].endswith("monthly_summary.csv"))
+followup = client.create_run(
+    "读取 monthly_summary.csv，保留原值并按毛利率升序生成 risk.csv。",
+    max_steps=1, max_cost_yuan=0.8,
+    history=[{"q": current["task"], "a": "已生成月度汇总。", "run_id": current["run_id"]}],
+    artifact_refs=[{"run_id": current["run_id"], "name": source["name"], "sha256": source["sha256"]}],
+)
+```
+
+`history` 最多 20 项，`artifact_refs` 最多 16 项；后端检查来源身份、登记文件与 SHA-256，再将确切版本传给执行步骤。原值投影与排序契约由服务端独立比较输入和输出。真实 SDK 联调与独立文件核验见 [业务追问证据](../out/business-followup-evidence.json)。复核已发布记录无需模型调用：
+
+```bash
+python tools/business_followup_smoke.py --business-run b5492bb7-20261008-174014-44aa --followup-run 02f80093-20261008-175420-f527
+```
+
+省略已有 Run 参数会新建付费任务，两个预算分别为 ¥1.20 / ¥0.80。此工具验证 SkillNet 服务客户端，不等同于目标 S1 的 SSO 与业务权限联调。
+
 错误通过 `IntegrationError.code` 分类为 `unauthorized`、`forbidden`、`not_found`、`invalid_request`、`rate_limited`、`unavailable`、`timeout`、`transport_error`、`invalid_response`、`response_too_large` 或 `digest_mismatch`，并保留 HTTP 状态与 `X-Request-ID`。错误不会回显上游响应正文、模型密钥或任务内容。连接不会携带服务令牌跟随重定向。
 
 ## 部署与验收
 
-当前运行状态及事件总线属于单进程服务，应以单个 Uvicorn worker 部署。多进程扩容需要共享任务队列、数据库状态和跨进程事件投递；复制 worker 不能直接提供这些能力。
+默认线程模式使用单个 API 进程。设置 `SKILLNET_WORKER_MODE=external` 时，API 只持久化入队，独立执行进程通过 SQLite 租约领取任务，SSE 读取持久化检查点。当前是单主机、一个技能库写入 worker；进程锁防止第二个写入 worker。API 与 worker 必须共享相同的 out/data 路径。跨主机扩容不在此实现范围内。
 
 当前代码执行使用主机子进程，目录、超时及输出限制不等同于容器或操作系统安全隔离。接入公司业务环境前，将执行 worker 放入独立容器/低权限账号，限制网络、文件系统和资源；S1 的登录会话与业务数据库凭据不应传入模型生成的执行程序。
 
@@ -125,3 +181,40 @@ python -m pytest tests/test_integration.py tests/test_orchestration_contract.py 
 ```
 
 测试使用 `httpx.MockTransport` 验证真实 HTTP 请求格式、工具分发、服务令牌、异常分类、超时不重试、SSE、摘要与正文分离、产物 SHA-256 和大小限制；不会访问 S1 或消耗模型额度。
+
+
+## 签名身份与独立执行（本轮新增）
+
+在 API 与 S1 后端的密钥配置中设置同一个 `SKILLNET_S1_SIGNING_KEY`（至少 32 字符）；不要传给浏览器。签名涵盖方法、路径、正文 SHA-256、时间戳、随机 nonce 和租户/用户/项目 ID，120 秒有效，变更请求的 nonce 被 SQLite 持久化去重。相同签名写请求再次提交返回 409；请求超时后应先对账，不能假定没有创建任务。
+
+```python
+import os
+from skillnet.integration import ClientConfig, SkillNetClient
+from skillnet.s1_identity import S1Context
+
+# ID 由 S1 已认证的后端上下文提供，不接受浏览器自行指定。
+identity = S1Context(tenant="company", user="stable-user-id", project="stable-project-id")
+with SkillNetClient(ClientConfig(token=os.environ["SKILLNET_TOKEN"]),
+                    identity=identity, signing_key=os.environ["SKILLNET_S1_SIGNING_KEY"]) as client:
+    records = client.get_run("known-run-id")
+```
+
+PowerShell 部署示例（两个终端使用同一配置）：
+
+```powershell
+$env:SKILLNET_WORKER_MODE='external'
+$env:SKILLNET_SANDBOX='docker'
+$env:SKILLNET_SANDBOX_IMAGE='skillnet-executor:local'
+# 在密钥存储中另配 SKILLNET_TOKEN、SKILLNET_S1_SIGNING_KEY、DEEPSEEK_API_KEY
+docker build -f deploy/Dockerfile.executor -t skillnet-executor:local .
+# 终端 1
+python -m uvicorn server:app --host 127.0.0.1 --port 8848
+# 终端 2
+python -m skillnet.worker
+```
+
+可用 `SKILLNET_OUT_DIR` 和 `SKILLNET_DATA_DIR` 配置共享的本机目录。宿主进程模式是 `SKILLNET_SANDBOX=process`；Docker 模式不可用时不会回退。已发出的模型请求仍在其调用预算内结束；worker 租约丢失只标记中断并保留检查点，不静默重复收费。
+
+Linux API / worker 使用拥有上述目录的非 root 账号。执行容器沿用该 UID / GID，避免 bind mount 无法写入；root worker 会明确报错，不将目录改为全员可写。Docker 限制已在 Linux CI 中实际验证，包含连续文件传递和超时终止，见 [容器实测](../out/docker-smoke.json)；Windows Docker 与公司环境仍需分别验证。
+
+本机真实测试覆盖排队后 API 重启、执行期间 API 重启、取消、不同签名身份的 Run/产物隔离以及终态 SSE 回放，见 `out/deployment-smoke.json`。这不替代目标 S1 的 SSO、真实项目权限、附件系统及生产网络验收；线上状态仍为未验证。

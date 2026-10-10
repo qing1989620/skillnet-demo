@@ -156,9 +156,12 @@
   .tabs{display:none}
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=0.9.0-product"></script>
+<script src="/static/assets/ui.js?v=20261010.4"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=0.9.0-product"></script>
+<script src="/static/assets/product.js?v=20261010.4"></script>
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261010.4">
+<link rel="stylesheet" href="/static/assets/quality.css?v=20261010.4">
+<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261010.4">
 </head>
 <body>
 <header>
@@ -177,6 +180,7 @@
     <span class="kv">步骤 <b id="stepstat">0/0</b></span>
     <span class="stream-state" id="stream-state" role="status">正在读取记录</span>
     <button class="ui-settings-btn" data-connection-settings>连接设置</button>
+    <button id="focus-view" type="button" aria-pressed="false">集中查看</button>
     <button id="cancel" class="danger">取消运行</button>
   </div>
 </header>
@@ -285,7 +289,7 @@ async function refresh(){
   $("budget").textContent = "¥" + (RUN.budget?.max_cost_yuan ?? 0.2).toFixed(2);
   if(!SELECTED && RUN.steps?.length)SELECTED={kind:"step",idx:RUN.steps[0].idx};
   renderGraph(); renderTimelineMeta();
-  const m=Product.metrics(RUN);let proof=document.getElementById("run-proof");if(!proof){proof=document.createElement("div");proof.id="run-proof";proof.className="run-proof";$("task").parentNode.appendChild(proof);}proof.textContent=`程序验收 ${m.passed}/${m.checks} · 语义确认 ${m.confirmed}/${m.semantic} · ${m.gate.eligible===false?"学习未准入："+m.gate.reason:m.gate.eligible===true?"具备学习准入证据":"尚未记录学习结论"}`;
+  const m=Product.metrics(RUN);let proof=document.getElementById("run-proof");if(!proof){proof=document.createElement("div");proof.id="run-proof";proof.className="run-proof";$("task").parentNode.appendChild(proof);}proof.innerHTML=`程序验收 ${m.passed}/${m.checks} · 语义确认 ${m.confirmed}/${m.semantic} · ${m.gate.eligible===false?"学习未准入："+m.gate.reason:m.gate.eligible===true?"具备学习准入证据":"尚未记录学习结论"} <button type="button" data-run-value data-run="${esc(RUN.run_id)}">交付与证据 ↗</button>`;
   if (SELECTED) renderInspector();
   const done = TERMINAL.includes(RUN.status);
   $("cancel").disabled = done;
@@ -462,14 +466,15 @@ function renderInspector(){
   else if(SELECTED.kind==='event'){ $('inswhat').textContent='原始事件';host.innerHTML=`<div class="ins-sec"><div class="ins-k">${esc(SELECTED.event.type)}</div><pre>${esc(JSON.stringify(SELECTED.event,null,2))}</pre></div>`;}
   else host.innerHTML = '<div class="empty">—</div>';
 }
+document.addEventListener('kernel-step-focus',event=>{SELECTED={kind:'step',idx:event.detail.idx};renderInspector();document.querySelector('[data-t="inspect"]')?.click();});
 function stepHtml(s){
   const st = STEP_STATE(s);
   const q = RUN.retrieval && RUN.retrieval.selected ? RUN.retrieval.selected.indexOf(s.skill) : -1;
   const rk = (RUN.ranking||[]).find(r => r.name === s.skill);
   const attempts = (s.attempts||[]).map(a => `
     <div class="layer ${a.ok?"l1":"l3"}">
-      <div class="lh"><span>Attempt #${a.n} ${a.ok?"PASSED":"FAILED"}</span><span>${fmtMs(a.duration_ms||0)}${a.error_kind?` · ${esc(a.error_kind)}`:""}</span></div>
-      ${a.stderr?`<pre style="max-height:130px">${esc(a.stderr.slice(-700))}</pre>`:""}
+      <div class="lh"><span>Attempt #${a.n} ${a.ok?"执行成功":"执行失败"} · 验收 ${esc(a.acceptance?.state||"见检查记录")}</span><span>${fmtMs(a.duration_ms||0)}${a.error_kind?` · ${esc(a.error_kind)}`:""}</span></div>
+      ${a.code_diff?`<details><summary>为什么修复 · 查看代码差异</summary><p>${esc(a.repair_reason||"")}</p><pre class="repair-diff">${esc(a.code_diff)}</pre></details>`:""}${a.stderr?`<pre style="max-height:130px">${esc(a.stderr.slice(-700))}</pre>`:""}
       ${a.stdout?`<pre style="max-height:130px">${esc(a.stdout.slice(0,700))}</pre>`:""}
     </div>`).join("") || '<div class="empty">尚无尝试</div>';
   const l1 = (s.checks||[]).filter(c => !String(c.name).startsWith("[技能断言]"));
@@ -479,7 +484,7 @@ function stepHtml(s){
       <span>${esc(c.name||c.item)}${c.detail?` <span style="color:var(--ink3)">— ${esc(c.detail)}</span>`:""}
       ${c.evidence?` <span style="color:var(--ink3)">— ${esc(c.evidence)}</span>`:""}</span></div>`).join("") || '<div class="empty">（无）</div>';
   const stageRows = Object.entries(s.stages||{}).sort((a,b)=>b[1]-a[1]).map(([k,v]) =>
-      `<div class="row"><span>${esc(k)}</span><b>${k.endsWith("_ms")?fmtMs(v):v}</b></div>`).join("") || '<div class="empty">（无细分数据）</div>';
+      `<div class="row"><span>${esc(({code_gen_ms:'代码生成',verify_sem_ms:'语义复核',verify_det_ms:'文件与断言检查',syntax_check_ms:'语法预检',llm_calls:'模型调用次数',llm_cost_yuan:'已记录模型费用（元）'})[k]||k.replace(/^sandbox_try(\d+)_ms$/,'第 $1 次执行'))}</span><b>${k.endsWith("_ms")?fmtMs(v):v}</b></div>`).join("") || '<div class="empty">（无细分数据）</div>';
   const arts = (s.artifacts||[]).map(a => `<div class="row"><a href="${API}/api/runs/${RUN.run_id}/artifacts/${encodeURIComponent(a.name)}" target="_blank">${esc(a.name)}</a><b>${(a.bytes/1024).toFixed(1)} KB</b></div>`).join("") || '<div class="empty">（无）</div>';
   return `
   <div class="ins-sec">
@@ -505,7 +510,7 @@ function stepHtml(s){
     <div class="layer l2"><div class="lh"><span>L2 · 技能断言 — ASSERTIONS</span><span>${l2.filter(c=>c.passed).length}/${l2.length}</span></div>${chk(l2)}</div>
     <div class="layer l3"><div class="lh"><span>L3 · 语义评审 — SEMANTIC REVIEW</span><span>${l3.filter(c=>c.passed).length}/${l3.length}</span></div>
       <div class="note" style="border-style:solid;margin:0 0 6px">由模型判定，且<b>与被评者是同一模型</b>——只作参考，不构成独立证据。</div>${chk(l3)}</div>
-    ${s.verify_skip_reason?`<div class="note">${esc(s.verify_skip_reason)}</div>`:""}
+    ${s.verify_skip_reason&&!l3.length?`<div class="note">${esc(s.verify_skip_reason)}</div>`:""}
   </div>
   <div class="ins-sec"><div class="ins-k">产物文件</div>${arts}</div>
   <div class="ins-sec"><div class="ins-k">生成的代码</div>
@@ -541,6 +546,7 @@ function openRunTab(name){
 }
 function inspectMobile(){if(innerWidth<=860)openRunTab('inspect');}
 document.querySelectorAll('#tabs button').forEach(button=>button.onclick=()=>openRunTab(button.dataset.t));
+document.getElementById('focus-view').onclick=function(){const active=document.body.classList.toggle('run-focus');this.setAttribute('aria-pressed',String(active));this.textContent=active?'恢复全景':'集中查看';if(active)openRunTab('inspect');};
 
 /* ---------- Agent 最终回复（Markdown 轻渲染，先 esc 再处理标记） ---------- */
 const mdToHtml = md => {
