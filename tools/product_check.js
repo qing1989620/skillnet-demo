@@ -41,6 +41,21 @@ const assessed={...run,staged:{learning_gate:{mode:'shadow',eligible:false},
     integrity:[],network:{applied:false,reason:'保留观察'},task_sha256:'task',evidence_sha256:'proof'},
   shadow_feedback:{rows:[{name:'<img>',exploit_before:.5,exploit_after:.5,shadow_delta:null,weight:0}]}}};
 const assessment=Product.assessmentHTML(assessed);
+const gates=Array.from({length:12},(_,i)=>({id:String(i),title:'门'+i,rule:'<script>',reason:'<img>',status:i<4?'passed':'unknown',evidence:{value:'<iframe>'}}));
+const decision={eligible:false,gates,version:'test',policy_sha256:'rules',audit_sha256:'audit'};
+const gateHTML=Product.rewardGatesHTML(decision);
+assert.match(gateHTML,/4<small> \/ 12/);
+assert.match(gateHTML,/AND/);
+assert.match(gateHTML,/奖励暂不发放/);
+assert.match(gateHTML,/8 道待证据/);
+assert.equal((gateHTML.match(/<li class="reward-gate /g)||[]).length,12);
+assert.doesNotMatch(gateHTML,/<script>|<img>|<iframe>/);
+assert.match(Product.rewardGatesHTML({...decision,eligible:true}),/奖励暂不发放/,'eligibility flag cannot hide missing gates');
+assert.match(Product.rewardGatesHTML({...decision,eligible:true,gates:gates.map(g=>({...g,status:'passed'}))}),/全部通过 · 具备领奖资格/);
+assert.match(Product.assessmentHTML({...assessed,staged:{...assessed.staged,reward_gates:decision}}),/十二道奖励门禁/);
+assert.match(Product.rewardReceiptHTML({stats:{}}),/尚无通过十二道门/);
+assert.match(Product.rewardReceiptHTML({stats:{verified_improvement_receipt:{points:12.5,scope:'<script>',candidate_sha256:'version'}}}),/12.50/);
+assert.doesNotMatch(Product.rewardReceiptHTML({stats:{verified_improvement_receipt:{scope:'<script>'}}}),/<script>/);
 assert.match(assessment,/结果判据不足/);
 assert.match(assessment,/整体任务质量与用户满意度：尚未确认/);
 assert.match(assessment,/未确认 · 不分配奖励/);
@@ -59,6 +74,22 @@ assert.equal(measuredRun.judge.weighted,unmeasuredRun.judge.weighted);
 assert.match(Product.assessmentHTML(measuredRun),/已测范围通过/);
 assert.match(Product.assessmentHTML(unmeasuredRun),/结果判据不足/);
 assert.equal(measuredRun.staged.shadow_feedback.policy_state_sha256,unmeasuredRun.staged.shadow_feedback.policy_state_sha256);
+const gateManifest=JSON.parse(fs.readFileSync(path.join(__dirname,'../docs/evidence/reward-gates-files.json'),'utf8'));
+for(const record of gateManifest){
+  const raw=fs.readFileSync(path.join(__dirname,'..',record.path));
+  assert.equal(require('node:crypto').createHash('sha256').update(raw).digest('hex'),record.sha256);
+}
+const gateProof=JSON.parse(fs.readFileSync(path.join(__dirname,'../out/reward-gates-smoke.json'),'utf8'));
+for(const [rid,passed] of [[gateProof.business_run_id,4],[gateProof.unmeasured_run_id,3]]){
+  const actual=JSON.parse(fs.readFileSync(path.join(__dirname,'../out/runs',rid+'.json'),'utf8'));
+  assert.equal(actual.staged.reward_gates.passed,passed);
+  assert.equal(actual.staged.reward_gates.eligible,false);
+  assert.match(Product.assessmentHTML(actual),/真正提升，才能领奖/);
+}
+const failedRun=JSON.parse(fs.readFileSync(path.join(__dirname,'../out/runs',gateProof.failed_run_id+'.json'),'utf8'));
+assert.equal(failedRun.status,'PARTIAL');
+assert.equal(failedRun.staged.reward_gates.eligible,false);
+assert.match(Product.assessmentHTML(failedRun),/奖励暂不发放/);
 for(const name of ['briefing','chat','app','run','graph','index']){
   const html=fs.readFileSync(path.join(__dirname,'../web',name+'.html'),'utf8');
   assert.ok(html.includes('/static/assets/product.js'),name+' uses shared evidence');

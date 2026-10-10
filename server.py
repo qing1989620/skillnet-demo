@@ -64,9 +64,18 @@ WEB_DIR = ROOT / "web"
 
 @asynccontextmanager
 async def _lifespan(application: FastAPI):
-    _startup()
-    _startup_sweep()
-    yield
+    writer_lock = None
+    if WORKER_MODE != 'external':
+        from skillnet.worker import acquire_writer_lock
+        config.OUT_DIR.mkdir(parents=True,exist_ok=True)
+        writer_lock = acquire_writer_lock(config.OUT_DIR/'worker.lock')
+    try:
+        _startup()
+        _startup_sweep()
+        yield
+    finally:
+        if writer_lock is not None:
+            writer_lock.close()
 
 
 app = FastAPI(
@@ -319,9 +328,21 @@ def learning_candidates(request: Request):
             origin = run_store().get(record.get('origin_run_id',''))
             if origin is None or origin.staged.get('s1_identity') != identity:
                 continue
+        published = lib().get(record['skill']['name'])
+        receipt = published.stats.get('verified_improvement_receipt') if published else None
+        if receipt and receipt.get('candidate_sha256') != record['sha256']:
+            receipt = None
         rows.append({'name':record['skill']['name'],'state':record['state'], 'sha256':record['sha256'],
-                     'origin_run_id':record.get('origin_run_id'), 'promotion_policy':record.get('promotion_policy')})
+                     'origin_run_id':record.get('origin_run_id'), 'promotion_policy':record.get('promotion_policy'),
+                     'reward_receipt':receipt or record.get('reward_receipt'), 'reward_audit':record.get('reward_audit'),
+                     'reward_committed':bool(receipt)})
     return {'items':rows, 'total':len(rows)}
+
+
+@app.get('/api/learning/reward-policy', dependencies=[Depends(require_token)])
+def reward_policy():
+    from skillnet import reward_gates
+    return dict(policy=reward_gates.policy(), sha256=reward_gates.policy_sha256())
 
 
 @app.get("/api/auth/check", dependencies=[Depends(require_token)])
@@ -384,6 +405,7 @@ def graph() -> dict[str, Any]:
             "id": s.name, "domain": s.domain, "generation": s.generation,
             "source": s.source, "pulls": int(s.stats.get("pulls", 0)),
             "mean_reward": round(s.mean_reward, 3),
+            "verified_improvement_points": s.stats.get('verified_improvement_points', 0),
         }
         for s in lib()
     ]
@@ -1467,9 +1489,12 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
             quality = assessment.assess(run, workspace, lib())
             shadow = assessment.shadow_feedback(b, run.task, quality)
             run.staged["quality_assessment"] = quality
+            from skillnet import reward_gates
+            gates = reward_gates.observation_gates(run, quality)
+            run.staged["reward_gates"] = gates
             run.staged["shadow_feedback"] = shadow
             run.feedback = shadow["rows"]
-            BUS.publish(run, "evaluation.completed", assessment=quality, shadow=shadow)
+            BUS.publish(run, "evaluation.completed", assessment=quality, shadow=shadow, reward_gates=gates)
             j = _judge_evidence(score_plan(run.task, run.plan, []))
             run.judge = j
             reward = None
@@ -1477,6 +1502,7 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
             candidate_score = quality["candidate_score"]
             run.staged["learning_gate"] = {"eligible": False, "mode": "shadow",
                 "network_updated": False, "candidate_eligible": quality["candidate_eligible"],
+                "reward_eligible": gates['eligible'], "reward_points": 0, "blockers": gates['blockers'],
                 "evidence_sha256": quality["evidence_sha256"], "skip_reason": learning_skip}
             adopted = sorted({s.skill for s in run.steps if s.skill and s.status == runtime.STEP_DONE})
             BUS.publish(run, "judge.completed", weighted=j.get("weighted") if j.get("score_valid", True) else None,
@@ -1495,6 +1521,7 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                 origin = store.get(artifact.source_run_id) if artifact.source_run_id else None
                 if origin:training_tasks.add(hashlib.sha256(origin.task.strip().encode()).hexdigest())
             evolver.evidence_context = dict(assessment_version=quality['version'],
+                reward_policy_sha256=gates['policy_sha256'],
                 origin_task_sha256=quality['task_sha256'], evidence_sha256=quality['evidence_sha256'],
                 training_task_sha256=sorted(training_tasks), scope=quality['scope'], causal_attribution=False)
             execution_trajectory = json.dumps({'task': run.task, 'steps': [
@@ -1608,6 +1635,15 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                 run.error = "运行异常终止（见服务日志）"
         except Exception as exc:            # 落盘都失败时，至少把错误写进内存对象
             run.error = f"收尾失败：{type(exc).__name__}: {exc}"
+        try:
+            if run.staged.get('quality_assessment'):
+                from skillnet import reward_gates
+                gates = reward_gates.observation_gates(run,run.staged['quality_assessment'])
+                run.staged['reward_gates'] = gates
+                run.staged['learning_gate']['blockers'] = gates['blockers']
+                BUS.publish(run,'evaluation.gates_updated',reward_gates=gates)
+        except Exception:
+            log.exception("run_id=%s 奖励门禁收尾核验失败",run.run_id)
         try:
             BUS.publish(run, "run.finished", status=run.status, duration_ms=run.duration_ms,
                         cost=run.cost_yuan, tokens=run.tokens,

@@ -115,11 +115,11 @@
   }
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=20261009.1"></script>
+<script src="/static/assets/ui.js?v=20261010.1"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=20261009.1"></script>
-<link rel="stylesheet" href="/static/assets/refinement.css?v=20261009.1">
-<link rel="stylesheet" href="/static/assets/quality.css?v=20261009.1">
+<script src="/static/assets/product.js?v=20261010.1"></script>
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261010.1">
+<link rel="stylesheet" href="/static/assets/quality.css?v=20261010.1">
 </head>
 <body>
 <header>
@@ -325,7 +325,7 @@ async function loadSkills(){
   pager.innerHTML=`<button id="skill-prev" ${skillOffset===0?'disabled':''}>上一页</button><span>${Math.floor(skillOffset/60)+1} / ${Math.max(1,Math.ceil(page.total/60))}</span><button id="skill-next" ${skillOffset+rows.length>=page.total?'disabled':''}>下一页</button>`;
   $('skill-prev').onclick=()=>{skillOffset=Math.max(0,skillOffset-60);loadSkills();};$('skill-next').onclick=()=>{skillOffset+=60;loadSkills();};
   $("skills-body").innerHTML = rows.length ? `<table>
-    <tr><th>技能与用途</th><th>领域</th><th>来源</th><th>执行</th><th>历史奖励</th><th>质量依据</th></tr>
+    <tr><th>技能与用途</th><th>领域</th><th>来源</th><th>执行</th><th>历史奖励</th><th>核验提升积分</th><th>质量依据</th></tr>
     ${rows.slice(0, 400).map(s => {
       const st = s.stats || {};
       const tot = st.exec_total || 0, ok = st.exec_ok || 0;
@@ -333,9 +333,10 @@ async function loadSkills(){
         <td>${s.source === "github" ? `<span title="${esc(s.provenance?.repository||'')}">社区收录 · 未验证</span>` : s.source === "seed" ? "种子" : `<span style="color:var(--warn)">演化 G${s.generation||1}</span>`}</td>
         <td>${tot ? `${ok}/${tot}${st.exec_fix?` · fix ${st.exec_fix}`:""}${st.exec_fail?` · <span style="color:var(--bad)">fail ${st.exec_fail}</span>`:""}` : "—"}</td>
         <td>${st.pulls ? Number((st.reward_sum||0)/st.pulls).toFixed(3) : "—"}</td>
+        <td>${st.verified_improvement_receipt?`<b style="color:#267a62">+${Number(st.verified_improvement_points||0).toFixed(2)}</b><small style="display:block">十二门通过 · 限此版本</small>`:'尚未获得'}</td>
         <td style="color:var(--ink3)">${esc(Object.entries(s.quality||{}).map(([k,v])=>`${k.slice(0,4)}:${UI.qualityLabel(v)}`).join(" "))}</td></tr>`;
     }).join("")}</table>` : '<div class="empty">无匹配技能</div>';
-  labelCells('skills-body',['技能','领域','来源','执行记录','平均奖励','质量']);
+  labelCells('skills-body',['技能','领域','来源','执行记录','历史奖励','核验提升积分','质量']);
 }
 function labelCells(id,labels){$(id).querySelectorAll('tr').forEach(row=>row.querySelectorAll('td').forEach((cell,i)=>{cell.dataset.label=labels[i]||'';}));}
 $("q").addEventListener("input",()=>{skillOffset=0;loadSkills();});

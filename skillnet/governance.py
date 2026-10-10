@@ -21,7 +21,7 @@ def evaluation_digest(value) -> str:
 def evaluation_profile() -> dict:
     from . import config
     import os
-    sources = ['pipeline.py','executor.py','contracts.py','checks.py','scenarios.py','llm.py','governance.py']
+    sources = ['pipeline.py','executor.py','contracts.py','checks.py','scenarios.py','llm.py','governance.py','promotion.py','reward_gates.py','assessment.py','runtime.py','schema.py']
     return dict(model=config.MODEL,sandbox=os.environ.get('SKILLNET_SANDBOX','local'),
                 sources={p:hashlib.sha256((Path(__file__).parent/p).read_bytes()).hexdigest() for p in sources})
 
@@ -83,122 +83,10 @@ def quarantine(skill: Skill, directory: Path, *, origin_run_id='') -> dict:
 
 
 def promote(candidate_path: Path, report_path: Path, library) -> Skill:
-    candidate = json.loads(candidate_path.read_text(encoding='utf-8'))
-    report = json.loads(report_path.read_text(encoding='utf-8'))
-    skill = Skill.from_dict(candidate['skill'])
-    if candidate['state'] != 'candidate' or fingerprint(skill) != candidate['sha256']:
-        raise ValueError('Candidate state or content has changed')
-    if report.get('candidate_sha256') != candidate['sha256'] or report.get('evaluation_kind') != 'paired-real-execution':
-        raise ValueError('Report does not evaluate this exact candidate')
-    pairs = report.get('pairs') or []
-    if len(pairs) < 4 or len({p.get('task_sha256') for p in pairs}) < 2:
-        raise ValueError('At least two frozen tasks and four paired executions required')
-    differences = []
-    for pair in pairs:
-        if not pair.get('frozen') or not pair.get('before_run_id') or not pair.get('after_run_id'):
-            raise ValueError('Missing actual frozen run evidence')
-        before, after = pair.get('before'), pair.get('after')
-        if type(before) not in (float, int) or type(after) not in (float, int):
-            raise ValueError('Scores must come from artifact oracles')
-        if not 0 <= before <= after <= 1:
-            raise ValueError('Candidate regressed or score is invalid')
-        differences.append(after-before)
-    if sum(differences) <= 0:
-        raise ValueError('No measured improvement; candidate stays quarantined')
-    if not candidate.get('origin_run_id'):
-        raise ValueError('Missing candidate origin; cannot establish held-out tasks')
-    validate_promotion_design(pairs, candidate)
-    # Recompute from stored runs and physical files; a JSON score is not evidence.
-    from . import config, runtime
-    from .scenarios import scenarios, evaluate_artifacts
-    frozen = {c['task_sha256']: c for c in scenarios() if c['frozen']}
-    plan_sha = report.get('evaluation_plan_sha256') or ''
-    if not re.fullmatch(r'[0-9a-f]{64}',plan_sha):
-        raise ValueError('Missing preregistered evaluation plan')
-    plan_path = config.OUT_DIR/'evaluation_plans'/(plan_sha+'.json')
-    if not plan_path.is_file():raise ValueError('Missing physical evaluation plan')
-    plan = json.loads(plan_path.read_text(encoding='utf-8'))
-    if evaluation_digest(plan) != plan_sha:raise ValueError('Evaluation plan content changed')
-    validate_evaluation_plan(plan,pairs,candidate['sha256'],frozen)
-    baseline = plan['baseline_skill']
-    current_baseline = library.get(baseline['name'])
-    if current_baseline is None or fingerprint(current_baseline) != baseline['sha256']:
-        raise ValueError('Serving baseline changed; rerun the paired evaluation')
-    store = runtime.RunStore(config.OUT_DIR / 'runs')
-    seen_runs = set()
-    for pair in pairs:
-        case = frozen.get(pair['task_sha256'])
-        if case is None:
-            raise ValueError('Unknown frozen task')
-        arms = {}
-        for arm in ('before','after'):
-            run_id = pair[arm + '_run_id']
-            if run_id in seen_runs or not re.fullmatch(r'[a-zA-Z0-9-]+', run_id):
-                raise ValueError('Duplicated or invalid run evidence')
-            seen_runs.add(run_id)
-            run = store.load(run_id)
-            if run is None or run.task.strip() != case['task'].strip() or run.status != 'COMPLETED':
-                raise ValueError('Missing completed frozen run evidence')
-            arms[arm] = run
-            if (run.staged.get('evaluation_plan_sha256') != plan_sha
-                    or run.started_at_ms < plan.get('created_at_ms', float('inf'))
-                    or run.budget.to_dict() != plan.get('budget') or run.model != plan['profile']['model']):
-                raise ValueError('Run does not match the pre-execution evaluation plan')
-            expected_name = skill.name if arm == 'after' else baseline['name']
-            expected_sha = candidate['sha256'] if arm == 'after' else baseline['sha256']
-            if (not run.steps or any(s.skill != expected_name for s in run.steps)
-                    or run.staged.get('evaluated_skill_sha256') != expected_sha):
-                raise ValueError('Evaluated treatment or baseline differs from the frozen plan')
-            if run.run_id == candidate.get('origin_run_id'):
-                raise ValueError('Training run cannot be evaluation evidence')
-            if arm == 'before' and any(s.skill == skill.name for s in run.steps):
-                raise ValueError('Baseline already used this candidate')
-            if arm == 'after' and not any(s.skill == skill.name for s in run.steps):
-                raise ValueError('Candidate was not used by the evaluated run')
-            if arm == 'after' and run.staged.get('evaluated_skill_sha256') != candidate['sha256']:
-                raise ValueError('Run did not record this exact candidate content')
-            if arm == 'after' and (not run.steps or any(s.status != 'done'
-                    or not any(c.required for c in s.checks)
-                    or any(not c.passed for c in s.checks if c.required)
-                    or any(not v.passed for v in s.verifications) for s in run.steps)
-                    or (run.staged.get('execution_scope') or {}).get('omitted')):
-                raise ValueError('Candidate execution was incomplete or failed acceptance')
-            workspace = config.OUT_DIR / 'runs' / run_id
-            for artifact in run.artifacts:
-                path = (workspace / 'artifacts' / artifact.name).resolve()
-                if not path.is_relative_to((workspace / 'artifacts').resolve()) or not path.is_file():
-                    raise ValueError('Missing physical artifact evidence')
-                if hashlib.sha256(path.read_bytes()).hexdigest() != artifact.sha256:
-                    raise ValueError('Artifact evidence changed after evaluation')
-            measured = evaluate_artifacts(case, run, workspace)['score']
-            if abs(measured - pair[arm]) > 1e-9:
-                raise ValueError('Report score disagrees with physical artifact oracle')
-        before, after = arms['before'], arms['after']
-        first, second = (before,after) if pair['repeat'] % 2 == 0 else (after,before)
-        if first.started_at_ms > second.started_at_ms:
-            raise ValueError('Paired arm order differs from the frozen plan')
-        if before.budget.to_dict() != after.budget.to_dict() or before.model != after.model:
-            raise ValueError('Paired runs must use identical budgets and model')
-        if before.staged.get('execution_mode') != 'contract' or after.staged.get('execution_mode') != 'contract':
-            raise ValueError('Paired runs must use the same execution mode')
-        steps = lambda run: [{k:v for k,v in s.items() if k != 'skill'} for s in run.plan.get('steps',[])]
-        if not steps(before) or steps(before) != steps(after):
-            raise ValueError('Paired runs must use the same planned actions and dependencies')
-    # Old candidates may lack task metadata. Recover it from the actual origin
-    # record rather than trusting that a different run ID means a held-out task.
-    origin_id = candidate.get('origin_run_id')
-    if origin_id:
-        origin = store.load(origin_id)
-        if origin is None:
-            raise ValueError('Missing candidate origin; cannot establish held-out tasks')
-        if hashlib.sha256(origin.task.strip().encode()).hexdigest() in {p['task_sha256'] for p in pairs}:
-            raise ValueError('Training task leaked into evaluation')
-    skill.metadata.update(governance_status='promoted', evidence_report_sha256=hashlib.sha256(report_path.read_bytes()).hexdigest())
-    library.add(skill)
-    library.save()
-    candidate.update(state='promoted', promoted_at=time.time(), report=report_path.name)
-    candidate_path.write_text(json.dumps(candidate, ensure_ascii=False, indent=2), encoding='utf-8')
-    return skill
+    """Award only after all versioned constraints pass on physical evidence."""
+    from .promotion import award
+    return award(candidate_path, report_path, library)
+
 
 
 def validate_promotion_design(pairs: list[dict], candidate: dict) -> dict:

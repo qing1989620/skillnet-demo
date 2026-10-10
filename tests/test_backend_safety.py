@@ -66,6 +66,16 @@ def test_policy_proof_is_authenticated_and_does_not_expose_or_mutate_weights(api
     assert 'A' not in data and 'b' not in data and bandit.state_dict() == before
 
 
+def test_reward_policy_is_authenticated_versioned_and_uses_and_for_all_twelve_gates(api):
+    from skillnet import reward_gates
+    client,_=api
+    assert client.get('/api/learning/reward-policy').status_code==401
+    data=client.get('/api/learning/reward-policy',headers={'X-SkillNet-Token':'test-access-token'}).json()
+    assert data['sha256']==reward_gates.policy_sha256()
+    assert data['policy']['operator']=='AND' and data['policy']['unknown_blocks'] is True
+    assert len(data['policy']['gates'])==12
+
+
 @pytest.mark.parametrize("query", ["offset=-1", "offset=100001", "status=UNKNOWN", "q="+"x"*201])
 def test_history_api_rejects_invalid_filters(api, query):
     client, _ = api
@@ -276,7 +286,8 @@ def test_final_report_is_included_in_run_cost(api, monkeypatch):
     assert loaded.cost_yuan > 0
     assert loaded.staged["final_reply"] == "报告已生成"
     assert llm.LEDGER.calls == 0
-    assert [e.type for e in loaded.events][-2:] == ["run.reply", "run.finished"]
+    assert [e.type for e in loaded.events][-3:] == ["run.reply", "evaluation.gates_updated", "run.finished"]
+    assert loaded.staged['reward_gates']['gates'][3]['evidence']['cost_yuan']==loaded.cost_yuan
 
 
 def test_sse_reconnect_uses_persisted_cursor_after_event_truncation(api):
@@ -542,8 +553,9 @@ def test_worker_executes_wiki_workflow_and_uses_its_order(routed_workflow, monke
     assert set(map(tuple, event.data["edges"])) == set(map(tuple, wiki["workflow"]))
 
 
-def test_lifespan_runs_existing_startup_and_recovery_in_order(monkeypatch):
+def test_lifespan_runs_existing_startup_and_recovery_in_order(monkeypatch,tmp_path):
     calls = []
+    monkeypatch.setattr(server.config,'OUT_DIR',tmp_path)
     monkeypatch.setattr(server, "_startup", lambda: calls.append("startup"))
     monkeypatch.setattr(server, "_startup_sweep", lambda: calls.append("recovery"))
     with TestClient(server.app):

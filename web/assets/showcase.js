@@ -15,7 +15,7 @@
   const number = (x, fallback=0) => Number.isFinite(Number(x)) ? Number(x) : fallback;
   const statusName = s => ({COMPLETED:'已完成',PARTIAL:'部分完成',FAILED:'失败',CANCELLED:'已取消',BUDGET_EXCEEDED:'预算已达上限',INTERRUPTED:'运行中断'}[s] || s || '待启动');
   const stepName = s => ({pending:'待执行',running:'执行中',done:'已完成',failed:'失败',skipped:'已跳过'}[s] || '待执行');
-  const PUBLIC_REPLAY_ID='b5492bb7-20261009-232823-34fe';
+  const PUBLIC_REPLAY_ID='b5492bb7-20261010-083955-a445';
   function createState(task='',mode='idle') {
     return {task,mode,id:null,seq:0,phase:0,view:null,phases:PHASES.map(()=> 'pending'),nodes:[],selected:[],ranking:[],retrieval:{},orchestration:{},checks:[],artifacts:[],feedback:[],judge:null,evolution:null,logs:[],started:0,elapsed:0,finished:false,error:'',snapshot:null};
   }
@@ -51,7 +51,8 @@
     else if(t==='step.completed') {if(node()){node().status=d.status;node().stage='done';node().checks=d.checks;node().duration_ms=d.duration_ms;node().attempt=number(d.n_attempts);}log=`Step ${number(idx)+1} ${stepName(d.status)} · 程序检查 ${d.checks || '—'}`;}
     else if(t==='steps.skipped') {arr(d.steps).forEach(i=>{const n=s.nodes.find(x=>x.idx===i);if(n)n.status='skipped';});log='依赖失败，跳过受影响的下游步骤';}
     else if(t==='execution.finished') {complete(4);log=`执行结束 · ${number(d.done)} 步完成 / ${number(d.failed)} 步失败`;}
-    else if(t==='evaluation.completed') {s.assessment=d.assessment;s.shadow=d.shadow;log='独立结果核验完成 · 正式网络保持不变';}
+    else if(t==='evaluation.completed') {s.assessment=d.assessment;s.shadow=d.shadow;s.rewardGates=d.reward_gates;log=d.reward_gates?`奖励门禁 ${d.reward_gates.passed}/${d.reward_gates.total} 通过 · 缺证据不发奖`:'独立结果核验完成 · 正式网络保持不变';}
+    else if(t==='evaluation.gates_updated') {s.rewardGates=d.reward_gates;log=`最终奖励门禁 ${d.reward_gates.passed}/${d.reward_gates.total} 通过 · ${d.reward_gates.eligible?'具备领奖资格':'本次不发奖'}`;}
     else if(t==='judge.completed') {s.judge=d;complete(5);log=d.score_valid===false?'评审不可用 · 跳过反馈学习':`方案评审完成 · ${d.weighted == null?'分数不可用':d.weighted+'/10'}`;}
     else if(t==='evolution.proposed') {s.evolution=d;s.feedback=arr(d.feedback);s.phases[6]='done';s.phase=6;log=d.candidate?'新经验进入候选区 · 等待冻结任务验证':d.accepted?`新增能力已准入 · ${d.name}`:(d.skipped?(d.skip_reason||'未满足学习门槛，未进行技能准入'):'本次未新增技能 · 保留现有能力');}
     else if(t==='run.reply') {s.reply=d.text || '';log='基于真实执行事实生成最终回答';}
@@ -132,7 +133,7 @@
     if(i===4)return fact(`${state.nodes.filter(n=>n.status==='done').length}/${state.nodes.length} 步完成`,`${state.nodes.filter(n=>number(n.attempt)>1&&n.status==='done').length} 步修复后完成 · ${state.nodes.filter(n=>n.status==='failed').length} 步失败`)+fact(`${state.artifacts.length} 个文件已登记`,state.artifacts.slice(-3).map(a=>a.name).join(' / '))+fact('文件在步骤间实际传递',state.nodes.filter(n=>arr(n.inputs).length).map(n=>`Step ${n.idx+1} ← ${arr(n.inputs).length} 文件`).join(' / ')||'本次尚未记录跨步文件传递。');
     if(i===5){const checks=state.checks;const j=state.judge||(done(5)?snap.judge:null)||{};const sem=state.mode==='replay'&&!done(5)?[]:arr(snap.steps).flatMap(n=>arr(n.verifications));return fact(`程序检查 ${checks.filter(c=>c.passed).length}/${checks.length} 通过`,checks.filter(c=>!c.passed).slice(0,2).map(c=>c.name).join(' / ')||'当前已记录的检查未出现失败。')+fact('方案评审 · '+(j.score_valid!==false&&j.weighted!=null?number(j.weighted).toFixed(1)+'/10':done(5)?'不可用':'等待评审'),'方案评分与文件检查分开计算，不相互替代。')+fact(`语义验收 ${sem.filter(v=>v.passed).length}/${sem.length} 通过`,sem.length?'详细证据可在逐步记录中查看。':'尚无语义验收记录；不可解释为全部通过。')+sem.filter(v=>!v.passed).slice(0,2).map(v=>fact('未确认 · '+v.evidence,v.item)).join('');}
     const e={...(snap.evolution||{}),...(state.evolution||{})},a=state.assessment||staged.quality_assessment;
-    if(a)return fact('正式网络未更新','单次运行没有证明技能因果贡献或跨任务增益。')+fact(`${arr(a.observations).filter(r=>r.observed_score!=null).length} 步有可重算的限定范围结果`,a.scope)+fact(e.candidate?'新经验已隔离为候选':'本次仅保留观察',e.candidate?'留出评测前不准入，不自动部署排序参数。':e.skip_reason||'没有足够的独立结果证据。');
+    if(a){const gates=state.rewardGates||staged.reward_gates;return (gates?fact(`奖励门禁 ${gates.passed}/${gates.total} 通过`,gates.eligible?'十二道门全部通过，具备限定范围的领奖资格。':'存在未通过或待证据的门，本次不发放提升积分。'):'')+fact('正式网络未更新','单次运行没有证明技能因果贡献或跨任务增益。')+fact(`${arr(a.observations).filter(r=>r.observed_score!=null).length} 步有可重算的限定范围结果`,a.scope)+fact(e.candidate?'新经验已隔离为候选':'本次仅保留观察',e.candidate?'留出评测前不准入，不自动部署排序参数。':e.skip_reason||'没有足够的独立结果证据。');}
     const feedback=state.feedback.length?state.feedback:arr(snap.feedback);return fact(e.candidate?'历史候选记录':e.accepted?'历史准入 · '+e.name:'本次未新增能力',e.skip_reason||'见原始记录')+fact('历史记录未采用当前独立评价协议','旧参数变化不能作为网络整体提升的证据。')+fact(`${feedback.filter(f=>f.nudged).length} 项历史反馈`,feedback.slice(0,2).map(f=>`${f.name} · Δ ${number(f.delta).toFixed(4)}`).join(' / '));
   }
   function render() {

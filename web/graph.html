@@ -65,11 +65,11 @@
   /* 移除 graph 页原有的局部背景定义（改由共享层统一控制） */
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=20261009.1"></script>
+<script src="/static/assets/ui.js?v=20261010.1"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=20261009.1"></script>
-<link rel="stylesheet" href="/static/assets/refinement.css?v=20261009.1">
-<link rel="stylesheet" href="/static/assets/quality.css?v=20261009.1">
+<script src="/static/assets/product.js?v=20261010.1"></script>
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261010.1">
+<link rel="stylesheet" href="/static/assets/quality.css?v=20261010.1">
 </head>
 <body>
 <div class="load" id="load">正在加载技能图谱…</div>
@@ -361,7 +361,7 @@ cv.addEventListener("pointermove", ev => {
   if (n) {
     tip.style.display = "block";
     tip.style.left = (sx + 14) + "px"; tip.style.top = (sy + 14) + "px";
-    tip.innerHTML = `<b>${esc(n.id)}</b> · ${esc(n.domain)} · 平均奖励 ${(n.mean_reward || 0).toFixed(3)}`
+    tip.innerHTML = `<b>${esc(n.id)}</b> · ${esc(n.domain)} · 历史平均奖励 ${(n.mean_reward || 0).toFixed(3)} · 核验提升积分 +${Number(n.verified_improvement_points||0).toFixed(2)}`
       + ((n.generation || 0) > 0 ? " · 演化技能" : "");
   } else tip.style.display = "none";
 });
@@ -411,7 +411,7 @@ function selectNode(n) {
       + "<br>"
     : "";
   document.getElementById("cKv").innerHTML =
-    `平均奖励 <b>${(n.mean_reward || 0).toFixed(3)}</b>　·　被调用 <b>${n.pulls || 0}</b> 次<br>`
+    `历史平均奖励 <b>${(n.mean_reward || 0).toFixed(3)}</b>　·　被调用 <b>${n.pulls || 0}</b> 次<br>核验提升积分 <b>+${Number(n.verified_improvement_points||0).toFixed(2)}</b> · 仅适用已验证版本<br>`
     + execLine
     + `质量：安全性 <b>${esc(UI.qualityLabel(q.safety))}</b> · 完整性 <b>${esc(UI.qualityLabel(q.completeness))}</b> · 可执行性 <b>${esc(UI.qualityLabel(q.executability))}</b>`;
   const rels = n.relations || [];
@@ -421,7 +421,7 @@ function selectNode(n) {
   card.classList.add("show");graphFilterState();
   const generation=++contractGeneration,host=document.getElementById('cContract');host.textContent='读取执行契约…';
   document.getElementById('cContractLink').href='/dashboard#skills?skill='+encodeURIComponent(n.id);
-  UI.json('/api/skill/'+encodeURIComponent(n.id)).then(d=>{if(generation!==contractGeneration)return;const s=d.skill;host.innerHTML=`<b>能力</b><p>${esc(s.capability||s.description||'')}</p><b>实际执行步骤</b><ol>${(s.steps||[]).slice(0,4).map(text=>`<li>${esc(text)}</li>`).join('')}</ol><b>验收条件</b><p>${esc((s.verification||[]).slice(0,2).join('；')||'未定义')}</p>`;}).catch(error=>{if(generation===contractGeneration)host.textContent=error.message;});
+  UI.json('/api/skill/'+encodeURIComponent(n.id)).then(d=>{if(generation!==contractGeneration)return;const s=d.skill;host.innerHTML=`<b>能力</b><p>${esc(s.capability||s.description||'')}</p><b>实际执行步骤</b><ol>${(s.steps||[]).slice(0,4).map(text=>`<li>${esc(text)}</li>`).join('')}</ol><b>验收条件</b><p>${esc((s.verification||[]).slice(0,2).join('；')||'未定义')}</p>${Product.rewardReceiptHTML(s)}`;}).catch(error=>{if(generation===contractGeneration)host.textContent=error.message;});
 }
 function closeCard() {
   S.selected = null;++contractGeneration;graphFilterState();

@@ -9,14 +9,18 @@ def acquire_writer_lock(path):
     """Single-host library currently requires exactly one external writer."""
     stream = path.open('a+b')
     stream.seek(0)
-    if os.name == 'nt':
-        import msvcrt
-        if path.stat().st_size == 0:
-            stream.write(b'0');stream.flush();stream.seek(0)
-        msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
-    else:
-        import fcntl
-        fcntl.flock(stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    try:
+        if os.name == 'nt':
+            import msvcrt
+            if path.stat().st_size == 0:
+                stream.write(b'0');stream.flush();stream.seek(0)
+            msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            import fcntl
+            fcntl.flock(stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BaseException:
+        stream.close()
+        raise
     return stream
 
 

@@ -6,10 +6,11 @@ import json
 from pathlib import Path
 
 from .contracts import projection_check
-from .governance import fingerprint
+from .governance import fingerprint, evaluation_profile
 from .scenarios import scenarios, evaluate_artifacts
+from . import reward_gates
 
-VERSION = 'outcome-evidence-v1'
+VERSION = 'outcome-evidence-v3'
 NETWORK_REASON = '单次运行只产生经验观察；未证明技能的因果贡献或跨任务增益，正式排序与技能网络不更新'
 
 
@@ -20,7 +21,8 @@ def digest(value):
 def prepare_contract(task: str) -> dict:
     """Freeze the independent reference before execution; model plans are not references."""
     case = next((c for c in scenarios() if c['task'].strip() == task.strip()), None)
-    return dict(version=VERSION, task_sha256=hashlib.sha256(task.strip().encode()).hexdigest(),
+    return dict(version=VERSION, reward_policy_sha256=reward_gates.policy_sha256(), profile=evaluation_profile(),
+                task_sha256=hashlib.sha256(task.strip().encode()).hexdigest(),
                 source='frozen_business_reference' if case else 'user_task_without_independent_reference',
                 case_id=case['id'] if case else None,
                 reference_sha256=digest(case) if case else None,

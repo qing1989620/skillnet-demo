@@ -1,0 +1,5395 @@
+{
+ "run_id": "b5492bb7-20261010-083955-a445",
+ "task": "仅使用下面的公开模拟订单数据，不联网，禁止编造公司真实经营结论。完成 3 步真实执行：①按规则清洗明细生成 clean.csv 并打印重复数、缺失数；②读取 clean.csv 按 month 汇总成 monthly_summary.csv，列名严格为 month,revenue,cost,gross_profit,gross_margin,orders；③读取 monthly_summary.csv，生成 figure.svg 趋势图和 report.md 管理层报告，明确标注模拟数据、金额单位为元、毛利风险与行动建议。每步只负责本步交付，使用 depends_on 和 input_files/output_files 表达真实文件传递。规则：按 order_id 去重保留首条；revenue 或 cost 缺失的订单剔除；不剔除毛利为负的有效订单。\nCSV：\norder_id,month,revenue,cost\nA01,2026-01,1200,720\nA02,2026-01,800,560\nA03,2026-01,1500,900\nA03,2026-01,1500,900\nB01,2026-02,1800,1200\nB02,2026-02,900,720\nB03,2026-02,,300\nB04,2026-02,1300,780\nC01,2026-03,2200,1430\nC02,2026-03,1400,980\nC03,2026-03,700,770\nD01,2026-04,2600,1690\nD02,2026-04,1700,1020\nD03,2026-04,900,630\nD04,2026-04,500,",
+ "task_fp": "b5492bb7",
+ "status": "COMPLETED",
+ "model": "deepseek-chat",
+ "skills": [
+  "code-helper",
+  "business-metrics-audit",
+  "data-cleaning",
+  "descriptive-stats-csv-and-plot",
+  "scientific-visualization"
+ ],
+ "retrieval": {
+  "bm25": {
+   "query": "仅使用下面的公开模拟订单数据，不联网，禁止编造公司真实经营结论。完成 3 步真实执行：①按规则清洗明细生成 clean.csv 并打印重复数、缺失数；②读取 clean.csv 按 month 汇总成 monthly_summary.csv，列名严格为 month,revenue,cost,gross_profit,gross_margin,orders；③读取 monthly_summary.csv，生成 figure.svg 趋势图和 report.md 管理层报告，明确标注模拟数据、金额单位为元、毛利风险与行动建议。每步只负责本步交付，使用 depends_on 和 input_files/output_files 表达真实文件传递。规则：按 order_id 去重保留首条；revenue 或 cost 缺失的订单剔除；不剔除毛利为负的有效订单。\nCSV：\norder_id,month,revenue,cost\nA01,2026-01,1200,720\nA02,2026-01,800,560\nA03,2026-01,1500,900\nA03,2026-01,1500,900\nB01,2026-02,1800,1200\nB02,2026-02,900,720\nB03,2026-02,,300\nB04,2026-02,1300,780\nC01,2026-03,2200,1430\nC02,2026-03,1400,980\nC03,2026-03,700,770\nD01,2026-04,2600,1690\nD02,2026-04,1700,1020\nD03,2026-04,900,630\nD04,2026-04,500,",
+   "mode": "bm25",
+   "selected": [
+    "gh-agentic-makepad-widgets-cc6429",
+    "gh-claude-ai-act-readiness-9a895e",
+    "business-metrics-audit",
+    "gh-agentic-it-manager-pro-66b37a",
+    "gh-agentic-itil-expert-8cd213"
+   ],
+   "candidates": [
+    {
+     "name": "gh-agentic-makepad-widgets-cc6429",
+     "channels": [
+      "bm25"
+     ],
+     "score": 178.142,
+     "rank": 1,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-claude-ai-act-readiness-9a895e",
+     "channels": [
+      "bm25"
+     ],
+     "score": 170.05032,
+     "rank": 2,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "business-metrics-audit",
+     "channels": [
+      "bm25"
+     ],
+     "score": 168.18376,
+     "rank": 3,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-agentic-it-manager-pro-66b37a",
+     "channels": [
+      "bm25"
+     ],
+     "score": 150.09314,
+     "rank": 4,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-agentic-itil-expert-8cd213",
+     "channels": [
+      "bm25"
+     ],
+     "score": 139.39505,
+     "rank": 5,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-claude-fda-consultant-specialist-3b027c",
+     "channels": [
+      "bm25"
+     ],
+     "score": 136.89792,
+     "rank": 6,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-agentic-linkedin-post-writer-0fc7e2",
+     "channels": [
+      "bm25"
+     ],
+     "score": 128.50383,
+     "rank": 7,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-claude-fda-qsr-audit-prep-69fac0",
+     "channels": [
+      "bm25"
+     ],
+     "score": 118.68515,
+     "rank": 8,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "descriptive-stats-csv-summary",
+     "channels": [
+      "bm25"
+     ],
+     "score": 86.54357,
+     "rank": 9,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "demo-descriptive-stats-summary",
+     "channels": [
+      "bm25"
+     ],
+     "score": 69.59156,
+     "rank": 10,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "descriptive-stats-csv-and-plot",
+     "channels": [
+      "bm25"
+     ],
+     "score": 63.00544,
+     "rank": 11,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "demo-descriptive-stats-report",
+     "channels": [
+      "bm25"
+     ],
+     "score": 59.13121,
+     "rank": 12,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "xlsx",
+     "channels": [
+      "bm25"
+     ],
+     "score": 59.08571,
+     "rank": 13,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "data-cleaning",
+     "channels": [
+      "bm25"
+     ],
+     "score": 56.86705,
+     "rank": 14,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "citation-verify",
+     "channels": [
+      "bm25"
+     ],
+     "score": 55.86581,
+     "rank": 15,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "exam-weakness-analysis-and-review-plan",
+     "channels": [
+      "bm25"
+     ],
+     "score": 54.85868,
+     "rank": 16,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-claude-stress-test-8fea37",
+     "channels": [
+      "bm25"
+     ],
+     "score": 49.78165,
+     "rank": 17,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-agentic-calc-e19457",
+     "channels": [
+      "bm25"
+     ],
+     "score": 45.90514,
+     "rank": 18,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-agentic-csv-manual-export-8dff62",
+     "channels": [
+      "bm25"
+     ],
+     "score": 43.83536,
+     "rank": 19,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-agentic-startup-financial-modeling-4380b9",
+     "channels": [
+      "bm25"
+     ],
+     "score": 43.25434,
+     "rank": 20,
+     "rerank_score": null,
+     "note": ""
+    }
+   ],
+   "trace": [
+    "BM25 召回 20 条"
+   ],
+   "confidence": 1.0,
+   "confidence_kind": "heuristic_relevance_not_probability",
+   "raw_bm25_top": 172.9534,
+   "fusion_score": 178.142,
+   "decision": "auto",
+   "decision_reason": "BM25 原始分 172.95 ≥ 15.0：技能匹配明确，可直接执行",
+   "degraded": false,
+   "components": {
+    "bm25": true,
+    "vector": false,
+    "structural": false,
+    "graph_expansion": false,
+    "llm_rerank": false
+   },
+   "degraded_reason": "",
+   "encoder": {
+    "kind": "dense-onnx",
+    "active": true,
+    "model": "Xenova/multilingual-e5-small",
+    "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+    "dimension": 384,
+    "max_tokens": 256
+   },
+   "weights": [
+    0.7,
+    0.2,
+    0.1
+   ]
+  },
+  "hybrid": {
+   "query": "仅使用下面的公开模拟订单数据，不联网，禁止编造公司真实经营结论。完成 3 步真实执行：①按规则清洗明细生成 clean.csv 并打印重复数、缺失数；②读取 clean.csv 按 month 汇总成 monthly_summary.csv，列名严格为 month,revenue,cost,gross_profit,gross_margin,orders；③读取 monthly_summary.csv，生成 figure.svg 趋势图和 report.md 管理层报告，明确标注模拟数据、金额单位为元、毛利风险与行动建议。每步只负责本步交付，使用 depends_on 和 input_files/output_files 表达真实文件传递。规则：按 order_id 去重保留首条；revenue 或 cost 缺失的订单剔除；不剔除毛利为负的有效订单。\nCSV：\norder_id,month,revenue,cost\nA01,2026-01,1200,720\nA02,2026-01,800,560\nA03,2026-01,1500,900\nA03,2026-01,1500,900\nB01,2026-02,1800,1200\nB02,2026-02,900,720\nB03,2026-02,,300\nB04,2026-02,1300,780\nC01,2026-03,2200,1430\nC02,2026-03,1400,980\nC03,2026-03,700,770\nD01,2026-04,2600,1690\nD02,2026-04,1700,1020\nD03,2026-04,900,630\nD04,2026-04,500,",
+   "mode": "hybrid",
+   "selected": [
+    "business-metrics-audit",
+    "descriptive-stats-csv-and-plot",
+    "demo-descriptive-stats-report",
+    "descriptive-stats-csv-summary",
+    "data-cleaning"
+   ],
+   "candidates": [
+    {
+     "name": "business-metrics-audit",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.90291,
+     "rank": 1,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "descriptive-stats-csv-and-plot",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.71761,
+     "rank": 2,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "demo-descriptive-stats-report",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.59436,
+     "rank": 3,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "descriptive-stats-csv-summary",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 0.48928,
+     "rank": 4,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "data-cleaning",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 0.38366,
+     "rank": 5,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-agentic-makepad-widgets-cc6429",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.3605,
+     "rank": 6,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-claude-ai-act-readiness-9a895e",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.33887,
+     "rank": 7,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-agentic-it-manager-pro-66b37a",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.28554,
+     "rank": 8,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "math-modeling-pipeline",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.28143,
+     "rank": 9,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "missing-data-baseline-modeling",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.27782,
+     "rank": 10,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-agentic-itil-expert-8cd213",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.25695,
+     "rank": 11,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-claude-fda-consultant-specialist-3b027c",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.25027,
+     "rank": 12,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "competition-data-science-pipeline",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.24892,
+     "rank": 13,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-agentic-linkedin-post-writer-0fc7e2",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.22784,
+     "rank": 14,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-claude-fda-qsr-audit-prep-69fac0",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.2016,
+     "rank": 15,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-agentic-odoo-security-rules-fa4a99",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.19869,
+     "rank": 16,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "descriptive-stats-acceptance-audit",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.16644,
+     "rank": 17,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-agentic-weather-data-lifecycle-management-340ae1",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.16635,
+     "rank": 18,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "dose-response-curve-cleaning-and-ic50-fitting",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.14445,
+     "rank": 19,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "dose-response-curve-analysis",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.13955,
+     "rank": 20,
+     "rerank_score": null,
+     "note": ""
+    }
+   ],
+   "trace": [
+    "BM25 召回 20 条",
+    "dense-onnx 向量召回 20 条",
+    "结构信号召回 7 条",
+    "加权融合后候选池 39 条（BM25 0.35 / 语义 0.55 / 结构 0.10）"
+   ],
+   "confidence": 1.0,
+   "confidence_kind": "heuristic_relevance_not_probability",
+   "raw_bm25_top": 172.9534,
+   "fusion_score": 0.9029,
+   "decision": "auto",
+   "decision_reason": "BM25 原始分 172.95 ≥ 15.0：技能匹配明确，可直接执行",
+   "degraded": false,
+   "components": {
+    "bm25": true,
+    "vector": true,
+    "structural": true,
+    "graph_expansion": false,
+    "llm_rerank": false
+   },
+   "degraded_reason": "",
+   "encoder": {
+    "kind": "dense-onnx",
+    "active": true,
+    "model": "Xenova/multilingual-e5-small",
+    "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+    "dimension": 384,
+    "max_tokens": 256
+   },
+   "weights": [
+    0.35,
+    0.55,
+    0.1
+   ]
+  },
+  "fabric": {
+   "query": "仅使用下面的公开模拟订单数据，不联网，禁止编造公司真实经营结论。完成 3 步真实执行：①按规则清洗明细生成 clean.csv 并打印重复数、缺失数；②读取 clean.csv 按 month 汇总成 monthly_summary.csv，列名严格为 month,revenue,cost,gross_profit,gross_margin,orders；③读取 monthly_summary.csv，生成 figure.svg 趋势图和 report.md 管理层报告，明确标注模拟数据、金额单位为元、毛利风险与行动建议。每步只负责本步交付，使用 depends_on 和 input_files/output_files 表达真实文件传递。规则：按 order_id 去重保留首条；revenue 或 cost 缺失的订单剔除；不剔除毛利为负的有效订单。\nCSV：\norder_id,month,revenue,cost\nA01,2026-01,1200,720\nA02,2026-01,800,560\nA03,2026-01,1500,900\nA03,2026-01,1500,900\nB01,2026-02,1800,1200\nB02,2026-02,900,720\nB03,2026-02,,300\nB04,2026-02,1300,780\nC01,2026-03,2200,1430\nC02,2026-03,1400,980\nC03,2026-03,700,770\nD01,2026-04,2600,1690\nD02,2026-04,1700,1020\nD03,2026-04,900,630\nD04,2026-04,500,",
+   "mode": "fabric",
+   "selected": [
+    "business-metrics-audit",
+    "data-cleaning",
+    "descriptive-stats-csv-and-plot",
+    "scientific-visualization",
+    "demo-descriptive-stats-report"
+   ],
+   "candidates": [
+    {
+     "name": "business-metrics-audit",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.92999,
+     "rank": 1,
+     "rerank_score": 1.0,
+     "note": ""
+    },
+    {
+     "name": "data-cleaning",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 0.39517,
+     "rank": 2,
+     "rerank_score": 0.75,
+     "note": ""
+    },
+    {
+     "name": "descriptive-stats-csv-and-plot",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.73914,
+     "rank": 3,
+     "rerank_score": 0.5,
+     "note": ""
+    },
+    {
+     "name": "scientific-visualization",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.84295,
+     "rank": 4,
+     "rerank_score": 0.25,
+     "note": ""
+    },
+    {
+     "name": "demo-descriptive-stats-report",
+     "channels": [
+      "bm25",
+      "vector"
+     ],
+     "score": 0.59436,
+     "rank": 5,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "demo-descriptive-stats-summary",
+     "channels": [
+      "bm25",
+      "structural"
+     ],
+     "score": 0.52304,
+     "rank": 6,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "descriptive-stats-csv-summary",
+     "channels": [
+      "bm25",
+      "vector",
+      "structural"
+     ],
+     "score": 0.50396,
+     "rank": 7,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "xlsx",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.48975,
+     "rank": 8,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "code-helper",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.43057,
+     "rank": 9,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-agentic-makepad-widgets-cc6429",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.3605,
+     "rank": 10,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-claude-ai-act-readiness-9a895e",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.33887,
+     "rank": 11,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "leakage-guard",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.33762,
+     "rank": 12,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "exam-review-topic-matrix",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.33762,
+     "rank": 13,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "exam-prep-topic-matrix",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.33762,
+     "rank": 14,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "broad-topic-to-evidence-pipeline",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.33762,
+     "rank": 15,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "exam-prep-quantified-closed-loop",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.33762,
+     "rank": 16,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "dose-response-ic50-robust-estimation",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.33762,
+     "rank": 17,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "competition-reproducible-ml-pipeline",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.33762,
+     "rank": 18,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "dose-response-ic50-pipeline",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.33762,
+     "rank": 19,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "dose-response-cleaning-ic50-pipeline",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.33762,
+     "rank": 20,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "exam-weakness-analysis-and-review-plan",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.33762,
+     "rank": 21,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "eda-profiling",
+     "channels": [
+      "structural"
+     ],
+     "score": 0.30693,
+     "rank": 22,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "statistical-testing",
+     "channels": [
+      "structural"
+     ],
+     "score": 0.30693,
+     "rank": 23,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "tabular-ml-baseline",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.30693,
+     "rank": 24,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "dose-response-ic50-estimation",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.30693,
+     "rank": 25,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "two-group-statistical-testing-with-effect-size",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.30693,
+     "rank": 26,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "exam-prep-closed-loop-matrix",
+     "channels": [
+      "fused"
+     ],
+     "score": 0.30693,
+     "rank": 27,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "missing-data-baseline-modeling",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.28615,
+     "rank": 28,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-agentic-it-manager-pro-66b37a",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.28554,
+     "rank": 29,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "math-modeling-pipeline",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.28143,
+     "rank": 30,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-agentic-itil-expert-8cd213",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.25695,
+     "rank": 31,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "competition-data-science-pipeline",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.25639,
+     "rank": 32,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-claude-fda-consultant-specialist-3b027c",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.25027,
+     "rank": 33,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-agentic-linkedin-post-writer-0fc7e2",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.22784,
+     "rank": 34,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-claude-fda-qsr-audit-prep-69fac0",
+     "channels": [
+      "bm25"
+     ],
+     "score": 0.2016,
+     "rank": 35,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-agentic-odoo-security-rules-fa4a99",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.19869,
+     "rank": 36,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "descriptive-stats-acceptance-audit",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.16644,
+     "rank": 37,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "gh-agentic-weather-data-lifecycle-management-340ae1",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.16635,
+     "rank": 38,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "dose-response-curve-cleaning-and-ic50-fitting",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.14879,
+     "rank": 39,
+     "rerank_score": null,
+     "note": ""
+    },
+    {
+     "name": "dose-response-curve-analysis",
+     "channels": [
+      "vector"
+     ],
+     "score": 0.14374,
+     "rank": 40,
+     "rerank_score": null,
+     "note": ""
+    }
+   ],
+   "trace": [
+    "BM25 召回 20 条",
+    "dense-onnx 向量召回 20 条",
+    "结构信号召回 7 条",
+    "加权融合后候选池 39 条（BM25 0.35 / 语义 0.55 / 结构 0.10）",
+    "关系图扩展补入 20 条：scientific-visualization, demo-descriptive-stats-summary, xlsx, code-helper, leakage-guard, eda-profiling",
+    "LLM 重排 4 条候选",
+    "三档对照完成：bm25 5 / hybrid 5 / fabric 5"
+   ],
+   "confidence": 1.0,
+   "confidence_kind": "heuristic_relevance_not_probability",
+   "raw_bm25_top": 172.9534,
+   "fusion_score": 0.93,
+   "decision": "auto",
+   "decision_reason": "BM25 原始分 172.95 ≥ 15.0：技能匹配明确，可直接执行",
+   "degraded": false,
+   "components": {
+    "bm25": true,
+    "vector": true,
+    "structural": true,
+    "graph_expansion": true,
+    "llm_rerank": true
+   },
+   "degraded_reason": "",
+   "encoder": {
+    "kind": "dense-onnx",
+    "active": true,
+    "model": "Xenova/multilingual-e5-small",
+    "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+    "dimension": 384,
+    "max_tokens": 256
+   },
+   "weights": [
+    0.35,
+    0.55,
+    0.1
+   ]
+  }
+ },
+ "ranking": [
+  {
+   "name": "descriptive-stats-csv-and-plot",
+   "priority": 0.8161,
+   "exploit": 0.0,
+   "explore": 0.8161
+  },
+  {
+   "name": "demo-descriptive-stats-report",
+   "priority": 0.797,
+   "exploit": 0.0,
+   "explore": 0.797
+  },
+  {
+   "name": "scientific-visualization",
+   "priority": 0.7159,
+   "exploit": 0.0,
+   "explore": 0.7159
+  },
+  {
+   "name": "data-cleaning",
+   "priority": 0.7137,
+   "exploit": 0.0,
+   "explore": 0.7137
+  },
+  {
+   "name": "business-metrics-audit",
+   "priority": 0.6834,
+   "exploit": 0.0,
+   "explore": 0.6834
+  }
+ ],
+ "plan": {
+  "approach": "以 business-metrics-audit 为主干、data-cleaning 与 scientific-visualization 为配套，严格按文件血缘分三步执行：先按 order_id 去重保留首条并剔除 revenue/cost 缺失订单生成 clean.csv 并记录审计计数；再仅读取 clean.csv 按 month 聚合出 monthly_summary.csv（毛利=收入-成本，毛利率=毛利/收入，不平均单笔毛利率）；最后仅读取 monthly_summary.csv 生成 figure.svg 与 report.md，全程标注模拟数据与金额单位元，不推断真实经营结论。",
+  "steps": [
+   {
+    "skill": "data-cleaning",
+    "action": "读取原始订单明细，按 order_id 去重保留首条，剔除 revenue 或 cost 缺失的订单，保留毛利为负的有效订单，写出 clean.csv 并打印重复数与缺失剔除数。",
+    "key_params": [
+     "去重键 order_id，keep='first'（用户规则：保留首条）",
+     "缺失判定：revenue.isna() | cost.isna()，任一缺失即剔除（用户规则）",
+     "不按毛利正负过滤，负毛利订单保留（用户规则）",
+     "金额列保持原值不换算，单位元",
+     "审计计数：重复删除行数、缺失剔除行数、清洗后行数"
+    ],
+    "expected_output": "clean.csv（列 order_id,month,revenue,cost）及终端打印的重复数、缺失剔除数、清洗后行数",
+    "depends_on": [],
+    "input_files": [],
+    "output_files": [
+     "clean.csv"
+    ],
+    "data_checks": [],
+    "verification": [
+     "回读 clean.csv：order_id 唯一（df['order_id'].duplicated().sum()==0）",
+     "回读 clean.csv：revenue 与 cost 均无缺失（df[['revenue','cost']].isna().sum().sum()==0）",
+     "行数守恒：原始行数 - 重复删除行数 - 缺失剔除行数 == clean.csv 行数，且三项计数由脚本实际计算并打印",
+     "负毛利订单仍在 clean.csv 中（如 C03 的 700-770=-70 未被剔除）"
+    ],
+    "check": "脚本退出码为 0，打印的重复数与缺失剔除数与回读 clean.csv 的行数守恒等式一致，且 order_id 唯一、无缺失。"
+   },
+   {
+    "skill": "business-metrics-audit",
+    "action": "仅读取 clean.csv，按 month 分组汇总 revenue、cost、orders，计算 gross_profit 与 gross_margin，写出列名严格为 month,revenue,cost,gross_profit,gross_margin,orders 的 monthly_summary.csv。",
+    "key_params": [
+     "输入仅 clean.csv，不重新读取原始数据（血缘要求）",
+     "gross_profit = sum(revenue) - sum(cost)（先汇总后相减）",
+     "gross_margin = gross_profit / sum(revenue)，禁止对单笔毛利率取平均",
+     "orders = 该月 clean.csv 行数（去重后订单数）",
+     "浮点比较绝对容差 1e-8",
+     "month 升序排序"
+    ],
+    "expected_output": "monthly_summary.csv，列名严格为 month,revenue,cost,gross_profit,gross_margin,orders",
+    "depends_on": [
+     0
+    ],
+    "input_files": [
+     "clean.csv"
+    ],
+    "output_files": [
+     "monthly_summary.csv"
+    ],
+    "data_checks": [],
+    "verification": [
+     "回读 monthly_summary.csv：list(df.columns) 精确等于 ['month','revenue','cost','gross_profit','gross_margin','orders']",
+     "总额一致性：monthly_summary 的 revenue 合计与 cost 合计分别等于 clean.csv 的 revenue 合计与 cost 合计，绝对容差 1e-8",
+     "orders 合计等于 clean.csv 行数",
+     "逐月校验 gross_profit == revenue - cost 且 gross_margin == gross_profit / revenue，绝对容差 1e-8",
+     "无缺失值（df.isna().sum().sum()==0）"
+    ],
+    "check": "回读断言全部为 True，月度合计与 clean.csv 明细合计在 1e-8 容差内一致，列名与顺序完全匹配。"
+   },
+   {
+    "skill": "scientific-visualization",
+    "action": "仅读取 monthly_summary.csv，绘制 revenue/cost/gross_profit 月度趋势折线图并导出矢量 figure.svg，同时撰写 report.md 管理层报告。",
+    "key_params": [
+     "输入仅 monthly_summary.csv，不重算上游数值",
+     "折线图：x=month，y=金额（元），含 revenue、cost、gross_profit 三条线，y 轴从 0 起",
+     "导出 SVG 矢量格式，字号保证单栏可读",
+     "report.md 必须标注：模拟数据、金额单位元、毛利风险、行动建议",
+     "禁止将模拟数据表述为公司真实经营结论"
+    ],
+    "expected_output": "figure.svg 趋势图与 report.md 管理层报告",
+    "depends_on": [
+     1
+    ],
+    "input_files": [
+     "monthly_summary.csv"
+    ],
+    "output_files": [
+     "figure.svg",
+     "report.md"
+    ],
+    "data_checks": [],
+    "verification": [
+     "figure.svg 存在且为矢量 SVG，坐标轴含月份与金额（元）标注，y 轴下限为 0",
+     "report.md 含关键词：模拟数据、元、毛利风险、行动建议",
+     "report.md 中引用的月度数值与 monthly_summary.csv 逐值一致（回读比对）",
+     "report.md 不含将模拟数据推断为公司真实经营情况的表述"
+    ],
+    "check": "figure.svg 与 report.md 均生成，报告数值与 monthly_summary.csv 一致，且模拟数据与单位标注齐全。"
+   }
+  ],
+  "risks": [
+   "重复订单被重复计数：A03 出现两次，若未按 order_id 去重会虚增 2026-01 收入与订单数；应对为 keep='first' 并打印删除行数。",
+   "缺失值被当作 0：B03 的 revenue 缺失、D04 的 cost 缺失，若填 0 会虚增订单与成本；应对为按规则整行剔除并记录剔除数。",
+   "毛利率计算口径错误：对单笔毛利率取平均会与加权毛利率不符；应对为 gross_profit/sum(revenue) 并逐月回读校验。",
+   "下游重新读取原始数据导致血缘失效：步骤 2、3 必须仅读上游产物，验证时以回读文件合计与上游一致为准。"
+  ],
+  "artifacts": [
+   "clean.csv",
+   "monthly_summary.csv",
+   "figure.svg",
+   "report.md"
+  ]
+ },
+ "judge": {
+  "scores": {
+   "skill_grounding": 9.0,
+   "executability": 9.0,
+   "rigor": 9.0,
+   "scientific_validity": 9.0
+  },
+  "weighted": 9.0,
+  "coverage": null,
+  "covered": [],
+  "n_points": 0,
+  "comment": "方案完整覆盖三步任务，明确文件血缘、去重与缺失剔除规则、聚合口径及可视化/报告要求，并给出可验证的校验与风险应对；仅未显式说明缺失数打印的具体格式，但整体已达专业级可执行标准。",
+  "degraded": true,
+  "score_valid": true,
+  "coverage_valid": false,
+  "invalid_fields": [
+   "covered"
+  ],
+  "degraded_reason": "invalid evaluation contract: covered"
+ },
+ "steps": [
+  {
+   "idx": 0,
+   "action": "读取原始订单明细，按 order_id 去重保留首条，剔除 revenue 或 cost 缺失的订单，保留毛利为负的有效订单，写出 clean.csv 并打印重复数与缺失剔除数。",
+   "skill": "data-cleaning",
+   "status": "done",
+   "depends_on": [],
+   "inputs": [],
+   "input_artifacts": [],
+   "contract": {
+    "input_files": [],
+    "output_files": [
+     "clean.csv"
+    ],
+    "data_checks": [],
+    "verification": [
+     "回读 clean.csv：order_id 唯一（df['order_id'].duplicated().sum()==0）",
+     "回读 clean.csv：revenue 与 cost 均无缺失（df[['revenue','cost']].isna().sum().sum()==0）",
+     "行数守恒：原始行数 - 重复删除行数 - 缺失剔除行数 == clean.csv 行数，且三项计数由脚本实际计算并打印",
+     "负毛利订单仍在 clean.csv 中（如 C03 的 700-770=-70 未被剔除）"
+    ],
+    "expected_output": "clean.csv（列 order_id,month,revenue,cost）及终端打印的重复数、缺失剔除数、清洗后行数",
+    "check": "脚本退出码为 0，打印的重复数与缺失剔除数与回读 clean.csv 的行数守恒等式一致，且 order_id 唯一、无缺失。"
+   },
+   "dependency_reason": "步骤显式声明的数据流",
+   "code": "# -*- coding: utf-8 -*-\n\"\"\"\n步骤1：清洗原始模拟订单明细 -> clean.csv\n规则：\n  1) 按 order_id 去重，保留首条\n  2) revenue 或 cost 缺失的订单剔除\n  3) 不剔除毛利为负的有效订单\n数据说明：本脚本使用【模拟数据】，仅用于流程演示，不代表任何真实公司经营结论。\n金额单位：元。\n\"\"\"\nimport pandas as pd\n\n# ============ 0. 原始模拟数据（内嵌，明确标注为模拟数据） ============\nRAW_CSV = \"\"\"order_id,month,revenue,cost\nA01,2026-01,1200,720\nA02,2026-01,800,560\nA03,2026-01,1500,900\nA03,2026-01,1500,900\nB01,2026-02,1800,1200\nB02,2026-02,900,720\nB03,2026-02,,300\nB04,2026-02,1300,780\nC01,2026-03,2200,1430\nC02,2026-03,1400,980\nC03,2026-03,700,770\nD01,2026-04,2600,1690\nD02,2026-04,1700,1020\nD03,2026-04,900,630\nD04,2026-04,500,\n\"\"\"\n\nfrom io import StringIO\n\nprint(\"=\" * 60)\nprint(\"【模拟数据】订单明细清洗（金额单位：元）\")\nprint(\"=\" * 60)\n\n# ============ 1. 结构与类型探查 ============\ndf = pd.read_csv(StringIO(RAW_CSV), dtype={\"order_id\": str, \"month\": str})\nraw_rows = len(df)\nprint(f\"[探查] 原始行数: {raw_rows}\")\nprint(f\"[探查] 列名: {list(df.columns)}\")\nprint(f\"[探查] 主键 order_id 唯一性(去重前重复数): {df['order_id'].duplicated().sum()}\")\nprint(f\"[探查] 缺失模式(每列缺失数):\\n{df.isna().sum().to_string()}\")\n\n# 缺失模式说明：revenue/cost 缺失属于关键字段缺失，无法计算毛利，\n# 按业务规则剔除；此处不做均值填补（规避“均值填补非随机缺失”陷阱）。\nmissing_mask = df[\"revenue\"].isna() | df[\"cost\"].isna()\nprint(f\"[缺失] revenue 或 cost 缺失行数(待剔除): {int(missing_mask.sum())}\")\nprint(f\"[缺失] 缺失订单号: {df.loc[missing_mask, 'order_id'].tolist()}\")\n\n# ============ 2. 去重（保留首条） ============\ndup_mask = df[\"order_id\"].duplicated(keep=\"first\")\ndup_count = int(dup_mask.sum())\nprint(f\"[去重] 重复删除行数: {dup_count}\")\nprint(f\"[去重] 被删除的重复订单号: {df.loc[dup_mask, 'order_id'].tolist()}\")\ndf_dedup = df.loc[~dup_mask].copy()\n\n# ============ 3. 剔除关键字段缺失（在去重后统计，避免重复计数） ============\nmiss_mask2 = df_dedup[\"revenue\"].isna() | df_dedup[\"cost\"].isna()\nmiss_count = int(miss_mask2.sum())\nprint(f\"[缺失] 去重后剔除的缺失行数: {miss_count}\")\nprint(f\"[缺失] 被剔除订单号: {df_dedup.loc[miss_mask2, 'order_id'].tolist()}\")\nclean = df_dedup.loc[~miss_mask2].copy()\n\n# ============ 4. 保留负毛利有效订单（显式检查，不剔除） ============\nclean[\"gross_profit\"] = clean[\"revenue\"] - clean[\"cost\"]\nneg = clean[clean[\"gross_profit\"] < 0]\nprint(f\"[负毛利] 保留的负毛利订单数: {len(neg)}\")\nif len(neg) > 0:\n    print(f\"[负毛利] 明细:\\n{neg[['order_id','month','revenue','cost','gross_profit']].to_string(index=False)}\")\n\n# 输出列严格为 order_id,month,revenue,cost\nclean_out = clean[[\"order_id\", \"month\", \"revenue\", \"cost\"]].reset_index(drop=True)\n\n# ============ 5. 行数守恒校验 ============\nclean_rows = len(clean_out)\nprint(\"-\" * 60)\nprint(f\"[守恒] 原始行数 {raw_rows} - 重复删除 {dup_count} - 缺失剔除 {miss_count} = {raw_rows - dup_count - miss_count}\")\nprint(f\"[守恒] clean.csv 实际行数 = {clean_rows}\")\nassert raw_rows - dup_count - miss_count == clean_rows, \"行数守恒校验失败！\"\nprint(\"[守恒] 行数守恒校验通过 ✔\")\n\n# ============ 6. 回读验收 ============\nclean_out.to_csv(\"clean.csv\", index=False, encoding=\"utf-8-sig\")\nrb = pd.read_csv(\"clean.csv\", dtype={\"order_id\": str, \"month\": str})\nprint(\"-\" * 60)\nprint(f\"[回读] clean.csv 行数: {len(rb)}\")\nprint(f\"[回读] order_id 重复数(应为0): {rb['order_id'].duplicated().sum()}\")\nprint(f\"[回读] revenue/cost 缺失总数(应为0): {int(rb[['revenue','cost']].isna().sum().sum())}\")\nassert rb[\"order_id\"].duplicated().sum() == 0, \"order_id 不唯一！\"\nassert rb[[\"revenue\", \"cost\"]].isna().sum().sum() == 0, \"存在缺失！\"\nassert \"C03\" in rb[\"order_id\"].values, \"负毛利订单 C03 被误删！\"\nprint(\"[回读] 验收通过：order_id 唯一、无缺失、负毛利订单 C03 保留 ✔\")\nprint(\"=\" * 60)\nprint(\"已写出: clean.csv（模拟数据，金额单位：元）\")",
+   "n_attempts": 1,
+   "fixed": false,
+   "exhausted": false,
+   "attempts": [
+    {
+     "n": 1,
+     "ok": true,
+     "stdout": "============================================================\n【模拟数据】订单明细清洗（金额单位：元）\n============================================================\n[探查] 原始行数: 15\n[探查] 列名: ['order_id', 'month', 'revenue', 'cost']\n[探查] 主键 order_id 唯一性(去重前重复数): 1\n[探查] 缺失模式(每列缺失数):\norder_id    0\nmonth       0\nrevenue     1\ncost        1\n[缺失] revenue 或 cost 缺失行数(待剔除): 2\n[缺失] 缺失订单号: ['B03', 'D04']\n[去重] 重复删除行数: 1\n[去重] 被删除的重复订单号: ['A03']\n[缺失] 去重后剔除的缺失行数: 2\n[缺失] 被剔除订单号: ['B03', 'D04']\n[负毛利] 保留的负毛利订单数: 1\n[负毛利] 明细:\norder_id   month  revenue  cost  gross_profit\n     C03 2026-03    700.0 770.0         -70.0\n------------------------------------------------------------\n[守恒] 原始行数 15 - 重复删除 1 - 缺失剔除 2 = 12\n[守恒] clean.csv 实际行数 = 12\n[守恒] 行数守恒校验通过 ✔\n------------------------------------------------------------\n[回读] clean.csv 行数: 12\n[回读] order_id 重复数(应为0): 0\n[回读] revenue/cost 缺失总数(应为0): 0\n[回读] 验收通过：order_id 唯一、无缺失、负毛利订单 C03 保留 ✔\n============================================================\n已写出: clean.csv（模拟数据，金额单位：元）\n",
+     "stderr": "",
+     "error_kind": "",
+     "duration_ms": 930,
+     "truncated": false,
+     "code": "# -*- coding: utf-8 -*-\n\"\"\"\n步骤1：清洗原始模拟订单明细 -> clean.csv\n规则：\n  1) 按 order_id 去重，保留首条\n  2) revenue 或 cost 缺失的订单剔除\n  3) 不剔除毛利为负的有效订单\n数据说明：本脚本使用【模拟数据】，仅用于流程演示，不代表任何真实公司经营结论。\n金额单位：元。\n\"\"\"\nimport pandas as pd\n\n# ============ 0. 原始模拟数据（内嵌，明确标注为模拟数据） ============\nRAW_CSV = \"\"\"order_id,month,revenue,cost\nA01,2026-01,1200,720\nA02,2026-01,800,560\nA03,2026-01,1500,900\nA03,2026-01,1500,900\nB01,2026-02,1800,1200\nB02,2026-02,900,720\nB03,2026-02,,300\nB04,2026-02,1300,780\nC01,2026-03,2200,1430\nC02,2026-03,1400,980\nC03,2026-03,700,770\nD01,2026-04,2600,1690\nD02,2026-04,1700,1020\nD03,2026-04,900,630\nD04,2026-04,500,\n\"\"\"\n\nfrom io import StringIO\n\nprint(\"=\" * 60)\nprint(\"【模拟数据】订单明细清洗（金额单位：元）\")\nprint(\"=\" * 60)\n\n# ============ 1. 结构与类型探查 ============\ndf = pd.read_csv(StringIO(RAW_CSV), dtype={\"order_id\": str, \"month\": str})\nraw_rows = len(df)\nprint(f\"[探查] 原始行数: {raw_rows}\")\nprint(f\"[探查] 列名: {list(df.columns)}\")\nprint(f\"[探查] 主键 order_id 唯一性(去重前重复数): {df['order_id'].duplicated().sum()}\")\nprint(f\"[探查] 缺失模式(每列缺失数):\\n{df.isna().sum().to_string()}\")\n\n# 缺失模式说明：revenue/cost 缺失属于关键字段缺失，无法计算毛利，\n# 按业务规则剔除；此处不做均值填补（规避“均值填补非随机缺失”陷阱）。\nmissing_mask = df[\"revenue\"].isna() | df[\"cost\"].isna()\nprint(f\"[缺失] revenue 或 cost 缺失行数(待剔除): {int(missing_mask.sum())}\")\nprint(f\"[缺失] 缺失订单号: {df.loc[missing_mask, 'order_id'].tolist()}\")\n\n# ============ 2. 去重（保留首条） ============\ndup_mask = df[\"order_id\"].duplicated(keep=\"first\")\ndup_count = int(dup_mask.sum())\nprint(f\"[去重] 重复删除行数: {dup_count}\")\nprint(f\"[去重] 被删除的重复订单号: {df.loc[dup_mask, 'order_id'].tolist()}\")\ndf_dedup = df.loc[~dup_mask].copy()\n\n# ============ 3. 剔除关键字段缺失（在去重后统计，避免重复计数） ============\nmiss_mask2 = df_dedup[\"revenue\"].isna() | df_dedup[\"cost\"].isna()\nmiss_count = int(miss_mask2.sum())\nprint(f\"[缺失] 去重后剔除的缺失行数: {miss_count}\")\nprint(f\"[缺失] 被剔除订单号: {df_dedup.loc[miss_mask2, 'order_id'].tolist()}\")\nclean = df_dedup.loc[~miss_mask2].copy()\n\n# ============ 4. 保留负毛利有效订单（显式检查，不剔除） ============\nclean[\"gross_profit\"] = clean[\"revenue\"] - clean[\"cost\"]\nneg = clean[clean[\"gross_profit\"] < 0]\nprint(f\"[负毛利] 保留的负毛利订单数: {len(neg)}\")\nif len(neg) > 0:\n    print(f\"[负毛利] 明细:\\n{neg[['order_id','month','revenue','cost','gross_profit']].to_string(index=False)}\")\n\n# 输出列严格为 order_id,month,revenue,cost\nclean_out = clean[[\"order_id\", \"month\", \"revenue\", \"cost\"]].reset_index(drop=True)\n\n# ============ 5. 行数守恒校验 ============\nclean_rows = len(clean_out)\nprint(\"-\" * 60)\nprint(f\"[守恒] 原始行数 {raw_rows} - 重复删除 {dup_count} - 缺失剔除 {miss_count} = {raw_rows - dup_count - miss_count}\")\nprint(f\"[守恒] clean.csv 实际行数 = {clean_rows}\")\nassert raw_rows - dup_count - miss_count == clean_rows, \"行数守恒校验失败！\"\nprint(\"[守恒] 行数守恒校验通过 ✔\")\n\n# ============ 6. 回读验收 ============\nclean_out.to_csv(\"clean.csv\", index=False, encoding=\"utf-8-sig\")\nrb = pd.read_csv(\"clean.csv\", dtype={\"order_id\": str, \"month\": str})\nprint(\"-\" * 60)\nprint(f\"[回读] clean.csv 行数: {len(rb)}\")\nprint(f\"[回读] order_id 重复数(应为0): {rb['order_id'].duplicated().sum()}\")\nprint(f\"[回读] revenue/cost 缺失总数(应为0): {int(rb[['revenue','cost']].isna().sum().sum())}\")\nassert rb[\"order_id\"].duplicated().sum() == 0, \"order_id 不唯一！\"\nassert rb[[\"revenue\", \"cost\"]].isna().sum().sum() == 0, \"存在缺失！\"\nassert \"C03\" in rb[\"order_id\"].values, \"负毛利订单 C03 被误删！\"\nprint(\"[回读] 验收通过：order_id 唯一、无缺失、负毛利订单 C03 保留 ✔\")\nprint(\"=\" * 60)\nprint(\"已写出: clean.csv（模拟数据，金额单位：元）\")",
+     "repair_reason": "",
+     "code_diff": "",
+     "acceptance": {
+      "checks": [
+       {
+        "name": "执行退出码为 0",
+        "passed": true,
+        "detail": "returncode=0",
+        "required": true
+       },
+       {
+        "name": "运行有实质输出",
+        "passed": true,
+        "detail": "988 字符 / 32 行",
+        "required": false
+       },
+       {
+        "name": "产生至少一个文件产物",
+        "passed": true,
+        "detail": "1 个",
+        "required": false
+       },
+       {
+        "name": "clean.csv 存在",
+        "passed": true,
+        "detail": "344 字节",
+        "required": true
+       },
+       {
+        "name": "clean.csv 非空",
+        "passed": true,
+        "detail": "344 字节",
+        "required": true
+       },
+       {
+        "name": "clean.csv 是可解析 CSV",
+        "passed": true,
+        "detail": "13 行（含表头）",
+        "required": true
+       },
+       {
+        "name": "clean.csv 含表头且列数 > 0",
+        "passed": true,
+        "detail": "列：﻿order_id, month, revenue, cost",
+        "required": true
+       },
+       {
+        "name": "clean.csv 含数据行",
+        "passed": true,
+        "detail": "12 行数据",
+        "required": true
+       },
+       {
+        "name": "clean.csv 各行列数一致",
+        "passed": true,
+        "detail": "列数集合 [4]",
+        "required": true
+       },
+       {
+        "name": "步骤交付：clean.csv",
+        "passed": true,
+        "detail": "存在"
+       }
+      ],
+      "verifications": [
+       {
+        "item": "回读 clean.csv：order_id 唯一（df['order_id'].duplicated().sum()==0）",
+        "passed": true,
+        "state": "passed",
+        "evidence": "运行输出显示 [回读] order_id 重复数(应为0): 0，且脚本断言 rb['order_id'].duplicated().sum() == 0 通过；落盘 clean.csv 共 12 行，样本中 order_id 无重复。"
+       },
+       {
+        "item": "回读 clean.csv：revenue 与 cost 均无缺失（df[['revenue','cost']].isna().sum().sum()==0）",
+        "passed": true,
+        "state": "passed",
+        "evidence": "运行输出显示 [回读] revenue/cost 缺失总数(应为0): 0，且脚本断言 rb[['revenue','cost']].isna().sum().sum() == 0 通过；落盘 clean.csv 的 revenue、cost 列样本均有值。"
+       },
+       {
+        "item": "行数守恒：原始行数 - 重复删除行数 - 缺失剔除行数 == clean.csv 行数，且三项计数由脚本实际计算并打印",
+        "passed": true,
+        "state": "passed",
+        "evidence": "脚本实际计算并打印：原始行数 15、重复删除 1、缺失剔除 2；守恒等式 15-1-2=12，clean.csv 实际行数 12，assert 校验通过；落盘 clean.csv rows=12 与之一致。"
+       },
+       {
+        "item": "负毛利订单仍在 clean.csv 中（如 C03 的 700-770=-70 未被剔除）",
+        "passed": true,
+        "state": "passed",
+        "evidence": "运行输出 [负毛利] 保留的负毛利订单数: 1，明细显示 C03 2026-03 revenue=700.0 cost=770.0 gross_profit=-70.0；脚本断言 'C03' in rb['order_id'].values 通过，说明 C03 保留在 clean.csv 中。"
+       }
+      ],
+      "state": "passed"
+     }
+    }
+   ],
+   "artifacts": [
+    {
+     "name": "step1_clean.csv",
+     "kind": "真实运行产物",
+     "bytes": 344,
+     "sha256": "7e6cbc82b564f901f3958e2ec28d58fa5ae2867448efd8e06afd1e4cf51c0026",
+     "from_step": 0,
+     "url": "/api/runs/b5492bb7-20261010-083955-a445/artifacts/step1_clean.csv",
+     "logical_name": "clean.csv",
+     "source_run_id": "b5492bb7-20261010-083955-a445",
+     "version": 1
+    }
+   ],
+   "checks": [
+    {
+     "name": "执行退出码为 0",
+     "passed": true,
+     "detail": "returncode=0",
+     "required": true
+    },
+    {
+     "name": "运行有实质输出",
+     "passed": true,
+     "detail": "988 字符 / 32 行",
+     "required": false
+    },
+    {
+     "name": "产生至少一个文件产物",
+     "passed": true,
+     "detail": "1 个",
+     "required": false
+    },
+    {
+     "name": "clean.csv 存在",
+     "passed": true,
+     "detail": "344 字节",
+     "required": true
+    },
+    {
+     "name": "clean.csv 非空",
+     "passed": true,
+     "detail": "344 字节",
+     "required": true
+    },
+    {
+     "name": "clean.csv 是可解析 CSV",
+     "passed": true,
+     "detail": "13 行（含表头）",
+     "required": true
+    },
+    {
+     "name": "clean.csv 含表头且列数 > 0",
+     "passed": true,
+     "detail": "列：﻿order_id, month, revenue, cost",
+     "required": true
+    },
+    {
+     "name": "clean.csv 含数据行",
+     "passed": true,
+     "detail": "12 行数据",
+     "required": true
+    },
+    {
+     "name": "clean.csv 各行列数一致",
+     "passed": true,
+     "detail": "列数集合 [4]",
+     "required": true
+    },
+    {
+     "name": "步骤交付：clean.csv",
+     "passed": true,
+     "detail": "存在",
+     "required": true
+    }
+   ],
+   "checks_passed": 8,
+   "checks_total": 8,
+   "verifications": [
+    {
+     "item": "回读 clean.csv：order_id 唯一（df['order_id'].duplicated().sum()==0）",
+     "passed": true,
+     "evidence": "运行输出显示 [回读] order_id 重复数(应为0): 0，且脚本断言 rb['order_id'].duplicated().sum() == 0 通过；落盘 clean.csv 共 12 行，样本中 order_id 无重复。",
+     "layer": "llm",
+     "state": "passed"
+    },
+    {
+     "item": "回读 clean.csv：revenue 与 cost 均无缺失（df[['revenue','cost']].isna().sum().sum()==0）",
+     "passed": true,
+     "evidence": "运行输出显示 [回读] revenue/cost 缺失总数(应为0): 0，且脚本断言 rb[['revenue','cost']].isna().sum().sum() == 0 通过；落盘 clean.csv 的 revenue、cost 列样本均有值。",
+     "layer": "llm",
+     "state": "passed"
+    },
+    {
+     "item": "行数守恒：原始行数 - 重复删除行数 - 缺失剔除行数 == clean.csv 行数，且三项计数由脚本实际计算并打印",
+     "passed": true,
+     "evidence": "脚本实际计算并打印：原始行数 15、重复删除 1、缺失剔除 2；守恒等式 15-1-2=12，clean.csv 实际行数 12，assert 校验通过；落盘 clean.csv rows=12 与之一致。",
+     "layer": "llm",
+     "state": "passed"
+    },
+    {
+     "item": "负毛利订单仍在 clean.csv 中（如 C03 的 700-770=-70 未被剔除）",
+     "passed": true,
+     "evidence": "运行输出 [负毛利] 保留的负毛利订单数: 1，明细显示 C03 2026-03 revenue=700.0 cost=770.0 gross_profit=-70.0；脚本断言 'C03' in rb['order_id'].values 通过，说明 C03 保留在 clean.csv 中。",
+     "layer": "llm",
+     "state": "passed"
+    }
+   ],
+   "verification_passed": 4,
+   "verification_total": 4,
+   "verify_skip_reason": "",
+   "error": "",
+   "duration_ms": 8201,
+   "started_at_ms": 1791592810109,
+   "ended_at_ms": 1791592818310,
+   "stages": {
+    "code_gen_ms": 5179,
+    "llm_calls": 1,
+    "llm_cost_yuan": 0.0,
+    "syntax_check_ms": 4,
+    "sandbox_try1_ms": 928,
+    "verify_sem_ms": 2050,
+    "verify_det_ms": 0
+   }
+  },
+  {
+   "idx": 1,
+   "action": "仅读取 clean.csv，按 month 分组汇总 revenue、cost、orders，计算 gross_profit 与 gross_margin，写出列名严格为 month,revenue,cost,gross_profit,gross_margin,orders 的 monthly_summary.csv。",
+   "skill": "business-metrics-audit",
+   "status": "done",
+   "depends_on": [
+    0
+   ],
+   "inputs": [
+    "clean.csv"
+   ],
+   "input_artifacts": [
+    {
+     "logical_name": "clean.csv",
+     "name": "step1_clean.csv",
+     "from_step": 0,
+     "sha256": "7e6cbc82b564f901f3958e2ec28d58fa5ae2867448efd8e06afd1e4cf51c0026"
+    }
+   ],
+   "contract": {
+    "input_files": [
+     "clean.csv"
+    ],
+    "output_files": [
+     "monthly_summary.csv"
+    ],
+    "data_checks": [],
+    "verification": [
+     "回读 monthly_summary.csv：list(df.columns) 精确等于 ['month','revenue','cost','gross_profit','gross_margin','orders']",
+     "总额一致性：monthly_summary 的 revenue 合计与 cost 合计分别等于 clean.csv 的 revenue 合计与 cost 合计，绝对容差 1e-8",
+     "orders 合计等于 clean.csv 行数",
+     "逐月校验 gross_profit == revenue - cost 且 gross_margin == gross_profit / revenue，绝对容差 1e-8",
+     "无缺失值（df.isna().sum().sum()==0）"
+    ],
+    "expected_output": "monthly_summary.csv，列名严格为 month,revenue,cost,gross_profit,gross_margin,orders",
+    "check": "回读断言全部为 True，月度合计与 clean.csv 明细合计在 1e-8 容差内一致，列名与顺序完全匹配。"
+   },
+   "dependency_reason": "真实文件读写依赖：clean.csv",
+   "code": "# -*- coding: utf-8 -*-\n\"\"\"\n步骤2：读取 clean.csv，按 month 汇总生成 monthly_summary.csv\n数据说明：本数据为【模拟数据】，仅用于流程演示，不代表任何公司真实经营情况。\n金额单位：元。\n\"\"\"\nimport os\nimport numpy as np\nimport pandas as pd\nimport matplotlib\nmatplotlib.use('Agg')\nimport matplotlib.pyplot as plt\nplt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'DejaVu Sans']\nplt.rcParams['axes.unicode_minus'] = False\n\nTOL = 1e-8\nIN_FILE = 'clean.csv'\nOUT_FILE = 'monthly_summary.csv'\n\n# ---------- 1. 读取前序产物 clean.csv（缺失则报错，禁止重造数据） ----------\nif not os.path.exists(IN_FILE):\n    raise FileNotFoundError(f\"缺少约定输入文件 {IN_FILE}，本步骤不重造数据，请先执行步骤1。\")\n\nclean = pd.read_csv(IN_FILE)\nprint(f\"[读取] {IN_FILE} 行数={len(clean)} 列={list(clean.columns)}\")\n\n# 校验必要列\nrequired = ['order_id', 'month', 'revenue', 'cost']\nmissing_cols = [c for c in required if c not in clean.columns]\nif missing_cols:\n    raise ValueError(f\"clean.csv 缺少必要列: {missing_cols}\")\n\n# 规避陷阱：clean.csv 应已无缺失；此处仍做防御性检查，缺失则报错而非用0冒充\nif clean[['month', 'revenue', 'cost']].isna().sum().sum() != 0:\n    raise ValueError(\"clean.csv 存在缺失值，违反清洗契约，请检查步骤1。\")\n\n# 规避陷阱：确认 clean.csv 内 order_id 无重复（去重已在步骤1完成）\ndup_in_clean = int(clean['order_id'].duplicated().sum())\nprint(f\"[检查] clean.csv 内重复 order_id 数={dup_in_clean}（应为0）\")\n\n# ---------- 2. 按 month 汇总（不复制原始数据重算，仅基于 clean.csv） ----------\n# 规避陷阱：毛利率用总额加权计算，绝不平均单笔毛利率\ngrp = clean.groupby('month', as_index=False).agg(\n    revenue=('revenue', 'sum'),\n    cost=('cost', 'sum'),\n    orders=('order_id', 'count'),\n)\ngrp['gross_profit'] = grp['revenue'] - grp['cost']\n# 毛利率 = 毛利 / 总收入（总额口径）\ngrp['gross_margin'] = grp['gross_profit'] / grp['revenue']\n\n# 列名与顺序严格固定\ngrp = grp[['month', 'revenue', 'cost', 'gross_profit', 'gross_margin', 'orders']]\ngrp = grp.sort_values('month').reset_index(drop=True)\n\n# ---------- 3. 落盘 ----------\ngrp.to_csv(OUT_FILE, index=False, encoding='utf-8-sig')\nprint(f\"[写出] {OUT_FILE} 行数={len(grp)}\")\n\n# ---------- 4. 回读并执行验收清单 ----------\nchk = pd.read_csv(OUT_FILE)\nprint(\"\\n===== 验收清单 =====\")\n\n# 4.1 列名与顺序\ncols_ok = list(chk.columns) == ['month', 'revenue', 'cost', 'gross_profit', 'gross_margin', 'orders']\nprint(f\"[1] 列名精确匹配: {cols_ok} -> {list(chk.columns)}\")\n\n# 4.2 总额一致性（与 clean.csv 明细合计，容差1e-8）\nrev_ok = abs(chk['revenue'].sum() - clean['revenue'].sum()) < TOL\ncost_ok = abs(chk['cost'].sum() - clean['cost'].sum()) < TOL\nprint(f\"[2] revenue 合计一致: {rev_ok} (汇总={chk['revenue'].sum()} 明细={clean['revenue'].sum()})\")\nprint(f\"[2] cost 合计一致: {cost_ok} (汇总={chk['cost'].sum()} 明细={clean['cost'].sum()})\")\n\n# 4.3 orders 合计等于 clean.csv 行数\norders_ok = int(chk['orders'].sum()) == len(clean)\nprint(f\"[3] orders 合计==明细行数: {orders_ok} (汇总={int(chk['orders'].sum())} 明细={len(clean)})\")\n\n# 4.4 逐月校验毛利与毛利率\ngp_ok = bool(np.all(np.abs(chk['gross_profit'] - (chk['revenue'] - chk['cost'])) < TOL))\ngm_ok = bool(np.all(np.abs(chk['gross_margin'] - chk['gross_profit'] / chk['revenue']) < TOL))\nprint(f\"[4] 逐月 gross_profit==revenue-cost: {gp_ok}\")\nprint(f\"[4] 逐月 gross_margin==gross_profit/revenue: {gm_ok}\")\n\n# 4.5 无缺失值\nna_ok = int(chk.isna().sum().sum()) == 0\nprint(f\"[5] 无缺失值: {na_ok} (缺失总数={int(chk.isna().sum().sum())})\")\n\nall_ok = all([cols_ok, rev_ok, cost_ok, orders_ok, gp_ok, gm_ok, na_ok])\nprint(f\"\\n[结论] 全部验收通过: {all_ok}\")\n\n# ---------- 5. 打印月度汇总（展示格式可舍入，原值已落盘） ----------\nprint(\"\\n===== 月度汇总（模拟数据，单位：元）=====\")\nshow = chk.copy()\nshow['gross_margin'] = (show['gross_margin'] * 100).round(2).astype(str) + '%'\nprint(show.to_string(index=False))\n\n# 毛利风险提示（基于模拟数据，非真实经营结论）\nneg = chk[chk['gross_profit'] < 0]\nif len(neg) > 0:\n    print(f\"\\n[风险] 存在毛利为负的月份（模拟数据）：{list(neg['month'])}，已按规则保留。\")\nelse:\n    print(\"\\n[风险] 无毛利为负月份（模拟数据）。\")",
+   "n_attempts": 1,
+   "fixed": false,
+   "exhausted": false,
+   "attempts": [
+    {
+     "n": 1,
+     "ok": true,
+     "stdout": "[读取] clean.csv 行数=12 列=['order_id', 'month', 'revenue', 'cost']\n[检查] clean.csv 内重复 order_id 数=0（应为0）\n[写出] monthly_summary.csv 行数=4\n\n===== 验收清单 =====\n[1] 列名精确匹配: True -> ['month', 'revenue', 'cost', 'gross_profit', 'gross_margin', 'orders']\n[2] revenue 合计一致: True (汇总=17000.0 明细=17000.0)\n[2] cost 合计一致: True (汇总=11400.0 明细=11400.0)\n[3] orders 合计==明细行数: True (汇总=12 明细=12)\n[4] 逐月 gross_profit==revenue-cost: True\n[4] 逐月 gross_margin==gross_profit/revenue: True\n[5] 无缺失值: True (缺失总数=0)\n\n[结论] 全部验收通过: True\n\n===== 月度汇总（模拟数据，单位：元）=====\n  month  revenue   cost  gross_profit gross_margin  orders\n2026-01   3500.0 2180.0        1320.0       37.71%       3\n2026-02   4000.0 2700.0        1300.0        32.5%       3\n2026-03   4300.0 3180.0        1120.0       26.05%       3\n2026-04   5200.0 3340.0        1860.0       35.77%       3\n\n[风险] 无毛利为负月份（模拟数据）。\n",
+     "stderr": "",
+     "error_kind": "",
+     "duration_ms": 1760,
+     "truncated": false,
+     "code": "# -*- coding: utf-8 -*-\n\"\"\"\n步骤2：读取 clean.csv，按 month 汇总生成 monthly_summary.csv\n数据说明：本数据为【模拟数据】，仅用于流程演示，不代表任何公司真实经营情况。\n金额单位：元。\n\"\"\"\nimport os\nimport numpy as np\nimport pandas as pd\nimport matplotlib\nmatplotlib.use('Agg')\nimport matplotlib.pyplot as plt\nplt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'DejaVu Sans']\nplt.rcParams['axes.unicode_minus'] = False\n\nTOL = 1e-8\nIN_FILE = 'clean.csv'\nOUT_FILE = 'monthly_summary.csv'\n\n# ---------- 1. 读取前序产物 clean.csv（缺失则报错，禁止重造数据） ----------\nif not os.path.exists(IN_FILE):\n    raise FileNotFoundError(f\"缺少约定输入文件 {IN_FILE}，本步骤不重造数据，请先执行步骤1。\")\n\nclean = pd.read_csv(IN_FILE)\nprint(f\"[读取] {IN_FILE} 行数={len(clean)} 列={list(clean.columns)}\")\n\n# 校验必要列\nrequired = ['order_id', 'month', 'revenue', 'cost']\nmissing_cols = [c for c in required if c not in clean.columns]\nif missing_cols:\n    raise ValueError(f\"clean.csv 缺少必要列: {missing_cols}\")\n\n# 规避陷阱：clean.csv 应已无缺失；此处仍做防御性检查，缺失则报错而非用0冒充\nif clean[['month', 'revenue', 'cost']].isna().sum().sum() != 0:\n    raise ValueError(\"clean.csv 存在缺失值，违反清洗契约，请检查步骤1。\")\n\n# 规避陷阱：确认 clean.csv 内 order_id 无重复（去重已在步骤1完成）\ndup_in_clean = int(clean['order_id'].duplicated().sum())\nprint(f\"[检查] clean.csv 内重复 order_id 数={dup_in_clean}（应为0）\")\n\n# ---------- 2. 按 month 汇总（不复制原始数据重算，仅基于 clean.csv） ----------\n# 规避陷阱：毛利率用总额加权计算，绝不平均单笔毛利率\ngrp = clean.groupby('month', as_index=False).agg(\n    revenue=('revenue', 'sum'),\n    cost=('cost', 'sum'),\n    orders=('order_id', 'count'),\n)\ngrp['gross_profit'] = grp['revenue'] - grp['cost']\n# 毛利率 = 毛利 / 总收入（总额口径）\ngrp['gross_margin'] = grp['gross_profit'] / grp['revenue']\n\n# 列名与顺序严格固定\ngrp = grp[['month', 'revenue', 'cost', 'gross_profit', 'gross_margin', 'orders']]\ngrp = grp.sort_values('month').reset_index(drop=True)\n\n# ---------- 3. 落盘 ----------\ngrp.to_csv(OUT_FILE, index=False, encoding='utf-8-sig')\nprint(f\"[写出] {OUT_FILE} 行数={len(grp)}\")\n\n# ---------- 4. 回读并执行验收清单 ----------\nchk = pd.read_csv(OUT_FILE)\nprint(\"\\n===== 验收清单 =====\")\n\n# 4.1 列名与顺序\ncols_ok = list(chk.columns) == ['month', 'revenue', 'cost', 'gross_profit', 'gross_margin', 'orders']\nprint(f\"[1] 列名精确匹配: {cols_ok} -> {list(chk.columns)}\")\n\n# 4.2 总额一致性（与 clean.csv 明细合计，容差1e-8）\nrev_ok = abs(chk['revenue'].sum() - clean['revenue'].sum()) < TOL\ncost_ok = abs(chk['cost'].sum() - clean['cost'].sum()) < TOL\nprint(f\"[2] revenue 合计一致: {rev_ok} (汇总={chk['revenue'].sum()} 明细={clean['revenue'].sum()})\")\nprint(f\"[2] cost 合计一致: {cost_ok} (汇总={chk['cost'].sum()} 明细={clean['cost'].sum()})\")\n\n# 4.3 orders 合计等于 clean.csv 行数\norders_ok = int(chk['orders'].sum()) == len(clean)\nprint(f\"[3] orders 合计==明细行数: {orders_ok} (汇总={int(chk['orders'].sum())} 明细={len(clean)})\")\n\n# 4.4 逐月校验毛利与毛利率\ngp_ok = bool(np.all(np.abs(chk['gross_profit'] - (chk['revenue'] - chk['cost'])) < TOL))\ngm_ok = bool(np.all(np.abs(chk['gross_margin'] - chk['gross_profit'] / chk['revenue']) < TOL))\nprint(f\"[4] 逐月 gross_profit==revenue-cost: {gp_ok}\")\nprint(f\"[4] 逐月 gross_margin==gross_profit/revenue: {gm_ok}\")\n\n# 4.5 无缺失值\nna_ok = int(chk.isna().sum().sum()) == 0\nprint(f\"[5] 无缺失值: {na_ok} (缺失总数={int(chk.isna().sum().sum())})\")\n\nall_ok = all([cols_ok, rev_ok, cost_ok, orders_ok, gp_ok, gm_ok, na_ok])\nprint(f\"\\n[结论] 全部验收通过: {all_ok}\")\n\n# ---------- 5. 打印月度汇总（展示格式可舍入，原值已落盘） ----------\nprint(\"\\n===== 月度汇总（模拟数据，单位：元）=====\")\nshow = chk.copy()\nshow['gross_margin'] = (show['gross_margin'] * 100).round(2).astype(str) + '%'\nprint(show.to_string(index=False))\n\n# 毛利风险提示（基于模拟数据，非真实经营结论）\nneg = chk[chk['gross_profit'] < 0]\nif len(neg) > 0:\n    print(f\"\\n[风险] 存在毛利为负的月份（模拟数据）：{list(neg['month'])}，已按规则保留。\")\nelse:\n    print(\"\\n[风险] 无毛利为负月份（模拟数据）。\")",
+     "repair_reason": "",
+     "code_diff": "",
+     "acceptance": {
+      "checks": [
+       {
+        "name": "执行退出码为 0",
+        "passed": true,
+        "detail": "returncode=0",
+        "required": true
+       },
+       {
+        "name": "运行有实质输出",
+        "passed": true,
+        "detail": "846 字符 / 19 行",
+        "required": false
+       },
+       {
+        "name": "产生至少一个文件产物",
+        "passed": true,
+        "detail": "1 个",
+        "required": false
+       },
+       {
+        "name": "monthly_summary.csv 存在",
+        "passed": true,
+        "detail": "249 字节",
+        "required": true
+       },
+       {
+        "name": "monthly_summary.csv 非空",
+        "passed": true,
+        "detail": "249 字节",
+        "required": true
+       },
+       {
+        "name": "monthly_summary.csv 是可解析 CSV",
+        "passed": true,
+        "detail": "5 行（含表头）",
+        "required": true
+       },
+       {
+        "name": "monthly_summary.csv 含表头且列数 > 0",
+        "passed": true,
+        "detail": "列：﻿month, revenue, cost, gross_profit, gross_margin, orders",
+        "required": true
+       },
+       {
+        "name": "monthly_summary.csv 含数据行",
+        "passed": true,
+        "detail": "4 行数据",
+        "required": true
+       },
+       {
+        "name": "monthly_summary.csv 各行列数一致",
+        "passed": true,
+        "detail": "列数集合 [6]",
+        "required": true
+       },
+       {
+        "name": "步骤交付：monthly_summary.csv",
+        "passed": true,
+        "detail": "存在"
+       },
+       {
+        "name": "输入版本：clean.csv",
+        "passed": true,
+        "detail": "已携带已登记版本"
+       }
+      ],
+      "verifications": [
+       {
+        "item": "回读 monthly_summary.csv：list(df.columns) 精确等于 ['month','revenue','cost','gross_profit','gross_margin','orders']",
+        "passed": true,
+        "state": "passed",
+        "evidence": "实际产物 monthly_summary.csv 的 columns 为 ['month','revenue','cost','gross_profit','gross_margin','orders']，与要求完全一致；运行输出 [1] 列名精确匹配: True。"
+       },
+       {
+        "item": "总额一致性：monthly_summary 的 revenue 合计与 cost 合计分别等于 clean.csv 的 revenue 合计与 cost 合计，绝对容差 1e-8",
+        "passed": true,
+        "state": "passed",
+        "evidence": "monthly_summary.csv 各行 revenue 为 3500.0+4000.0+4300.0+5200.0=17000.0，cost 为 2180.0+2700.0+3180.0+3340.0=11400.0；上游 step1_clean.csv 共 12 行，运行输出显示明细 revenue 合计=17000.0、cost 合计=11400.0，偏差为 0，在 1e-8 容差内。"
+       },
+       {
+        "item": "orders 合计等于 clean.csv 行数",
+        "passed": true,
+        "state": "passed",
+        "evidence": "monthly_summary.csv 各行 orders 均为 3，合计 3+3+3+3=12；上游 step1_clean.csv rows=12，运行输出 [3] orders 合计==明细行数: True (汇总=12 明细=12)。"
+       },
+       {
+        "item": "逐月校验 gross_profit == revenue - cost 且 gross_margin == gross_profit / revenue，绝对容差 1e-8",
+        "passed": true,
+        "state": "passed",
+        "evidence": "逐月核对：2026-01 3500-2180=1320，1320/3500=0.37714285714285717；2026-02 4000-2700=1300，1300/4000=0.325；2026-03 4300-3180=1120，1120/4300=0.26046511627906976；2026-04 5200-3340=1860，1860/5200=0.3576923076923077，均与产物一致，偏差为 0，在 1e-8 容差内；运行输出 [4] 两项校验均为 True。"
+       },
+       {
+        "item": "无缺失值（df.isna().sum().sum()==0）",
+        "passed": true,
+        "state": "passed",
+        "evidence": "monthly_summary.csv 的 4 行 6 列样本中 month、revenue、cost、gross_profit、gross_margin、orders 均有值，无空字段；运行输出 [5] 无缺失值: True (缺失总数=0)。"
+       }
+      ],
+      "state": "passed"
+     }
+    }
+   ],
+   "artifacts": [
+    {
+     "name": "step2_monthly_summary.csv",
+     "kind": "真实运行产物",
+     "bytes": 249,
+     "sha256": "a2a0524e5ba15ad02d37b77ae6b6fd3ade0c4450dd93d55b1bab18009e1b7027",
+     "from_step": 1,
+     "url": "/api/runs/b5492bb7-20261010-083955-a445/artifacts/step2_monthly_summary.csv",
+     "logical_name": "monthly_summary.csv",
+     "source_run_id": "b5492bb7-20261010-083955-a445",
+     "version": 1
+    }
+   ],
+   "checks": [
+    {
+     "name": "执行退出码为 0",
+     "passed": true,
+     "detail": "returncode=0",
+     "required": true
+    },
+    {
+     "name": "运行有实质输出",
+     "passed": true,
+     "detail": "846 字符 / 19 行",
+     "required": false
+    },
+    {
+     "name": "产生至少一个文件产物",
+     "passed": true,
+     "detail": "1 个",
+     "required": false
+    },
+    {
+     "name": "monthly_summary.csv 存在",
+     "passed": true,
+     "detail": "249 字节",
+     "required": true
+    },
+    {
+     "name": "monthly_summary.csv 非空",
+     "passed": true,
+     "detail": "249 字节",
+     "required": true
+    },
+    {
+     "name": "monthly_summary.csv 是可解析 CSV",
+     "passed": true,
+     "detail": "5 行（含表头）",
+     "required": true
+    },
+    {
+     "name": "monthly_summary.csv 含表头且列数 > 0",
+     "passed": true,
+     "detail": "列：﻿month, revenue, cost, gross_profit, gross_margin, orders",
+     "required": true
+    },
+    {
+     "name": "monthly_summary.csv 含数据行",
+     "passed": true,
+     "detail": "4 行数据",
+     "required": true
+    },
+    {
+     "name": "monthly_summary.csv 各行列数一致",
+     "passed": true,
+     "detail": "列数集合 [6]",
+     "required": true
+    },
+    {
+     "name": "步骤交付：monthly_summary.csv",
+     "passed": true,
+     "detail": "存在",
+     "required": true
+    },
+    {
+     "name": "输入版本：clean.csv",
+     "passed": true,
+     "detail": "已携带已登记版本",
+     "required": true
+    }
+   ],
+   "checks_passed": 9,
+   "checks_total": 9,
+   "verifications": [
+    {
+     "item": "回读 monthly_summary.csv：list(df.columns) 精确等于 ['month','revenue','cost','gross_profit','gross_margin','orders']",
+     "passed": true,
+     "evidence": "实际产物 monthly_summary.csv 的 columns 为 ['month','revenue','cost','gross_profit','gross_margin','orders']，与要求完全一致；运行输出 [1] 列名精确匹配: True。",
+     "layer": "llm",
+     "state": "passed"
+    },
+    {
+     "item": "总额一致性：monthly_summary 的 revenue 合计与 cost 合计分别等于 clean.csv 的 revenue 合计与 cost 合计，绝对容差 1e-8",
+     "passed": true,
+     "evidence": "monthly_summary.csv 各行 revenue 为 3500.0+4000.0+4300.0+5200.0=17000.0，cost 为 2180.0+2700.0+3180.0+3340.0=11400.0；上游 step1_clean.csv 共 12 行，运行输出显示明细 revenue 合计=17000.0、cost 合计=11400.0，偏差为 0，在 1e-8 容差内。",
+     "layer": "llm",
+     "state": "passed"
+    },
+    {
+     "item": "orders 合计等于 clean.csv 行数",
+     "passed": true,
+     "evidence": "monthly_summary.csv 各行 orders 均为 3，合计 3+3+3+3=12；上游 step1_clean.csv rows=12，运行输出 [3] orders 合计==明细行数: True (汇总=12 明细=12)。",
+     "layer": "llm",
+     "state": "passed"
+    },
+    {
+     "item": "逐月校验 gross_profit == revenue - cost 且 gross_margin == gross_profit / revenue，绝对容差 1e-8",
+     "passed": true,
+     "evidence": "逐月核对：2026-01 3500-2180=1320，1320/3500=0.37714285714285717；2026-02 4000-2700=1300，1300/4000=0.325；2026-03 4300-3180=1120，1120/4300=0.26046511627906976；2026-04 5200-3340=1860，1860/5200=0.3576923076923077，均与产物一致，偏差为 0，在 1e-8 容差内；运行输出 [4] 两项校验均为 True。",
+     "layer": "llm",
+     "state": "passed"
+    },
+    {
+     "item": "无缺失值（df.isna().sum().sum()==0）",
+     "passed": true,
+     "evidence": "monthly_summary.csv 的 4 行 6 列样本中 month、revenue、cost、gross_profit、gross_margin、orders 均有值，无空字段；运行输出 [5] 无缺失值: True (缺失总数=0)。",
+     "layer": "llm",
+     "state": "passed"
+    }
+   ],
+   "verification_passed": 5,
+   "verification_total": 5,
+   "verify_skip_reason": "",
+   "error": "",
+   "duration_ms": 9599,
+   "started_at_ms": 1791592818324,
+   "ended_at_ms": 1791592827923,
+   "stages": {
+    "code_gen_ms": 5213,
+    "llm_calls": 1,
+    "llm_cost_yuan": 0.0,
+    "syntax_check_ms": 2,
+    "sandbox_try1_ms": 1762,
+    "verify_sem_ms": 2571,
+    "verify_det_ms": 1
+   }
+  },
+  {
+   "idx": 2,
+   "action": "仅读取 monthly_summary.csv，绘制 revenue/cost/gross_profit 月度趋势折线图并导出矢量 figure.svg，同时撰写 report.md 管理层报告。",
+   "skill": "scientific-visualization",
+   "status": "done",
+   "depends_on": [
+    1
+   ],
+   "inputs": [
+    "clean.csv",
+    "monthly_summary.csv"
+   ],
+   "input_artifacts": [
+    {
+     "logical_name": "clean.csv",
+     "name": "step1_clean.csv",
+     "from_step": 0,
+     "sha256": "7e6cbc82b564f901f3958e2ec28d58fa5ae2867448efd8e06afd1e4cf51c0026"
+    },
+    {
+     "logical_name": "monthly_summary.csv",
+     "name": "step2_monthly_summary.csv",
+     "from_step": 1,
+     "sha256": "a2a0524e5ba15ad02d37b77ae6b6fd3ade0c4450dd93d55b1bab18009e1b7027"
+    }
+   ],
+   "contract": {
+    "input_files": [
+     "monthly_summary.csv"
+    ],
+    "output_files": [
+     "figure.svg",
+     "report.md"
+    ],
+    "data_checks": [],
+    "verification": [
+     "figure.svg 存在且为矢量 SVG，坐标轴含月份与金额（元）标注，y 轴下限为 0",
+     "report.md 含关键词：模拟数据、元、毛利风险、行动建议",
+     "report.md 中引用的月度数值与 monthly_summary.csv 逐值一致（回读比对）",
+     "report.md 不含将模拟数据推断为公司真实经营情况的表述"
+    ],
+    "expected_output": "figure.svg 趋势图与 report.md 管理层报告",
+    "check": "figure.svg 与 report.md 均生成，报告数值与 monthly_summary.csv 一致，且模拟数据与单位标注齐全。"
+   },
+   "dependency_reason": "真实文件读写依赖：monthly_summary.csv",
+   "code": "# -*- coding: utf-8 -*-\n\"\"\"\n步骤3：读取 monthly_summary.csv，绘制趋势图 figure.svg 并撰写 report.md\n注意：本步骤仅使用模拟订单数据，不联网，不推断公司真实经营情况。\n\"\"\"\nimport os\nimport sys\nimport pandas as pd\nimport numpy as np\nimport matplotlib\nmatplotlib.use('Agg')\nimport matplotlib.pyplot as plt\n\n# 中文字体配置\nplt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'DejaVu Sans']\nplt.rcParams['axes.unicode_minus'] = False\nplt.rcParams['font.size'] = 11\nplt.rcParams['axes.linewidth'] = 1.0\nplt.rcParams['lines.linewidth'] = 2.0\n\nINPUT_FILE = 'monthly_summary.csv'\nOUT_FIG = 'figure.svg'\nOUT_REPORT = 'report.md'\n\n# ---------- 1. 读取输入（缺失必须报错，禁止重造数据） ----------\nif not os.path.exists(INPUT_FILE):\n    raise FileNotFoundError(f\"约定输入文件缺失：{INPUT_FILE}，本步骤禁止重造数据。\")\n\ndf = pd.read_csv(INPUT_FILE)\nrequired_cols = ['month', 'revenue', 'cost', 'gross_profit', 'gross_margin', 'orders']\nmissing = [c for c in required_cols if c not in df.columns]\nif missing:\n    raise ValueError(f\"monthly_summary.csv 缺少必需列：{missing}\")\n\ndf = df.sort_values('month').reset_index(drop=True)\nprint(f\"[读取] monthly_summary.csv 行数={len(df)}，列={list(df.columns)}\")\nprint(df.to_string(index=False))\n\n# ---------- 2. 绘图（规避陷阱：单轴、y 轴下限 0、色觉友好配色） ----------\n# 色觉障碍友好配色（Okabe-Ito 调色板）\nC_REV = '#0072B2'   # 蓝\nC_COST = '#D55E00'  # 橙\nC_GP = '#009E73'    # 绿\n\nfig, ax = plt.subplots(figsize=(8.0, 4.8), dpi=150)\n\nx = np.arange(len(df))\nax.plot(x, df['revenue'], marker='o', color=C_REV, label='营业收入 revenue')\nax.plot(x, df['cost'], marker='s', color=C_COST, label='成本 cost')\nax.plot(x, df['gross_profit'], marker='^', color=C_GP, label='毛利 gross_profit')\n\n# 数值标注（保留源精度，仅展示格式）\nfor xi, v in zip(x, df['revenue']):\n    ax.annotate(f'{v:g}', (xi, v), textcoords='offset points', xytext=(0, 7),\n                ha='center', fontsize=8, color=C_REV)\nfor xi, v in zip(x, df['cost']):\n    ax.annotate(f'{v:g}', (xi, v), textcoords='offset points', xytext=(0, -13),\n                ha='center', fontsize=8, color=C_COST)\nfor xi, v in zip(x, df['gross_profit']):\n    ax.annotate(f'{v:g}', (xi, v), textcoords='offset points', xytext=(0, 7),\n                ha='center', fontsize=8, color=C_GP)\n\nax.set_xticks(x)\nax.set_xticklabels(df['month'], rotation=0)\nax.set_xlabel('月份 month')\nax.set_ylabel('金额（元）')\nax.set_title('月度收入 / 成本 / 毛利趋势（模拟数据，单位：元）', fontsize=12)\n\n# 规避陷阱：y 轴下限固定为 0，不截断夸大差异\nymax = float(max(df['revenue'].max(), df['cost'].max(), df['gross_profit'].max()))\nymin = float(min(0.0, df['gross_profit'].min()))\nax.set_ylim(ymin, ymax * 1.18)\n\nax.grid(True, axis='y', linestyle='--', alpha=0.4)\nax.legend(loc='best', frameon=False)\nfig.tight_layout()\n\n# ---------- 3. 生成 report.md（数值回读比对，逐值一致） ----------\ndef fmt(v):\n    return f\"{v:g}\"\n\nlines = []\nlines.append(\"# 月度经营趋势管理层报告（模拟数据）\\n\")\nlines.append(\"> **数据声明**：本报告全部基于公开的**模拟订单数据**，仅用于演示分析流程，\"\n             \"**不代表任何公司真实经营情况**，不得据此推断真实业务结论。\\n\")\nlines.append(\"> **金额单位**：本文所有金额均为**元**。\\n\")\n\nlines.append(\"## 一、月度汇总数据\\n\")\nlines.append(\"| 月份 | 营业收入(元) | 成本(元) | 毛利(元) | 毛利率 | 订单数 |\")\nlines.append(\"| --- | ---: | ---: | ---: | ---: | ---: |\")\nfor _, r in df.iterrows():\n    lines.append(f\"| {r['month']} | {fmt(r['revenue'])} | {fmt(r['cost'])} | \"\n                 f\"{fmt(r['gross_profit'])} | {r['gross_margin']:.4f} | {int(r['orders'])} |\")\n\n# 关键指标\ntotal_rev = df['revenue'].sum()\ntotal_cost = df['cost'].sum()\ntotal_gp = df['gross_profit'].sum()\noverall_margin = total_gp / total_rev if total_rev else float('nan')\nneg_months = df[df['gross_profit'] < 0]['month'].tolist()\nmin_margin_row = df.loc[df['gross_margin'].idxmin()]\n\nlines.append(\"\\n## 二、关键指标\\n\")\nlines.append(f\"- 累计营业收入：{fmt(total_rev)} 元\")\nlines.append(f\"- 累计成本：{fmt(total_cost)} 元\")\nlines.append(f\"- 累计毛利：{fmt(total_gp)} 元\")\nlines.append(f\"- 整体毛利率：{overall_margin:.4f}\")\nlines.append(f\"- 毛利为负的月份：{('、'.join(neg_months) if neg_months else '无')}\")\nlines.append(f\"- 毛利率最低月份：{min_margin_row['month']}（毛利率 {min_margin_row['gross_margin']:.4f}）\")\n\nlines.append(\"\\n## 三、毛利风险\\n\")\nif neg_months:\n    lines.append(f\"- **毛利风险**：以下月份毛利为负，存在亏损风险：{'、'.join(neg_months)}。\")\nelse:\n    lines.append(\"- **毛利风险**：各月毛利均为正，但仍需关注毛利率波动带来的盈利质量风险。\")\nlines.append(f\"- 毛利率最低月份为 {min_margin_row['month']}，毛利率仅 {min_margin_row['gross_margin']:.4f}，\"\n             \"若成本继续上升或收入下滑，可能进一步侵蚀利润。\")\nlines.append(\"- 收入与成本同步增长时，需警惕毛利率被摊薄的结构性风险。\")\n\nlines.append(\"\\n## 四、行动建议\\n\")\nlines.append(\"1. **行动建议**：对毛利为负或毛利率偏低的月份进行成本结构复盘，定位高成本订单。\")\nlines.append(\"2. **行动建议**：建立月度毛利率预警阈值，低于阈值时触发定价或采购复核。\")\nlines.append(\"3. **行动建议**：对低毛利订单评估是否调整定价策略或优化供应链成本。\")\nlines.append(\"4. **行动建议**：持续跟踪收入与成本增速差，避免规模增长伴随盈利质量下降。\")\n\nlines.append(\"\\n## 五、图表\\n\")\nlines.append(\"![月度趋势](figure.svg)\\n\")\nlines.append(\"*图注：本图为模拟订单数据的月度收入、成本与毛利趋势折线图，\"\n             \"横轴为月份，纵轴为金额（元），y 轴自 0 起，未截断坐标轴。*\\n\")\n\nreport_text = \"\\n\".join(lines)\n\n# ---------- 4. 回读比对：report 中数值与 monthly_summary.csv 逐值一致 ----------\nok = True\nfor _, r in df.iterrows():\n    for col in ['revenue', 'cost', 'gross_profit']:\n        token = fmt(r[col])\n        if token not in report_text:\n            ok = False\n            print(f\"[比对失败] {r['month']} {col}={token} 未在报告中找到\")\nprint(f\"[回读比对] report.md 数值与 monthly_summary.csv 逐值一致：{ok}\")\n\n# 关键词检查\nfor kw in ['模拟数据', '元', '毛利风险', '行动建议']:\n    print(f\"[关键词] '{kw}' 存在：{kw in report_text}\")\n\n# 规避陷阱检查\nprint(\"[陷阱规避] 单轴折线图（无双轴）：True\")\nprint(f\"[陷阱规避] y 轴下限={ax.get_ylim()[0]:g}（>=0 不截断）：{ax.get_ylim()[0] <= 0}\")\nprint(\"[陷阱规避] 使用色觉障碍友好配色（Okabe-Ito）：True\")\n\n# ---------- 5. 落盘 ----------\nfig.savefig(OUT_FIG, format='svg')\nwith open(OUT_REPORT, 'w', encoding='utf-8') as f:\n    f.write(report_text)\n\nprint(f\"[落盘] {OUT_FIG} 存在：{os.path.exists(OUT_FIG)}，大小={os.path.getsize(OUT_FIG)} 字节\")\nprint(f\"[落盘] {OUT_REPORT} 存在：{os.path.exists(OUT_REPORT)}，大小={os.path.getsize(OUT_REPORT)} 字节\")",
+   "n_attempts": 1,
+   "fixed": false,
+   "exhausted": false,
+   "attempts": [
+    {
+     "n": 1,
+     "ok": true,
+     "stdout": "[读取] monthly_summary.csv 行数=4，列=['month', 'revenue', 'cost', 'gross_profit', 'gross_margin', 'orders']\n  month  revenue   cost  gross_profit  gross_margin  orders\n2026-01   3500.0 2180.0        1320.0      0.377143       3\n2026-02   4000.0 2700.0        1300.0      0.325000       3\n2026-03   4300.0 3180.0        1120.0      0.260465       3\n2026-04   5200.0 3340.0        1860.0      0.357692       3\n[回读比对] report.md 数值与 monthly_summary.csv 逐值一致：True\n[关键词] '模拟数据' 存在：True\n[关键词] '元' 存在：True\n[关键词] '毛利风险' 存在：True\n[关键词] '行动建议' 存在：True\n[陷阱规避] 单轴折线图（无双轴）：True\n[陷阱规避] y 轴下限=0（>=0 不截断）：True\n[陷阱规避] 使用色觉障碍友好配色（Okabe-Ito）：True\n[落盘] figure.svg 存在：True，大小=59531 字节\n[落盘] report.md 存在：True，大小=1921 字节\n",
+     "stderr": "",
+     "error_kind": "",
+     "duration_ms": 1560,
+     "truncated": false,
+     "code": "# -*- coding: utf-8 -*-\n\"\"\"\n步骤3：读取 monthly_summary.csv，绘制趋势图 figure.svg 并撰写 report.md\n注意：本步骤仅使用模拟订单数据，不联网，不推断公司真实经营情况。\n\"\"\"\nimport os\nimport sys\nimport pandas as pd\nimport numpy as np\nimport matplotlib\nmatplotlib.use('Agg')\nimport matplotlib.pyplot as plt\n\n# 中文字体配置\nplt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'DejaVu Sans']\nplt.rcParams['axes.unicode_minus'] = False\nplt.rcParams['font.size'] = 11\nplt.rcParams['axes.linewidth'] = 1.0\nplt.rcParams['lines.linewidth'] = 2.0\n\nINPUT_FILE = 'monthly_summary.csv'\nOUT_FIG = 'figure.svg'\nOUT_REPORT = 'report.md'\n\n# ---------- 1. 读取输入（缺失必须报错，禁止重造数据） ----------\nif not os.path.exists(INPUT_FILE):\n    raise FileNotFoundError(f\"约定输入文件缺失：{INPUT_FILE}，本步骤禁止重造数据。\")\n\ndf = pd.read_csv(INPUT_FILE)\nrequired_cols = ['month', 'revenue', 'cost', 'gross_profit', 'gross_margin', 'orders']\nmissing = [c for c in required_cols if c not in df.columns]\nif missing:\n    raise ValueError(f\"monthly_summary.csv 缺少必需列：{missing}\")\n\ndf = df.sort_values('month').reset_index(drop=True)\nprint(f\"[读取] monthly_summary.csv 行数={len(df)}，列={list(df.columns)}\")\nprint(df.to_string(index=False))\n\n# ---------- 2. 绘图（规避陷阱：单轴、y 轴下限 0、色觉友好配色） ----------\n# 色觉障碍友好配色（Okabe-Ito 调色板）\nC_REV = '#0072B2'   # 蓝\nC_COST = '#D55E00'  # 橙\nC_GP = '#009E73'    # 绿\n\nfig, ax = plt.subplots(figsize=(8.0, 4.8), dpi=150)\n\nx = np.arange(len(df))\nax.plot(x, df['revenue'], marker='o', color=C_REV, label='营业收入 revenue')\nax.plot(x, df['cost'], marker='s', color=C_COST, label='成本 cost')\nax.plot(x, df['gross_profit'], marker='^', color=C_GP, label='毛利 gross_profit')\n\n# 数值标注（保留源精度，仅展示格式）\nfor xi, v in zip(x, df['revenue']):\n    ax.annotate(f'{v:g}', (xi, v), textcoords='offset points', xytext=(0, 7),\n                ha='center', fontsize=8, color=C_REV)\nfor xi, v in zip(x, df['cost']):\n    ax.annotate(f'{v:g}', (xi, v), textcoords='offset points', xytext=(0, -13),\n                ha='center', fontsize=8, color=C_COST)\nfor xi, v in zip(x, df['gross_profit']):\n    ax.annotate(f'{v:g}', (xi, v), textcoords='offset points', xytext=(0, 7),\n                ha='center', fontsize=8, color=C_GP)\n\nax.set_xticks(x)\nax.set_xticklabels(df['month'], rotation=0)\nax.set_xlabel('月份 month')\nax.set_ylabel('金额（元）')\nax.set_title('月度收入 / 成本 / 毛利趋势（模拟数据，单位：元）', fontsize=12)\n\n# 规避陷阱：y 轴下限固定为 0，不截断夸大差异\nymax = float(max(df['revenue'].max(), df['cost'].max(), df['gross_profit'].max()))\nymin = float(min(0.0, df['gross_profit'].min()))\nax.set_ylim(ymin, ymax * 1.18)\n\nax.grid(True, axis='y', linestyle='--', alpha=0.4)\nax.legend(loc='best', frameon=False)\nfig.tight_layout()\n\n# ---------- 3. 生成 report.md（数值回读比对，逐值一致） ----------\ndef fmt(v):\n    return f\"{v:g}\"\n\nlines = []\nlines.append(\"# 月度经营趋势管理层报告（模拟数据）\\n\")\nlines.append(\"> **数据声明**：本报告全部基于公开的**模拟订单数据**，仅用于演示分析流程，\"\n             \"**不代表任何公司真实经营情况**，不得据此推断真实业务结论。\\n\")\nlines.append(\"> **金额单位**：本文所有金额均为**元**。\\n\")\n\nlines.append(\"## 一、月度汇总数据\\n\")\nlines.append(\"| 月份 | 营业收入(元) | 成本(元) | 毛利(元) | 毛利率 | 订单数 |\")\nlines.append(\"| --- | ---: | ---: | ---: | ---: | ---: |\")\nfor _, r in df.iterrows():\n    lines.append(f\"| {r['month']} | {fmt(r['revenue'])} | {fmt(r['cost'])} | \"\n                 f\"{fmt(r['gross_profit'])} | {r['gross_margin']:.4f} | {int(r['orders'])} |\")\n\n# 关键指标\ntotal_rev = df['revenue'].sum()\ntotal_cost = df['cost'].sum()\ntotal_gp = df['gross_profit'].sum()\noverall_margin = total_gp / total_rev if total_rev else float('nan')\nneg_months = df[df['gross_profit'] < 0]['month'].tolist()\nmin_margin_row = df.loc[df['gross_margin'].idxmin()]\n\nlines.append(\"\\n## 二、关键指标\\n\")\nlines.append(f\"- 累计营业收入：{fmt(total_rev)} 元\")\nlines.append(f\"- 累计成本：{fmt(total_cost)} 元\")\nlines.append(f\"- 累计毛利：{fmt(total_gp)} 元\")\nlines.append(f\"- 整体毛利率：{overall_margin:.4f}\")\nlines.append(f\"- 毛利为负的月份：{('、'.join(neg_months) if neg_months else '无')}\")\nlines.append(f\"- 毛利率最低月份：{min_margin_row['month']}（毛利率 {min_margin_row['gross_margin']:.4f}）\")\n\nlines.append(\"\\n## 三、毛利风险\\n\")\nif neg_months:\n    lines.append(f\"- **毛利风险**：以下月份毛利为负，存在亏损风险：{'、'.join(neg_months)}。\")\nelse:\n    lines.append(\"- **毛利风险**：各月毛利均为正，但仍需关注毛利率波动带来的盈利质量风险。\")\nlines.append(f\"- 毛利率最低月份为 {min_margin_row['month']}，毛利率仅 {min_margin_row['gross_margin']:.4f}，\"\n             \"若成本继续上升或收入下滑，可能进一步侵蚀利润。\")\nlines.append(\"- 收入与成本同步增长时，需警惕毛利率被摊薄的结构性风险。\")\n\nlines.append(\"\\n## 四、行动建议\\n\")\nlines.append(\"1. **行动建议**：对毛利为负或毛利率偏低的月份进行成本结构复盘，定位高成本订单。\")\nlines.append(\"2. **行动建议**：建立月度毛利率预警阈值，低于阈值时触发定价或采购复核。\")\nlines.append(\"3. **行动建议**：对低毛利订单评估是否调整定价策略或优化供应链成本。\")\nlines.append(\"4. **行动建议**：持续跟踪收入与成本增速差，避免规模增长伴随盈利质量下降。\")\n\nlines.append(\"\\n## 五、图表\\n\")\nlines.append(\"![月度趋势](figure.svg)\\n\")\nlines.append(\"*图注：本图为模拟订单数据的月度收入、成本与毛利趋势折线图，\"\n             \"横轴为月份，纵轴为金额（元），y 轴自 0 起，未截断坐标轴。*\\n\")\n\nreport_text = \"\\n\".join(lines)\n\n# ---------- 4. 回读比对：report 中数值与 monthly_summary.csv 逐值一致 ----------\nok = True\nfor _, r in df.iterrows():\n    for col in ['revenue', 'cost', 'gross_profit']:\n        token = fmt(r[col])\n        if token not in report_text:\n            ok = False\n            print(f\"[比对失败] {r['month']} {col}={token} 未在报告中找到\")\nprint(f\"[回读比对] report.md 数值与 monthly_summary.csv 逐值一致：{ok}\")\n\n# 关键词检查\nfor kw in ['模拟数据', '元', '毛利风险', '行动建议']:\n    print(f\"[关键词] '{kw}' 存在：{kw in report_text}\")\n\n# 规避陷阱检查\nprint(\"[陷阱规避] 单轴折线图（无双轴）：True\")\nprint(f\"[陷阱规避] y 轴下限={ax.get_ylim()[0]:g}（>=0 不截断）：{ax.get_ylim()[0] <= 0}\")\nprint(\"[陷阱规避] 使用色觉障碍友好配色（Okabe-Ito）：True\")\n\n# ---------- 5. 落盘 ----------\nfig.savefig(OUT_FIG, format='svg')\nwith open(OUT_REPORT, 'w', encoding='utf-8') as f:\n    f.write(report_text)\n\nprint(f\"[落盘] {OUT_FIG} 存在：{os.path.exists(OUT_FIG)}，大小={os.path.getsize(OUT_FIG)} 字节\")\nprint(f\"[落盘] {OUT_REPORT} 存在：{os.path.exists(OUT_REPORT)}，大小={os.path.getsize(OUT_REPORT)} 字节\")",
+     "repair_reason": "",
+     "code_diff": "",
+     "acceptance": {
+      "checks": [
+       {
+        "name": "执行退出码为 0",
+        "passed": true,
+        "detail": "returncode=0",
+        "required": true
+       },
+       {
+        "name": "运行有实质输出",
+        "passed": true,
+        "detail": "691 字符 / 16 行",
+        "required": false
+       },
+       {
+        "name": "产生至少一个文件产物",
+        "passed": true,
+        "detail": "2 个",
+        "required": false
+       },
+       {
+        "name": "figure.svg 存在",
+        "passed": true,
+        "detail": "59531 字节",
+        "required": true
+       },
+       {
+        "name": "figure.svg 非空",
+        "passed": true,
+        "detail": "59531 字节",
+        "required": true
+       },
+       {
+        "name": "figure.svg 是图片产物",
+        "passed": true,
+        "detail": "59531 字节",
+        "required": true
+       },
+       {
+        "name": "report.md 存在",
+        "passed": true,
+        "detail": "1921 字节",
+        "required": true
+       },
+       {
+        "name": "report.md 非空",
+        "passed": true,
+        "detail": "1921 字节",
+        "required": true
+       },
+       {
+        "name": "步骤交付：figure.svg",
+        "passed": true,
+        "detail": "存在"
+       },
+       {
+        "name": "步骤交付：report.md",
+        "passed": true,
+        "detail": "存在"
+       },
+       {
+        "name": "输入版本：monthly_summary.csv",
+        "passed": true,
+        "detail": "已携带已登记版本"
+       }
+      ],
+      "verifications": [
+       {
+        "item": "figure.svg 存在且为矢量 SVG，坐标轴含月份与金额（元）标注，y 轴下限为 0",
+        "passed": true,
+        "state": "passed",
+        "evidence": "figure.svg 存在（59531 字节，sha256 4d16e5f3...），内容以 <?xml version=\"1.0\"...> 和 <svg ...> 开头，为矢量 SVG；SVG 文本含 x 轴刻度标签 2026-01/2026-02/2026-03/2026-04 及 x 轴标签“月份 month”；代码设置 ax.set_ylabel('金额（元）') 且 SVG 中可见对应文本；代码 ax.set_ylim(ymin, ymax*1.18)，其中 ymin=min(0.0, gross_profit.min())=0，运行输出确认 y 轴下限=0。"
+       },
+       {
+        "item": "report.md 含关键词：模拟数据、元、毛利风险、行动建议",
+        "passed": true,
+        "state": "passed",
+        "evidence": "report.md 内容含“模拟数据”（标题及数据声明）、“元”（金额单位声明及表格列名）、“毛利风险”（第三节标题）、“行动建议”（第四节标题）；运行输出关键词检查四项均为 True。"
+       },
+       {
+        "item": "report.md 中引用的月度数值与 monthly_summary.csv 逐值一致（回读比对）",
+        "passed": true,
+        "state": "passed",
+        "evidence": "上游 step2_monthly_summary.csv 实际值为 2026-01: revenue 3500.0/cost 2180.0/gross_profit 1320.0/gross_margin 0.37714285714285717；2026-02: 4000.0/2700.0/1300.0/0.325；2026-03: 4300.0/3180.0/1120.0/0.26046511627906976；2026-04: 5200.0/3340.0/1860.0/0.3576923076923077。report.md 表格逐值列出 3500/2180/1320/0.3771、4000/2700/1300/0.3250、4300/3180/1120/0.2605、5200/3340/1860/0.3577，与输入一致（毛利率为四位小数展示，非原值截断错误）；累计值 17000/11400/5600 与输入求和一致；运行输出回读比对 True。"
+       },
+       {
+        "item": "report.md 不含将模拟数据推断为公司真实经营情况的表述",
+        "passed": true,
+        "state": "passed",
+        "evidence": "report.md 数据声明明确“本报告全部基于公开的模拟订单数据，仅用于演示分析流程，不代表任何公司真实经营情况，不得据此推断真实业务结论”；全文未出现将模拟数据表述为公司真实经营情况的语句。"
+       }
+      ],
+      "state": "passed"
+     }
+    }
+   ],
+   "artifacts": [
+    {
+     "name": "step3_figure.svg",
+     "kind": "真实运行产物",
+     "bytes": 59531,
+     "sha256": "4d16e5f3c75b6152bc5aa5e36f23f47c54dcf74d3ab60e6c8b7fdf2a010b9fc8",
+     "from_step": 2,
+     "url": "/api/runs/b5492bb7-20261010-083955-a445/artifacts/step3_figure.svg",
+     "logical_name": "figure.svg",
+     "source_run_id": "b5492bb7-20261010-083955-a445",
+     "version": 1
+    },
+    {
+     "name": "step3_report.md",
+     "kind": "真实运行产物",
+     "bytes": 1921,
+     "sha256": "3a7da3738afe0c8de8e9878459b8233abc2e27722be125a72e3af0fd65e0660c",
+     "from_step": 2,
+     "url": "/api/runs/b5492bb7-20261010-083955-a445/artifacts/step3_report.md",
+     "logical_name": "report.md",
+     "source_run_id": "b5492bb7-20261010-083955-a445",
+     "version": 1
+    }
+   ],
+   "checks": [
+    {
+     "name": "执行退出码为 0",
+     "passed": true,
+     "detail": "returncode=0",
+     "required": true
+    },
+    {
+     "name": "运行有实质输出",
+     "passed": true,
+     "detail": "691 字符 / 16 行",
+     "required": false
+    },
+    {
+     "name": "产生至少一个文件产物",
+     "passed": true,
+     "detail": "2 个",
+     "required": false
+    },
+    {
+     "name": "figure.svg 存在",
+     "passed": true,
+     "detail": "59531 字节",
+     "required": true
+    },
+    {
+     "name": "figure.svg 非空",
+     "passed": true,
+     "detail": "59531 字节",
+     "required": true
+    },
+    {
+     "name": "figure.svg 是图片产物",
+     "passed": true,
+     "detail": "59531 字节",
+     "required": true
+    },
+    {
+     "name": "report.md 存在",
+     "passed": true,
+     "detail": "1921 字节",
+     "required": true
+    },
+    {
+     "name": "report.md 非空",
+     "passed": true,
+     "detail": "1921 字节",
+     "required": true
+    },
+    {
+     "name": "步骤交付：figure.svg",
+     "passed": true,
+     "detail": "存在",
+     "required": true
+    },
+    {
+     "name": "步骤交付：report.md",
+     "passed": true,
+     "detail": "存在",
+     "required": true
+    },
+    {
+     "name": "输入版本：monthly_summary.csv",
+     "passed": true,
+     "detail": "已携带已登记版本",
+     "required": true
+    }
+   ],
+   "checks_passed": 9,
+   "checks_total": 9,
+   "verifications": [
+    {
+     "item": "figure.svg 存在且为矢量 SVG，坐标轴含月份与金额（元）标注，y 轴下限为 0",
+     "passed": true,
+     "evidence": "figure.svg 存在（59531 字节，sha256 4d16e5f3...），内容以 <?xml version=\"1.0\"...> 和 <svg ...> 开头，为矢量 SVG；SVG 文本含 x 轴刻度标签 2026-01/2026-02/2026-03/2026-04 及 x 轴标签“月份 month”；代码设置 ax.set_ylabel('金额（元）') 且 SVG 中可见对应文本；代码 ax.set_ylim(ymin, ymax*1.18)，其中 ymin=min(0.0, gross_profit.min())=0，运行输出确认 y 轴下限=0。",
+     "layer": "llm",
+     "state": "passed"
+    },
+    {
+     "item": "report.md 含关键词：模拟数据、元、毛利风险、行动建议",
+     "passed": true,
+     "evidence": "report.md 内容含“模拟数据”（标题及数据声明）、“元”（金额单位声明及表格列名）、“毛利风险”（第三节标题）、“行动建议”（第四节标题）；运行输出关键词检查四项均为 True。",
+     "layer": "llm",
+     "state": "passed"
+    },
+    {
+     "item": "report.md 中引用的月度数值与 monthly_summary.csv 逐值一致（回读比对）",
+     "passed": true,
+     "evidence": "上游 step2_monthly_summary.csv 实际值为 2026-01: revenue 3500.0/cost 2180.0/gross_profit 1320.0/gross_margin 0.37714285714285717；2026-02: 4000.0/2700.0/1300.0/0.325；2026-03: 4300.0/3180.0/1120.0/0.26046511627906976；2026-04: 5200.0/3340.0/1860.0/0.3576923076923077。report.md 表格逐值列出 3500/2180/1320/0.3771、4000/2700/1300/0.3250、4300/3180/1120/0.2605、5200/3340/1860/0.3577，与输入一致（毛利率为四位小数展示，非原值截断错误）；累计值 17000/11400/5600 与输入求和一致；运行输出回读比对 True。",
+     "layer": "llm",
+     "state": "passed"
+    },
+    {
+     "item": "report.md 不含将模拟数据推断为公司真实经营情况的表述",
+     "passed": true,
+     "evidence": "report.md 数据声明明确“本报告全部基于公开的模拟订单数据，仅用于演示分析流程，不代表任何公司真实经营情况，不得据此推断真实业务结论”；全文未出现将模拟数据表述为公司真实经营情况的语句。",
+     "layer": "llm",
+     "state": "passed"
+    }
+   ],
+   "verification_passed": 4,
+   "verification_total": 4,
+   "verify_skip_reason": "",
+   "error": "",
+   "duration_ms": 12373,
+   "started_at_ms": 1791592827937,
+   "ended_at_ms": 1791592840310,
+   "stages": {
+    "code_gen_ms": 7937,
+    "llm_calls": 1,
+    "llm_cost_yuan": 0.0,
+    "syntax_check_ms": 6,
+    "sandbox_try1_ms": 1572,
+    "verify_sem_ms": 2784,
+    "verify_det_ms": 0
+   }
+  }
+ ],
+ "step_stats": {
+  "total": 3,
+  "done": 3,
+  "failed": 0,
+  "skipped": 0,
+  "retried": 0
+ },
+ "artifacts": [
+  {
+   "name": "step1_clean.csv",
+   "kind": "真实运行产物",
+   "bytes": 344,
+   "sha256": "7e6cbc82b564f901f3958e2ec28d58fa5ae2867448efd8e06afd1e4cf51c0026",
+   "from_step": 0,
+   "url": "/api/runs/b5492bb7-20261010-083955-a445/artifacts/step1_clean.csv",
+   "logical_name": "clean.csv",
+   "source_run_id": "b5492bb7-20261010-083955-a445",
+   "version": 1
+  },
+  {
+   "name": "step2_monthly_summary.csv",
+   "kind": "真实运行产物",
+   "bytes": 249,
+   "sha256": "a2a0524e5ba15ad02d37b77ae6b6fd3ade0c4450dd93d55b1bab18009e1b7027",
+   "from_step": 1,
+   "url": "/api/runs/b5492bb7-20261010-083955-a445/artifacts/step2_monthly_summary.csv",
+   "logical_name": "monthly_summary.csv",
+   "source_run_id": "b5492bb7-20261010-083955-a445",
+   "version": 1
+  },
+  {
+   "name": "step3_figure.svg",
+   "kind": "真实运行产物",
+   "bytes": 59531,
+   "sha256": "4d16e5f3c75b6152bc5aa5e36f23f47c54dcf74d3ab60e6c8b7fdf2a010b9fc8",
+   "from_step": 2,
+   "url": "/api/runs/b5492bb7-20261010-083955-a445/artifacts/step3_figure.svg",
+   "logical_name": "figure.svg",
+   "source_run_id": "b5492bb7-20261010-083955-a445",
+   "version": 1
+  },
+  {
+   "name": "step3_report.md",
+   "kind": "真实运行产物",
+   "bytes": 1921,
+   "sha256": "3a7da3738afe0c8de8e9878459b8233abc2e27722be125a72e3af0fd65e0660c",
+   "from_step": 2,
+   "url": "/api/runs/b5492bb7-20261010-083955-a445/artifacts/step3_report.md",
+   "logical_name": "report.md",
+   "source_run_id": "b5492bb7-20261010-083955-a445",
+   "version": 1
+  }
+ ],
+ "feedback": [
+  {
+   "name": "business-metrics-audit",
+   "exploit_before": 0.0,
+   "exploit_after": 0.0,
+   "delta": 0.0,
+   "nudged": false,
+   "mode": "shadow",
+   "observed_score": 1.0,
+   "shadow_exploit_after": 0.5647028388929881,
+   "shadow_delta": 0.5647028388929881,
+   "weight": 0.25,
+   "skip_reason": "单次运行只产生经验观察；未证明技能的因果贡献或跨任务增益，正式排序与技能网络不更新"
+  },
+  {
+   "name": "data-cleaning",
+   "exploit_before": 0.0,
+   "exploit_after": 0.0,
+   "delta": 0.0,
+   "nudged": false,
+   "mode": "shadow",
+   "observed_score": null,
+   "shadow_exploit_after": null,
+   "shadow_delta": null,
+   "weight": 0,
+   "skip_reason": "单次运行只产生经验观察；未证明技能的因果贡献或跨任务增益，正式排序与技能网络不更新"
+  },
+  {
+   "name": "scientific-visualization",
+   "exploit_before": 0.0,
+   "exploit_after": 0.0,
+   "delta": 0.0,
+   "nudged": false,
+   "mode": "shadow",
+   "observed_score": null,
+   "shadow_exploit_after": null,
+   "shadow_delta": null,
+   "weight": 0,
+   "skip_reason": "单次运行只产生经验观察；未证明技能的因果贡献或跨任务增益，正式排序与技能网络不更新"
+  }
+ ],
+ "evolution": {
+  "accepted": false,
+  "candidate": {
+   "name": "simulated-data-monthly-report-pipeline",
+   "state": "pending_frozen_evaluation"
+  },
+  "name": "simulated-data-monthly-report-pipeline",
+  "generation": 1,
+  "capability": "从原始订单明细 CSV 产出 clean.csv、monthly_summary.csv、figure.svg 与 report.md 四个交付物，并保证行数守恒与数值一致。",
+  "library_size": 1881,
+  "records": [
+   {
+    "op": "distill",
+    "name": "simulated-data-monthly-report-pipeline",
+    "accepted": false,
+    "reason": "G1 候选待验证",
+    "parent": [
+     "business-metrics-audit"
+    ]
+   }
+  ],
+  "skipped": false,
+  "skip_reason": "候选仅隔离保存，尚未证明跨任务增益"
+ },
+ "staged": {
+  "history_artifacts": [],
+  "retrieval_ms": 1015,
+  "ranking_ms": 3,
+  "orchestration": {
+   "order": [
+    "code-helper",
+    "business-metrics-audit",
+    "data-cleaning",
+    "descriptive-stats-csv-and-plot",
+    "scientific-visualization"
+   ],
+   "workflow": [
+    [
+     "business-metrics-audit",
+     "data-cleaning"
+    ],
+    [
+     "business-metrics-audit",
+     "descriptive-stats-csv-and-plot"
+    ],
+    [
+     "business-metrics-audit",
+     "scientific-visualization"
+    ],
+    [
+     "code-helper",
+     "business-metrics-audit"
+    ],
+    [
+     "code-helper",
+     "data-cleaning"
+    ],
+    [
+     "code-helper",
+     "scientific-visualization"
+    ],
+    [
+     "descriptive-stats-csv-and-plot",
+     "scientific-visualization"
+    ]
+   ],
+   "source": "relations+llm",
+   "degraded": true,
+   "reason": "该任务本质是按固定规则清洗订单明细、生成月度汇总、再产出趋势图与管理层报告，business-metrics-audit 直接覆盖 clean.csv/monthly_summary.csv/figure.svg/report.md 全链路，data-cleaning 支撑清洗规则，scientific-visualization 支撑 SVG 趋势图，descriptive-stats-csv-and-plot 与 code-helper 提供可复现脚本和表格/图形一致性保障。",
+   "decisions": [
+    {
+     "name": "business-metrics-audit",
+     "selected": true,
+     "reason": "采用。其能力与输出物几乎逐项匹配任务三步交付：clean.csv、monthly_summary.csv、figure.svg、report.md，并要求区分模拟数据、业务事实与推测。"
+    },
+    {
+     "name": "data-cleaning",
+     "selected": true,
+     "reason": "采用。任务第①步要求按 order_id 去重保留首条、剔除 revenue/cost 缺失订单、保留负毛利有效订单，并打印重复数和缺失数，data-cleaning 正好覆盖原始数据到可分析数据集及清洗审计。"
+    },
+    {
+     "name": "scientific-visualization",
+     "selected": true,
+     "reason": "采用。任务第③步要求生成 figure.svg 趋势图，该技能输出矢量图 SVG，适合作为趋势图交付能力。"
+    },
+    {
+     "name": "descriptive-stats-csv-and-plot",
+     "selected": true,
+     "reason": "采用。任务要求 CSV 汇总与图形同源、可回读校验，该技能强调固定表头、表格与图数值一致、单文件脚本和终端说明，适合辅助 monthly_summary.csv 与 figure.svg 的可复现交付。"
+    },
+    {
+     "name": "code-helper",
+     "selected": true,
+     "reason": "采用。任务要求真实执行三步并表达 depends_on/input_files/output_files，code-helper 可辅助生成清洗、汇总、绘图和报告脚本，降低手工执行错误。"
+    },
+    {
+     "name": "demo-descriptive-stats-report",
+     "selected": false,
+     "reason": "未采用。它偏向内存硬编码分组数值的描述统计演示，不覆盖订单去重、缺失剔除、月度收入成本汇总和毛利风险报告。"
+    },
+    {
+     "name": "demo-descriptive-stats-summary",
+     "selected": false,
+     "reason": "未采用。只产出 group,n,mean,std_sample 型 summary.csv，与任务要求的 month,revenue,cost,gross_profit,gross_margin,orders 列不匹配。"
+    },
+    {
+     "name": "descriptive-stats-csv-summary",
+     "selected": false,
+     "reason": "未采用。虽然可产出 CSV 和脚本，但统计口径是 group,n,mean,std_sample，不满足月度经营汇总字段要求。"
+    },
+    {
+     "name": "xlsx",
+     "selected": false,
+     "reason": "未采用。任务核心是 CSV 与 SVG/Markdown 交付，不要求 Excel 公式、格式或 .xlsx 文件处理。"
+    },
+    {
+     "name": "leakage-guard",
+     "selected": false,
+     "reason": "未采用。该技能面向机器学习数据泄漏审计，本任务不涉及特征、目标变量或模型评估。"
+    },
+    {
+     "name": "exam-review-topic-matrix",
+     "selected": false,
+     "reason": "未采用。属于考试复习规划技能，与订单经营分析无关。"
+    },
+    {
+     "name": "exam-prep-topic-matrix",
+     "selected": false,
+     "reason": "未采用。属于备考计划技能，不处理订单清洗、月度汇总或管理层报告。"
+    },
+    {
+     "name": "broad-topic-to-evidence-pipeline",
+     "selected": false,
+     "reason": "未采用。面向文献检索、PRISMA 和证据建模，本任务禁止联网且只使用给定模拟订单数据。"
+    },
+    {
+     "name": "exam-prep-quantified-closed-loop",
+     "selected": false,
+     "reason": "未采用。属于考试闭环备考体系，与经营数据交付无关。"
+    },
+    {
+     "name": "dose-response-ic50-robust-estimation",
+     "selected": false,
+     "reason": "未采用。面向剂量-响应 IC50 估计，不适用于订单收入成本毛利分析。"
+    },
+    {
+     "name": "competition-reproducible-ml-pipeline",
+     "selected": false,
+     "reason": "未采用。面向竞赛建模、官方指标对齐和模型验证，本任务不需要预测模型。"
+    },
+    {
+     "name": "dose-response-ic50-pipeline",
+     "selected": false,
+     "reason": "未采用。属于剂量-响应分析流水线，与订单月度经营汇总无关。"
+    },
+    {
+     "name": "dose-response-cleaning-ic50-pipeline",
+     "selected": false,
+     "reason": "未采用。虽然含清洗，但目标是 IC50 估计，不匹配订单去重和毛利汇总。"
+    },
+    {
+     "name": "exam-weakness-analysis-and-review-plan",
+     "selected": false,
+     "reason": "未采用。面向考试成绩薄弱点分析，不适用于模拟订单经营数据。"
+    },
+    {
+     "name": "eda-profiling",
+     "selected": false,
+     "reason": "未采用。任务未要求系统性 EDA 报告，且第②步只要求按 month 汇总固定列。"
+    },
+    {
+     "name": "statistical-testing",
+     "selected": false,
+     "reason": "未采用。任务不要求组间显著性检验、效应量或置信区间。"
+    },
+    {
+     "name": "tabular-ml-baseline",
+     "selected": false,
+     "reason": "未采用。任务不涉及预测建模、特征重要性或误差分析。"
+    },
+    {
+     "name": "dose-response-ic50-estimation",
+     "selected": false,
+     "reason": "未采用。属于剂量-响应曲线拟合技能，与订单经营指标无关。"
+    },
+    {
+     "name": "two-group-statistical-testing-with-effect-size",
+     "selected": false,
+     "reason": "未采用。任务没有两组实验比较或统计检验需求。"
+    },
+    {
+     "name": "exam-prep-closed-loop-matrix",
+     "selected": false,
+     "reason": "未采用。属于备考闭环矩阵，不处理订单 CSV 和月度经营报告。"
+    },
+    {
+     "name": "missing-data-baseline-modeling",
+     "selected": false,
+     "reason": "未采用。虽然涉及缺失值，但目标是基线建模，本任务只要求剔除缺失订单并汇总。"
+    },
+    {
+     "name": "math-modeling-pipeline",
+     "selected": false,
+     "reason": "未采用。任务不需要符号化优化模型、KKT 条件或敏感性分析。"
+    },
+    {
+     "name": "competition-data-science-pipeline",
+     "selected": false,
+     "reason": "未采用。面向竞赛数据科学交付，包含建模和统计检验，超出本任务范围。"
+    },
+    {
+     "name": "descriptive-stats-acceptance-audit",
+     "selected": false,
+     "reason": "未采用。可用于复核描述统计产物，但本任务核心是订单清洗、月度汇总和管理层报告，不是验收审计。"
+    },
+    {
+     "name": "dose-response-curve-cleaning-and-ic50-fitting",
+     "selected": false,
+     "reason": "未采用。属于剂量-响应曲线清洗与 IC50 拟合，与订单数据无关。"
+    },
+    {
+     "name": "dose-response-curve-analysis",
+     "selected": false,
+     "reason": "未采用。属于剂量-反应曲线分析，不适用于收入、成本、毛利趋势。"
+    },
+    {
+     "name": "gh-agentic-makepad-widgets-cc6429",
+     "selected": false,
+     "reason": "未采用。与任务无关的 Makepad widgets 技能。"
+    }
+   ]
+  },
+  "orchestration_ms": 7418,
+  "history_turns": 0,
+  "evaluation_contract": {
+   "version": "outcome-evidence-v3",
+   "reward_policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+   "profile": {
+    "model": "deepseek-chat",
+    "sandbox": "local",
+    "sources": {
+     "pipeline.py": "38ecff9a87bd9ad2dbc4dcf33be755d4a284b15a55277d0d8edb964d23b9e8e7",
+     "executor.py": "b295e9a9edcbcaf17131cda3c74ca373dee2ab4f88eacac1e444b81c44c7a104",
+     "contracts.py": "c1f2bf934b1f6692690511945cb5dc665170621208857f4d315a59b3b148b2c0",
+     "checks.py": "61cff8b4e254190641394be36ec7f03edef595a190f093c1ab3b7b6fdc3dcc79",
+     "scenarios.py": "a5666675a88d3c1ba24dad6bfe1e4e5283c572853deefd19c549cf7ff81d4151",
+     "llm.py": "ee897a9c1250052c3ed608c21752616e03935409397605f0d33f3316f01df915",
+     "governance.py": "6e74df7b84781359b532f41b08ceb420901aa48f8afcf55c7b4067df415d1a77",
+     "promotion.py": "685a78b65268b8169c155615497e63932d4284e1fae88f578e90df1454f2cf03",
+     "reward_gates.py": "6f3812086709054dfaf8e1bba766fbdaf42d6c1d2eb5bc0b91d5d9dd4d1e82db",
+     "assessment.py": "7955e592d7b3b8b30aac3872dafea25b2ab48346d8b42bc18903a2ac2047dfd9",
+     "runtime.py": "26d6b5fbb74ea4ed5e147c31574a37d61d547e71ab2a4ea02366fb434f71250d",
+     "schema.py": "4ecad1593940833d15f4931229123af84d033b0a92c945cc748e57e7043e5783"
+    }
+   },
+   "task_sha256": "b5492bb7b5a5c2b7dfd234478bc51e6634c6bb129400dfbbbfdc219815096027",
+   "source": "frozen_business_reference",
+   "case_id": "operating-review",
+   "reference_sha256": "9b6a326e9142772a548649e82585c5b0fe27dea15973e0b6bd4e60e5b445f82b",
+   "scope": "月度汇总的独立算术、图表存在和模拟数据标记；不评价报告洞察",
+   "unverified": [
+    "用户满意度",
+    "报告洞察与业务价值",
+    "技能的因果贡献",
+    "网络是否整体提升"
+   ]
+  },
+  "planning_ms": 6479,
+  "picked_steps": [
+   0,
+   1,
+   2
+  ],
+  "execution_scope": {
+   "planned": 3,
+   "executed": 3,
+   "max_steps": 3,
+   "selected": [
+    0,
+    1,
+    2
+   ],
+   "omitted": []
+  },
+  "scheduler": "dag-serial",
+  "critical_path": {
+   "steps": [
+    0,
+    1,
+    2
+   ],
+   "ms": 30173
+  },
+  "execution_ms": 30216,
+  "quality_assessment": {
+   "version": "outcome-evidence-v3",
+   "task_sha256": "b5492bb7b5a5c2b7dfd234478bc51e6634c6bb129400dfbbbfdc219815096027",
+   "goal_contract": {
+    "version": "outcome-evidence-v3",
+    "reward_policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+    "profile": {
+     "model": "deepseek-chat",
+     "sandbox": "local",
+     "sources": {
+      "pipeline.py": "38ecff9a87bd9ad2dbc4dcf33be755d4a284b15a55277d0d8edb964d23b9e8e7",
+      "executor.py": "b295e9a9edcbcaf17131cda3c74ca373dee2ab4f88eacac1e444b81c44c7a104",
+      "contracts.py": "c1f2bf934b1f6692690511945cb5dc665170621208857f4d315a59b3b148b2c0",
+      "checks.py": "61cff8b4e254190641394be36ec7f03edef595a190f093c1ab3b7b6fdc3dcc79",
+      "scenarios.py": "a5666675a88d3c1ba24dad6bfe1e4e5283c572853deefd19c549cf7ff81d4151",
+      "llm.py": "ee897a9c1250052c3ed608c21752616e03935409397605f0d33f3316f01df915",
+      "governance.py": "6e74df7b84781359b532f41b08ceb420901aa48f8afcf55c7b4067df415d1a77",
+      "promotion.py": "685a78b65268b8169c155615497e63932d4284e1fae88f578e90df1454f2cf03",
+      "reward_gates.py": "6f3812086709054dfaf8e1bba766fbdaf42d6c1d2eb5bc0b91d5d9dd4d1e82db",
+      "assessment.py": "7955e592d7b3b8b30aac3872dafea25b2ab48346d8b42bc18903a2ac2047dfd9",
+      "runtime.py": "26d6b5fbb74ea4ed5e147c31574a37d61d547e71ab2a4ea02366fb434f71250d",
+      "schema.py": "4ecad1593940833d15f4931229123af84d033b0a92c945cc748e57e7043e5783"
+     }
+    },
+    "task_sha256": "b5492bb7b5a5c2b7dfd234478bc51e6634c6bb129400dfbbbfdc219815096027",
+    "source": "frozen_business_reference",
+    "case_id": "operating-review",
+    "reference_sha256": "9b6a326e9142772a548649e82585c5b0fe27dea15973e0b6bd4e60e5b445f82b",
+    "scope": "月度汇总的独立算术、图表存在和模拟数据标记；不评价报告洞察",
+    "unverified": [
+     "用户满意度",
+     "报告洞察与业务价值",
+     "技能的因果贡献",
+     "网络是否整体提升"
+    ]
+   },
+   "reference_anchored_before_execution": true,
+   "scope_verdict": "passed",
+   "overall_verdict": "unconfirmed",
+   "scope": "月度汇总的独立算术、图表存在和模拟数据标记；不评价报告洞察",
+   "unverified": [
+    "用户满意度",
+    "报告洞察与业务价值",
+    "技能的因果贡献",
+    "网络是否整体提升"
+   ],
+   "integrity": [
+    {
+     "name": "step1_clean.csv",
+     "passed": true,
+     "sha256": "7e6cbc82b564f901f3958e2ec28d58fa5ae2867448efd8e06afd1e4cf51c0026"
+    },
+    {
+     "name": "step2_monthly_summary.csv",
+     "passed": true,
+     "sha256": "a2a0524e5ba15ad02d37b77ae6b6fd3ade0c4450dd93d55b1bab18009e1b7027"
+    },
+    {
+     "name": "step3_figure.svg",
+     "passed": true,
+     "sha256": "4d16e5f3c75b6152bc5aa5e36f23f47c54dcf74d3ab60e6c8b7fdf2a010b9fc8"
+    },
+    {
+     "name": "step3_report.md",
+     "passed": true,
+     "sha256": "3a7da3738afe0c8de8e9878459b8233abc2e27722be125a72e3af0fd65e0660c"
+    }
+   ],
+   "independent_reference": {
+    "score": 1.0,
+    "checks": [
+     {
+      "name": "月份完整且无额外月份",
+      "passed": true
+     },
+     {
+      "name": "2026-01.revenue",
+      "passed": true,
+      "expected": 3500.0,
+      "actual": "3500.0"
+     },
+     {
+      "name": "2026-01.cost",
+      "passed": true,
+      "expected": 2180.0,
+      "actual": "2180.0"
+     },
+     {
+      "name": "2026-01.orders",
+      "passed": true,
+      "expected": 3,
+      "actual": "3"
+     },
+     {
+      "name": "2026-01.gross_profit",
+      "passed": true,
+      "expected": 1320.0,
+      "actual": "1320.0"
+     },
+     {
+      "name": "2026-01.gross_margin",
+      "passed": true,
+      "expected": 0.37714285714285717,
+      "actual": "0.37714285714285717"
+     },
+     {
+      "name": "2026-02.revenue",
+      "passed": true,
+      "expected": 4000.0,
+      "actual": "4000.0"
+     },
+     {
+      "name": "2026-02.cost",
+      "passed": true,
+      "expected": 2700.0,
+      "actual": "2700.0"
+     },
+     {
+      "name": "2026-02.orders",
+      "passed": true,
+      "expected": 3,
+      "actual": "3"
+     },
+     {
+      "name": "2026-02.gross_profit",
+      "passed": true,
+      "expected": 1300.0,
+      "actual": "1300.0"
+     },
+     {
+      "name": "2026-02.gross_margin",
+      "passed": true,
+      "expected": 0.325,
+      "actual": "0.325"
+     },
+     {
+      "name": "2026-03.revenue",
+      "passed": true,
+      "expected": 4300.0,
+      "actual": "4300.0"
+     },
+     {
+      "name": "2026-03.cost",
+      "passed": true,
+      "expected": 3180.0,
+      "actual": "3180.0"
+     },
+     {
+      "name": "2026-03.orders",
+      "passed": true,
+      "expected": 3,
+      "actual": "3"
+     },
+     {
+      "name": "2026-03.gross_profit",
+      "passed": true,
+      "expected": 1120.0,
+      "actual": "1120.0"
+     },
+     {
+      "name": "2026-03.gross_margin",
+      "passed": true,
+      "expected": 0.26046511627906976,
+      "actual": "0.26046511627906976"
+     },
+     {
+      "name": "2026-04.revenue",
+      "passed": true,
+      "expected": 5200.0,
+      "actual": "5200.0"
+     },
+     {
+      "name": "2026-04.cost",
+      "passed": true,
+      "expected": 3340.0,
+      "actual": "3340.0"
+     },
+     {
+      "name": "2026-04.orders",
+      "passed": true,
+      "expected": 3,
+      "actual": "3"
+     },
+     {
+      "name": "2026-04.gross_profit",
+      "passed": true,
+      "expected": 1860.0,
+      "actual": "1860.0"
+     },
+     {
+      "name": "2026-04.gross_margin",
+      "passed": true,
+      "expected": 0.3576923076923077,
+      "actual": "0.3576923076923077"
+     },
+     {
+      "name": "矢量图存在",
+      "passed": true
+     },
+     {
+      "name": "报告标注模拟数据",
+      "passed": true
+     }
+    ],
+    "evaluator": "independent arithmetic + artifact presence; report insight not scored",
+    "artifact_hashes": {
+     "step1_clean.csv": "7e6cbc82b564f901f3958e2ec28d58fa5ae2867448efd8e06afd1e4cf51c0026",
+     "step2_monthly_summary.csv": "a2a0524e5ba15ad02d37b77ae6b6fd3ade0c4450dd93d55b1bab18009e1b7027",
+     "step3_figure.svg": "4d16e5f3c75b6152bc5aa5e36f23f47c54dcf74d3ab60e6c8b7fdf2a010b9fc8",
+     "step3_report.md": "3a7da3738afe0c8de8e9878459b8233abc2e27722be125a72e3af0fd65e0660c"
+    }
+   },
+   "observations": [
+    {
+     "idx": 0,
+     "skill": "data-cleaning",
+     "skill_sha256": "3b234cb8dc2c52709178f6013330acc0797350c7c4a005ae06d467eb416edca1",
+     "verdict": "unconfirmed",
+     "observed_score": null,
+     "independent_checks": [],
+     "necessary_passed": 8,
+     "necessary_total": 8,
+     "semantic_advisory": [
+      {
+       "item": "回读 clean.csv：order_id 唯一（df['order_id'].duplicated().sum()==0）",
+       "passed": true,
+       "evidence": "运行输出显示 [回读] order_id 重复数(应为0): 0，且脚本断言 rb['order_id'].duplicated().sum() == 0 通过；落盘 clean.csv 共 12 行，样本中 order_id 无重复。",
+       "layer": "llm",
+       "state": "passed"
+      },
+      {
+       "item": "回读 clean.csv：revenue 与 cost 均无缺失（df[['revenue','cost']].isna().sum().sum()==0）",
+       "passed": true,
+       "evidence": "运行输出显示 [回读] revenue/cost 缺失总数(应为0): 0，且脚本断言 rb[['revenue','cost']].isna().sum().sum() == 0 通过；落盘 clean.csv 的 revenue、cost 列样本均有值。",
+       "layer": "llm",
+       "state": "passed"
+      },
+      {
+       "item": "行数守恒：原始行数 - 重复删除行数 - 缺失剔除行数 == clean.csv 行数，且三项计数由脚本实际计算并打印",
+       "passed": true,
+       "evidence": "脚本实际计算并打印：原始行数 15、重复删除 1、缺失剔除 2；守恒等式 15-1-2=12，clean.csv 实际行数 12，assert 校验通过；落盘 clean.csv rows=12 与之一致。",
+       "layer": "llm",
+       "state": "passed"
+      },
+      {
+       "item": "负毛利订单仍在 clean.csv 中（如 C03 的 700-770=-70 未被剔除）",
+       "passed": true,
+       "evidence": "运行输出 [负毛利] 保留的负毛利订单数: 1，明细显示 C03 2026-03 revenue=700.0 cost=770.0 gross_profit=-70.0；脚本断言 'C03' in rb['order_id'].values 通过，说明 C03 保留在 clean.csv 中。",
+       "layer": "llm",
+       "state": "passed"
+      }
+     ],
+     "reason": "执行与模型评价保留为事实；没有独立结果判据，不分配奖励"
+    },
+    {
+     "idx": 1,
+     "skill": "business-metrics-audit",
+     "skill_sha256": "8bfcc7e0820680b481f1d7dadedec2cca2d7ec2e7324d1f9bb6cf07ddfd5793a",
+     "verdict": "supported_in_scope",
+     "observed_score": 1.0,
+     "independent_checks": [
+      {
+       "name": "月份完整且无额外月份",
+       "passed": true
+      },
+      {
+       "name": "2026-01.revenue",
+       "passed": true,
+       "expected": 3500.0,
+       "actual": "3500.0"
+      },
+      {
+       "name": "2026-01.cost",
+       "passed": true,
+       "expected": 2180.0,
+       "actual": "2180.0"
+      },
+      {
+       "name": "2026-01.orders",
+       "passed": true,
+       "expected": 3,
+       "actual": "3"
+      },
+      {
+       "name": "2026-01.gross_profit",
+       "passed": true,
+       "expected": 1320.0,
+       "actual": "1320.0"
+      },
+      {
+       "name": "2026-01.gross_margin",
+       "passed": true,
+       "expected": 0.37714285714285717,
+       "actual": "0.37714285714285717"
+      },
+      {
+       "name": "2026-02.revenue",
+       "passed": true,
+       "expected": 4000.0,
+       "actual": "4000.0"
+      },
+      {
+       "name": "2026-02.cost",
+       "passed": true,
+       "expected": 2700.0,
+       "actual": "2700.0"
+      },
+      {
+       "name": "2026-02.orders",
+       "passed": true,
+       "expected": 3,
+       "actual": "3"
+      },
+      {
+       "name": "2026-02.gross_profit",
+       "passed": true,
+       "expected": 1300.0,
+       "actual": "1300.0"
+      },
+      {
+       "name": "2026-02.gross_margin",
+       "passed": true,
+       "expected": 0.325,
+       "actual": "0.325"
+      },
+      {
+       "name": "2026-03.revenue",
+       "passed": true,
+       "expected": 4300.0,
+       "actual": "4300.0"
+      },
+      {
+       "name": "2026-03.cost",
+       "passed": true,
+       "expected": 3180.0,
+       "actual": "3180.0"
+      },
+      {
+       "name": "2026-03.orders",
+       "passed": true,
+       "expected": 3,
+       "actual": "3"
+      },
+      {
+       "name": "2026-03.gross_profit",
+       "passed": true,
+       "expected": 1120.0,
+       "actual": "1120.0"
+      },
+      {
+       "name": "2026-03.gross_margin",
+       "passed": true,
+       "expected": 0.26046511627906976,
+       "actual": "0.26046511627906976"
+      },
+      {
+       "name": "2026-04.revenue",
+       "passed": true,
+       "expected": 5200.0,
+       "actual": "5200.0"
+      },
+      {
+       "name": "2026-04.cost",
+       "passed": true,
+       "expected": 3340.0,
+       "actual": "3340.0"
+      },
+      {
+       "name": "2026-04.orders",
+       "passed": true,
+       "expected": 3,
+       "actual": "3"
+      },
+      {
+       "name": "2026-04.gross_profit",
+       "passed": true,
+       "expected": 1860.0,
+       "actual": "1860.0"
+      },
+      {
+       "name": "2026-04.gross_margin",
+       "passed": true,
+       "expected": 0.3576923076923077,
+       "actual": "0.3576923076923077"
+      }
+     ],
+     "necessary_passed": 9,
+     "necessary_total": 9,
+     "semantic_advisory": [
+      {
+       "item": "回读 monthly_summary.csv：list(df.columns) 精确等于 ['month','revenue','cost','gross_profit','gross_margin','orders']",
+       "passed": true,
+       "evidence": "实际产物 monthly_summary.csv 的 columns 为 ['month','revenue','cost','gross_profit','gross_margin','orders']，与要求完全一致；运行输出 [1] 列名精确匹配: True。",
+       "layer": "llm",
+       "state": "passed"
+      },
+      {
+       "item": "总额一致性：monthly_summary 的 revenue 合计与 cost 合计分别等于 clean.csv 的 revenue 合计与 cost 合计，绝对容差 1e-8",
+       "passed": true,
+       "evidence": "monthly_summary.csv 各行 revenue 为 3500.0+4000.0+4300.0+5200.0=17000.0，cost 为 2180.0+2700.0+3180.0+3340.0=11400.0；上游 step1_clean.csv 共 12 行，运行输出显示明细 revenue 合计=17000.0、cost 合计=11400.0，偏差为 0，在 1e-8 容差内。",
+       "layer": "llm",
+       "state": "passed"
+      },
+      {
+       "item": "orders 合计等于 clean.csv 行数",
+       "passed": true,
+       "evidence": "monthly_summary.csv 各行 orders 均为 3，合计 3+3+3+3=12；上游 step1_clean.csv rows=12，运行输出 [3] orders 合计==明细行数: True (汇总=12 明细=12)。",
+       "layer": "llm",
+       "state": "passed"
+      },
+      {
+       "item": "逐月校验 gross_profit == revenue - cost 且 gross_margin == gross_profit / revenue，绝对容差 1e-8",
+       "passed": true,
+       "evidence": "逐月核对：2026-01 3500-2180=1320，1320/3500=0.37714285714285717；2026-02 4000-2700=1300，1300/4000=0.325；2026-03 4300-3180=1120，1120/4300=0.26046511627906976；2026-04 5200-3340=1860，1860/5200=0.3576923076923077，均与产物一致，偏差为 0，在 1e-8 容差内；运行输出 [4] 两项校验均为 True。",
+       "layer": "llm",
+       "state": "passed"
+      },
+      {
+       "item": "无缺失值（df.isna().sum().sum()==0）",
+       "passed": true,
+       "evidence": "monthly_summary.csv 的 4 行 6 列样本中 month、revenue、cost、gross_profit、gross_margin、orders 均有值，无空字段；运行输出 [5] 无缺失值: True (缺失总数=0)。",
+       "layer": "llm",
+       "state": "passed"
+      }
+     ],
+     "reason": "独立读取实际产物，仅支持本步骤已测量部分；不是技能因果贡献"
+    },
+    {
+     "idx": 2,
+     "skill": "scientific-visualization",
+     "skill_sha256": "2d2d8637f4064d52bbdbad35734def7138f2e8d118b8bf91108d8f84726b5efa",
+     "verdict": "unconfirmed",
+     "observed_score": null,
+     "independent_checks": [],
+     "necessary_passed": 9,
+     "necessary_total": 9,
+     "semantic_advisory": [
+      {
+       "item": "figure.svg 存在且为矢量 SVG，坐标轴含月份与金额（元）标注，y 轴下限为 0",
+       "passed": true,
+       "evidence": "figure.svg 存在（59531 字节，sha256 4d16e5f3...），内容以 <?xml version=\"1.0\"...> 和 <svg ...> 开头，为矢量 SVG；SVG 文本含 x 轴刻度标签 2026-01/2026-02/2026-03/2026-04 及 x 轴标签“月份 month”；代码设置 ax.set_ylabel('金额（元）') 且 SVG 中可见对应文本；代码 ax.set_ylim(ymin, ymax*1.18)，其中 ymin=min(0.0, gross_profit.min())=0，运行输出确认 y 轴下限=0。",
+       "layer": "llm",
+       "state": "passed"
+      },
+      {
+       "item": "report.md 含关键词：模拟数据、元、毛利风险、行动建议",
+       "passed": true,
+       "evidence": "report.md 内容含“模拟数据”（标题及数据声明）、“元”（金额单位声明及表格列名）、“毛利风险”（第三节标题）、“行动建议”（第四节标题）；运行输出关键词检查四项均为 True。",
+       "layer": "llm",
+       "state": "passed"
+      },
+      {
+       "item": "report.md 中引用的月度数值与 monthly_summary.csv 逐值一致（回读比对）",
+       "passed": true,
+       "evidence": "上游 step2_monthly_summary.csv 实际值为 2026-01: revenue 3500.0/cost 2180.0/gross_profit 1320.0/gross_margin 0.37714285714285717；2026-02: 4000.0/2700.0/1300.0/0.325；2026-03: 4300.0/3180.0/1120.0/0.26046511627906976；2026-04: 5200.0/3340.0/1860.0/0.3576923076923077。report.md 表格逐值列出 3500/2180/1320/0.3771、4000/2700/1300/0.3250、4300/3180/1120/0.2605、5200/3340/1860/0.3577，与输入一致（毛利率为四位小数展示，非原值截断错误）；累计值 17000/11400/5600 与输入求和一致；运行输出回读比对 True。",
+       "layer": "llm",
+       "state": "passed"
+      },
+      {
+       "item": "report.md 不含将模拟数据推断为公司真实经营情况的表述",
+       "passed": true,
+       "evidence": "report.md 数据声明明确“本报告全部基于公开的模拟订单数据，仅用于演示分析流程，不代表任何公司真实经营情况，不得据此推断真实业务结论”；全文未出现将模拟数据表述为公司真实经营情况的语句。",
+       "layer": "llm",
+       "state": "passed"
+      }
+     ],
+     "reason": "执行与模型评价保留为事实；没有独立结果判据，不分配奖励"
+    }
+   ],
+   "issues": [],
+   "candidate_eligible": true,
+   "candidate_score": 1.0,
+   "network": {
+    "mode": "shadow",
+    "applied": false,
+    "causal_attribution": false,
+    "reason": "单次运行只产生经验观察；未证明技能的因果贡献或跨任务增益，正式排序与技能网络不更新"
+   },
+   "evidence_sha256": "52b26adfaa7f29ee17da65eef09629feec871c9057aaa8c37aea36f3dc7ef7d2"
+  },
+  "reward_gates": {
+   "version": "improvement-gates-v1",
+   "policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+   "operator": "AND",
+   "eligible": false,
+   "reward_applied": false,
+   "points": 0,
+   "passed": 4,
+   "total": 12,
+   "blockers": [
+    "version",
+    "fair",
+    "heldout",
+    "suite",
+    "regression",
+    "gain",
+    "reliable",
+    "novel"
+   ],
+   "gates": [
+    {
+     "id": "frozen",
+     "title": "标准提前冻结",
+     "rule": "执行前锁定判据、阈值、模型与评测代码，禁止事后改规则",
+     "status": "passed",
+     "reason": "本次结果判据与奖励规则在执行前冻结；晋级还需预注册对照计划",
+     "evidence": {
+      "task_sha256": "b5492bb7b5a5c2b7dfd234478bc51e6634c6bb129400dfbbbfdc219815096027",
+      "policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd"
+     }
+    },
+    {
+     "id": "independent",
+     "title": "独立重算结果",
+     "rule": "从真实产物重算冻结的业务参考，模型评分不能替代",
+     "status": "passed",
+     "reason": "仅证明本次已测范围；尚无与旧版本的独立对照",
+     "evidence": {
+      "scope": "月度汇总的独立算术、图表存在和模拟数据标记；不评价报告洞察"
+     }
+    },
+    {
+     "id": "integrity",
+     "title": "物理产物可信",
+     "rule": "实际文件存在、路径合法、SHA-256 与登记一致",
+     "status": "passed",
+     "reason": "重新读取实际文件并核对指纹",
+     "evidence": {
+      "checked": 4
+     }
+    },
+    {
+     "id": "complete",
+     "title": "执行完整合格",
+     "rule": "候选全部步骤完成、必要验收通过、无删步取消或预算超限",
+     "status": "passed",
+     "reason": "本次执行完整，必要验收通过",
+     "evidence": {
+      "steps": 3,
+      "cost_yuan": 0.22665000000000002
+     }
+    },
+    {
+     "id": "version",
+     "title": "绑定技能版本",
+     "rule": "对照组与候选组实际执行冻结的精确技能版本",
+     "status": "unknown",
+     "reason": "缺少对应证据，不能放行",
+     "evidence": {}
+    },
+    {
+     "id": "fair",
+     "title": "对照条件公平",
+     "rule": "模型、预算、动作依赖相同，并按预定次序交替执行",
+     "status": "unknown",
+     "reason": "缺少对应证据，不能放行",
+     "evidence": {}
+    },
+    {
+     "id": "heldout",
+     "title": "任务未用于生成",
+     "rule": "排除当前任务、记录的祖先训练任务和实际来源运行",
+     "status": "unknown",
+     "reason": "缺少对应证据，不能放行",
+     "evidence": {}
+    },
+    {
+     "id": "suite",
+     "title": "完整报告样本",
+     "rule": "至少 5 道留出任务各 2 组配对，禁止漏报、重用或挑选赢家",
+     "status": "unknown",
+     "reason": "缺少对应证据，不能放行",
+     "evidence": {}
+    },
+    {
+     "id": "regression",
+     "title": "每组没有退步",
+     "rule": "每一组候选结果均不低于对应基线，提升不能抵消退步",
+     "status": "unknown",
+     "reason": "缺少对应证据，不能放行",
+     "evidence": {}
+    },
+    {
+     "id": "gain",
+     "title": "增益达到门槛",
+     "rule": "按不同任务等权计算平均增益，至少 0.02",
+     "status": "unknown",
+     "reason": "缺少对应证据，不能放行",
+     "evidence": {}
+    },
+    {
+     "id": "reliable",
+     "title": "多任务一致提升",
+     "rule": "以不同任务为统计单位，单侧符号检验 p ≤ 0.05",
+     "status": "unknown",
+     "reason": "缺少对应证据，不能放行",
+     "evidence": {}
+    },
+    {
+     "id": "novel",
+     "title": "同一版本只奖一次",
+     "rule": "积分只给被验证版本；相同版本不能重放或换报告重复领奖",
+     "status": "unknown",
+     "reason": "缺少对应证据，不能放行",
+     "evidence": {}
+    }
+   ],
+   "context": {
+    "kind": "single_run",
+    "run_id": "b5492bb7-20261010-083955-a445",
+    "assessment_sha256": "52b26adfaa7f29ee17da65eef09629feec871c9057aaa8c37aea36f3dc7ef7d2"
+   },
+   "reward_scope": "此技能版本在冻结评测范围内的相对提升积分；不代表全网或所有任务提升",
+   "ranking_weights_deployed": false,
+   "audit_sha256": "06cd512599f4b7f0044fb2e2b504307cb68d87b0968dfea0961508d272db40ad"
+  },
+  "shadow_feedback": {
+   "mode": "shadow",
+   "applied": false,
+   "rows": [
+    {
+     "name": "business-metrics-audit",
+     "exploit_before": 0.0,
+     "exploit_after": 0.0,
+     "delta": 0.0,
+     "nudged": false,
+     "mode": "shadow",
+     "observed_score": 1.0,
+     "shadow_exploit_after": 0.5647028388929881,
+     "shadow_delta": 0.5647028388929881,
+     "weight": 0.25,
+     "skip_reason": "单次运行只产生经验观察；未证明技能的因果贡献或跨任务增益，正式排序与技能网络不更新"
+    },
+    {
+     "name": "data-cleaning",
+     "exploit_before": 0.0,
+     "exploit_after": 0.0,
+     "delta": 0.0,
+     "nudged": false,
+     "mode": "shadow",
+     "observed_score": null,
+     "shadow_exploit_after": null,
+     "shadow_delta": null,
+     "weight": 0,
+     "skip_reason": "单次运行只产生经验观察；未证明技能的因果贡献或跨任务增益，正式排序与技能网络不更新"
+    },
+    {
+     "name": "scientific-visualization",
+     "exploit_before": 0.0,
+     "exploit_after": 0.0,
+     "delta": 0.0,
+     "nudged": false,
+     "mode": "shadow",
+     "observed_score": null,
+     "shadow_exploit_after": null,
+     "shadow_delta": null,
+     "weight": 0,
+     "skip_reason": "单次运行只产生经验观察；未证明技能的因果贡献或跨任务增益，正式排序与技能网络不更新"
+    }
+   ],
+   "policy_state_sha256": "bc60c6945a9af22b2443d24b507cbb58de28deda51a7acc7b893246226851003",
+   "evidence_sha256": "52b26adfaa7f29ee17da65eef09629feec871c9057aaa8c37aea36f3dc7ef7d2",
+   "reason": "单次运行只产生经验观察；未证明技能的因果贡献或跨任务增益，正式排序与技能网络不更新"
+  },
+  "learning_gate": {
+   "eligible": false,
+   "mode": "shadow",
+   "network_updated": false,
+   "candidate_eligible": true,
+   "reward_eligible": false,
+   "reward_points": 0,
+   "blockers": [
+    "version",
+    "fair",
+    "heldout",
+    "suite",
+    "regression",
+    "gain",
+    "reliable",
+    "novel"
+   ],
+   "evidence_sha256": "52b26adfaa7f29ee17da65eef09629feec871c9057aaa8c37aea36f3dc7ef7d2",
+   "skip_reason": "单次运行只产生经验观察；未证明技能的因果贡献或跨任务增益，正式排序与技能网络不更新"
+  },
+  "judge_evolve_ms": 7750,
+  "skill_impact": {
+   "library_before": 1881,
+   "library_after": 1881,
+   "evolved_before": 36,
+   "evolved_after": 36,
+   "used": [
+    "code-helper",
+    "business-metrics-audit",
+    "data-cleaning",
+    "descriptive-stats-csv-and-plot",
+    "scientific-visualization"
+   ],
+   "touched": [
+    {
+     "name": "scientific-visualization",
+     "delta": {
+      "exec_total": 1.0,
+      "exec_ok": 1.0
+     },
+     "after": {
+      "pulls": 23.0,
+      "exec_total": 8,
+      "exec_ok": 8,
+      "exec_fix": 1,
+      "reward_sum": 18.84
+     }
+    },
+    {
+     "name": "data-cleaning",
+     "delta": {
+      "exec_total": 1.0,
+      "exec_ok": 1.0
+     },
+     "after": {
+      "pulls": 21.0,
+      "exec_total": 13,
+      "exec_ok": 13,
+      "exec_fix": 1,
+      "reward_sum": 17.165000000000003
+     }
+    },
+    {
+     "name": "business-metrics-audit",
+     "delta": {
+      "exec_total": 1.0,
+      "exec_ok": 1.0
+     },
+     "after": {
+      "pulls": 1.0,
+      "exec_total": 7,
+      "exec_ok": 6,
+      "exec_fix": 0,
+      "exec_fail": 1,
+      "reward_sum": 0.9
+     }
+    }
+   ],
+   "new_skills": [
+    {
+     "name": "simulated-data-monthly-report-pipeline",
+     "generation": 1,
+     "parents": [
+      "business-metrics-audit"
+     ],
+     "domain": "数据分析与报告",
+     "capability": "从原始订单明细 CSV 产出 clean.csv、monthly_summary.csv、figure.svg 与 report.md 四个交付物，并保证行数守恒与数值一致。",
+     "origin_task": ""
+    }
+   ],
+   "summary": {
+    "used_n": 5,
+    "updated_n": 3,
+    "added_n": 1,
+    "library_delta": 0
+   }
+  },
+  "final_reply": "## 直接回答\n\n本次任务用一份**公开模拟订单数据**（15 行原始明细，字段 `order_id, month, revenue, cost`），完成了一条三步流水线：清洗 → 月度汇总 → 可视化与管理层报告。核心结论如下（**全部为模拟数据，金额单位：元，不代表任何公司真实经营情况**）。\n\n### 一、清洗规则与结果\n\n清洗遵循三条明确规则，且**不剔除毛利为负的有效订单**（这是本次最容易踩的坑）：\n\n| 规则 | 处理 | 实际结果 |\n| --- | --- | --- |\n| 按 `order_id` 去重，保留首条 | 删除重复行 | 发现重复 1 条，删除订单 `A03` |\n| `revenue` 或 `cost` 缺失的订单剔除 | 整行剔除 | 缺失 2 行，剔除 `B03`（revenue 空）、`D04`（cost 空） |\n| 毛利为负的有效订单保留 | 不剔除 | 保留 1 条：`C03`（700 − 770 = **−70 元**） |\n\n行数守恒校验通过：**15 − 1（重复）− 2（缺失）= 12 行**，与 `step1_clean.csv` 实际行数一致；回读确认 `order_id` 重复数为 0、`revenue`/`cost` 缺失总数为 0、负毛利订单 `C03` 仍在表中。\n\n### 二、月度汇总（关键数字）\n\n按 `month` 分组，列名严格为 `month,revenue,cost,gross_profit,gross_margin,orders`：\n\n| 月份 | 营业收入 | 成本 | 毛利 | 毛利率 | 订单数 |\n| --- | ---: | ---: | ---: | ---: | ---: |\n| 2026-01 | 3500 | 2180 | 1320 | 37.71% | 3 |\n| 2026-02 | 4000 | 2700 | 1300 | 32.50% | 3 |\n| 2026-03 | 4300 | 3180 | 1120 | 26.05% | 3 |\n| 2026-04 | 5200 | 3340 | 1860 | 35.77% | 3 |\n\n累计：收入 **17000 元**、成本 **11400 元**、毛利 **5600 元**，整体毛利率约 **32.94%**。一致性校验全部通过：汇总收入/成本合计与明细逐值相等（17000 / 11400），`orders` 合计 12 等于明细行数，逐月 `gross_profit = revenue − cost`、`gross_margin = gross_profit / revenue` 均成立，无缺失值。\n\n### 三、怎么读这张表（原理与边界）\n\n- **毛利率 = 毛利 / 收入**，衡量每 1 元收入留下多少毛利，是盈利质量的直接指标；它不反映费用与净利。\n- **收入与成本同步增长会摊薄毛利率**。本例 2026-03 收入 4300、成本 3180，毛利率降到 **26.05%**，是四个月最低——原因正是单笔负毛利订单 `C03`（收入 700、成本 770）拖累，而非整体规模问题。\n- **负毛利订单必须保留**：剔除它会让 3 月毛利率虚高，掩盖真实风险。这是清洗规则刻意保留的原因。\n- **边界**：本数据仅 4 个月、每月 3 单，样本极小，趋势只能作演示，不能外推为经营规律；且为模拟数据，不构成任何真实业务结论。\n\n### 四、毛利风险与行动建议（来自报告）\n\n- **毛利风险**：各月毛利均为正，无毛利为负的月份；但毛利率波动明显，最低月 2026-03 仅 26.05%，若成本继续上升或收入下滑，利润会被进一步侵蚀。\n- **行动建议**：① 对低毛利月份做成本结构复盘，定位高成本订单（如 `C03`）；② 建立月度毛利率预警阈值，低于阈值触发定价或采购复核；③ 对低毛利订单评估调价或供应链优化；④ 持续跟踪收入与成本增速差，避免规模增长伴随盈利质量下降。\n\n## 执行与证据\n\n- **第 1 步（data-cleaning）**：读取原始明细，去重保留首条、剔除缺失行、保留负毛利订单，写出 `step1_clean.csv`。验收 10/10，行数守恒通过。\n- **第 2 步（business-metrics-audit）**：仅读 `step1_clean.csv`，按 month 汇总并计算毛利与毛利率，写出 `step2_monthly_summary.csv`。验收 11/11，列名精确匹配、总额一致、逐月公式成立。\n- **第 3 步（scientific-visualization）**：仅读 `step2_monthly_summary.csv`，绘制收入/成本/毛利月度趋势折线图（单轴、y 轴下限为 0、色觉障碍友好配色），写出 `step3_figure.svg` 与 `step3_report.md`。验收 11/11，报告数值与汇总逐值一致，含\"模拟数据/元/毛利风险/行动建议\"关键词。\n- **失败-修复/跳过**：无，三步均 1 次尝试完成。\n- **产物清单**：`step1_clean.csv`（0.3KB）、`step2_monthly_summary.csv`（0.2KB）、`step3_figure.svg`（58.1KB）、`step3_report.md`（1.9KB）。\n- **独立复核**：产物语义复核 13/13 通过；独立算术判据 23 项全过（月份完整、逐月各字段与预期一致、矢量图存在、报告标注模拟数据）。**未确认项**：用户满意度、报告洞察与业务价值、技能因果贡献、网络整体提升均未被证实；单次运行只产生经验观察，正式排序与技能网络不更新。\n\n## 下一步建议\n\n1. **复用本流水线做同类月度复盘**：直接套用 `data-cleaning → business-metrics-audit → scientific-visualization` 三步，把输入换成新月份明细即可，注意保留负毛利订单、坚持行数守恒校验。\n2. **扩展指标维度**：在 `step2_monthly_summary.csv` 基础上增加环比增速、累计毛利率、订单均价等列，便于识别\"增收不增利\"结构。\n3. **补一层异常归因**：对低毛利月份自动下钻到订单级（如 `C03`），输出高成本订单清单，让报告从\"发现风险\"走到\"定位原因\"。",
+  "acceptance": {
+   "state": "passed",
+   "failed": 0,
+   "unknown": 0,
+   "checks_passed": 26,
+   "checks_total": 26,
+   "semantic_passed": 13,
+   "semantic_total": 13
+  }
+ },
+ "budget": {
+  "max_cost_yuan": 1.2,
+  "max_llm_calls": 45,
+  "max_seconds": 600,
+  "max_attempts_per_step": 3
+ },
+ "cost_yuan": 0.2267,
+ "tokens": 73620,
+ "llm_calls": 12,
+ "cancel_requested": false,
+ "duration_ms": 59308,
+ "started_at_ms": 1791592795157,
+ "ended_at_ms": 1791592854465,
+ "error": "",
+ "events": [
+  {
+   "ts_ms": 1791592795169,
+   "type": "run.started",
+   "step": null,
+   "data": {
+    "task": "仅使用下面的公开模拟订单数据，不联网，禁止编造公司真实经营结论。完成 3 步真实执行：①按规则清洗明细生成 clean.csv 并打印重复数、缺失数；②读取 clean.csv 按 month 汇总成 monthly_summary.csv"
+   },
+   "seq": 1
+  },
+  {
+   "ts_ms": 1791592796184,
+   "type": "retrieval.completed",
+   "step": null,
+   "data": {
+    "selected": [
+     "business-metrics-audit",
+     "data-cleaning",
+     "descriptive-stats-csv-and-plot",
+     "scientific-visualization",
+     "demo-descriptive-stats-report"
+    ],
+    "decision": "auto",
+    "confidence": 1.0,
+    "raw_bm25_top": 172.9534,
+    "modes": {
+     "bm25": {
+      "selected": [
+       "gh-agentic-makepad-widgets-cc6429",
+       "gh-claude-ai-act-readiness-9a895e",
+       "business-metrics-audit",
+       "gh-agentic-it-manager-pro-66b37a",
+       "gh-agentic-itil-expert-8cd213"
+      ],
+      "components": {
+       "bm25": true,
+       "vector": false,
+       "structural": false,
+       "graph_expansion": false,
+       "llm_rerank": false
+      },
+      "decision": "auto",
+      "decision_reason": "BM25 原始分 172.95 ≥ 15.0：技能匹配明确，可直接执行",
+      "degraded": false,
+      "degraded_reason": "",
+      "confidence_kind": "heuristic_relevance_not_probability"
+     },
+     "hybrid": {
+      "selected": [
+       "business-metrics-audit",
+       "descriptive-stats-csv-and-plot",
+       "demo-descriptive-stats-report",
+       "descriptive-stats-csv-summary",
+       "data-cleaning"
+      ],
+      "components": {
+       "bm25": true,
+       "vector": true,
+       "structural": true,
+       "graph_expansion": false,
+       "llm_rerank": false
+      },
+      "decision": "auto",
+      "decision_reason": "BM25 原始分 172.95 ≥ 15.0：技能匹配明确，可直接执行",
+      "degraded": false,
+      "degraded_reason": "",
+      "confidence_kind": "heuristic_relevance_not_probability"
+     },
+     "fabric": {
+      "selected": [
+       "business-metrics-audit",
+       "data-cleaning",
+       "descriptive-stats-csv-and-plot",
+       "scientific-visualization",
+       "demo-descriptive-stats-report"
+      ],
+      "components": {
+       "bm25": true,
+       "vector": true,
+       "structural": true,
+       "graph_expansion": true,
+       "llm_rerank": true
+      },
+      "decision": "auto",
+      "decision_reason": "BM25 原始分 172.95 ≥ 15.0：技能匹配明确，可直接执行",
+      "degraded": false,
+      "degraded_reason": "",
+      "confidence_kind": "heuristic_relevance_not_probability"
+     }
+    },
+    "duration_ms": 1015
+   },
+   "seq": 2
+  },
+  {
+   "ts_ms": 1791592796193,
+   "type": "ranking.completed",
+   "step": null,
+   "data": {
+    "rows": 5,
+    "top": "descriptive-stats-csv-and-plot",
+    "entries": [
+     {
+      "name": "descriptive-stats-csv-and-plot",
+      "priority": 0.8161,
+      "exploit": 0.0,
+      "explore": 0.8161
+     },
+     {
+      "name": "demo-descriptive-stats-report",
+      "priority": 0.797,
+      "exploit": 0.0,
+      "explore": 0.797
+     },
+     {
+      "name": "scientific-visualization",
+      "priority": 0.7159,
+      "exploit": 0.0,
+      "explore": 0.7159
+     },
+     {
+      "name": "data-cleaning",
+      "priority": 0.7137,
+      "exploit": 0.0,
+      "explore": 0.7137
+     },
+     {
+      "name": "business-metrics-audit",
+      "priority": 0.6834,
+      "exploit": 0.0,
+      "explore": 0.6834
+     }
+    ],
+    "duration_ms": 3
+   },
+   "seq": 3
+  },
+  {
+   "ts_ms": 1791592803612,
+   "type": "orchestration.completed",
+   "step": null,
+   "data": {
+    "skills": [
+     "code-helper",
+     "business-metrics-audit",
+     "data-cleaning",
+     "descriptive-stats-csv-and-plot",
+     "scientific-visualization"
+    ],
+    "order": [
+     "code-helper",
+     "business-metrics-audit",
+     "data-cleaning",
+     "descriptive-stats-csv-and-plot",
+     "scientific-visualization"
+    ],
+    "workflow": 7,
+    "edges": [
+     [
+      "business-metrics-audit",
+      "data-cleaning"
+     ],
+     [
+      "business-metrics-audit",
+      "descriptive-stats-csv-and-plot"
+     ],
+     [
+      "business-metrics-audit",
+      "scientific-visualization"
+     ],
+     [
+      "code-helper",
+      "business-metrics-audit"
+     ],
+     [
+      "code-helper",
+      "data-cleaning"
+     ],
+     [
+      "code-helper",
+      "scientific-visualization"
+     ],
+     [
+      "descriptive-stats-csv-and-plot",
+      "scientific-visualization"
+     ]
+    ],
+    "source": "relations+llm",
+    "reason": "该任务本质是按固定规则清洗订单明细、生成月度汇总、再产出趋势图与管理层报告，business-metrics-audit 直接覆盖 clean.csv/monthly_summary.csv/figure.svg/report.md 全链路，data-cleaning 支撑清洗规则，scientific-visualization 支撑 SVG 趋势图，descriptive-stats-csv-and-plot 与 code-helper 提供可复现脚本和表格/图形一致性保障。",
+    "decisions": [
+     {
+      "name": "business-metrics-audit",
+      "selected": true,
+      "reason": "采用。其能力与输出物几乎逐项匹配任务三步交付：clean.csv、monthly_summary.csv、figure.svg、report.md，并要求区分模拟数据、业务事实与推测。"
+     },
+     {
+      "name": "data-cleaning",
+      "selected": true,
+      "reason": "采用。任务第①步要求按 order_id 去重保留首条、剔除 revenue/cost 缺失订单、保留负毛利有效订单，并打印重复数和缺失数，data-cleaning 正好覆盖原始数据到可分析数据集及清洗审计。"
+     },
+     {
+      "name": "scientific-visualization",
+      "selected": true,
+      "reason": "采用。任务第③步要求生成 figure.svg 趋势图，该技能输出矢量图 SVG，适合作为趋势图交付能力。"
+     },
+     {
+      "name": "descriptive-stats-csv-and-plot",
+      "selected": true,
+      "reason": "采用。任务要求 CSV 汇总与图形同源、可回读校验，该技能强调固定表头、表格与图数值一致、单文件脚本和终端说明，适合辅助 monthly_summary.csv 与 figure.svg 的可复现交付。"
+     },
+     {
+      "name": "code-helper",
+      "selected": true,
+      "reason": "采用。任务要求真实执行三步并表达 depends_on/input_files/output_files，code-helper 可辅助生成清洗、汇总、绘图和报告脚本，降低手工执行错误。"
+     },
+     {
+      "name": "demo-descriptive-stats-report",
+      "selected": false,
+      "reason": "未采用。它偏向内存硬编码分组数值的描述统计演示，不覆盖订单去重、缺失剔除、月度收入成本汇总和毛利风险报告。"
+     },
+     {
+      "name": "demo-descriptive-stats-summary",
+      "selected": false,
+      "reason": "未采用。只产出 group,n,mean,std_sample 型 summary.csv，与任务要求的 month,revenue,cost,gross_profit,gross_margin,orders 列不匹配。"
+     },
+     {
+      "name": "descriptive-stats-csv-summary",
+      "selected": false,
+      "reason": "未采用。虽然可产出 CSV 和脚本，但统计口径是 group,n,mean,std_sample，不满足月度经营汇总字段要求。"
+     },
+     {
+      "name": "xlsx",
+      "selected": false,
+      "reason": "未采用。任务核心是 CSV 与 SVG/Markdown 交付，不要求 Excel 公式、格式或 .xlsx 文件处理。"
+     },
+     {
+      "name": "leakage-guard",
+      "selected": false,
+      "reason": "未采用。该技能面向机器学习数据泄漏审计，本任务不涉及特征、目标变量或模型评估。"
+     },
+     {
+      "name": "exam-review-topic-matrix",
+      "selected": false,
+      "reason": "未采用。属于考试复习规划技能，与订单经营分析无关。"
+     },
+     {
+      "name": "exam-prep-topic-matrix",
+      "selected": false,
+      "reason": "未采用。属于备考计划技能，不处理订单清洗、月度汇总或管理层报告。"
+     },
+     {
+      "name": "broad-topic-to-evidence-pipeline",
+      "selected": false,
+      "reason": "未采用。面向文献检索、PRISMA 和证据建模，本任务禁止联网且只使用给定模拟订单数据。"
+     },
+     {
+      "name": "exam-prep-quantified-closed-loop",
+      "selected": false,
+      "reason": "未采用。属于考试闭环备考体系，与经营数据交付无关。"
+     },
+     {
+      "name": "dose-response-ic50-robust-estimation",
+      "selected": false,
+      "reason": "未采用。面向剂量-响应 IC50 估计，不适用于订单收入成本毛利分析。"
+     },
+     {
+      "name": "competition-reproducible-ml-pipeline",
+      "selected": false,
+      "reason": "未采用。面向竞赛建模、官方指标对齐和模型验证，本任务不需要预测模型。"
+     },
+     {
+      "name": "dose-response-ic50-pipeline",
+      "selected": false,
+      "reason": "未采用。属于剂量-响应分析流水线，与订单月度经营汇总无关。"
+     },
+     {
+      "name": "dose-response-cleaning-ic50-pipeline",
+      "selected": false,
+      "reason": "未采用。虽然含清洗，但目标是 IC50 估计，不匹配订单去重和毛利汇总。"
+     },
+     {
+      "name": "exam-weakness-analysis-and-review-plan",
+      "selected": false,
+      "reason": "未采用。面向考试成绩薄弱点分析，不适用于模拟订单经营数据。"
+     },
+     {
+      "name": "eda-profiling",
+      "selected": false,
+      "reason": "未采用。任务未要求系统性 EDA 报告，且第②步只要求按 month 汇总固定列。"
+     },
+     {
+      "name": "statistical-testing",
+      "selected": false,
+      "reason": "未采用。任务不要求组间显著性检验、效应量或置信区间。"
+     },
+     {
+      "name": "tabular-ml-baseline",
+      "selected": false,
+      "reason": "未采用。任务不涉及预测建模、特征重要性或误差分析。"
+     },
+     {
+      "name": "dose-response-ic50-estimation",
+      "selected": false,
+      "reason": "未采用。属于剂量-响应曲线拟合技能，与订单经营指标无关。"
+     },
+     {
+      "name": "two-group-statistical-testing-with-effect-size",
+      "selected": false,
+      "reason": "未采用。任务没有两组实验比较或统计检验需求。"
+     },
+     {
+      "name": "exam-prep-closed-loop-matrix",
+      "selected": false,
+      "reason": "未采用。属于备考闭环矩阵，不处理订单 CSV 和月度经营报告。"
+     },
+     {
+      "name": "missing-data-baseline-modeling",
+      "selected": false,
+      "reason": "未采用。虽然涉及缺失值，但目标是基线建模，本任务只要求剔除缺失订单并汇总。"
+     },
+     {
+      "name": "math-modeling-pipeline",
+      "selected": false,
+      "reason": "未采用。任务不需要符号化优化模型、KKT 条件或敏感性分析。"
+     },
+     {
+      "name": "competition-data-science-pipeline",
+      "selected": false,
+      "reason": "未采用。面向竞赛数据科学交付，包含建模和统计检验，超出本任务范围。"
+     },
+     {
+      "name": "descriptive-stats-acceptance-audit",
+      "selected": false,
+      "reason": "未采用。可用于复核描述统计产物，但本任务核心是订单清洗、月度汇总和管理层报告，不是验收审计。"
+     },
+     {
+      "name": "dose-response-curve-cleaning-and-ic50-fitting",
+      "selected": false,
+      "reason": "未采用。属于剂量-响应曲线清洗与 IC50 拟合，与订单数据无关。"
+     },
+     {
+      "name": "dose-response-curve-analysis",
+      "selected": false,
+      "reason": "未采用。属于剂量-反应曲线分析，不适用于收入、成本、毛利趋势。"
+     },
+     {
+      "name": "gh-agentic-makepad-widgets-cc6429",
+      "selected": false,
+      "reason": "未采用。与任务无关的 Makepad widgets 技能。"
+     }
+    ],
+    "degraded": true,
+    "duration_ms": 7418
+   },
+   "seq": 4
+  },
+  {
+   "ts_ms": 1791592810099,
+   "type": "evaluation.prepared",
+   "step": null,
+   "data": {
+    "contract": {
+     "version": "outcome-evidence-v3",
+     "reward_policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+     "profile": {
+      "model": "deepseek-chat",
+      "sandbox": "local",
+      "sources": {
+       "pipeline.py": "38ecff9a87bd9ad2dbc4dcf33be755d4a284b15a55277d0d8edb964d23b9e8e7",
+       "executor.py": "b295e9a9edcbcaf17131cda3c74ca373dee2ab4f88eacac1e444b81c44c7a104",
+       "contracts.py": "c1f2bf934b1f6692690511945cb5dc665170621208857f4d315a59b3b148b2c0",
+       "checks.py": "61cff8b4e254190641394be36ec7f03edef595a190f093c1ab3b7b6fdc3dcc79",
+       "scenarios.py": "a5666675a88d3c1ba24dad6bfe1e4e5283c572853deefd19c549cf7ff81d4151",
+       "llm.py": "ee897a9c1250052c3ed608c21752616e03935409397605f0d33f3316f01df915",
+       "governance.py": "6e74df7b84781359b532f41b08ceb420901aa48f8afcf55c7b4067df415d1a77",
+       "promotion.py": "685a78b65268b8169c155615497e63932d4284e1fae88f578e90df1454f2cf03",
+       "reward_gates.py": "6f3812086709054dfaf8e1bba766fbdaf42d6c1d2eb5bc0b91d5d9dd4d1e82db",
+       "assessment.py": "7955e592d7b3b8b30aac3872dafea25b2ab48346d8b42bc18903a2ac2047dfd9",
+       "runtime.py": "26d6b5fbb74ea4ed5e147c31574a37d61d547e71ab2a4ea02366fb434f71250d",
+       "schema.py": "4ecad1593940833d15f4931229123af84d033b0a92c945cc748e57e7043e5783"
+      }
+     },
+     "task_sha256": "b5492bb7b5a5c2b7dfd234478bc51e6634c6bb129400dfbbbfdc219815096027",
+     "source": "frozen_business_reference",
+     "case_id": "operating-review",
+     "reference_sha256": "9b6a326e9142772a548649e82585c5b0fe27dea15973e0b6bd4e60e5b445f82b",
+     "scope": "月度汇总的独立算术、图表存在和模拟数据标记；不评价报告洞察",
+     "unverified": [
+      "用户满意度",
+      "报告洞察与业务价值",
+      "技能的因果贡献",
+      "网络是否整体提升"
+     ]
+    }
+   },
+   "seq": 5
+  },
+  {
+   "ts_ms": 1791592810099,
+   "type": "plan.created",
+   "step": null,
+   "data": {
+    "steps": 3,
+    "approach": "以 business-metrics-audit 为主干、data-cleaning 与 scientific-visualization 为配套，严格按文件血缘分三步执行：先按 order_id 去重保留首条并剔除 revenue/cost 缺失订单生成 clean.csv 并记录审计计数；再仅读取 clean.csv 按 month 聚合出 monthly_summary.csv（毛利=收入-",
+    "duration_ms": 6479
+   },
+   "seq": 6
+  },
+  {
+   "ts_ms": 1791592810109,
+   "type": "dag.ready",
+   "step": null,
+   "data": {
+    "nodes": [
+     {
+      "idx": 0,
+      "skill": "data-cleaning",
+      "action": "读取原始订单明细，按 order_id 去重保留首条，剔除 revenue 或 cost 缺失的订单，保留毛利为负的有效订单，写出 clean.csv 并打印重",
+      "depends_on": []
+     },
+     {
+      "idx": 1,
+      "skill": "business-metrics-audit",
+      "action": "仅读取 clean.csv，按 month 分组汇总 revenue、cost、orders，计算 gross_profit 与 gross_margin，写出",
+      "depends_on": [
+       0
+      ]
+     },
+     {
+      "idx": 2,
+      "skill": "scientific-visualization",
+      "action": "仅读取 monthly_summary.csv，绘制 revenue/cost/gross_profit 月度趋势折线图并导出矢量 figure.svg，同时撰",
+      "depends_on": [
+       1
+      ]
+     }
+    ],
+    "workflow_source": "orchestrator"
+   },
+   "seq": 7
+  },
+  {
+   "ts_ms": 1791592810109,
+   "type": "run.executing",
+   "step": null,
+   "data": {
+    "steps": 3,
+    "picked": [
+     0,
+     1,
+     2
+    ]
+   },
+   "seq": 8
+  },
+  {
+   "ts_ms": 1791592810109,
+   "type": "step.started",
+   "step": 0,
+   "data": {
+    "action": "读取原始订单明细，按 order_id 去重保留首条，剔除 revenue 或 cost 缺失的订单，保留毛利为负的有效订单，写出 clean.csv 并打印重复数与缺失剔除数。",
+    "skill": "data-cleaning"
+   },
+   "seq": 9
+  },
+  {
+   "ts_ms": 1791592810115,
+   "type": "code.generating",
+   "step": 0,
+   "data": {
+    "attempt": 1
+   },
+   "seq": 10
+  },
+  {
+   "ts_ms": 1791592815294,
+   "type": "code.generated",
+   "step": 0,
+   "data": {
+    "attempt": 1,
+    "code": "# -*- coding: utf-8 -*-\n\"\"\"\n步骤1：清洗原始模拟订单明细 -> clean.csv\n规则：\n  1) 按 order_id 去重，保留首条\n  2) revenue 或 cost 缺失的订单剔除\n  3) 不剔除毛利为负的有效订单\n数据说明：本脚本使用【模拟数据】，仅用于流程演示，不代表任何真实公司经营结论。\n金额单位：元。\n\"\"\"\nimport pandas as pd\n\n# ============ 0. 原始模拟数据（内嵌，明确标注为模拟数据） ============\nRAW_CSV = \"\"\"order_id,month,revenue,cost\nA01,2026-01,1200,720\nA02,2026-01,800,560\nA03,2026-01,1500,900\nA03,2026-01,1500,900\nB01,2026-02,1800,1200\nB02,2026-02,900,720\nB03,2026-02,,300\nB04,2026-02,1300,780\nC01,2026-03,2200,1430\nC02,2026-03,1400,980\nC03,2026-03,700,770\nD01,2026-04,2600,1690\nD02,2026-04,1700,1020\nD03,2026-04,900,630\nD04,2026-04,500,\n\"\"\"\n\nfrom io import StringIO\n\nprint(\"=\" * 60)\nprint(\"【模拟数据】订单明细清洗（金额单位：元）\")\nprint(\"=\" * 60)\n\n# ============ 1. 结构与类型探查 ============\ndf = pd.read_csv(StringIO(RAW_CSV), dtype={\"order_id\": str, \"month\": str})\nraw_rows = len(df)\nprint(f\"[探查] 原始行数: {raw_rows}\")\nprint(f\"[探查] 列名: {list(df.columns)}\")\nprint(f\"[探查] 主键 order_id 唯一性(去重前重复数): {df['order_id'].duplicated().sum()}\")\nprint(f\"[探查] 缺失模式(每列缺失数):\\n{df.isna().sum().to_string()}\")\n\n# 缺失模式说明：revenue/cost 缺失属于关键字段缺失，无法计算毛利，\n# 按业务规则剔除；此处不做均值填补（规避“均值填补非随机缺失”陷阱）。\nmissing_mask = df[\"revenue\"].isna() | df[\"cost\"].isna()\nprint(f\"[缺失] revenue 或 cost 缺失行数(待剔除): {int(missing_mask.sum())}\")\nprint(f\"[缺失] 缺失订单号: {df.loc[missing_mask, 'order_id'].tolist()}\")\n\n# ============ 2. 去重（保留首条） ============\ndup_mask = df[\"order_id\"].duplicated(keep=\"first\")\ndup_count = int(dup_mask.sum())\nprint(f\"[去重] 重复删除行数: {dup_count}\")\nprint(f\"[去重] 被删除的重复订单号: {df.loc[dup_mask, 'order_id'].tolist()}\")\ndf_dedup = df.loc[~dup_mask].copy()\n\n# ============ 3. 剔除关键字段缺失（在去重后统计，避免重复计数） ============\nmiss_mask2 = df_dedup[\"revenue\"].isna() | df_dedup[\"cost\"].isna()\nmiss_count = int(miss_mask2.sum())\nprint(f\"[缺失] 去重后剔除的缺失行数: {miss_count}\")\nprint(f\"[缺失] 被剔除订单号: {df_dedup.loc[miss_mask2, 'order_id'].tolist()}\")\nclean = df_dedup.loc[~miss_mask2].copy()\n\n# ============ 4. 保留负毛利有效订单（显式检查，不剔除） ============\nclean[\"gross_profit\"] = clean[\"revenue\"] - clean[\"cost\"]\nneg = clean[clean[\"gross_profit\"] < 0]\nprint(f\"[负毛利] 保留的负毛利订单数: {len(neg)}\")\nif len(neg) > 0:\n    print(f\"[负毛利] 明细:\\n{neg[['order_id','month','revenue','cost','gross_profit']].to_string(index=False)}\")\n\n# 输出列严格为 order_id,month,revenue,cost\nclean_out = clean[[\"order_id\", \"month\", \"revenue\", \"cost\"]].reset_index(drop=True)\n\n# ============ 5. 行数守恒校验 ============\nclean_rows = len(clean_out)\nprint(\"-\" * 60)\nprint(f\"[守恒] 原始行数 {raw_rows} - 重复删除 {dup_count} - 缺失剔除 {miss_count} = {raw_rows - dup_count - miss_count}\")\nprint(f\"[守恒] clean.csv 实际行数 = {clean_rows}\")\nassert raw_rows - dup_count - miss_count == clean_rows, \"行数守恒校验失败！\"\nprint(\"[守恒] 行数守恒校验通过 ✔\")\n\n# ============ 6. 回读验收 ============\nclean_out.to_csv(\"clean.csv\", index=False, encoding=\"utf-8-sig\")\nrb = pd.read_csv(\"clean.csv\", dtype={\"order_id\": str, \"month\": str})\nprint(\"-\" * 60)\nprint(f\"[回读] clean.csv 行数: {len(rb)}\")\nprint(f\"[回读] order_id 重复数(应为0): {rb['order_id'].duplicated().sum()}\")\nprint(f\"[回读] revenue/cost 缺失总数(应为0): {int(rb[['revenue','cost']].isna().sum().sum())}\")\nassert rb[\"order_id\"].duplicated().sum() == 0, \"order_id 不唯一！\"\nassert rb[[\"revenue\", \"cost\"]].isna().sum().sum() == 0, \"存在缺失！\"\nassert \"C03\" in rb[\"order_id\"].values, \"负毛利订单 C03 被误删！\"\nprint(\"[回读] 验收通过：order_id 唯一、无缺失、负毛利订单 C03 保留 ✔\")\nprint(\"=\" * 60)\nprint(\"已写出: clean.csv（模拟数据，金额单位：元）\")",
+    "chars": 3302,
+    "truncated": false
+   },
+   "seq": 11
+  },
+  {
+   "ts_ms": 1791592815306,
+   "type": "sandbox.started",
+   "step": 0,
+   "data": {
+    "attempt": 1
+   },
+   "seq": 12
+  },
+  {
+   "ts_ms": 1791592818286,
+   "type": "step.attempt",
+   "step": 0,
+   "data": {
+    "attempt": 1,
+    "ok": true,
+    "error_kind": "",
+    "duration_ms": 930,
+    "stdout": "============================================================\n【模拟数据】订单明细清洗（金额单位：元）\n============================================================\n[探查] 原始行数: 15\n[探查] 列名: ['order_id', 'month', 'revenue', 'cost']\n[探查] 主键 order_id 唯一性(去重前重复数): 1\n[探查] 缺失模式(每列缺失数):\norder_id    0\nmonth       0\nrevenue     1\ncost        1\n[缺失] revenue 或 cost 缺失行数(待剔除): 2\n[缺失] 缺失订单号: ['B03', 'D04']\n[去重] 重复删除行数: 1\n[去重] 被删除的重复订单号: ['A03']\n[缺失] 去重后剔除的缺失行数: 2\n[缺失] 被剔除订单号: ['B03', 'D04']\n[负毛利] 保留的负毛利订单数: 1\n[负毛利] 明细:\norder_id   month  revenue  cost  gross_profit\n     C03 2026-03    700.0 770.0         -70.0\n------------------------------------------------------------\n[守恒] 原始行数 15 - 重复删除 1 - 缺失剔除 2 = 12\n[守恒] clean.csv 实际行数 = 12\n[守恒] 行数守恒校验通过 ✔\n------------------------------------------------------------\n[回读] clean.csv 行数: 12\n[回读] order_id 重复数(应为0): 0\n[回读] revenue/cost 缺失总数(应为0): 0\n[回读] 验收通过：order_id 唯一、无缺失、负毛利订单 C03 保留 ✔\n============================================================\n已写出: clean.csv（模拟数据，金额单位：元）\n",
+    "stderr": ""
+   },
+   "seq": 13
+  },
+  {
+   "ts_ms": 1791592818300,
+   "type": "artifact.created",
+   "step": 0,
+   "data": {
+    "name": "step1_clean.csv",
+    "bytes": 344,
+    "sha256": "7e6cbc82b564f901f3958e2ec28d58fa5ae2867448efd8e06afd1e4cf51c0026",
+    "kind": "真实运行产物"
+   },
+   "seq": 14
+  },
+  {
+   "ts_ms": 1791592818310,
+   "type": "verification.started",
+   "step": 0,
+   "data": {},
+   "seq": 15
+  },
+  {
+   "ts_ms": 1791592818310,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "执行退出码为 0",
+    "passed": true,
+    "detail": "returncode=0",
+    "required": true
+   },
+   "seq": 16
+  },
+  {
+   "ts_ms": 1791592818310,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "运行有实质输出",
+    "passed": true,
+    "detail": "988 字符 / 32 行",
+    "required": false
+   },
+   "seq": 17
+  },
+  {
+   "ts_ms": 1791592818310,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "产生至少一个文件产物",
+    "passed": true,
+    "detail": "1 个",
+    "required": false
+   },
+   "seq": 18
+  },
+  {
+   "ts_ms": 1791592818310,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "clean.csv 存在",
+    "passed": true,
+    "detail": "344 字节",
+    "required": true
+   },
+   "seq": 19
+  },
+  {
+   "ts_ms": 1791592818310,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "clean.csv 非空",
+    "passed": true,
+    "detail": "344 字节",
+    "required": true
+   },
+   "seq": 20
+  },
+  {
+   "ts_ms": 1791592818310,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "clean.csv 是可解析 CSV",
+    "passed": true,
+    "detail": "13 行（含表头）",
+    "required": true
+   },
+   "seq": 21
+  },
+  {
+   "ts_ms": 1791592818310,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "clean.csv 含表头且列数 > 0",
+    "passed": true,
+    "detail": "列：﻿order_id, month, revenue, cost",
+    "required": true
+   },
+   "seq": 22
+  },
+  {
+   "ts_ms": 1791592818310,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "clean.csv 含数据行",
+    "passed": true,
+    "detail": "12 行数据",
+    "required": true
+   },
+   "seq": 23
+  },
+  {
+   "ts_ms": 1791592818310,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "clean.csv 各行列数一致",
+    "passed": true,
+    "detail": "列数集合 [4]",
+    "required": true
+   },
+   "seq": 24
+  },
+  {
+   "ts_ms": 1791592818310,
+   "type": "check.result",
+   "step": 0,
+   "data": {
+    "name": "步骤交付：clean.csv",
+    "passed": true,
+    "detail": "存在",
+    "required": true
+   },
+   "seq": 25
+  },
+  {
+   "ts_ms": 1791592818310,
+   "type": "verification.result",
+   "step": 0,
+   "data": {
+    "item": "回读 clean.csv：order_id 唯一（df['order_id'].duplicated().sum()==0）",
+    "passed": true,
+    "evidence": "运行输出显示 [回读] order_id 重复数(应为0): 0，且脚本断言 rb['order_id'].duplicated().sum() == 0 通过；落盘 clean.csv 共 12 行，样本中 order_id 无重复。",
+    "layer": "llm"
+   },
+   "seq": 26
+  },
+  {
+   "ts_ms": 1791592818310,
+   "type": "verification.result",
+   "step": 0,
+   "data": {
+    "item": "回读 clean.csv：revenue 与 cost 均无缺失（df[['revenue','cost']].isna().sum().sum()==0）",
+    "passed": true,
+    "evidence": "运行输出显示 [回读] revenue/cost 缺失总数(应为0): 0，且脚本断言 rb[['revenue','cost']].isna().sum().sum() == 0 通过；落盘 clean.csv 的 revenue、cost 列样本均有值。",
+    "layer": "llm"
+   },
+   "seq": 27
+  },
+  {
+   "ts_ms": 1791592818310,
+   "type": "verification.result",
+   "step": 0,
+   "data": {
+    "item": "行数守恒：原始行数 - 重复删除行数 - 缺失剔除行数 == clean.csv 行数，且三项计数由脚本实际计算并打印",
+    "passed": true,
+    "evidence": "脚本实际计算并打印：原始行数 15、重复删除 1、缺失剔除 2；守恒等式 15-1-2=12，clean.csv 实际行数 12，assert 校验通过；落盘 clean.csv rows=12 与之一致。",
+    "layer": "llm"
+   },
+   "seq": 28
+  },
+  {
+   "ts_ms": 1791592818310,
+   "type": "verification.result",
+   "step": 0,
+   "data": {
+    "item": "负毛利订单仍在 clean.csv 中（如 C03 的 700-770=-70 未被剔除）",
+    "passed": true,
+    "evidence": "运行输出 [负毛利] 保留的负毛利订单数: 1，明细显示 C03 2026-03 revenue=700.0 cost=770.0 gross_profit=-70.0；脚本断言 'C03' in rb['order_id'].values 通过，说明 C03 保留在 clean.csv 中。",
+    "layer": "llm"
+   },
+   "seq": 29
+  },
+  {
+   "ts_ms": 1791592818311,
+   "type": "step.completed",
+   "step": 0,
+   "data": {
+    "status": "done",
+    "duration_ms": 8201,
+    "n_attempts": 1,
+    "artifacts": 1,
+    "checks": "10/10"
+   },
+   "seq": 30
+  },
+  {
+   "ts_ms": 1791592818324,
+   "type": "step.started",
+   "step": 1,
+   "data": {
+    "action": "仅读取 clean.csv，按 month 分组汇总 revenue、cost、orders，计算 gross_profit 与 gross_margin，写出列名严格为 month,revenue,cost,gross_profit,gross_margin,orders 的 monthly_summary.csv。",
+    "skill": "business-metrics-audit"
+   },
+   "seq": 31
+  },
+  {
+   "ts_ms": 1791592818333,
+   "type": "step.inputs",
+   "step": 1,
+   "data": {
+    "files": [
+     "clean.csv"
+    ],
+    "artifacts": [
+     {
+      "logical_name": "clean.csv",
+      "name": "step1_clean.csv",
+      "from_step": 0,
+      "sha256": "7e6cbc82b564f901f3958e2ec28d58fa5ae2867448efd8e06afd1e4cf51c0026"
+     }
+    ]
+   },
+   "seq": 32
+  },
+  {
+   "ts_ms": 1791592818333,
+   "type": "code.generating",
+   "step": 1,
+   "data": {
+    "attempt": 1
+   },
+   "seq": 33
+  },
+  {
+   "ts_ms": 1791592823546,
+   "type": "code.generated",
+   "step": 1,
+   "data": {
+    "attempt": 1,
+    "code": "# -*- coding: utf-8 -*-\n\"\"\"\n步骤2：读取 clean.csv，按 month 汇总生成 monthly_summary.csv\n数据说明：本数据为【模拟数据】，仅用于流程演示，不代表任何公司真实经营情况。\n金额单位：元。\n\"\"\"\nimport os\nimport numpy as np\nimport pandas as pd\nimport matplotlib\nmatplotlib.use('Agg')\nimport matplotlib.pyplot as plt\nplt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'DejaVu Sans']\nplt.rcParams['axes.unicode_minus'] = False\n\nTOL = 1e-8\nIN_FILE = 'clean.csv'\nOUT_FILE = 'monthly_summary.csv'\n\n# ---------- 1. 读取前序产物 clean.csv（缺失则报错，禁止重造数据） ----------\nif not os.path.exists(IN_FILE):\n    raise FileNotFoundError(f\"缺少约定输入文件 {IN_FILE}，本步骤不重造数据，请先执行步骤1。\")\n\nclean = pd.read_csv(IN_FILE)\nprint(f\"[读取] {IN_FILE} 行数={len(clean)} 列={list(clean.columns)}\")\n\n# 校验必要列\nrequired = ['order_id', 'month', 'revenue', 'cost']\nmissing_cols = [c for c in required if c not in clean.columns]\nif missing_cols:\n    raise ValueError(f\"clean.csv 缺少必要列: {missing_cols}\")\n\n# 规避陷阱：clean.csv 应已无缺失；此处仍做防御性检查，缺失则报错而非用0冒充\nif clean[['month', 'revenue', 'cost']].isna().sum().sum() != 0:\n    raise ValueError(\"clean.csv 存在缺失值，违反清洗契约，请检查步骤1。\")\n\n# 规避陷阱：确认 clean.csv 内 order_id 无重复（去重已在步骤1完成）\ndup_in_clean = int(clean['order_id'].duplicated().sum())\nprint(f\"[检查] clean.csv 内重复 order_id 数={dup_in_clean}（应为0）\")\n\n# ---------- 2. 按 month 汇总（不复制原始数据重算，仅基于 clean.csv） ----------\n# 规避陷阱：毛利率用总额加权计算，绝不平均单笔毛利率\ngrp = clean.groupby('month', as_index=False).agg(\n    revenue=('revenue', 'sum'),\n    cost=('cost', 'sum'),\n    orders=('order_id', 'count'),\n)\ngrp['gross_profit'] = grp['revenue'] - grp['cost']\n# 毛利率 = 毛利 / 总收入（总额口径）\ngrp['gross_margin'] = grp['gross_profit'] / grp['revenue']\n\n# 列名与顺序严格固定\ngrp = grp[['month', 'revenue', 'cost', 'gross_profit', 'gross_margin', 'orders']]\ngrp = grp.sort_values('month').reset_index(drop=True)\n\n# ---------- 3. 落盘 ----------\ngrp.to_csv(OUT_FILE, index=False, encoding='utf-8-sig')\nprint(f\"[写出] {OUT_FILE} 行数={len(grp)}\")\n\n# ---------- 4. 回读并执行验收清单 ----------\nchk = pd.read_csv(OUT_FILE)\nprint(\"\\n===== 验收清单 =====\")\n\n# 4.1 列名与顺序\ncols_ok = list(chk.columns) == ['month', 'revenue', 'cost', 'gross_profit', 'gross_margin', 'orders']\nprint(f\"[1] 列名精确匹配: {cols_ok} -> {list(chk.columns)}\")\n\n# 4.2 总额一致性（与 clean.csv 明细合计，容差1e-8）\nrev_ok = abs(chk['revenue'].sum() - clean['revenue'].sum()) < TOL\ncost_ok = abs(chk['cost'].sum() - clean['cost'].sum()) < TOL\nprint(f\"[2] revenue 合计一致: {rev_ok} (汇总={chk['revenue'].sum()} 明细={clean['revenue'].sum()})\")\nprint(f\"[2] cost 合计一致: {cost_ok} (汇总={chk['cost'].sum()} 明细={clean['cost'].sum()})\")\n\n# 4.3 orders 合计等于 clean.csv 行数\norders_ok = int(chk['orders'].sum()) == len(clean)\nprint(f\"[3] orders 合计==明细行数: {orders_ok} (汇总={int(chk['orders'].sum())} 明细={len(clean)})\")\n\n# 4.4 逐月校验毛利与毛利率\ngp_ok = bool(np.all(np.abs(chk['gross_profit'] - (chk['revenue'] - chk['cost'])) < TOL))\ngm_ok = bool(np.all(np.abs(chk['gross_margin'] - chk['gross_profit'] / chk['revenue']) < TOL))\nprint(f\"[4] 逐月 gross_profit==revenue-cost: {gp_ok}\")\nprint(f\"[4] 逐月 gross_margin==gross_profit/revenue: {gm_ok}\")\n\n# 4.5 无缺失值\nna_ok = int(chk.isna().sum().sum()) == 0\nprint(f\"[5] 无缺失值: {na_ok} (缺失总数={int(chk.isna().sum().sum())})\")\n\nall_ok = all([cols_ok, rev_ok, cost_ok, orders_ok, gp_ok, gm_ok, na_ok])\nprint(f\"\\n[结论] 全部验收通过: {all_ok}\")\n\n# ---------- 5. 打印月度汇总（展示格式可舍入，原值已落盘） ----------\nprint(\"\\n===== 月度汇总（模拟数据，单位：元）=====\")\nshow = chk.copy()\nshow['gross_margin'] = (show['gross_margin'] * 100).round(2).astype(str) + '%'\nprint(show.to_string(index=False))\n\n# 毛利风险提示（基于模拟数据，非真实经营结论）\nneg = chk[chk['gross_profit'] < 0]\nif len(neg) > 0:\n    print(f\"\\n[风险] 存在毛利为负的月份（模拟数据）：{list(neg['month'])}，已按规则保留。\")\nelse:\n    print(\"\\n[风险] 无毛利为负月份（模拟数据）。\")",
+    "chars": 3593,
+    "truncated": false
+   },
+   "seq": 34
+  },
+  {
+   "ts_ms": 1791592823560,
+   "type": "sandbox.started",
+   "step": 1,
+   "data": {
+    "attempt": 1
+   },
+   "seq": 35
+  },
+  {
+   "ts_ms": 1791592827894,
+   "type": "step.attempt",
+   "step": 1,
+   "data": {
+    "attempt": 1,
+    "ok": true,
+    "error_kind": "",
+    "duration_ms": 1760,
+    "stdout": "[读取] clean.csv 行数=12 列=['order_id', 'month', 'revenue', 'cost']\n[检查] clean.csv 内重复 order_id 数=0（应为0）\n[写出] monthly_summary.csv 行数=4\n\n===== 验收清单 =====\n[1] 列名精确匹配: True -> ['month', 'revenue', 'cost', 'gross_profit', 'gross_margin', 'orders']\n[2] revenue 合计一致: True (汇总=17000.0 明细=17000.0)\n[2] cost 合计一致: True (汇总=11400.0 明细=11400.0)\n[3] orders 合计==明细行数: True (汇总=12 明细=12)\n[4] 逐月 gross_profit==revenue-cost: True\n[4] 逐月 gross_margin==gross_profit/revenue: True\n[5] 无缺失值: True (缺失总数=0)\n\n[结论] 全部验收通过: True\n\n===== 月度汇总（模拟数据，单位：元）=====\n  month  revenue   cost  gross_profit gross_margin  orders\n2026-01   3500.0 2180.0        1320.0       37.71%       3\n2026-02   4000.0 2700.0        1300.0        32.5%       3\n2026-03   4300.0 3180.0        1120.0       26.05%       3\n2026-04   5200.0 3340.0        1860.0       35.77%       3\n\n[风险] 无毛利为负月份（模拟数据）。\n",
+    "stderr": ""
+   },
+   "seq": 36
+  },
+  {
+   "ts_ms": 1791592827909,
+   "type": "artifact.created",
+   "step": 1,
+   "data": {
+    "name": "step2_monthly_summary.csv",
+    "bytes": 249,
+    "sha256": "a2a0524e5ba15ad02d37b77ae6b6fd3ade0c4450dd93d55b1bab18009e1b7027",
+    "kind": "真实运行产物"
+   },
+   "seq": 37
+  },
+  {
+   "ts_ms": 1791592827922,
+   "type": "verification.started",
+   "step": 1,
+   "data": {},
+   "seq": 38
+  },
+  {
+   "ts_ms": 1791592827923,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "执行退出码为 0",
+    "passed": true,
+    "detail": "returncode=0",
+    "required": true
+   },
+   "seq": 39
+  },
+  {
+   "ts_ms": 1791592827923,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "运行有实质输出",
+    "passed": true,
+    "detail": "846 字符 / 19 行",
+    "required": false
+   },
+   "seq": 40
+  },
+  {
+   "ts_ms": 1791592827923,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "产生至少一个文件产物",
+    "passed": true,
+    "detail": "1 个",
+    "required": false
+   },
+   "seq": 41
+  },
+  {
+   "ts_ms": 1791592827923,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "monthly_summary.csv 存在",
+    "passed": true,
+    "detail": "249 字节",
+    "required": true
+   },
+   "seq": 42
+  },
+  {
+   "ts_ms": 1791592827923,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "monthly_summary.csv 非空",
+    "passed": true,
+    "detail": "249 字节",
+    "required": true
+   },
+   "seq": 43
+  },
+  {
+   "ts_ms": 1791592827923,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "monthly_summary.csv 是可解析 CSV",
+    "passed": true,
+    "detail": "5 行（含表头）",
+    "required": true
+   },
+   "seq": 44
+  },
+  {
+   "ts_ms": 1791592827923,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "monthly_summary.csv 含表头且列数 > 0",
+    "passed": true,
+    "detail": "列：﻿month, revenue, cost, gross_profit, gross_margin, orders",
+    "required": true
+   },
+   "seq": 45
+  },
+  {
+   "ts_ms": 1791592827923,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "monthly_summary.csv 含数据行",
+    "passed": true,
+    "detail": "4 行数据",
+    "required": true
+   },
+   "seq": 46
+  },
+  {
+   "ts_ms": 1791592827923,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "monthly_summary.csv 各行列数一致",
+    "passed": true,
+    "detail": "列数集合 [6]",
+    "required": true
+   },
+   "seq": 47
+  },
+  {
+   "ts_ms": 1791592827923,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "步骤交付：monthly_summary.csv",
+    "passed": true,
+    "detail": "存在",
+    "required": true
+   },
+   "seq": 48
+  },
+  {
+   "ts_ms": 1791592827923,
+   "type": "check.result",
+   "step": 1,
+   "data": {
+    "name": "输入版本：clean.csv",
+    "passed": true,
+    "detail": "已携带已登记版本",
+    "required": true
+   },
+   "seq": 49
+  },
+  {
+   "ts_ms": 1791592827923,
+   "type": "verification.result",
+   "step": 1,
+   "data": {
+    "item": "回读 monthly_summary.csv：list(df.columns) 精确等于 ['month','revenue','cost','gross_profit','gross_margin','orders']",
+    "passed": true,
+    "evidence": "实际产物 monthly_summary.csv 的 columns 为 ['month','revenue','cost','gross_profit','gross_margin','orders']，与要求完全一致；运行输出 [1] 列名精确匹配: True。",
+    "layer": "llm"
+   },
+   "seq": 50
+  },
+  {
+   "ts_ms": 1791592827923,
+   "type": "verification.result",
+   "step": 1,
+   "data": {
+    "item": "总额一致性：monthly_summary 的 revenue 合计与 cost 合计分别等于 clean.csv 的 revenue 合计与 cost 合计，绝对容差 1e-8",
+    "passed": true,
+    "evidence": "monthly_summary.csv 各行 revenue 为 3500.0+4000.0+4300.0+5200.0=17000.0，cost 为 2180.0+2700.0+3180.0+3340.0=11400.0；上游 step1_clean.csv 共 12 行，运行输出显示明细 revenue 合计=17000.0、cost 合计=11400.0，偏差为 0，在 1e-8 容差内。",
+    "layer": "llm"
+   },
+   "seq": 51
+  },
+  {
+   "ts_ms": 1791592827923,
+   "type": "verification.result",
+   "step": 1,
+   "data": {
+    "item": "orders 合计等于 clean.csv 行数",
+    "passed": true,
+    "evidence": "monthly_summary.csv 各行 orders 均为 3，合计 3+3+3+3=12；上游 step1_clean.csv rows=12，运行输出 [3] orders 合计==明细行数: True (汇总=12 明细=12)。",
+    "layer": "llm"
+   },
+   "seq": 52
+  },
+  {
+   "ts_ms": 1791592827923,
+   "type": "verification.result",
+   "step": 1,
+   "data": {
+    "item": "逐月校验 gross_profit == revenue - cost 且 gross_margin == gross_profit / revenue，绝对容差 1e-8",
+    "passed": true,
+    "evidence": "逐月核对：2026-01 3500-2180=1320，1320/3500=0.37714285714285717；2026-02 4000-2700=1300，1300/4000=0.325；2026-03 4300-3180=1120，1120/4300=0.26046511627906976；2026-04 5200-3340=1860，1860/5200=0.3576923076923077，均与产物一致，偏差为 0，在 1e-8 容差内；运行输出 [4] 两项校验均为 True。",
+    "layer": "llm"
+   },
+   "seq": 53
+  },
+  {
+   "ts_ms": 1791592827923,
+   "type": "verification.result",
+   "step": 1,
+   "data": {
+    "item": "无缺失值（df.isna().sum().sum()==0）",
+    "passed": true,
+    "evidence": "monthly_summary.csv 的 4 行 6 列样本中 month、revenue、cost、gross_profit、gross_margin、orders 均有值，无空字段；运行输出 [5] 无缺失值: True (缺失总数=0)。",
+    "layer": "llm"
+   },
+   "seq": 54
+  },
+  {
+   "ts_ms": 1791592827923,
+   "type": "step.completed",
+   "step": 1,
+   "data": {
+    "status": "done",
+    "duration_ms": 9599,
+    "n_attempts": 1,
+    "artifacts": 1,
+    "checks": "11/11"
+   },
+   "seq": 55
+  },
+  {
+   "ts_ms": 1791592827937,
+   "type": "step.started",
+   "step": 2,
+   "data": {
+    "action": "仅读取 monthly_summary.csv，绘制 revenue/cost/gross_profit 月度趋势折线图并导出矢量 figure.svg，同时撰写 report.md 管理层报告。",
+    "skill": "scientific-visualization"
+   },
+   "seq": 56
+  },
+  {
+   "ts_ms": 1791592827951,
+   "type": "step.inputs",
+   "step": 2,
+   "data": {
+    "files": [
+     "clean.csv",
+     "monthly_summary.csv"
+    ],
+    "artifacts": [
+     {
+      "logical_name": "clean.csv",
+      "name": "step1_clean.csv",
+      "from_step": 0,
+      "sha256": "7e6cbc82b564f901f3958e2ec28d58fa5ae2867448efd8e06afd1e4cf51c0026"
+     },
+     {
+      "logical_name": "monthly_summary.csv",
+      "name": "step2_monthly_summary.csv",
+      "from_step": 1,
+      "sha256": "a2a0524e5ba15ad02d37b77ae6b6fd3ade0c4450dd93d55b1bab18009e1b7027"
+     }
+    ]
+   },
+   "seq": 57
+  },
+  {
+   "ts_ms": 1791592827951,
+   "type": "code.generating",
+   "step": 2,
+   "data": {
+    "attempt": 1
+   },
+   "seq": 58
+  },
+  {
+   "ts_ms": 1791592835888,
+   "type": "code.generated",
+   "step": 2,
+   "data": {
+    "attempt": 1,
+    "code": "# -*- coding: utf-8 -*-\n\"\"\"\n步骤3：读取 monthly_summary.csv，绘制趋势图 figure.svg 并撰写 report.md\n注意：本步骤仅使用模拟订单数据，不联网，不推断公司真实经营情况。\n\"\"\"\nimport os\nimport sys\nimport pandas as pd\nimport numpy as np\nimport matplotlib\nmatplotlib.use('Agg')\nimport matplotlib.pyplot as plt\n\n# 中文字体配置\nplt.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'DejaVu Sans']\nplt.rcParams['axes.unicode_minus'] = False\nplt.rcParams['font.size'] = 11\nplt.rcParams['axes.linewidth'] = 1.0\nplt.rcParams['lines.linewidth'] = 2.0\n\nINPUT_FILE = 'monthly_summary.csv'\nOUT_FIG = 'figure.svg'\nOUT_REPORT = 'report.md'\n\n# ---------- 1. 读取输入（缺失必须报错，禁止重造数据） ----------\nif not os.path.exists(INPUT_FILE):\n    raise FileNotFoundError(f\"约定输入文件缺失：{INPUT_FILE}，本步骤禁止重造数据。\")\n\ndf = pd.read_csv(INPUT_FILE)\nrequired_cols = ['month', 'revenue', 'cost', 'gross_profit', 'gross_margin', 'orders']\nmissing = [c for c in required_cols if c not in df.columns]\nif missing:\n    raise ValueError(f\"monthly_summary.csv 缺少必需列：{missing}\")\n\ndf = df.sort_values('month').reset_index(drop=True)\nprint(f\"[读取] monthly_summary.csv 行数={len(df)}，列={list(df.columns)}\")\nprint(df.to_string(index=False))\n\n# ---------- 2. 绘图（规避陷阱：单轴、y 轴下限 0、色觉友好配色） ----------\n# 色觉障碍友好配色（Okabe-Ito 调色板）\nC_REV = '#0072B2'   # 蓝\nC_COST = '#D55E00'  # 橙\nC_GP = '#009E73'    # 绿\n\nfig, ax = plt.subplots(figsize=(8.0, 4.8), dpi=150)\n\nx = np.arange(len(df))\nax.plot(x, df['revenue'], marker='o', color=C_REV, label='营业收入 revenue')\nax.plot(x, df['cost'], marker='s', color=C_COST, label='成本 cost')\nax.plot(x, df['gross_profit'], marker='^', color=C_GP, label='毛利 gross_profit')\n\n# 数值标注（保留源精度，仅展示格式）\nfor xi, v in zip(x, df['revenue']):\n    ax.annotate(f'{v:g}', (xi, v), textcoords='offset points', xytext=(0, 7),\n                ha='center', fontsize=8, color=C_REV)\nfor xi, v in zip(x, df['cost']):\n    ax.annotate(f'{v:g}', (xi, v), textcoords='offset points', xytext=(0, -13),\n                ha='center', fontsize=8, color=C_COST)\nfor xi, v in zip(x, df['gross_profit']):\n    ax.annotate(f'{v:g}', (xi, v), textcoords='offset points', xytext=(0, 7),\n                ha='center', fontsize=8, color=C_GP)\n\nax.set_xticks(x)\nax.set_xticklabels(df['month'], rotation=0)\nax.set_xlabel('月份 month')\nax.set_ylabel('金额（元）')\nax.set_title('月度收入 / 成本 / 毛利趋势（模拟数据，单位：元）', fontsize=12)\n\n# 规避陷阱：y 轴下限固定为 0，不截断夸大差异\nymax = float(max(df['revenue'].max(), df['cost'].max(), df['gross_profit'].max()))\nymin = float(min(0.0, df['gross_profit'].min()))\nax.set_ylim(ymin, ymax * 1.18)\n\nax.grid(True, axis='y', linestyle='--', alpha=0.4)\nax.legend(loc='best', frameon=False)\nfig.tight_layout()\n\n# ---------- 3. 生成 report.md（数值回读比对，逐值一致） ----------\ndef fmt(v):\n    return f\"{v:g}\"\n\nlines = []\nlines.append(\"# 月度经营趋势管理层报告（模拟数据）\\n\")\nlines.append(\"> **数据声明**：本报告全部基于公开的**模拟订单数据**，仅用于演示分析流程，\"\n             \"**不代表任何公司真实经营情况**，不得据此推断真实业务结论。\\n\")\nlines.append(\"> **金额单位**：本文所有金额均为**元**。\\n\")\n\nlines.append(\"## 一、月度汇总数据\\n\")\nlines.append(\"| 月份 | 营业收入(元) | 成本(元) | 毛利(元) | 毛利率 | 订单数 |\")\nlines.append(\"| --- | ---: | ---: | ---: | ---: | ---: |\")\nfor _, r in df.iterrows():\n    lines.append(f\"| {r['month']} | {fmt(r['revenue'])} | {fmt(r['cost'])} | \"\n                 f\"{fmt(r['gross_profit'])} | {r['gross_margin']:.4f} | {int(r['orders'])} |\")\n\n# 关键指标\ntotal_rev = df['revenue'].sum()\ntotal_cost = df['cost'].sum()\ntotal_gp = df['gross_profit'].sum()\noverall_margin = total_gp / total_rev if total_rev else float('nan')\nneg_months = df[df['gross_profit'] < 0]['month'].tolist()\nmin_margin_row = df.loc[df['gross_margin'].idxmin()]\n\nlines.append(\"\\n## 二、关键指标\\n\")\nlines.append(f\"- 累计营业收入：{fmt(total_rev)} 元\")\nlines.append(f\"- 累计成本：{fmt(total_cost)} 元\")\nlines.append(f\"- 累计毛利：{fmt(total_gp)} 元\")\nlines.append(f\"- 整体毛利率：{overall_margin:.4f}\")\nlines.append(f\"- 毛利为负的月份：{('、'.join(neg_months) if neg_months else '无')}\")\nlines.append(f\"- 毛利率最低月份：{min_margin_row['month']}（毛利率 {min_margin_row['gross_margin']:.4f}）\")\n\nlines.append(\"\\n## 三、毛利风险\\n\")\nif neg_months:\n    lines.append(f\"- **毛利风险**：以下月份毛利为负，存在亏损风险：{'、'.join(neg_months)}。\")\nelse:\n    lines.append(\"- **毛利风险**：各月毛利均为正，但仍需关注毛利率波动带来的盈利质量风险。\")\nlines.append(f\"- 毛利率最低月份为 {min_margin_row['month']}，毛利率仅 {min_margin_row['gross_margin']:.4f}，\"\n             \"若成本继续上升或收入下滑，可能进一步侵蚀利润。\")\nlines.append(\"- 收入与成本同步增长时，需警惕毛利率被摊薄的结构性风险。\")\n\nlines.append(\"\\n## 四、行动建议\\n\")\nlines.append(\"1. **行动建议**：对毛利为负或毛利率偏低的月份进行成本结构复盘，定位高成本订单。\")\nlines.append(\"2. **行动建议**：建立月度毛利率预警阈值，低于阈值时触发定价或采购复核。\")\nlines.append(\"3. **行动建议**：对低毛利订单评估是否调整定价策略或优化供应链成本。\")\nlines.append(\"4. **行动建议**：持续跟踪收入与成本增速差，避免规模增长伴随盈利质量下降。\")\n\nlines.append(\"\\n## 五、图表\\n\")\nlines.append(\"![月度趋势](figure.svg)\\n\")\nlines.append(\"*图注：本图为模拟订单数据的月度收入、成本与毛利趋势折线图，\"\n             \"横轴为月份，纵轴为金额（元），y 轴自 0 起，未截断坐标轴。*\\n\")\n\nreport_text = \"\\n\".join(lines)\n\n# ---------- 4. 回读比对：report 中数值与 monthly_summary.csv 逐值一致 ----------\nok = True\nfor _, r in df.iterrows():\n    for col in ['revenue', 'cost', 'gross_profit']:\n        token = fmt(r[col])\n        if token not in report_text:\n            ok = False\n            print(f\"[比对失败] {r['month']} {col}={token} 未在报告中找到\")\nprint(f\"[回读比对] report.md 数值与 monthly_summary.csv 逐值一致：{ok}\")\n\n# 关键词检查\nfor kw in ['模拟数据', '元', '毛利风险', '行动建议']:\n    print(f\"[关键词] '{kw}' 存在：{kw in report_text}\")\n\n# 规避陷阱检查\nprint(\"[陷阱规避] 单轴折线图（无双轴）：True\")\nprint(f\"[陷阱规避] y 轴下限={ax.get_ylim()[0]:g}（>=0 不截断）：{ax.get_ylim()[0] <= 0}\")\nprint(\"[陷阱规避] 使用色觉障碍友好配色（Okabe-Ito）：True\")\n\n# ---------- 5. 落盘 ----------\nfig.savefig(OUT_FIG, format='svg')\nwith open(OUT_REPORT, 'w', encoding='utf-8') as f:\n    f.write(report_text)\n\nprint(f\"[落盘] {OUT_FIG} 存在：{os.path.exists(OUT_FIG)}，大小={os.path.getsize(OUT_FIG)} 字节\")\nprint(f\"[落盘] {OUT_REPORT} 存在：{os.path.exists(OUT_REPORT)}，大小={os.path.getsize(OUT_REPORT)} 字节\")",
+    "chars": 5657,
+    "truncated": false
+   },
+   "seq": 59
+  },
+  {
+   "ts_ms": 1791592835903,
+   "type": "sandbox.started",
+   "step": 2,
+   "data": {
+    "attempt": 1
+   },
+   "seq": 60
+  },
+  {
+   "ts_ms": 1791592840261,
+   "type": "step.attempt",
+   "step": 2,
+   "data": {
+    "attempt": 1,
+    "ok": true,
+    "error_kind": "",
+    "duration_ms": 1560,
+    "stdout": "[读取] monthly_summary.csv 行数=4，列=['month', 'revenue', 'cost', 'gross_profit', 'gross_margin', 'orders']\n  month  revenue   cost  gross_profit  gross_margin  orders\n2026-01   3500.0 2180.0        1320.0      0.377143       3\n2026-02   4000.0 2700.0        1300.0      0.325000       3\n2026-03   4300.0 3180.0        1120.0      0.260465       3\n2026-04   5200.0 3340.0        1860.0      0.357692       3\n[回读比对] report.md 数值与 monthly_summary.csv 逐值一致：True\n[关键词] '模拟数据' 存在：True\n[关键词] '元' 存在：True\n[关键词] '毛利风险' 存在：True\n[关键词] '行动建议' 存在：True\n[陷阱规避] 单轴折线图（无双轴）：True\n[陷阱规避] y 轴下限=0（>=0 不截断）：True\n[陷阱规避] 使用色觉障碍友好配色（Okabe-Ito）：True\n[落盘] figure.svg 存在：True，大小=59531 字节\n[落盘] report.md 存在：True，大小=1921 字节\n",
+    "stderr": ""
+   },
+   "seq": 61
+  },
+  {
+   "ts_ms": 1791592840280,
+   "type": "artifact.created",
+   "step": 2,
+   "data": {
+    "name": "step3_figure.svg",
+    "bytes": 59531,
+    "sha256": "4d16e5f3c75b6152bc5aa5e36f23f47c54dcf74d3ab60e6c8b7fdf2a010b9fc8",
+    "kind": "真实运行产物"
+   },
+   "seq": 62
+  },
+  {
+   "ts_ms": 1791592840296,
+   "type": "artifact.created",
+   "step": 2,
+   "data": {
+    "name": "step3_report.md",
+    "bytes": 1921,
+    "sha256": "3a7da3738afe0c8de8e9878459b8233abc2e27722be125a72e3af0fd65e0660c",
+    "kind": "真实运行产物"
+   },
+   "seq": 63
+  },
+  {
+   "ts_ms": 1791592840310,
+   "type": "verification.started",
+   "step": 2,
+   "data": {},
+   "seq": 64
+  },
+  {
+   "ts_ms": 1791592840310,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "执行退出码为 0",
+    "passed": true,
+    "detail": "returncode=0",
+    "required": true
+   },
+   "seq": 65
+  },
+  {
+   "ts_ms": 1791592840310,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "运行有实质输出",
+    "passed": true,
+    "detail": "691 字符 / 16 行",
+    "required": false
+   },
+   "seq": 66
+  },
+  {
+   "ts_ms": 1791592840310,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "产生至少一个文件产物",
+    "passed": true,
+    "detail": "2 个",
+    "required": false
+   },
+   "seq": 67
+  },
+  {
+   "ts_ms": 1791592840310,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "figure.svg 存在",
+    "passed": true,
+    "detail": "59531 字节",
+    "required": true
+   },
+   "seq": 68
+  },
+  {
+   "ts_ms": 1791592840310,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "figure.svg 非空",
+    "passed": true,
+    "detail": "59531 字节",
+    "required": true
+   },
+   "seq": 69
+  },
+  {
+   "ts_ms": 1791592840310,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "figure.svg 是图片产物",
+    "passed": true,
+    "detail": "59531 字节",
+    "required": true
+   },
+   "seq": 70
+  },
+  {
+   "ts_ms": 1791592840310,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "report.md 存在",
+    "passed": true,
+    "detail": "1921 字节",
+    "required": true
+   },
+   "seq": 71
+  },
+  {
+   "ts_ms": 1791592840310,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "report.md 非空",
+    "passed": true,
+    "detail": "1921 字节",
+    "required": true
+   },
+   "seq": 72
+  },
+  {
+   "ts_ms": 1791592840310,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "步骤交付：figure.svg",
+    "passed": true,
+    "detail": "存在",
+    "required": true
+   },
+   "seq": 73
+  },
+  {
+   "ts_ms": 1791592840310,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "步骤交付：report.md",
+    "passed": true,
+    "detail": "存在",
+    "required": true
+   },
+   "seq": 74
+  },
+  {
+   "ts_ms": 1791592840310,
+   "type": "check.result",
+   "step": 2,
+   "data": {
+    "name": "输入版本：monthly_summary.csv",
+    "passed": true,
+    "detail": "已携带已登记版本",
+    "required": true
+   },
+   "seq": 75
+  },
+  {
+   "ts_ms": 1791592840310,
+   "type": "verification.result",
+   "step": 2,
+   "data": {
+    "item": "figure.svg 存在且为矢量 SVG，坐标轴含月份与金额（元）标注，y 轴下限为 0",
+    "passed": true,
+    "evidence": "figure.svg 存在（59531 字节，sha256 4d16e5f3...），内容以 <?xml version=\"1.0\"...> 和 <svg ...> 开头，为矢量 SVG；SVG 文本含 x 轴刻度标签 2026-01/2026-02/2026-03/2026-04 及 x 轴标签“月份 month”；代码设置 ax.set_ylabel('金额（元）') 且 SVG 中可见对应文本；代码 ax.set_ylim(ymin, ymax*1.18)，其中 ymin=min(0.0, gross_profit.min())=0，运行输出确认 y 轴下限=0。",
+    "layer": "llm"
+   },
+   "seq": 76
+  },
+  {
+   "ts_ms": 1791592840310,
+   "type": "verification.result",
+   "step": 2,
+   "data": {
+    "item": "report.md 含关键词：模拟数据、元、毛利风险、行动建议",
+    "passed": true,
+    "evidence": "report.md 内容含“模拟数据”（标题及数据声明）、“元”（金额单位声明及表格列名）、“毛利风险”（第三节标题）、“行动建议”（第四节标题）；运行输出关键词检查四项均为 True。",
+    "layer": "llm"
+   },
+   "seq": 77
+  },
+  {
+   "ts_ms": 1791592840310,
+   "type": "verification.result",
+   "step": 2,
+   "data": {
+    "item": "report.md 中引用的月度数值与 monthly_summary.csv 逐值一致（回读比对）",
+    "passed": true,
+    "evidence": "上游 step2_monthly_summary.csv 实际值为 2026-01: revenue 3500.0/cost 2180.0/gross_profit 1320.0/gross_margin 0.37714285714285717；2026-02: 4000.0/2700.0/1300.0/0.325；2026-03: 4300.0/3180.0/1120.0/0.26046511627906976；2026-04: 5200.0/3340.0/1860.0/0.3576923076923077。report.md 表格逐值列出 3500/2180/1320/0.3771、4000/2700/1300/0.3250、4300/3180/1120/0.2605、5200/3340/1860/0.3577，与输入一致（毛利率为四位小数展示，非原值截断错误）；累计值 17000/11400/5600 与输入求和一致；运行输出回读比对 True。",
+    "layer": "llm"
+   },
+   "seq": 78
+  },
+  {
+   "ts_ms": 1791592840310,
+   "type": "verification.result",
+   "step": 2,
+   "data": {
+    "item": "report.md 不含将模拟数据推断为公司真实经营情况的表述",
+    "passed": true,
+    "evidence": "report.md 数据声明明确“本报告全部基于公开的模拟订单数据，仅用于演示分析流程，不代表任何公司真实经营情况，不得据此推断真实业务结论”；全文未出现将模拟数据表述为公司真实经营情况的语句。",
+    "layer": "llm"
+   },
+   "seq": 79
+  },
+  {
+   "ts_ms": 1791592840311,
+   "type": "step.completed",
+   "step": 2,
+   "data": {
+    "status": "done",
+    "duration_ms": 12373,
+    "n_attempts": 1,
+    "artifacts": 2,
+    "checks": "11/11"
+   },
+   "seq": 80
+  },
+  {
+   "ts_ms": 1791592840324,
+   "type": "execution.finished",
+   "step": null,
+   "data": {
+    "done": 3,
+    "failed": 0,
+    "duration_ms": 45167,
+    "artifacts": 4
+   },
+   "seq": 81
+  },
+  {
+   "ts_ms": 1791592840374,
+   "type": "evaluation.completed",
+   "step": null,
+   "data": {
+    "assessment": {
+     "version": "outcome-evidence-v3",
+     "task_sha256": "b5492bb7b5a5c2b7dfd234478bc51e6634c6bb129400dfbbbfdc219815096027",
+     "goal_contract": {
+      "version": "outcome-evidence-v3",
+      "reward_policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+      "profile": {
+       "model": "deepseek-chat",
+       "sandbox": "local",
+       "sources": {
+        "pipeline.py": "38ecff9a87bd9ad2dbc4dcf33be755d4a284b15a55277d0d8edb964d23b9e8e7",
+        "executor.py": "b295e9a9edcbcaf17131cda3c74ca373dee2ab4f88eacac1e444b81c44c7a104",
+        "contracts.py": "c1f2bf934b1f6692690511945cb5dc665170621208857f4d315a59b3b148b2c0",
+        "checks.py": "61cff8b4e254190641394be36ec7f03edef595a190f093c1ab3b7b6fdc3dcc79",
+        "scenarios.py": "a5666675a88d3c1ba24dad6bfe1e4e5283c572853deefd19c549cf7ff81d4151",
+        "llm.py": "ee897a9c1250052c3ed608c21752616e03935409397605f0d33f3316f01df915",
+        "governance.py": "6e74df7b84781359b532f41b08ceb420901aa48f8afcf55c7b4067df415d1a77",
+        "promotion.py": "685a78b65268b8169c155615497e63932d4284e1fae88f578e90df1454f2cf03",
+        "reward_gates.py": "6f3812086709054dfaf8e1bba766fbdaf42d6c1d2eb5bc0b91d5d9dd4d1e82db",
+        "assessment.py": "7955e592d7b3b8b30aac3872dafea25b2ab48346d8b42bc18903a2ac2047dfd9",
+        "runtime.py": "26d6b5fbb74ea4ed5e147c31574a37d61d547e71ab2a4ea02366fb434f71250d",
+        "schema.py": "4ecad1593940833d15f4931229123af84d033b0a92c945cc748e57e7043e5783"
+       }
+      },
+      "task_sha256": "b5492bb7b5a5c2b7dfd234478bc51e6634c6bb129400dfbbbfdc219815096027",
+      "source": "frozen_business_reference",
+      "case_id": "operating-review",
+      "reference_sha256": "9b6a326e9142772a548649e82585c5b0fe27dea15973e0b6bd4e60e5b445f82b",
+      "scope": "月度汇总的独立算术、图表存在和模拟数据标记；不评价报告洞察",
+      "unverified": [
+       "用户满意度",
+       "报告洞察与业务价值",
+       "技能的因果贡献",
+       "网络是否整体提升"
+      ]
+     },
+     "reference_anchored_before_execution": true,
+     "scope_verdict": "passed",
+     "overall_verdict": "unconfirmed",
+     "scope": "月度汇总的独立算术、图表存在和模拟数据标记；不评价报告洞察",
+     "unverified": [
+      "用户满意度",
+      "报告洞察与业务价值",
+      "技能的因果贡献",
+      "网络是否整体提升"
+     ],
+     "integrity": [
+      {
+       "name": "step1_clean.csv",
+       "passed": true,
+       "sha256": "7e6cbc82b564f901f3958e2ec28d58fa5ae2867448efd8e06afd1e4cf51c0026"
+      },
+      {
+       "name": "step2_monthly_summary.csv",
+       "passed": true,
+       "sha256": "a2a0524e5ba15ad02d37b77ae6b6fd3ade0c4450dd93d55b1bab18009e1b7027"
+      },
+      {
+       "name": "step3_figure.svg",
+       "passed": true,
+       "sha256": "4d16e5f3c75b6152bc5aa5e36f23f47c54dcf74d3ab60e6c8b7fdf2a010b9fc8"
+      },
+      {
+       "name": "step3_report.md",
+       "passed": true,
+       "sha256": "3a7da3738afe0c8de8e9878459b8233abc2e27722be125a72e3af0fd65e0660c"
+      }
+     ],
+     "independent_reference": {
+      "score": 1.0,
+      "checks": [
+       {
+        "name": "月份完整且无额外月份",
+        "passed": true
+       },
+       {
+        "name": "2026-01.revenue",
+        "passed": true,
+        "expected": 3500.0,
+        "actual": "3500.0"
+       },
+       {
+        "name": "2026-01.cost",
+        "passed": true,
+        "expected": 2180.0,
+        "actual": "2180.0"
+       },
+       {
+        "name": "2026-01.orders",
+        "passed": true,
+        "expected": 3,
+        "actual": "3"
+       },
+       {
+        "name": "2026-01.gross_profit",
+        "passed": true,
+        "expected": 1320.0,
+        "actual": "1320.0"
+       },
+       {
+        "name": "2026-01.gross_margin",
+        "passed": true,
+        "expected": 0.37714285714285717,
+        "actual": "0.37714285714285717"
+       },
+       {
+        "name": "2026-02.revenue",
+        "passed": true,
+        "expected": 4000.0,
+        "actual": "4000.0"
+       },
+       {
+        "name": "2026-02.cost",
+        "passed": true,
+        "expected": 2700.0,
+        "actual": "2700.0"
+       },
+       {
+        "name": "2026-02.orders",
+        "passed": true,
+        "expected": 3,
+        "actual": "3"
+       },
+       {
+        "name": "2026-02.gross_profit",
+        "passed": true,
+        "expected": 1300.0,
+        "actual": "1300.0"
+       },
+       {
+        "name": "2026-02.gross_margin",
+        "passed": true,
+        "expected": 0.325,
+        "actual": "0.325"
+       },
+       {
+        "name": "2026-03.revenue",
+        "passed": true,
+        "expected": 4300.0,
+        "actual": "4300.0"
+       },
+       {
+        "name": "2026-03.cost",
+        "passed": true,
+        "expected": 3180.0,
+        "actual": "3180.0"
+       },
+       {
+        "name": "2026-03.orders",
+        "passed": true,
+        "expected": 3,
+        "actual": "3"
+       },
+       {
+        "name": "2026-03.gross_profit",
+        "passed": true,
+        "expected": 1120.0,
+        "actual": "1120.0"
+       },
+       {
+        "name": "2026-03.gross_margin",
+        "passed": true,
+        "expected": 0.26046511627906976,
+        "actual": "0.26046511627906976"
+       },
+       {
+        "name": "2026-04.revenue",
+        "passed": true,
+        "expected": 5200.0,
+        "actual": "5200.0"
+       },
+       {
+        "name": "2026-04.cost",
+        "passed": true,
+        "expected": 3340.0,
+        "actual": "3340.0"
+       },
+       {
+        "name": "2026-04.orders",
+        "passed": true,
+        "expected": 3,
+        "actual": "3"
+       },
+       {
+        "name": "2026-04.gross_profit",
+        "passed": true,
+        "expected": 1860.0,
+        "actual": "1860.0"
+       },
+       {
+        "name": "2026-04.gross_margin",
+        "passed": true,
+        "expected": 0.3576923076923077,
+        "actual": "0.3576923076923077"
+       },
+       {
+        "name": "矢量图存在",
+        "passed": true
+       },
+       {
+        "name": "报告标注模拟数据",
+        "passed": true
+       }
+      ],
+      "evaluator": "independent arithmetic + artifact presence; report insight not scored",
+      "artifact_hashes": {
+       "step1_clean.csv": "7e6cbc82b564f901f3958e2ec28d58fa5ae2867448efd8e06afd1e4cf51c0026",
+       "step2_monthly_summary.csv": "a2a0524e5ba15ad02d37b77ae6b6fd3ade0c4450dd93d55b1bab18009e1b7027",
+       "step3_figure.svg": "4d16e5f3c75b6152bc5aa5e36f23f47c54dcf74d3ab60e6c8b7fdf2a010b9fc8",
+       "step3_report.md": "3a7da3738afe0c8de8e9878459b8233abc2e27722be125a72e3af0fd65e0660c"
+      }
+     },
+     "observations": [
+      {
+       "idx": 0,
+       "skill": "data-cleaning",
+       "skill_sha256": "3b234cb8dc2c52709178f6013330acc0797350c7c4a005ae06d467eb416edca1",
+       "verdict": "unconfirmed",
+       "observed_score": null,
+       "independent_checks": [],
+       "necessary_passed": 8,
+       "necessary_total": 8,
+       "semantic_advisory": [
+        {
+         "item": "回读 clean.csv：order_id 唯一（df['order_id'].duplicated().sum()==0）",
+         "passed": true,
+         "evidence": "运行输出显示 [回读] order_id 重复数(应为0): 0，且脚本断言 rb['order_id'].duplicated().sum() == 0 通过；落盘 clean.csv 共 12 行，样本中 order_id 无重复。",
+         "layer": "llm",
+         "state": "passed"
+        },
+        {
+         "item": "回读 clean.csv：revenue 与 cost 均无缺失（df[['revenue','cost']].isna().sum().sum()==0）",
+         "passed": true,
+         "evidence": "运行输出显示 [回读] revenue/cost 缺失总数(应为0): 0，且脚本断言 rb[['revenue','cost']].isna().sum().sum() == 0 通过；落盘 clean.csv 的 revenue、cost 列样本均有值。",
+         "layer": "llm",
+         "state": "passed"
+        },
+        {
+         "item": "行数守恒：原始行数 - 重复删除行数 - 缺失剔除行数 == clean.csv 行数，且三项计数由脚本实际计算并打印",
+         "passed": true,
+         "evidence": "脚本实际计算并打印：原始行数 15、重复删除 1、缺失剔除 2；守恒等式 15-1-2=12，clean.csv 实际行数 12，assert 校验通过；落盘 clean.csv rows=12 与之一致。",
+         "layer": "llm",
+         "state": "passed"
+        },
+        {
+         "item": "负毛利订单仍在 clean.csv 中（如 C03 的 700-770=-70 未被剔除）",
+         "passed": true,
+         "evidence": "运行输出 [负毛利] 保留的负毛利订单数: 1，明细显示 C03 2026-03 revenue=700.0 cost=770.0 gross_profit=-70.0；脚本断言 'C03' in rb['order_id'].values 通过，说明 C03 保留在 clean.csv 中。",
+         "layer": "llm",
+         "state": "passed"
+        }
+       ],
+       "reason": "执行与模型评价保留为事实；没有独立结果判据，不分配奖励"
+      },
+      {
+       "idx": 1,
+       "skill": "business-metrics-audit",
+       "skill_sha256": "8bfcc7e0820680b481f1d7dadedec2cca2d7ec2e7324d1f9bb6cf07ddfd5793a",
+       "verdict": "supported_in_scope",
+       "observed_score": 1.0,
+       "independent_checks": [
+        {
+         "name": "月份完整且无额外月份",
+         "passed": true
+        },
+        {
+         "name": "2026-01.revenue",
+         "passed": true,
+         "expected": 3500.0,
+         "actual": "3500.0"
+        },
+        {
+         "name": "2026-01.cost",
+         "passed": true,
+         "expected": 2180.0,
+         "actual": "2180.0"
+        },
+        {
+         "name": "2026-01.orders",
+         "passed": true,
+         "expected": 3,
+         "actual": "3"
+        },
+        {
+         "name": "2026-01.gross_profit",
+         "passed": true,
+         "expected": 1320.0,
+         "actual": "1320.0"
+        },
+        {
+         "name": "2026-01.gross_margin",
+         "passed": true,
+         "expected": 0.37714285714285717,
+         "actual": "0.37714285714285717"
+        },
+        {
+         "name": "2026-02.revenue",
+         "passed": true,
+         "expected": 4000.0,
+         "actual": "4000.0"
+        },
+        {
+         "name": "2026-02.cost",
+         "passed": true,
+         "expected": 2700.0,
+         "actual": "2700.0"
+        },
+        {
+         "name": "2026-02.orders",
+         "passed": true,
+         "expected": 3,
+         "actual": "3"
+        },
+        {
+         "name": "2026-02.gross_profit",
+         "passed": true,
+         "expected": 1300.0,
+         "actual": "1300.0"
+        },
+        {
+         "name": "2026-02.gross_margin",
+         "passed": true,
+         "expected": 0.325,
+         "actual": "0.325"
+        },
+        {
+         "name": "2026-03.revenue",
+         "passed": true,
+         "expected": 4300.0,
+         "actual": "4300.0"
+        },
+        {
+         "name": "2026-03.cost",
+         "passed": true,
+         "expected": 3180.0,
+         "actual": "3180.0"
+        },
+        {
+         "name": "2026-03.orders",
+         "passed": true,
+         "expected": 3,
+         "actual": "3"
+        },
+        {
+         "name": "2026-03.gross_profit",
+         "passed": true,
+         "expected": 1120.0,
+         "actual": "1120.0"
+        },
+        {
+         "name": "2026-03.gross_margin",
+         "passed": true,
+         "expected": 0.26046511627906976,
+         "actual": "0.26046511627906976"
+        },
+        {
+         "name": "2026-04.revenue",
+         "passed": true,
+         "expected": 5200.0,
+         "actual": "5200.0"
+        },
+        {
+         "name": "2026-04.cost",
+         "passed": true,
+         "expected": 3340.0,
+         "actual": "3340.0"
+        },
+        {
+         "name": "2026-04.orders",
+         "passed": true,
+         "expected": 3,
+         "actual": "3"
+        },
+        {
+         "name": "2026-04.gross_profit",
+         "passed": true,
+         "expected": 1860.0,
+         "actual": "1860.0"
+        },
+        {
+         "name": "2026-04.gross_margin",
+         "passed": true,
+         "expected": 0.3576923076923077,
+         "actual": "0.3576923076923077"
+        }
+       ],
+       "necessary_passed": 9,
+       "necessary_total": 9,
+       "semantic_advisory": [
+        {
+         "item": "回读 monthly_summary.csv：list(df.columns) 精确等于 ['month','revenue','cost','gross_profit','gross_margin','orders']",
+         "passed": true,
+         "evidence": "实际产物 monthly_summary.csv 的 columns 为 ['month','revenue','cost','gross_profit','gross_margin','orders']，与要求完全一致；运行输出 [1] 列名精确匹配: True。",
+         "layer": "llm",
+         "state": "passed"
+        },
+        {
+         "item": "总额一致性：monthly_summary 的 revenue 合计与 cost 合计分别等于 clean.csv 的 revenue 合计与 cost 合计，绝对容差 1e-8",
+         "passed": true,
+         "evidence": "monthly_summary.csv 各行 revenue 为 3500.0+4000.0+4300.0+5200.0=17000.0，cost 为 2180.0+2700.0+3180.0+3340.0=11400.0；上游 step1_clean.csv 共 12 行，运行输出显示明细 revenue 合计=17000.0、cost 合计=11400.0，偏差为 0，在 1e-8 容差内。",
+         "layer": "llm",
+         "state": "passed"
+        },
+        {
+         "item": "orders 合计等于 clean.csv 行数",
+         "passed": true,
+         "evidence": "monthly_summary.csv 各行 orders 均为 3，合计 3+3+3+3=12；上游 step1_clean.csv rows=12，运行输出 [3] orders 合计==明细行数: True (汇总=12 明细=12)。",
+         "layer": "llm",
+         "state": "passed"
+        },
+        {
+         "item": "逐月校验 gross_profit == revenue - cost 且 gross_margin == gross_profit / revenue，绝对容差 1e-8",
+         "passed": true,
+         "evidence": "逐月核对：2026-01 3500-2180=1320，1320/3500=0.37714285714285717；2026-02 4000-2700=1300，1300/4000=0.325；2026-03 4300-3180=1120，1120/4300=0.26046511627906976；2026-04 5200-3340=1860，1860/5200=0.3576923076923077，均与产物一致，偏差为 0，在 1e-8 容差内；运行输出 [4] 两项校验均为 True。",
+         "layer": "llm",
+         "state": "passed"
+        },
+        {
+         "item": "无缺失值（df.isna().sum().sum()==0）",
+         "passed": true,
+         "evidence": "monthly_summary.csv 的 4 行 6 列样本中 month、revenue、cost、gross_profit、gross_margin、orders 均有值，无空字段；运行输出 [5] 无缺失值: True (缺失总数=0)。",
+         "layer": "llm",
+         "state": "passed"
+        }
+       ],
+       "reason": "独立读取实际产物，仅支持本步骤已测量部分；不是技能因果贡献"
+      },
+      {
+       "idx": 2,
+       "skill": "scientific-visualization",
+       "skill_sha256": "2d2d8637f4064d52bbdbad35734def7138f2e8d118b8bf91108d8f84726b5efa",
+       "verdict": "unconfirmed",
+       "observed_score": null,
+       "independent_checks": [],
+       "necessary_passed": 9,
+       "necessary_total": 9,
+       "semantic_advisory": [
+        {
+         "item": "figure.svg 存在且为矢量 SVG，坐标轴含月份与金额（元）标注，y 轴下限为 0",
+         "passed": true,
+         "evidence": "figure.svg 存在（59531 字节，sha256 4d16e5f3...），内容以 <?xml version=\"1.0\"...> 和 <svg ...> 开头，为矢量 SVG；SVG 文本含 x 轴刻度标签 2026-01/2026-02/2026-03/2026-04 及 x 轴标签“月份 month”；代码设置 ax.set_ylabel('金额（元）') 且 SVG 中可见对应文本；代码 ax.set_ylim(ymin, ymax*1.18)，其中 ymin=min(0.0, gross_profit.min())=0，运行输出确认 y 轴下限=0。",
+         "layer": "llm",
+         "state": "passed"
+        },
+        {
+         "item": "report.md 含关键词：模拟数据、元、毛利风险、行动建议",
+         "passed": true,
+         "evidence": "report.md 内容含“模拟数据”（标题及数据声明）、“元”（金额单位声明及表格列名）、“毛利风险”（第三节标题）、“行动建议”（第四节标题）；运行输出关键词检查四项均为 True。",
+         "layer": "llm",
+         "state": "passed"
+        },
+        {
+         "item": "report.md 中引用的月度数值与 monthly_summary.csv 逐值一致（回读比对）",
+         "passed": true,
+         "evidence": "上游 step2_monthly_summary.csv 实际值为 2026-01: revenue 3500.0/cost 2180.0/gross_profit 1320.0/gross_margin 0.37714285714285717；2026-02: 4000.0/2700.0/1300.0/0.325；2026-03: 4300.0/3180.0/1120.0/0.26046511627906976；2026-04: 5200.0/3340.0/1860.0/0.3576923076923077。report.md 表格逐值列出 3500/2180/1320/0.3771、4000/2700/1300/0.3250、4300/3180/1120/0.2605、5200/3340/1860/0.3577，与输入一致（毛利率为四位小数展示，非原值截断错误）；累计值 17000/11400/5600 与输入求和一致；运行输出回读比对 True。",
+         "layer": "llm",
+         "state": "passed"
+        },
+        {
+         "item": "report.md 不含将模拟数据推断为公司真实经营情况的表述",
+         "passed": true,
+         "evidence": "report.md 数据声明明确“本报告全部基于公开的模拟订单数据，仅用于演示分析流程，不代表任何公司真实经营情况，不得据此推断真实业务结论”；全文未出现将模拟数据表述为公司真实经营情况的语句。",
+         "layer": "llm",
+         "state": "passed"
+        }
+       ],
+       "reason": "执行与模型评价保留为事实；没有独立结果判据，不分配奖励"
+      }
+     ],
+     "issues": [],
+     "candidate_eligible": true,
+     "candidate_score": 1.0,
+     "network": {
+      "mode": "shadow",
+      "applied": false,
+      "causal_attribution": false,
+      "reason": "单次运行只产生经验观察；未证明技能的因果贡献或跨任务增益，正式排序与技能网络不更新"
+     },
+     "evidence_sha256": "52b26adfaa7f29ee17da65eef09629feec871c9057aaa8c37aea36f3dc7ef7d2"
+    },
+    "shadow": {
+     "mode": "shadow",
+     "applied": false,
+     "rows": [
+      {
+       "name": "business-metrics-audit",
+       "exploit_before": 0.0,
+       "exploit_after": 0.0,
+       "delta": 0.0,
+       "nudged": false,
+       "mode": "shadow",
+       "observed_score": 1.0,
+       "shadow_exploit_after": 0.5647028388929881,
+       "shadow_delta": 0.5647028388929881,
+       "weight": 0.25,
+       "skip_reason": "单次运行只产生经验观察；未证明技能的因果贡献或跨任务增益，正式排序与技能网络不更新"
+      },
+      {
+       "name": "data-cleaning",
+       "exploit_before": 0.0,
+       "exploit_after": 0.0,
+       "delta": 0.0,
+       "nudged": false,
+       "mode": "shadow",
+       "observed_score": null,
+       "shadow_exploit_after": null,
+       "shadow_delta": null,
+       "weight": 0,
+       "skip_reason": "单次运行只产生经验观察；未证明技能的因果贡献或跨任务增益，正式排序与技能网络不更新"
+      },
+      {
+       "name": "scientific-visualization",
+       "exploit_before": 0.0,
+       "exploit_after": 0.0,
+       "delta": 0.0,
+       "nudged": false,
+       "mode": "shadow",
+       "observed_score": null,
+       "shadow_exploit_after": null,
+       "shadow_delta": null,
+       "weight": 0,
+       "skip_reason": "单次运行只产生经验观察；未证明技能的因果贡献或跨任务增益，正式排序与技能网络不更新"
+      }
+     ],
+     "policy_state_sha256": "bc60c6945a9af22b2443d24b507cbb58de28deda51a7acc7b893246226851003",
+     "evidence_sha256": "52b26adfaa7f29ee17da65eef09629feec871c9057aaa8c37aea36f3dc7ef7d2",
+     "reason": "单次运行只产生经验观察；未证明技能的因果贡献或跨任务增益，正式排序与技能网络不更新"
+    },
+    "reward_gates": {
+     "version": "improvement-gates-v1",
+     "policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+     "operator": "AND",
+     "eligible": false,
+     "reward_applied": false,
+     "points": 0,
+     "passed": 4,
+     "total": 12,
+     "blockers": [
+      "version",
+      "fair",
+      "heldout",
+      "suite",
+      "regression",
+      "gain",
+      "reliable",
+      "novel"
+     ],
+     "gates": [
+      {
+       "id": "frozen",
+       "title": "标准提前冻结",
+       "rule": "执行前锁定判据、阈值、模型与评测代码，禁止事后改规则",
+       "status": "passed",
+       "reason": "本次结果判据与奖励规则在执行前冻结；晋级还需预注册对照计划",
+       "evidence": {
+        "task_sha256": "b5492bb7b5a5c2b7dfd234478bc51e6634c6bb129400dfbbbfdc219815096027",
+        "policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd"
+       }
+      },
+      {
+       "id": "independent",
+       "title": "独立重算结果",
+       "rule": "从真实产物重算冻结的业务参考，模型评分不能替代",
+       "status": "passed",
+       "reason": "仅证明本次已测范围；尚无与旧版本的独立对照",
+       "evidence": {
+        "scope": "月度汇总的独立算术、图表存在和模拟数据标记；不评价报告洞察"
+       }
+      },
+      {
+       "id": "integrity",
+       "title": "物理产物可信",
+       "rule": "实际文件存在、路径合法、SHA-256 与登记一致",
+       "status": "passed",
+       "reason": "重新读取实际文件并核对指纹",
+       "evidence": {
+        "checked": 4
+       }
+      },
+      {
+       "id": "complete",
+       "title": "执行完整合格",
+       "rule": "候选全部步骤完成、必要验收通过、无删步取消或预算超限",
+       "status": "passed",
+       "reason": "本次执行完整，必要验收通过",
+       "evidence": {
+        "steps": 3,
+        "cost_yuan": 0.166902
+       }
+      },
+      {
+       "id": "version",
+       "title": "绑定技能版本",
+       "rule": "对照组与候选组实际执行冻结的精确技能版本",
+       "status": "unknown",
+       "reason": "缺少对应证据，不能放行",
+       "evidence": {}
+      },
+      {
+       "id": "fair",
+       "title": "对照条件公平",
+       "rule": "模型、预算、动作依赖相同，并按预定次序交替执行",
+       "status": "unknown",
+       "reason": "缺少对应证据，不能放行",
+       "evidence": {}
+      },
+      {
+       "id": "heldout",
+       "title": "任务未用于生成",
+       "rule": "排除当前任务、记录的祖先训练任务和实际来源运行",
+       "status": "unknown",
+       "reason": "缺少对应证据，不能放行",
+       "evidence": {}
+      },
+      {
+       "id": "suite",
+       "title": "完整报告样本",
+       "rule": "至少 5 道留出任务各 2 组配对，禁止漏报、重用或挑选赢家",
+       "status": "unknown",
+       "reason": "缺少对应证据，不能放行",
+       "evidence": {}
+      },
+      {
+       "id": "regression",
+       "title": "每组没有退步",
+       "rule": "每一组候选结果均不低于对应基线，提升不能抵消退步",
+       "status": "unknown",
+       "reason": "缺少对应证据，不能放行",
+       "evidence": {}
+      },
+      {
+       "id": "gain",
+       "title": "增益达到门槛",
+       "rule": "按不同任务等权计算平均增益，至少 0.02",
+       "status": "unknown",
+       "reason": "缺少对应证据，不能放行",
+       "evidence": {}
+      },
+      {
+       "id": "reliable",
+       "title": "多任务一致提升",
+       "rule": "以不同任务为统计单位，单侧符号检验 p ≤ 0.05",
+       "status": "unknown",
+       "reason": "缺少对应证据，不能放行",
+       "evidence": {}
+      },
+      {
+       "id": "novel",
+       "title": "同一版本只奖一次",
+       "rule": "积分只给被验证版本；相同版本不能重放或换报告重复领奖",
+       "status": "unknown",
+       "reason": "缺少对应证据，不能放行",
+       "evidence": {}
+      }
+     ],
+     "context": {
+      "kind": "single_run",
+      "run_id": "b5492bb7-20261010-083955-a445",
+      "assessment_sha256": "52b26adfaa7f29ee17da65eef09629feec871c9057aaa8c37aea36f3dc7ef7d2"
+     },
+     "reward_scope": "此技能版本在冻结评测范围内的相对提升积分；不代表全网或所有任务提升",
+     "ranking_weights_deployed": false,
+     "audit_sha256": "c0e4766e83b3cd0f066dbf679332e09b4d9b37a7631c0ddcd70b964ce9fe4e4c"
+    }
+   },
+   "seq": 82
+  },
+  {
+   "ts_ms": 1791592841552,
+   "type": "judge.completed",
+   "step": null,
+   "data": {
+    "weighted": 9.0,
+    "coverage": null,
+    "reward": null,
+    "score_valid": true,
+    "coverage_valid": false,
+    "learning_eligible": false,
+    "role": "plan_advisory",
+    "mode": "shadow",
+    "skip_reason": "单次运行只产生经验观察；未证明技能的因果贡献或跨任务增益，正式排序与技能网络不更新"
+   },
+   "seq": 83
+  },
+  {
+   "ts_ms": 1791592848103,
+   "type": "evolution.proposed",
+   "step": null,
+   "data": {
+    "accepted": false,
+    "candidate": {
+     "name": "simulated-data-monthly-report-pipeline",
+     "state": "pending_frozen_evaluation"
+    },
+    "name": "simulated-data-monthly-report-pipeline",
+    "library_size": 1881,
+    "generation": 1,
+    "feedback": [
+     {
+      "name": "business-metrics-audit",
+      "exploit_before": 0.0,
+      "exploit_after": 0.0,
+      "delta": 0.0,
+      "nudged": false,
+      "mode": "shadow",
+      "observed_score": 1.0,
+      "shadow_exploit_after": 0.5647028388929881,
+      "shadow_delta": 0.5647028388929881,
+      "weight": 0.25,
+      "skip_reason": "单次运行只产生经验观察；未证明技能的因果贡献或跨任务增益，正式排序与技能网络不更新"
+     },
+     {
+      "name": "data-cleaning",
+      "exploit_before": 0.0,
+      "exploit_after": 0.0,
+      "delta": 0.0,
+      "nudged": false,
+      "mode": "shadow",
+      "observed_score": null,
+      "shadow_exploit_after": null,
+      "shadow_delta": null,
+      "weight": 0,
+      "skip_reason": "单次运行只产生经验观察；未证明技能的因果贡献或跨任务增益，正式排序与技能网络不更新"
+     },
+     {
+      "name": "scientific-visualization",
+      "exploit_before": 0.0,
+      "exploit_after": 0.0,
+      "delta": 0.0,
+      "nudged": false,
+      "mode": "shadow",
+      "observed_score": null,
+      "shadow_exploit_after": null,
+      "shadow_delta": null,
+      "weight": 0,
+      "skip_reason": "单次运行只产生经验观察；未证明技能的因果贡献或跨任务增益，正式排序与技能网络不更新"
+     }
+    ],
+    "skipped": false,
+    "skip_reason": "候选仅隔离保存，尚未证明跨任务增益"
+   },
+   "seq": 84
+  },
+  {
+   "ts_ms": 1791592854441,
+   "type": "run.reply",
+   "step": null,
+   "data": {
+    "text": "## 直接回答\n\n本次任务用一份**公开模拟订单数据**（15 行原始明细，字段 `order_id, month, revenue, cost`），完成了一条三步流水线：清洗 → 月度汇总 → 可视化与管理层报告。核心结论如下（**全部为模拟数据，金额单位：元，不代表任何公司真实经营情况**）。\n\n### 一、清洗规则与结果\n\n清洗遵循三条明确规则，且**不剔除毛利为负的有效订单**（这是本次最容易踩的坑）：\n\n| 规则 | 处理 | 实际结果 |\n| --- | --- | --- |\n| 按 `order_id` 去重，保留首条 | 删除重复行 | 发现重复 1 条，删除订单 `A03` |\n| `revenue` 或 `cost` 缺失的订单剔除 | 整行剔除 | 缺失 2 行，剔除 `B03`（revenue 空）、`D04`（cost 空） |\n| 毛利为负的有效订单保留 | 不剔除 | 保留 1 条：`C03`（700 − 770 = **−70 元**） |\n\n行数守恒校验通过：**15 − 1（重复）− 2（缺失）= 12 行**，与 `step1_clean.csv` 实际行数一致；回读确认 `order_id` 重复数为 0、`revenue`/`cost` 缺失总数为 0、负毛利订单 `C03` 仍在表中。\n\n### 二、月度汇总（关键数字）\n\n按 `month` 分组，列名严格为 `month,revenue,cost,gross_profit,gross_margin,orders`：\n\n| 月份 | 营业收入 | 成本 | 毛利 | 毛利率 | 订单数 |\n| --- | ---: | ---: | ---: | ---: | ---: |\n| 2026-01 | 3500 | 2180 | 1320 | 37.71% | 3 |\n| 2026-02 | 4000 | 2700 | 1300 | 32.50% | 3 |\n| 2026-03 | 4300 | 3180 | 1120 | 26.05% | 3 |\n| 2026-04 | 5200 | 3340 | 1860 | 35.77% | 3 |\n\n累计：收入 **17000 元**、成本 **11400 元**、毛利 **5600 元**，整体毛利率约 **32.94%**。一致性校验全部通过：汇总收入/成本合计与明细逐值相等（17000 / 11400），`orders` 合计 12 等于明细行数，逐月 `gross_profit = revenue − cost`、`gross_margin = gross_profit / revenue` 均成立，无缺失值。\n\n### 三、怎么读这张表（原理与边界）\n\n- **毛利率 = 毛利 / 收入**，衡量每 1 元收入留下多少毛利，是盈利质量的直接指标；它不反映费用与净利。\n- **收入与成本同步增长会摊薄毛利率**。本例 2026-03 收入 4300、成本 3180，毛利率降到 **26.05%**，是四个月最低——原因正是单笔负毛利订单 `C03`（收入 700、成本 770）拖累，而非整体规模问题。\n- **负毛利订单必须保留**：剔除它会让 3 月毛利率虚高，掩盖真实风险。这是清洗规则刻意保留的原因。\n- **边界**：本数据仅 4 个月、每月 3 单，样本极小，趋势只能作演示，不能外推为经营规律；且为模拟数据，不构成任何真实业务结论。\n\n### 四、毛利风险与行动建议（来自报告）\n\n- **毛利风险**：各月毛利均为正，无毛利为负的月份；但毛利率波动明显，最低月 2026-03 仅 26.05%，若成本继续上升或收入下滑，利润会被进一步侵蚀。\n- **行动建议**：① 对低毛利月份做成本结构复盘，定位高成本订单（如 `C03`）；② 建立月度毛利率预警阈值，低于阈值触发定价或采购复核；③ 对低毛利订单评估调价或供应链优化；④ 持续跟踪收入与成本增速差，避免规模增长伴随盈利质量下降。\n\n## 执行与证据\n\n- **第 1 步（data-cleaning）**：读取原始明细，去重保留首条、剔除缺失行、保留负毛利订单，写出 `step1_clean.csv`。验收 10/10，行数守恒通过。\n- **第 2 步（business-metrics-audit）**：仅读 `step1_clean.csv`，按 month 汇总并计算毛利与毛利率，写出 `step2_monthly_summary.csv`。验收 11/11，列名精确匹配、总额一致、逐月公式成立。\n- **第 3 步（scientific-visualization）**：仅读 `step2_monthly_summary.csv`，绘制收入/成本/毛利月度趋势折线图（单轴、y 轴下限为 0、色觉障碍友好配色），写出 `step3_figure.svg` 与 `step3_report.md`。验收 11/11，报告数值与汇总逐值一致，含\"模拟数据/元/毛利风险/行动建议\"关键词。\n- **失败-修复/跳过**：无，三步均 1 次尝试完成。\n- **产物清单**：`step1_clean.csv`（0.3KB）、`step2_monthly_summary.csv`（0.2KB）、`step3_figure.svg`（58.1KB）、`step3_report.md`（1.9KB）。\n- **独立复核**：产物语义复核 13/13 通过；独立算术判据 23 项全过（月份完整、逐月各字段与预期一致、矢量图存在、报告标注模拟数据）。**未确认项**：用户满意度、报告洞察与业务价值、技能因果贡献、网络整体提升均未被证实；单次运行只产生经验观察，正式排序与技能网络不更新。\n\n## 下一步建议\n\n1. **复用本流水线做同类月度复盘**：直接套用 `data-cleaning → business-metrics-audit → scientific-visualization` 三步，把输入换成新月份明细即可，注意保留负毛利订单、坚持行数守恒校验。\n2. **扩展指标维度**：在 `step2_monthly_summary.csv` 基础上增加环比增速、累计毛利率、订单均价等列，便于识别\"增收不增利\"结构。\n3. **补一层异常归因**：对低毛利月份自动下钻到订单级（如 `C03`），输出高成本订单清单，让报告从\"发现风险\"走到\"定位原因\"。"
+   },
+   "seq": 85
+  },
+  {
+   "ts_ms": 1791592854468,
+   "type": "evaluation.gates_updated",
+   "step": null,
+   "data": {
+    "reward_gates": {
+     "version": "improvement-gates-v1",
+     "policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+     "operator": "AND",
+     "eligible": false,
+     "reward_applied": false,
+     "points": 0,
+     "passed": 4,
+     "total": 12,
+     "blockers": [
+      "version",
+      "fair",
+      "heldout",
+      "suite",
+      "regression",
+      "gain",
+      "reliable",
+      "novel"
+     ],
+     "gates": [
+      {
+       "id": "frozen",
+       "title": "标准提前冻结",
+       "rule": "执行前锁定判据、阈值、模型与评测代码，禁止事后改规则",
+       "status": "passed",
+       "reason": "本次结果判据与奖励规则在执行前冻结；晋级还需预注册对照计划",
+       "evidence": {
+        "task_sha256": "b5492bb7b5a5c2b7dfd234478bc51e6634c6bb129400dfbbbfdc219815096027",
+        "policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd"
+       }
+      },
+      {
+       "id": "independent",
+       "title": "独立重算结果",
+       "rule": "从真实产物重算冻结的业务参考，模型评分不能替代",
+       "status": "passed",
+       "reason": "仅证明本次已测范围；尚无与旧版本的独立对照",
+       "evidence": {
+        "scope": "月度汇总的独立算术、图表存在和模拟数据标记；不评价报告洞察"
+       }
+      },
+      {
+       "id": "integrity",
+       "title": "物理产物可信",
+       "rule": "实际文件存在、路径合法、SHA-256 与登记一致",
+       "status": "passed",
+       "reason": "重新读取实际文件并核对指纹",
+       "evidence": {
+        "checked": 4
+       }
+      },
+      {
+       "id": "complete",
+       "title": "执行完整合格",
+       "rule": "候选全部步骤完成、必要验收通过、无删步取消或预算超限",
+       "status": "passed",
+       "reason": "本次执行完整，必要验收通过",
+       "evidence": {
+        "steps": 3,
+        "cost_yuan": 0.22665000000000002
+       }
+      },
+      {
+       "id": "version",
+       "title": "绑定技能版本",
+       "rule": "对照组与候选组实际执行冻结的精确技能版本",
+       "status": "unknown",
+       "reason": "缺少对应证据，不能放行",
+       "evidence": {}
+      },
+      {
+       "id": "fair",
+       "title": "对照条件公平",
+       "rule": "模型、预算、动作依赖相同，并按预定次序交替执行",
+       "status": "unknown",
+       "reason": "缺少对应证据，不能放行",
+       "evidence": {}
+      },
+      {
+       "id": "heldout",
+       "title": "任务未用于生成",
+       "rule": "排除当前任务、记录的祖先训练任务和实际来源运行",
+       "status": "unknown",
+       "reason": "缺少对应证据，不能放行",
+       "evidence": {}
+      },
+      {
+       "id": "suite",
+       "title": "完整报告样本",
+       "rule": "至少 5 道留出任务各 2 组配对，禁止漏报、重用或挑选赢家",
+       "status": "unknown",
+       "reason": "缺少对应证据，不能放行",
+       "evidence": {}
+      },
+      {
+       "id": "regression",
+       "title": "每组没有退步",
+       "rule": "每一组候选结果均不低于对应基线，提升不能抵消退步",
+       "status": "unknown",
+       "reason": "缺少对应证据，不能放行",
+       "evidence": {}
+      },
+      {
+       "id": "gain",
+       "title": "增益达到门槛",
+       "rule": "按不同任务等权计算平均增益，至少 0.02",
+       "status": "unknown",
+       "reason": "缺少对应证据，不能放行",
+       "evidence": {}
+      },
+      {
+       "id": "reliable",
+       "title": "多任务一致提升",
+       "rule": "以不同任务为统计单位，单侧符号检验 p ≤ 0.05",
+       "status": "unknown",
+       "reason": "缺少对应证据，不能放行",
+       "evidence": {}
+      },
+      {
+       "id": "novel",
+       "title": "同一版本只奖一次",
+       "rule": "积分只给被验证版本；相同版本不能重放或换报告重复领奖",
+       "status": "unknown",
+       "reason": "缺少对应证据，不能放行",
+       "evidence": {}
+      }
+     ],
+     "context": {
+      "kind": "single_run",
+      "run_id": "b5492bb7-20261010-083955-a445",
+      "assessment_sha256": "52b26adfaa7f29ee17da65eef09629feec871c9057aaa8c37aea36f3dc7ef7d2"
+     },
+     "reward_scope": "此技能版本在冻结评测范围内的相对提升积分；不代表全网或所有任务提升",
+     "ranking_weights_deployed": false,
+     "audit_sha256": "06cd512599f4b7f0044fb2e2b504307cb68d87b0968dfea0961508d272db40ad"
+    }
+   },
+   "seq": 86
+  },
+  {
+   "ts_ms": 1791592854468,
+   "type": "run.finished",
+   "step": null,
+   "data": {
+    "status": "COMPLETED",
+    "duration_ms": 59308,
+    "cost": 0.22665000000000002,
+    "tokens": 73620,
+    "steps": {
+     "total": 3,
+     "done": 3,
+     "failed": 0,
+     "skipped": 0,
+     "retried": 0
+    },
+    "artifacts": 4
+   },
+   "seq": 87
+  }
+ ]
+}

@@ -69,6 +69,8 @@ assert.equal(s.evolution.skipped,true,'semantic failures must remain visible and
 assert.equal(latestRun.staged.learning_gate.eligible,false);
 assert.equal(s.feedback.filter(f=>f.nudged).length,0);
 const candidateState=createState('candidate gate');
+reduceEvent(candidateState,{seq:0,type:'evaluation.gates_updated',data:{reward_gates:{passed:4,total:12,eligible:false}}});
+assert.equal(candidateState.rewardGates.passed,4);
 reduceEvent(candidateState,{seq:1,type:'evolution.proposed',data:{accepted:false,candidate:{state:'pending_frozen_evaluation'}}});
 assert.equal(candidateState.evolution.accepted,false);
 assert.ok(candidateState.logs.at(-1).text.includes('候选区'));

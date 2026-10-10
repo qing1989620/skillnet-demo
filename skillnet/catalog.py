@@ -237,7 +237,7 @@ class SkillLibrary:
             "evolved": [s.to_dict() for s in snapshot if s.source not in ('seed', 'github')],
             # 统计（老虎机回填的实测奖励）按技能名单独存
             "stats": {
-                s.name: s.stats for s in snapshot if s.stats.get("pulls", 0) > 0
+                s.name: s.stats for s in snapshot if s.stats.get("pulls", 0) > 0 or s.stats.get('verified_improvement_receipt')
             },
         }
         text = json.dumps(payload, ensure_ascii=False, indent=1)

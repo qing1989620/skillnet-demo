@@ -1,0 +1,137 @@
+{
+  "version": "improvement-gates-v1",
+  "policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+  "operator": "AND",
+  "eligible": false,
+  "reward_applied": false,
+  "points": 0,
+  "passed": 4,
+  "total": 12,
+  "blockers": [
+    "frozen",
+    "independent",
+    "version",
+    "fair",
+    "heldout",
+    "suite",
+    "gain",
+    "reliable"
+  ],
+  "gates": [
+    {
+      "id": "frozen",
+      "title": "标准提前冻结",
+      "rule": "执行前锁定判据、阈值、模型与评测代码，禁止事后改规则",
+      "status": "unknown",
+      "reason": "Missing preregistered evaluation plan",
+      "evidence": {}
+    },
+    {
+      "id": "independent",
+      "title": "独立重算结果",
+      "rule": "从真实产物重算冻结的业务参考，模型评分不能替代",
+      "status": "unknown",
+      "reason": "缺少可信的执行前评测计划",
+      "evidence": {}
+    },
+    {
+      "id": "integrity",
+      "title": "物理产物可信",
+      "rule": "实际文件存在、路径合法、SHA-256 与登记一致",
+      "status": "passed",
+      "reason": "规定全部满足",
+      "evidence": {
+        "files": 35
+      }
+    },
+    {
+      "id": "complete",
+      "title": "执行完整合格",
+      "rule": "候选全部步骤完成、必要验收通过、无删步取消或预算超限",
+      "status": "passed",
+      "reason": "规定全部满足",
+      "evidence": {
+        "candidate_runs": 4
+      }
+    },
+    {
+      "id": "version",
+      "title": "绑定技能版本",
+      "rule": "对照组与候选组实际执行冻结的精确技能版本",
+      "status": "unknown",
+      "reason": "缺少可信的执行前评测计划",
+      "evidence": {}
+    },
+    {
+      "id": "fair",
+      "title": "对照条件公平",
+      "rule": "模型、预算、动作依赖相同，并按预定次序交替执行",
+      "status": "unknown",
+      "reason": "缺少可信的执行前评测计划",
+      "evidence": {}
+    },
+    {
+      "id": "heldout",
+      "title": "任务未用于生成",
+      "rule": "排除当前任务、记录的祖先训练任务和实际来源运行",
+      "status": "unknown",
+      "reason": "缺少可信的执行前评测计划",
+      "evidence": {}
+    },
+    {
+      "id": "suite",
+      "title": "完整报告样本",
+      "rule": "至少 5 道留出任务各 2 组配对，禁止漏报、重用或挑选赢家",
+      "status": "unknown",
+      "reason": "缺少可信的执行前评测计划",
+      "evidence": {}
+    },
+    {
+      "id": "regression",
+      "title": "每组没有退步",
+      "rule": "每一组候选结果均不低于对应基线，提升不能抵消退步",
+      "status": "passed",
+      "reason": "规定全部满足",
+      "evidence": {
+        "regressed_pairs": 0
+      }
+    },
+    {
+      "id": "gain",
+      "title": "增益达到门槛",
+      "rule": "按不同任务等权计算平均增益，至少 0.02",
+      "status": "failed",
+      "reason": "No measured improvement; candidate stays quarantined",
+      "evidence": {}
+    },
+    {
+      "id": "reliable",
+      "title": "多任务一致提升",
+      "rule": "以不同任务为统计单位，单侧符号检验 p ≤ 0.05",
+      "status": "failed",
+      "reason": "Insufficient task-level improvement evidence; repeats are not independent tasks",
+      "evidence": {}
+    },
+    {
+      "id": "novel",
+      "title": "同一版本只奖一次",
+      "rule": "积分只给被验证版本；相同版本不能重放或换报告重复领奖",
+      "status": "passed",
+      "reason": "规定全部满足",
+      "evidence": {
+        "rewarded_version": "4b94348ae885aceae7b0dd08679a1feafa8503353496ecc67c611078145cc2a2",
+        "max_points": 25
+      }
+    }
+  ],
+  "context": {
+    "kind": "candidate_improvement",
+    "candidate_name": "simulated-order-data-pipeline",
+    "candidate_sha256": "4b94348ae885aceae7b0dd08679a1feafa8503353496ecc67c611078145cc2a2",
+    "report_sha256": "7078f1d435a8e45cc02ad20ad2554ab7755d1884ffe5493cd5e6d5f2fffc0bc0",
+    "evaluation_plan_sha256": null
+  },
+  "reward_scope": "此技能版本在冻结评测范围内的相对提升积分；不代表全网或所有任务提升",
+  "ranking_weights_deployed": false,
+  "audit_sha256": "ac6b3674f1a2c6ae7a3f9671badba7d4387ff2e21a8c4c5675a4fd1fd34c1d92"
+}

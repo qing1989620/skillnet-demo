@@ -14,7 +14,7 @@ import shutil
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
-from skillnet import assessment, config, llm, pipeline, runtime
+from skillnet import assessment, config, llm, pipeline, runtime, reward_gates
 from skillnet.catalog import SkillLibrary
 from skillnet.scenarios import scenarios, evaluate_artifacts
 from skillnet.schema import Skill
@@ -39,7 +39,7 @@ def execute(case, library, mode, skill_name, budget, evaluation_plan_sha256=''):
     run.staged['evaluation_contract']=assessment.prepare_contract(case['task'])
     run.staged['evaluation_plan_sha256']=evaluation_plan_sha256
     if library.get(skill_name):
-        from skillnet.governance import fingerprint
+        from skillnet.governance import fingerprint, known_training_tasks
         run.staged['evaluated_skill_sha256']=fingerprint(library.get(skill_name))
     run.plan=plan(skill_name)
     # In-flight CLI evaluations must not be swept by API restart recovery.
@@ -57,6 +57,7 @@ def execute(case, library, mode, skill_name, budget, evaluation_plan_sha256=''):
     result=evaluate_artifacts(case,run,workspace)
     run.staged['independent_evaluation']=result
     run.staged['quality_assessment']=assessment.assess(run,workspace,library)
+    run.staged['reward_gates']=reward_gates.observation_gates(run,run.staged['quality_assessment'])
     run.staged['learning_gate']={'eligible':False,'skip_reason':'冻结评测任务不更新生产反馈与技能库'}
     store.save(run)
     published=config.OUT_DIR/'runs'
@@ -98,12 +99,17 @@ def main():
             origin_hash=hashlib.sha256(origin.task.strip().encode()).hexdigest()
         if not origin_hash:raise ValueError('Unknown training task; no model calls made')
         excluded=set((skill.metadata.get('evidence_context') or {}).get('training_task_sha256') or []) | {origin_hash}
+        excluded.update(known_training_tasks(library,skill.parent))
+        recorded_origin=(skill.metadata.get('evidence_context') or {}).get('origin_task_sha256')
+        if recorded_origin:excluded.add(recorded_origin)
         selected=[c for c in selected if c['task_sha256'] not in excluded]
         if len(selected)<5 or repeats<2:raise ValueError('Need five held-out tasks and two repeats; no model calls made')
         report['excluded_training_task_sha256']=origin_hash
         report['excluded_known_training_tasks']=sorted(excluded)
         from skillnet.governance import evaluation_digest, evaluation_profile
         frozen_plan=dict(protocol='heldout-task-cluster-v1',candidate_sha256=candidate['sha256'],
+            reward_policy_sha256=reward_gates.policy_sha256(),
+            candidate_record_sha256=evaluation_digest(candidate),known_training_task_sha256=sorted(excluded),
             created_at_ms=runtime.now_ms(),tasks={c['task_sha256']:evaluation_digest(c) for c in selected},
             repeats=repeats,budget=runtime.Budget(max_cost_yuan=args.budget_per_run,max_seconds=600,max_llm_calls=40).to_dict(),
             baseline_skill=dict(name='business-metrics-audit',sha256=fingerprint(library.get('business-metrics-audit'))),
