@@ -19,6 +19,8 @@ flowchart LR
 
 第一阶段建议只接入 `search_skills` 和 `load_skill` 两个发现工具。S1 保持现有模型、工具和执行流程，SkillNet 提供一层可检索的技能能力。`hybrid` 检索不调用模型；只有 S1 请求某个技能时才读取完整正文。
 
+社区技能还提供完整资源包：1,769 个包、10,917 个文件，包含原始 SKILL.md、脚本、参考资料和许可证。服务以交付快照登记每个文件的 SHA-256，读取时重新核验。S1 可按需读取，执行授权与依赖安装仍由 S1 管理。正文不是脚本已经可用或已被验证的证明。
+
 第二阶段再接入 Run Runtime。S1 保存 `user_id / project_id / conversation_id → run_id` 的权限映射，展示执行事件及验收证据。查询、取消和下载都先检查这个映射，然后转发到 SkillNet。服务令牌用于服务级访问；启用下面的签名身份后，SkillNet 会对 Run、产物、列表、跨轮文件和候选进行同一租户/用户/项目检查。S1 仍应在自己的业务权限层验证当前用户可访问的项目。
 
 ## 可运行的技能工具
@@ -61,13 +63,44 @@ with SkillNetClient(config) as client:
 | 服务健康 | `GET /api/health` | `health()` | 可检测模型是否已配置、是否需要令牌 |
 | 技能检索 | `POST /api/search` | `search(query, k=5, mode="hybrid")` | 发送单档 `modes`；Fabric 会调用模型，需显式选择 |
 | 技能正文 | `GET /api/skill/{name}` | `load_skill(name)` | 返回 `skill` 与 `markdown` |
+| 社区资源清单 | `GET /api/skill/{name}/package` | `get_skill_package(name)` | 来源、固定提交、许可证、逐文件指纹；SDK 校验清单摘要 |
+| 社区资源读取 | `GET /api/skill/{name}/resource?path=...` | `read_skill_resource(name, path, expected_sha256=...)` | 仅允许登记路径，文件最大 2 MB，篡改后拒绝交付；不会执行 |
 | 创建执行 | `POST /api/runs` | `create_run(task, **budgets)` | 后台执行，立即返回独立 `run_id` |
 | 查询执行 | `GET /api/runs/{run_id}` | `get_run(run_id)` | 含步骤、预算、成本、验收与产物元数据 |
+| 项目证据包 | `GET /api/runs/{run_id}/evidence` | `get_evidence(run_id)` | 交付、版本、文件血缘、验收范围与成本；SDK 核对包摘要 |
 | 实时事件 | `GET /api/runs/{run_id}/stream` | `iter_run_events(run_id)` | SSE，支持 heartbeat、事件 ID 与 `end` |
 | 请求取消 | `POST /api/runs/{run_id}/cancel` | `cancel_run(run_id)` | 在执行检查点停止 |
 | 下载产物 | `GET /api/runs/{run_id}/artifacts/{name}` | `download_artifact(...)` | 有大小上限，可对照 manifest 的 SHA-256 |
 
 契约清单由 `integration_manifest()` 返回，区分已支持的服务能力与尚未验证的线上连接。完整服务请求模型可通过 `/openapi.json` 检查。
+
+## 将完整技能资源接入 S1 Agent
+
+默认仍声明两个发现工具。显式使用 `skill_tools(include_resources=True)`，可增加 `list_skill_resources` 与 `read_skill_resource`，通过同一个 `call_tool` 分发。后者先核对登记清单，再读取至多 64 KB 的 UTF-8 文件，结果标记 `kind="untrusted_reference_data"` 和 `executed=false`。较大的或二进制资源由后端下载：
+
+```python
+manifest = client.get_skill_package("gh-scientific-13c-metabolic-flux-d6d252")
+reference = next(f for f in manifest["files"] if f["path"].startswith("references/"))
+raw = client.read_skill_resource(manifest["name"], reference["path"],
+                                expected_sha256=reference["sha256"])
+# 作为已核对来源的参考文件交给 Agent；依赖安装和代码执行走 S1 的独立授权。
+```
+
+资源被修改返回 HTTP 409，未登记返回 404，非法路径返回 422；没有退回读取任意磁盘文件的路径。资源不来自 S1 私有项目，因此是共享能力目录，运行产物仍走签名项目权限。真实服务传输验证见 [资源包记录](../out/skill-resources-smoke.json)。
+
+## 将执行结果交回 S1 项目
+
+```python
+capsule = client.get_evidence(run_id)
+if capsule["handoff_ready"]:
+    for item in capsule["files"]:
+        raw = client.download_artifact(run_id, item["name"], expected_sha256=item["sha256"])
+        # 将 raw 和来源/验收范围存入当前 S1 项目附件系统。
+```
+
+证据包使用 `skillnet-evidence-v1`：包含任务和步骤、执行前技能指纹（历史未记录则明确留空）、代码指纹、真实输入输出关系、逐文件 SHA-256、结果判据范围、实际费用与候选状态。服务每次读取证据包重新计算登记文件的指纹；SDK 校验文档的 `capsule_sha256`。文件本体不嵌入包中，需另行逐个核验下载。
+
+`handoff_ready` 只表示终态记录的登记文件完整，部分完成的任务也可以交回已有附件；它不表示整体任务成功。`scope_verified` 只支持执行时冻结的已测范围，不能代替研究结论或用户验收。签名身份沿用现有 Run 权限，包括证据包。真实模拟科研执行、SDK 下载与独立重算见 [科研生态记录](../out/research-ecosystem-smoke.json)。
 
 ## 有预算的运行
 

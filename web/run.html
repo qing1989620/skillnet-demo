@@ -156,11 +156,12 @@
   .tabs{display:none}
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=20261010.1"></script>
+<script src="/static/assets/ui.js?v=20261010.3"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=20261010.1"></script>
-<link rel="stylesheet" href="/static/assets/refinement.css?v=20261010.1">
-<link rel="stylesheet" href="/static/assets/quality.css?v=20261010.1">
+<script src="/static/assets/product.js?v=20261010.3"></script>
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261010.3">
+<link rel="stylesheet" href="/static/assets/quality.css?v=20261010.3">
+<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261010.3">
 </head>
 <body>
 <header>
@@ -288,7 +289,7 @@ async function refresh(){
   $("budget").textContent = "¥" + (RUN.budget?.max_cost_yuan ?? 0.2).toFixed(2);
   if(!SELECTED && RUN.steps?.length)SELECTED={kind:"step",idx:RUN.steps[0].idx};
   renderGraph(); renderTimelineMeta();
-  const m=Product.metrics(RUN);let proof=document.getElementById("run-proof");if(!proof){proof=document.createElement("div");proof.id="run-proof";proof.className="run-proof";$("task").parentNode.appendChild(proof);}proof.textContent=`程序验收 ${m.passed}/${m.checks} · 语义确认 ${m.confirmed}/${m.semantic} · ${m.gate.eligible===false?"学习未准入："+m.gate.reason:m.gate.eligible===true?"具备学习准入证据":"尚未记录学习结论"}`;
+  const m=Product.metrics(RUN);let proof=document.getElementById("run-proof");if(!proof){proof=document.createElement("div");proof.id="run-proof";proof.className="run-proof";$("task").parentNode.appendChild(proof);}proof.innerHTML=`程序验收 ${m.passed}/${m.checks} · 语义确认 ${m.confirmed}/${m.semantic} · ${m.gate.eligible===false?"学习未准入："+m.gate.reason:m.gate.eligible===true?"具备学习准入证据":"尚未记录学习结论"} <button type="button" data-run-value data-run="${esc(RUN.run_id)}">交付与证据 ↗</button>`;
   if (SELECTED) renderInspector();
   const done = TERMINAL.includes(RUN.status);
   $("cancel").disabled = done;

@@ -315,7 +315,8 @@ def stats() -> dict[str, Any]:
 @app.get('/api/scenarios')
 def business_scenarios():
     from skillnet.scenarios import scenarios
-    return {'items': [{k:r[k] for k in ('id','title','task','task_sha256')} for r in scenarios()]}
+    from skillnet.research import research_scenario
+    return {'items': [{k:r[k] for k in ('id','title','task','task_sha256')} for r in [research_scenario(), *scenarios()]]}
 
 
 @app.get('/api/candidates', dependencies=[Depends(require_token)])
@@ -396,6 +397,31 @@ def skill_detail(name: str) -> dict[str, Any]:
     if not s:
         raise HTTPException(404, f"技能不存在: {name}")
     return {"skill": s.to_dict(), "markdown": s.to_skill_md()}
+
+
+@app.get('/api/skill/{name}/package', dependencies=[Depends(require_token)])
+def skill_package(name: str):
+    from skillnet.resources import package_manifest, ResourceIntegrityError
+    skill=lib().get(name)
+    if skill is None:raise HTTPException(404,'技能不存在')
+    try:return package_manifest(skill)
+    except FileNotFoundError:raise HTTPException(404,'该技能没有已登记的社区资源包') from None
+    except ResourceIntegrityError:raise HTTPException(409,'技能元数据与已登记资源包不一致') from None
+
+
+@app.get('/api/skill/{name}/resource', dependencies=[Depends(require_token)])
+def skill_resource(name: str, path: str = Query(min_length=1,max_length=400)):
+    from skillnet.resources import read_resource, ResourceIntegrityError
+    skill=lib().get(name)
+    if skill is None:raise HTTPException(404,'技能不存在')
+    try:raw=read_resource(skill,path)
+    except FileNotFoundError:raise HTTPException(404,'资源未登记或不存在') from None
+    except ResourceIntegrityError:raise HTTPException(409,'资源指纹不一致，已停止交付') from None
+    except ValueError:raise HTTPException(422,'非法资源路径') from None
+    return Response(content=raw,media_type='application/octet-stream',headers={
+        'X-Content-Type-Options':'nosniff','Content-Security-Policy':"sandbox; default-src 'none'",
+        'Content-Disposition':"attachment; filename*=UTF-8''"+quote(Path(path).name),
+        'X-Content-SHA256':hashlib.sha256(raw).hexdigest()})
 
 
 @app.get("/api/graph")
@@ -1463,6 +1489,9 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
                     f"{a.logical_name} (SHA-256 {a.sha256})" for a in run.artifacts if a.kind == '跨轮输入')
             arun = agent.run(plan_task, skills=run.skills, style=STYLE_GUIDED, max_steps=req.max_steps)
             run.plan = arun.response or {}
+            from skillnet.governance import fingerprint
+            run.staged['skill_versions'] = {name: {'sha256': fingerprint(lib().get(name)),
+                'source': lib().get(name).source} for name in run.skills if lib().get(name)}
             run.staged["evaluation_contract"] = assessment.prepare_contract(run.task)
             BUS.publish(run, "evaluation.prepared", contract=run.staged["evaluation_contract"])
             run.status = "EXECUTING"
@@ -1783,6 +1812,15 @@ def cancel_run(run_id: str) -> Any:
         BUS.publish(run, 'run.cancelled', reason='队列中取消，未执行模型调用')
     run_store().save(run)
     return {"run_id": run_id, "status": "CANCEL_REQUESTED"}
+
+
+@app.get('/api/runs/{run_id}/evidence', dependencies=[Depends(require_token)])
+def run_evidence(run_id: str):
+    from skillnet.evidence import capsule
+    run = run_store().get(run_id)
+    if run is None:
+        raise HTTPException(404, 'Run 不存在')
+    return capsule(run, config.OUT_DIR/'runs'/run_id)
 
 
 @app.get("/api/runs/{run_id}/stream")

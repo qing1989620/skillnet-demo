@@ -65,11 +65,12 @@
   /* 移除 graph 页原有的局部背景定义（改由共享层统一控制） */
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=20261010.1"></script>
+<script src="/static/assets/ui.js?v=20261010.3"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=20261010.1"></script>
-<link rel="stylesheet" href="/static/assets/refinement.css?v=20261010.1">
-<link rel="stylesheet" href="/static/assets/quality.css?v=20261010.1">
+<script src="/static/assets/product.js?v=20261010.3"></script>
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261010.3">
+<link rel="stylesheet" href="/static/assets/quality.css?v=20261010.3">
+<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261010.3">
 </head>
 <body>
 <div class="load" id="load">正在加载技能图谱…</div>
@@ -421,7 +422,7 @@ function selectNode(n) {
   card.classList.add("show");graphFilterState();
   const generation=++contractGeneration,host=document.getElementById('cContract');host.textContent='读取执行契约…';
   document.getElementById('cContractLink').href='/dashboard#skills?skill='+encodeURIComponent(n.id);
-  UI.json('/api/skill/'+encodeURIComponent(n.id)).then(d=>{if(generation!==contractGeneration)return;const s=d.skill;host.innerHTML=`<b>能力</b><p>${esc(s.capability||s.description||'')}</p><b>实际执行步骤</b><ol>${(s.steps||[]).slice(0,4).map(text=>`<li>${esc(text)}</li>`).join('')}</ol><b>验收条件</b><p>${esc((s.verification||[]).slice(0,2).join('；')||'未定义')}</p>${Product.rewardReceiptHTML(s)}`;}).catch(error=>{if(generation===contractGeneration)host.textContent=error.message;});
+  UI.json('/api/skill/'+encodeURIComponent(n.id)).then(d=>{if(generation!==contractGeneration)return;const s=d.skill;host.innerHTML=`<b>能力</b><p>${esc(s.capability||s.description||'')}</p><b>实际执行步骤</b><ol>${(s.steps||[]).slice(0,4).map(text=>`<li>${esc(text)}</li>`).join('')}</ol><b>验收条件</b><p>${esc((s.verification||[]).slice(0,2).join('；')||'未定义')}</p>${Product.rewardReceiptHTML(s)}${Product.resourcesButtonHTML(s)}`;}).catch(error=>{if(generation===contractGeneration)host.textContent=error.message;});
 }
 function closeCard() {
   S.selected = null;++contractGeneration;graphFilterState();
@@ -499,7 +500,7 @@ window.addEventListener("resize", resize);
   document.getElementById("graph-domain").insertAdjacentHTML("beforeend",doms.sort().map(d=>`<option>${esc(d)}</option>`).join(""));
   const query=new URLSearchParams(location.search),domain=query.get('domain'),runId=query.get('run');
   if(doms.includes(domain)){GRAPH_FILTER.domain=domain;document.getElementById('graph-domain').value=domain;}
-  if(runId){try{const run=await UI.json('/api/runs/'+encodeURIComponent(runId));GRAPH_FILTER.task=new Set((run.steps||[]).map(s=>s.skill).filter(Boolean));document.querySelector('.hud.tl .sub').insertAdjacentHTML('beforeend',`<br><b>本次任务子图 · ${esc(runId)}</b> · <a href="/graph" style="color:#a3eed9">返回完整网络 ↗</a>`);}catch(error){UI.toast('任务子图读取失败：'+error.message);}}
+  if(runId){try{const run=await UI.json('/api/runs/'+encodeURIComponent(runId));GRAPH_FILTER.task=new Set((run.steps||[]).map(s=>s.skill).filter(Boolean));document.querySelector('.hud.tl .sub').insertAdjacentHTML('beforeend',`<br><b>本次任务子图 · ${esc(runId)}</b> · <a href="/graph" style="color:#a3eed9">返回完整网络 ↗</a> · <button type="button" data-run-value data-run="${esc(runId)}">交付与证据 ↗</button>`);}catch(error){UI.toast('任务子图读取失败：'+error.message);}}
   graphFilterState();
   doms.forEach((d, i) => domainColor[d] = PALETTE[i % PALETTE.length]);
   document.getElementById("nN").textContent = S.nodes.length;

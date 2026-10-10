@@ -47,6 +47,22 @@
     if(!receipt)return '<p class="reward-history">该技能尚无通过十二道门的提升积分凭证。</p>';
     return `<details class="quality-details"><summary>已核验提升积分 +${Number(receipt.points||0).toFixed(2)} · 仅此版本</summary><p>${esc(receipt.scope)}。对照平均增益 ${Number(receipt.measured_mean_gain||0).toFixed(4)}。<br>版本 <code>${esc(receipt.candidate_sha256)}</code><br>评测计划 <code>${esc(receipt.evaluation_plan_sha256)}</code><br>奖励凭证 <code>${esc(receipt.id)}</code><br>没有向其他技能分配积分；正式排序参数未自动部署。</p></details>`;
   }
+  function valueHTML(run){
+    if(!terminal.includes(run.status))return '';
+    const a=run.staged?.quality_assessment||{},g=run.staged?.reward_gates||{},outputs=(run.artifacts||[]).filter(f=>f.kind!=='跨轮输入');
+    const measured=(a.independent_reference?.checks||[]),passed=measured.filter(c=>c.passed===true).length;
+    const scoped=a.scope_verdict==='passed',done=(run.steps||[]).filter(s=>s.status==='done').length;
+    return `<section class="value-capsule" aria-label="任务交付与 S1 复用"><div class="value-heading"><div><small>DELIVERY → EVIDENCE → REUSE</small><h3>这次运行，留下了什么</h3></div><span>${esc(labels[run.status]||run.status)}</span></div><div class="value-cells"><div><small>01 / 交付</small><b>${outputs.length} 个真实文件</b><p>${done}/${(run.steps||[]).length} 步完成 · 模型费用 ¥${Number(run.cost_yuan||0).toFixed(4)}</p></div><div><small>02 / 核验</small><b>${scoped?'已测范围得到支持':a.scope_verdict==='failed'?'已测范围发现问题':'结果判据有待补齐'}</b><p>${measured.length?`${passed}/${measured.length} 项独立参考检查`:'没有独立参考分数'} · 可追查检查与原始文件</p></div><div><small>03 / 积累</small><b>${run.evolution?.candidate?'已形成隔离候选':'保留可复盘的轨迹'}</b><p>${Number(g.passed||0)}/${Number(g.total||12)} 道奖励门通过 · 正式排序未自动更新</p></div></div><div class="value-scope"><b>当前可以支持的结论</b><p>${esc(a.scope||'保留执行事实；此历史记录没有独立结果评价。')}</p></div><div class="value-handoff"><div><b>接入 S1 的落点</b><p>项目会话接收执行时间线，项目附件接收产物，能力库接收待验证经验。</p><small>服务契约可用 · S1 线上联调待验证</small></div><button type="button" data-evidence-export data-run="${esc(run.run_id)}">核对并导出证据包 ↗</button></div></section>`;
+  }
+  function resourcesButtonHTML(skill){
+    return skill?.source==='github'?`<button type="button" data-skill-resources="${esc(skill.name)}">原文、脚本与参考资源 ↗</button>`:'';
+  }
+  function resourcesHTML(data){
+    return `<p>来源 ${esc(data.repository)} · 许可 ${esc(data.license)}<br>固定提交 <code>${esc(data.commit)}</code></p><p>资源已登记指纹；导入尚未经过执行认证。脚本作为参考文件读取，不自动运行。</p><table><thead><tr><th>资源</th><th>大小</th><th>按需读取</th></tr></thead><tbody>${(data.files||[]).map(f=>`<tr><td>${esc(f.path)}</td><td>${(Number(f.bytes)/1024).toFixed(1)} KB</td><td><button type="button" data-resource-read data-skill="${esc(data.name)}" data-path="${esc(f.path)}" data-sha="${esc(f.sha256)}">核对与读取 ↗</button></td></tr>`).join('')}</tbody></table>`;
+  }
+  function assessmentDetailsHTML(run){
+    return `<details class="assessment-expand"><summary>展开独立评价、技能观察与十二道奖励门</summary>${assessmentHTML(run)}</details>`;
+  }
   function rewardGatesHTML(decision){
     if(!decision)return '<div class="reward-history">本记录早于十二门奖励协议，未回填新的放行结论。</div>';
     const gates=decision.gates||[],passed=gates.filter(g=>g.status==='passed').length;
@@ -61,7 +77,7 @@
     const contract=a.goal_contract||{},rows=a.observations||[],shadow=run.staged?.shadow_feedback||{};
     const verdict={passed:'已测范围通过',failed:'已测范围存在失败',unknown:'结果判据不足'}[a.scope_verdict]||'待核验';
     const measured=rows.filter(r=>r.observed_score!=null),checks=[...new Map([...(a.independent_reference?.checks||[]),...rows.flatMap(r=>r.independent_checks||[])].map(c=>[JSON.stringify(c),c])).values()];
-    const source=contract.source==='frozen_business_reference'?'执行前冻结的独立业务算术参考':'用户任务未提供独立标准答案';
+    const source=contract.source==='frozen_research_reference'?'执行前冻结的科研样本与指标参考':contract.source==='frozen_business_reference'?'执行前冻结的独立业务算术参考':'用户任务未提供独立标准答案';
     const fmt=v=>v==null?'未分配':Number(v).toFixed(4);
     return `<article class="quality-panel" aria-label="结果判断依据"><div class="quality-title"><div><span>OUTCOME / EVIDENCE / RESTRAINT</span><h3>凭什么判断这次结果？</h3></div><b class="quality-badge ${esc(a.scope_verdict)}">${verdict}</b></div><p class="quality-lead">回答完成，只代表产生了一次经验。<strong>结果正确、技能有贡献、网络变好，是三个不同的命题。</strong></p><div class="quality-grid"><div><small>01 / 判断来源</small><b>${source}</b><p>${esc(a.scope)}</p><em>${a.reference_anchored_before_execution?'评价契约已在执行前锁定':'缺少冻结契约，不接受事后标准答案'}</em></div><div><small>02 / 证据强度</small><b>${measured.length} / ${rows.length} 步有可重算的结果观察</b><p>文件 SHA-256 核验 ${(a.integrity||[]).filter(c=>c.passed).length}/${(a.integrity||[]).length}；方案模型评分只供参考。步骤契约通过只说明符合该契约，不能代替用户目标。</p><em>整体任务质量与用户满意度：尚未确认</em></div><div><small>03 / 是否改变网络</small><b>正式策略更新 0 次</b><p>${esc(a.network?.reason||'保留观察，等待独立验证')}。</p><em>${run.evolution?.candidate?'候选已隔离保存 · 尚未晋级':'当前仅保留观察记录'}</em></div></div>${rewardGatesHTML(run.staged?.reward_gates)}<details class="quality-details" open><summary>逐步归因 · 只评价实际测到的部分</summary><div class="quality-scroll"><table><thead><tr><th>执行步骤 / 技能</th><th>结果依据</th><th>限定范围的观察</th><th>正式参数变化</th></tr></thead><tbody>${rows.map(r=>`<tr><td>STEP ${Number(r.idx)+1}<br><code>${esc(r.skill||'通用执行')}</code></td><td>${esc(r.reason)}<br><small>${(r.independent_checks||[]).length} 项独立重算 · ${r.necessary_passed}/${r.necessary_total} 必要执行检查</small></td><td>${r.observed_score==null?(r.verdict==='blocked'?'上游阻断 · 不归罪本步':'未确认 · 不分配奖励'):fmt(r.observed_score)+' / 1，仅限已测部分'}</td><td>0.0000<br><small>正式网络未更新</small></td></tr>`).join('')}</tbody></table></div></details><details class="quality-details"><summary>核对独立判据、实际值与文件指纹</summary><ul>${checks.map(c=>`<li><b>${c.passed?'通过':'未通过'} · ${esc(c.name)}</b>${c.expected!=null?`<span>参考 ${esc(c.expected)} / 实际 ${esc(c.actual??'缺失')}</span>`:`<span>${esc(c.detail||'只支持此项检查，不外推整体质量')}</span>`}</li>`).join('')||'<li>没有独立结果检查；执行成功和模型赞同都不能补足标准答案。</li>'}${(a.integrity||[]).map(c=>`<li><b>${c.passed?'指纹一致':'证据异常'} · ${esc(c.name)}</b><code>${esc(c.sha256)}</code></li>`).join('')}</ul><p>评价证据 SHA-256 <code>${esc(a.evidence_sha256)}</code><br>任务 SHA-256 <code>${esc(a.task_sha256)}</code><br>协议 ${esc(a.version)}</p></details><details class="quality-details"><summary>影子策略预演 · 关联变化不是实测增益</summary><p>在参数副本上预演一次更新，单次轨迹总权重最多 0.25。它没有写回正式策略，也没有证明因果贡献。没有结果判据的步骤不参与预演。</p><div class="quality-scroll"><table><thead><tr><th>技能</th><th>正式收益预测</th><th>副本变化量</th><th>预演权重</th></tr></thead><tbody>${(shadow.rows||[]).map(r=>`<tr><td>${esc(r.name)}</td><td>${fmt(r.exploit_before)} → ${fmt(r.exploit_after)}</td><td>${fmt(r.shadow_delta)}</td><td>${fmt(r.weight)}</td></tr>`).join('')||'<tr><td colspan="4">没有可用于预演的结果证据。</td></tr>'}</tbody></table></div></details><div class="quality-release"><b>什么时候才有资格晋级？</b><p>至少 5 道未用于生成候选的留出任务，每题至少 2 组同预算真实对照；物理产物重新验算，无任务回退，任务平均增益至少 0.02，按不同任务统计的单侧符号检验 p ≤ 0.05。重复运行不会冒充更多独立任务。以上是发布门槛，通过也只支持该评测范围；晋级候选不会自动部署新的排序参数。</p><small>仍未证明：${esc((a.unverified||[]).join(' / '))}。</small>${(a.issues||[]).map(s=>`<p>${esc(s)}</p>`).join('')}</div></article>`;
   }
@@ -74,7 +90,7 @@
       ['验收','核对交付证据',`${m.passed}/${m.checks} 程序检查 · ${m.confirmed}/${m.semantic} 语义确认`,m.checks>0&&m.passed===m.checks&&m.unconfirmed.length===0],
       ['反馈','记录成功与失败',`${impact.summary?.updated_n||0} 个技能执行账本更新`,!!impact.summary],
       ['沉淀','有证据才学习',m.gate.mode==='shadow'?'影子观察 · 正式网络未更新':m.gate.eligible===false?'学习准入已拦截':run.evolution?.candidate?'候选待冻结任务验证':run.evolution?.accepted?'新技能已准入':m.gate.eligible===true?'已满足学习条件':'未记录准入结论',m.gate.eligible===true]];
-    return `<section class="kernel-evidence ${compact?'compact':''}" aria-label="本次任务内核证据"><div class="kernel-heading"><div><span class="product-eyebrow">ENGINE / EVIDENCE</span><h3>这个问题，框架实际做了什么</h3></div><a href="/run?id=${encodeURIComponent(run.run_id||'')}">打开完整轨迹 ↗</a><a href="/graph?run=${encodeURIComponent(run.run_id||'')}">本次技能子图 ↗</a></div>${outcomeHTML(run)}<div class="kernel-phases">${phases.map(([name,value,fact,done],i)=>`<div class="kernel-phase ${done?'done':i===4&&m.terminal?'attention':'pending'} ${!m.terminal&&i===phases.findIndex(p=>!p[3])?'current':''}"><small>0${i+1} / ${name}</small><b>${value}</b><span>${esc(fact)}</span></div>`).join('')}</div>${!compact?dagHTML(run):''}<div class="kernel-verdict ${m.unconfirmed.length||m.gate.eligible===false?'attention':''}"><b>${m.checks?m.passed===m.checks?'程序检查全部通过':'存在未通过的程序检查':'尚无程序验收证据'}</b><span>${m.unconfirmed.length?`${m.unconfirmed.length} 项语义要求尚未确认：${esc(m.unconfirmed.slice(0,3).map(v=>v.item).join('；'))}`:m.semantic?'产物语义复核已完成':'尚无产物语义复核记录'}${m.gate.reason?' · '+esc(m.gate.reason):''}</span></div>${selectionHTML(run)}${assessmentHTML(run)}</section>`;
+    return `<section class="kernel-evidence ${compact?'compact':''}" aria-label="本次任务内核证据"><div class="kernel-heading"><div><span class="product-eyebrow">ENGINE / EVIDENCE</span><h3>这个问题，框架实际做了什么</h3></div><a href="/run?id=${encodeURIComponent(run.run_id||'')}">打开完整轨迹 ↗</a><a href="/graph?run=${encodeURIComponent(run.run_id||'')}">本次技能子图 ↗</a></div>${valueHTML(run)}${outcomeHTML(run)}<div class="kernel-phases">${phases.map(([name,value,fact,done],i)=>`<div class="kernel-phase ${done?'done':i===4&&m.terminal?'attention':'pending'} ${!m.terminal&&i===phases.findIndex(p=>!p[3])?'current':''}"><small>0${i+1} / ${name}</small><b>${value}</b><span>${esc(fact)}</span></div>`).join('')}</div>${!compact?dagHTML(run):''}<div class="kernel-verdict ${m.unconfirmed.length||m.gate.eligible===false?'attention':''}"><b>${m.checks?m.passed===m.checks?'程序检查全部通过':'存在未通过的程序检查':'尚无程序验收证据'}</b><span>${m.unconfirmed.length?`${m.unconfirmed.length} 项语义要求尚未确认：${esc(m.unconfirmed.slice(0,3).map(v=>v.item).join('；'))}`:m.semantic?'产物语义复核已完成':'尚无产物语义复核记录'}${m.gate.reason?' · '+esc(m.gate.reason):''}</span></div>${selectionHTML(run)}${assessmentDetailsHTML(run)}</section>`;
   }
   function filesHTML(run) {
     return `<div class="product-files">${(run.artifacts||[]).map(a=>`<button type="button" data-artifact-preview data-run="${esc(run.run_id)}" data-file="${esc(a.name)}" data-sha="${esc(a.sha256||'')}"><span class="file-glyph">${esc((a.name.split('.').pop()||'FILE').toUpperCase())}</span><span><b>${esc(a.name)}</b><small>${a.kind==='跨轮输入'?'历史输入版本 · ':'本次交付 · '}${(Number(a.bytes||0)/1024).toFixed(1)} KB · 点击核对</small></span><span>↗</span></button>`).join('')}</div>`;
@@ -127,10 +143,50 @@
     }
     return `<div class="product-experiments">${html}</div>`;
   }
-  const core={esc,terminal,labels,metrics,dag,dagHTML,evidenceHTML,outcomeHTML,assessmentHTML,rewardGatesHTML,rewardReceiptHTML,selectionHTML,filesHTML,parseCSV,experimentsHTML};
+  const core={esc,terminal,labels,metrics,dag,dagHTML,evidenceHTML,outcomeHTML,valueHTML,resourcesHTML,resourcesButtonHTML,assessmentDetailsHTML,assessmentHTML,rewardGatesHTML,rewardReceiptHTML,selectionHTML,filesHTML,parseCSV,experimentsHTML};
   if(typeof module!=='undefined'&&module.exports)module.exports=core;
   if(!root?.document)return;
   root.Product=core;
+  async function inspectResources(button){
+    try{const data=await root.UI.json('/api/skill/'+encodeURIComponent(button.dataset.skillResources)+'/package');
+      let dialog=document.getElementById('resources-dialog');if(!dialog){dialog=document.createElement('dialog');dialog.id='resources-dialog';dialog.className='product-preview';document.body.append(dialog);}
+      dialog.innerHTML=`<header><h3>${esc(data.name)} · 完整资源</h3><form method="dialog"><button>关闭</button></form></header><div class="preview-content">${resourcesHTML(data)}</div>`;dialog.showModal();
+    }catch(error){root.UI.toast(error.message);}
+  }
+  async function readResource(button){
+    button.disabled=true;
+    try{
+      const response=await root.UI.fetch('/api/skill/'+encodeURIComponent(button.dataset.skill)+'/resource?path='+encodeURIComponent(button.dataset.path));
+      if(!response.ok)throw new Error(response.status===409?'资源指纹已改变，服务已停止交付。':'资源读取失败（HTTP '+response.status+'）');
+      const raw=await response.arrayBuffer();if(raw.byteLength>2000000)throw new Error('资源超过读取上限');
+      const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',raw))).map(b=>b.toString(16).padStart(2,'0')).join('');
+      if(hash!==button.dataset.sha)throw new Error('资源与清单指纹不一致');
+      let text='';try{text=new TextDecoder('utf-8',{fatal:true}).decode(raw);}catch(_){}
+      const readable=text&&!text.includes('\u0000');
+      let dialog=document.getElementById('resource-file-dialog');if(!dialog){dialog=document.createElement('dialog');dialog.id='resource-file-dialog';dialog.className='product-preview';document.body.append(dialog);}
+      dialog.innerHTML=`<header><h3>${esc(button.dataset.path)}</h3><form method="dialog"><button>关闭</button></form></header><div class="preview-content"><p>文件指纹已核对。资源是参考数据；此页面没有执行脚本。</p>${readable?`<pre>${esc(text.slice(0,65536))}</pre>${text.length>65536?'<p>预览最多 64 KB，完整内容可下载。</p>':''}`:'<p>二进制资源可下载后使用。</p>'}</div><footer><span>SHA-256 ${esc(hash)}</span><button type="button" data-save-resource>下载已核对资源 ↗</button></footer>`;
+      const filename=button.dataset.path.split('/').pop();dialog.querySelector('[data-save-resource]').onclick=()=>{const url=URL.createObjectURL(new Blob([raw],{type:'application/octet-stream'}));const link=document.createElement('a');link.href=url;link.download=filename;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};dialog.showModal();
+    }catch(error){root.UI.toast(error.message);}finally{button.disabled=false;}
+  }
+  async function handoff(button){
+    const id=button.dataset.run;button.disabled=true;
+    try{
+      const data=await root.UI.json('/api/runs/'+encodeURIComponent(id)+'/evidence');
+      let dialog=document.getElementById('evidence-dialog');
+      if(!dialog){dialog=document.createElement('dialog');dialog.id='evidence-dialog';dialog.className='product-preview';document.body.append(dialog);}
+      dialog.innerHTML=`<header><div><small>S1 / EVIDENCE HANDOFF</small><h3>把这次执行带回项目</h3></div><form method="dialog"><button>关闭</button></form></header><div class="preview-content"><p>${data.handoff_ready?'登记文件已重新计算指纹，可作为项目附件的交付依据。':'当前记录未满足完整文件交付条件，请先检查下方文件与执行状态。'}</p><p>执行状态 ${esc(labels[data.status]||data.status)} · ${data.scope_verified?'执行时的已测范围得到支持':'结果仍需按范围核验'} · S1 线上联调待验证</p><table><thead><tr><th>登记文件</th><th>实时指纹核对</th><th>来源</th></tr></thead><tbody>${(data.files||[]).map(f=>`<tr><td>${esc(f.name)}</td><td>${f.integrity==='passed'?'一致':'缺失或不一致'}</td><td>${f.producer_step==null?'外部输入':'STEP '+(Number(f.producer_step)+1)}</td></tr>`).join('')}</tbody></table><p>证据包指纹 <code>${esc(data.capsule_sha256)}</code></p><p>导出包含文件清单、技能版本、输入输出关系、验收范围、成本和候选状态。文件本体由 S1 后端逐项下载并核验 SHA-256。</p><details><summary>完整接入数据</summary><pre>${esc(JSON.stringify(data,null,2))}</pre></details></div><footer><span>${esc(data.version)}</span><button type="button" data-save-capsule>下载证据包 JSON ↗</button></footer>`;
+      dialog.querySelector('[data-save-capsule]').onclick=()=>{
+        const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+        const link=document.createElement('a');link.href=url;link.download='skillnet-evidence-'+String(id).replace(/[^a-zA-Z0-9_-]/g,'')+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+      };dialog.showModal();
+    }catch(error){root.UI.toast(error.message);}finally{button.disabled=false;}
+  }
+  async function inspectValue(button){
+    try{const run=await root.UI.json('/api/runs/'+encodeURIComponent(button.dataset.run));
+      let dialog=document.getElementById('value-dialog');if(!dialog){dialog=document.createElement('dialog');dialog.id='value-dialog';dialog.className='product-preview';document.body.append(dialog);}
+      dialog.innerHTML=`<header><h3>任务交付、核验与复用</h3><form method="dialog"><button>关闭</button></form></header><div class="preview-content">${valueHTML(run)}${assessmentDetailsHTML(run)}</div>`;dialog.showModal();
+    }catch(error){root.UI.toast(error.message);}
+  }
   async function preview(button) {
     const run=button.dataset.run,file=button.dataset.file,sha=button.dataset.sha||'';
     const url=`/api/runs/${encodeURIComponent(run)}/artifacts/${encodeURIComponent(file)}`;
@@ -159,19 +215,19 @@
   function boot(){
     const path=location.pathname, page=path==='/chat'?'chat':path==='/graph'?'graph':path==='/run'?'run':path==='/runs'?'center':path==='/dashboard'?'lab':'briefing';
     document.documentElement.dataset.product=page;
-    if(page==='briefing'||page==='chat')root.UI.json('/api/scenarios').then(data=>{const first=data.items?.[0],input=document.getElementById('task')||document.getElementById('q'),host=document.getElementById('show-composer-slot')||document.querySelector('.chips');if(!first||!input||!host)return;const button=document.createElement('button');button.type='button';button.className='chip';button.textContent=first.title;button.onclick=()=>{input.value=first.task;input.focus();input.dispatchEvent(new Event('input',{bubbles:true}));};const row=document.createElement('div');row.className='scenario-preset';row.append(button);host.prepend(row);}).catch(()=>{});
+    if(page==='briefing'||page==='chat')root.UI.json('/api/scenarios').then(data=>{const presets=(data.items||[]).slice(0,2),input=document.getElementById('task')||document.getElementById('q'),host=document.getElementById('show-composer-slot')||document.querySelector('.chips');if(!presets.length||!input||!host)return;const row=document.createElement('div');row.className='scenario-preset';for(const first of presets){const button=document.createElement('button');button.type='button';button.className='chip';button.textContent=first.title;button.onclick=()=>{input.value=first.task;input.focus();input.dispatchEvent(new Event('input',{bubbles:true}));};row.append(button);}host.prepend(row);}).catch(()=>{});
     if(page!=='briefing'){
       const shell=document.createElement('div');shell.className='product-shell';shell.innerHTML=`<a class="product-brand" href="/">${root.UI.mark}<span>SkillNet<small>S1 · 能力运维层</small></span></a>${root.UI.productNav(page==='center'||page==='run'?'dashboard':page==='lab'?'technical':page)}<span class="product-live" id="product-live" role="status">连接中…</span>`;
       document.body.prepend(shell);
       root.UI.json('/api/health').then(h=>{document.getElementById('product-live').textContent=h.ok?(h.api_key_configured?'引擎已连接':'引擎在线 · 待配置模型'):'服务异常';}).catch(()=>{document.getElementById('product-live').textContent='连接失败';});
     }
-    document.addEventListener('click',event=>{const button=event.target.closest('[data-artifact-preview]');if(button)preview(button);const node=event.target.closest('[data-kernel-step]');if(node)focusStep(node);});
+    document.addEventListener('click',event=>{const button=event.target.closest('[data-artifact-preview]');if(button)preview(button);const node=event.target.closest('[data-kernel-step]');if(node)focusStep(node);const exportButton=event.target.closest('[data-evidence-export]');if(exportButton)handoff(exportButton);const valueButton=event.target.closest('[data-run-value]');if(valueButton)inspectValue(valueButton);const resourcesButton=event.target.closest('[data-skill-resources]');if(resourcesButton)inspectResources(resourcesButton);const resourceButton=event.target.closest('[data-resource-read]');if(resourceButton)readResource(resourceButton);});
     document.addEventListener('keydown',event=>{if((event.key==='Enter'||event.key===' ')&&event.target.matches('[data-kernel-step]')){event.preventDefault();focusStep(event.target);}});
     async function focusStep(node){
       const id=node.dataset.run,idx=Number(node.dataset.kernelStep);if(!id)return;
       if(location.pathname==='/run'){document.dispatchEvent(new CustomEvent('kernel-step-focus',{detail:{idx}}));return;}
       try{const run=await root.UI.json('/api/runs/'+encodeURIComponent(id)),step=(run.steps||[]).find(s=>s.idx===idx);if(!step)return;let dialog=document.getElementById('kernel-step-dialog');if(!dialog){dialog=document.createElement('dialog');dialog.id='kernel-step-dialog';dialog.className='product-preview';document.body.append(dialog);}
-      dialog.innerHTML=`<header><h3>STEP ${idx+1} · ${esc(step.action)}</h3><button type="button" data-close-step>关闭</button></header><div class="preview-content"><div class="kernel-scope">${esc(step.dependency_reason||'历史记录未保存依赖说明')}<br>技能：${esc(step.skill||'通用执行')}<br>实际输入：${esc((step.inputs||[]).join(' / ')||'无前序文件')}</div><pre>${esc(JSON.stringify(step.contract||{},null,2))}</pre><details><summary>完整代码与修复</summary><pre>${esc(step.code||'尚无代码')}</pre>${(step.attempts||[]).filter(a=>a.code_diff).map(a=>`<p>尝试 ${a.n} · ${esc(a.repair_reason)}</p><pre class="repair-diff">${esc(a.code_diff)}</pre>`).join('')}</details>${filesHTML({...run,artifacts:step.artifacts||[]})}</div>`;dialog.querySelector('[data-close-step]').onclick=()=>dialog.close();dialog.showModal();}catch(error){root.UI.toast(error.message);}
+      dialog.innerHTML=`<header><h3>STEP ${idx+1} · ${esc(step.action)}</h3><button type="button" data-close-step>关闭</button></header><div class="preview-content"><div class="kernel-scope">${esc(step.dependency_reason||'历史记录未保存依赖说明')}<br>技能：${esc(step.skill||'通用执行')}<br>实际输入：${esc((step.inputs||[]).join(' / ')||'无前序文件')}</div><pre>${esc(JSON.stringify(step.contract||{},null,2))}</pre><details><summary>完整代码与修复</summary><pre>${esc(step.code||'尚无代码')}</pre>${(step.attempts||[]).filter(a=>a.code_diff).map(a=>`<p>尝试 ${a.n} · ${esc(a.repair_reason)}</p><pre class="repair-diff">${esc(a.code_diff)}</pre>`).join('')}</details>${filesHTML({...run,artifacts:step.artifacts||[]})}${run.staged?.skill_versions?.[step.skill]?.source==='github'?`<button type="button" data-skill-resources="${esc(step.skill)}">查看技能资源（社区技能） ↗</button>`:''}</div>`;dialog.querySelector('[data-close-step]').onclick=()=>dialog.close();dialog.showModal();}catch(error){root.UI.toast(error.message);}
     }
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();

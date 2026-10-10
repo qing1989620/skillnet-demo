@@ -21,7 +21,7 @@ def evaluation_digest(value) -> str:
 def evaluation_profile() -> dict:
     from . import config
     import os
-    sources = ['pipeline.py','executor.py','contracts.py','checks.py','scenarios.py','llm.py','governance.py','promotion.py','reward_gates.py','assessment.py','runtime.py','schema.py']
+    sources = ['pipeline.py','executor.py','contracts.py','checks.py','scenarios.py','research.py','llm.py','governance.py','promotion.py','reward_gates.py','assessment.py','runtime.py','schema.py']
     return dict(model=config.MODEL,sandbox=os.environ.get('SKILLNET_SANDBOX','local'),
                 sources={p:hashlib.sha256((Path(__file__).parent/p).read_bytes()).hexdigest() for p in sources})
 

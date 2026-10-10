@@ -12,11 +12,13 @@ import re
 import tarfile
 import gzip
 import shutil
+import sys
 from pathlib import Path, PurePosixPath
 
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT))
 SOURCE = ROOT / '.audit-tmp-upgrade/sources'
 DEST = ROOT / 'seed/community'
 ALLOWED = ('MIT', 'Apache-2.0', 'BSD-3-Clause', 'BSD-2-Clause', 'CC0-1.0', 'MIT-0')
@@ -185,6 +187,8 @@ def main() -> None:
                   execution_verified=0, relation_semantics='inferred similar_to only')
     (ROOT / 'config/skill_sources.json').write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding='utf-8')
     (ROOT / 'THIRD_PARTY_NOTICES.md').write_text('\n'.join(notices), encoding='utf-8')
+    from skillnet.resources import build_snapshots
+    (DEST / 'packages.json').write_text(json.dumps(build_snapshots(), ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
     print(json.dumps(report | {'sources': len(pins)}, ensure_ascii=False), flush=True)
 
 

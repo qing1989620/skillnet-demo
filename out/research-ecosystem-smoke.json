@@ -1,0 +1,353 @@
+{
+  "kind": "real-model-synthetic-research-ecosystem",
+  "run_id": "f11ad204-20261010-100815-58a8",
+  "status": "COMPLETED",
+  "scenario_id": "research-reproducibility-v1",
+  "task_sha256": "f11ad2049bdf8bdfd9876d3000d635e1235eb10782b165b2248456baad7b3798",
+  "model": "deepseek-chat",
+  "cost_yuan": 0.2178,
+  "step_stats": {
+    "total": 3,
+    "done": 3,
+    "failed": 0,
+    "skipped": 0,
+    "retried": 0
+  },
+  "independent_reference": {
+    "score": 1.0,
+    "checks": [
+      {
+        "name": "cohort_audit.schema",
+        "output": "cohort_audit.csv",
+        "passed": true,
+        "artifact_name": "step1_cohort_audit.csv"
+      },
+      {
+        "name": "cohort_audit.raw_rows",
+        "output": "cohort_audit.csv",
+        "passed": true,
+        "expected": 14,
+        "actual": "14",
+        "artifact_name": "step1_cohort_audit.csv"
+      },
+      {
+        "name": "cohort_audit.duplicate_rows",
+        "output": "cohort_audit.csv",
+        "passed": true,
+        "expected": 1,
+        "actual": "1",
+        "artifact_name": "step1_cohort_audit.csv"
+      },
+      {
+        "name": "cohort_audit.cross_split_subjects",
+        "output": "cohort_audit.csv",
+        "passed": true,
+        "expected": 1,
+        "actual": "1",
+        "artifact_name": "step1_cohort_audit.csv"
+      },
+      {
+        "name": "cohort_audit.cross_split_rows",
+        "output": "cohort_audit.csv",
+        "passed": true,
+        "expected": 2,
+        "actual": "2",
+        "artifact_name": "step1_cohort_audit.csv"
+      },
+      {
+        "name": "cohort_audit.missing_score_rows",
+        "output": "cohort_audit.csv",
+        "passed": true,
+        "expected": 1,
+        "actual": "1",
+        "artifact_name": "step1_cohort_audit.csv"
+      },
+      {
+        "name": "cohort_audit.eligible_test_rows",
+        "output": "cohort_audit.csv",
+        "passed": true,
+        "expected": 6,
+        "actual": "6",
+        "artifact_name": "step1_cohort_audit.csv"
+      },
+      {
+        "name": "heldout_metrics.schema",
+        "output": "heldout_metrics.csv",
+        "passed": true,
+        "artifact_name": "step2_heldout_metrics.csv"
+      },
+      {
+        "name": "heldout_metrics.n",
+        "output": "heldout_metrics.csv",
+        "passed": true,
+        "expected": 6,
+        "actual": "6.0",
+        "artifact_name": "step2_heldout_metrics.csv"
+      },
+      {
+        "name": "heldout_metrics.tp",
+        "output": "heldout_metrics.csv",
+        "passed": true,
+        "expected": 2,
+        "actual": "2.0",
+        "artifact_name": "step2_heldout_metrics.csv"
+      },
+      {
+        "name": "heldout_metrics.fp",
+        "output": "heldout_metrics.csv",
+        "passed": true,
+        "expected": 1,
+        "actual": "1.0",
+        "artifact_name": "step2_heldout_metrics.csv"
+      },
+      {
+        "name": "heldout_metrics.tn",
+        "output": "heldout_metrics.csv",
+        "passed": true,
+        "expected": 2,
+        "actual": "2.0",
+        "artifact_name": "step2_heldout_metrics.csv"
+      },
+      {
+        "name": "heldout_metrics.fn",
+        "output": "heldout_metrics.csv",
+        "passed": true,
+        "expected": 1,
+        "actual": "1.0",
+        "artifact_name": "step2_heldout_metrics.csv"
+      },
+      {
+        "name": "heldout_metrics.accuracy",
+        "output": "heldout_metrics.csv",
+        "passed": true,
+        "expected": 0.6666666666666666,
+        "actual": "0.6666666666666666",
+        "artifact_name": "step2_heldout_metrics.csv"
+      },
+      {
+        "name": "heldout_metrics.precision",
+        "output": "heldout_metrics.csv",
+        "passed": true,
+        "expected": 0.6666666666666666,
+        "actual": "0.6666666666666666",
+        "artifact_name": "step2_heldout_metrics.csv"
+      },
+      {
+        "name": "heldout_metrics.recall",
+        "output": "heldout_metrics.csv",
+        "passed": true,
+        "expected": 0.6666666666666666,
+        "actual": "0.6666666666666666",
+        "artifact_name": "step2_heldout_metrics.csv"
+      },
+      {
+        "name": "heldout_metrics.f1",
+        "output": "heldout_metrics.csv",
+        "passed": true,
+        "expected": 0.6666666666666666,
+        "actual": "0.6666666666666666",
+        "artifact_name": "step2_heldout_metrics.csv"
+      },
+      {
+        "name": "clean_predictions.original_values",
+        "output": "clean_predictions.csv",
+        "passed": true,
+        "artifact_name": "step1_clean_predictions.csv"
+      },
+      {
+        "name": "report.scope_labels",
+        "output": null,
+        "passed": true,
+        "artifact_name": null
+      },
+      {
+        "name": "figure.present",
+        "output": null,
+        "passed": true,
+        "artifact_name": null
+      }
+    ],
+    "evaluator": "independent synthetic cohort/threshold arithmetic; figure presence and scope labels only; no clinical validity",
+    "artifact_hashes": {
+      "step1_clean_predictions.csv": "f0d13b6c91404558e755f0ed2773653a07e014a9f167a92abf25c12e0748d639",
+      "step1_cohort_audit.csv": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7",
+      "step2_heldout_metrics.csv": "9b4018abf3313010c3cf5c455f2e09fb78c06026f790ff069ebb52222b7100b3",
+      "step3_figure.svg": "95f3f74f38ffb32dba236120765043785d1af4bf9191a105a6283fdbee8d22d2",
+      "step3_report.md": "e7d3348fd378aded855af7474e7cf5ca58db4b38829056e61eba15367186adb8"
+    }
+  },
+  "downloaded_files": [
+    {
+      "name": "step1_clean_predictions.csv",
+      "sha256": "f0d13b6c91404558e755f0ed2773653a07e014a9f167a92abf25c12e0748d639",
+      "bytes": 264
+    },
+    {
+      "name": "step1_cohort_audit.csv",
+      "sha256": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7",
+      "bytes": 132
+    },
+    {
+      "name": "step2_heldout_metrics.csv",
+      "sha256": "9b4018abf3313010c3cf5c455f2e09fb78c06026f790ff069ebb52222b7100b3",
+      "bytes": 162
+    },
+    {
+      "name": "step3_figure.svg",
+      "sha256": "95f3f74f38ffb32dba236120765043785d1af4bf9191a105a6283fdbee8d22d2",
+      "bytes": 91596
+    },
+    {
+      "name": "step3_report.md",
+      "sha256": "e7d3348fd378aded855af7474e7cf5ca58db4b38829056e61eba15367186adb8",
+      "bytes": 2405
+    }
+  ],
+  "capsule_sha256": "b6b1306178fcb6d7f0d7cd97e21c796c5593071720bf688ba4f0852232bc768c",
+  "handoff_ready": true,
+  "scope_verified": true,
+  "reward_gates": {
+    "version": "improvement-gates-v1",
+    "policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+    "operator": "AND",
+    "eligible": false,
+    "reward_applied": false,
+    "points": 0,
+    "passed": 4,
+    "total": 12,
+    "blockers": [
+      "version",
+      "fair",
+      "heldout",
+      "suite",
+      "regression",
+      "gain",
+      "reliable",
+      "novel"
+    ],
+    "gates": [
+      {
+        "id": "frozen",
+        "title": "标准提前冻结",
+        "rule": "执行前锁定判据、阈值、模型与评测代码，禁止事后改规则",
+        "status": "passed",
+        "reason": "本次结果判据与奖励规则在执行前冻结；晋级还需预注册对照计划",
+        "evidence": {
+          "task_sha256": "f11ad2049bdf8bdfd9876d3000d635e1235eb10782b165b2248456baad7b3798",
+          "policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd"
+        }
+      },
+      {
+        "id": "independent",
+        "title": "独立重算结果",
+        "rule": "从真实产物重算冻结的业务参考，模型评分不能替代",
+        "status": "passed",
+        "reason": "仅证明本次已测范围；尚无与旧版本的独立对照",
+        "evidence": {
+          "scope": "模拟预测数据的样本去重、跨集合受试者排除、固定阈值测试集混淆矩阵与派生指标；不评价模型或临床有效性"
+        }
+      },
+      {
+        "id": "integrity",
+        "title": "物理产物可信",
+        "rule": "实际文件存在、路径合法、SHA-256 与登记一致",
+        "status": "passed",
+        "reason": "重新读取实际文件并核对指纹",
+        "evidence": {
+          "checked": 5
+        }
+      },
+      {
+        "id": "complete",
+        "title": "执行完整合格",
+        "rule": "候选全部步骤完成、必要验收通过、无删步取消或预算超限",
+        "status": "passed",
+        "reason": "本次执行完整，必要验收通过",
+        "evidence": {
+          "steps": 3,
+          "cost_yuan": 0.217764
+        }
+      },
+      {
+        "id": "version",
+        "title": "绑定技能版本",
+        "rule": "对照组与候选组实际执行冻结的精确技能版本",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "fair",
+        "title": "对照条件公平",
+        "rule": "模型、预算、动作依赖相同，并按预定次序交替执行",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "heldout",
+        "title": "任务未用于生成",
+        "rule": "排除当前任务、记录的祖先训练任务和实际来源运行",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "suite",
+        "title": "完整报告样本",
+        "rule": "至少 5 道留出任务各 2 组配对，禁止漏报、重用或挑选赢家",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "regression",
+        "title": "每组没有退步",
+        "rule": "每一组候选结果均不低于对应基线，提升不能抵消退步",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "gain",
+        "title": "增益达到门槛",
+        "rule": "按不同任务等权计算平均增益，至少 0.02",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "reliable",
+        "title": "多任务一致提升",
+        "rule": "以不同任务为统计单位，单侧符号检验 p ≤ 0.05",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "novel",
+        "title": "同一版本只奖一次",
+        "rule": "积分只给被验证版本；相同版本不能重放或换报告重复领奖",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      }
+    ],
+    "context": {
+      "kind": "single_run",
+      "run_id": "f11ad204-20261010-100815-58a8",
+      "assessment_sha256": "4422bf2dfa129427ebd19be2e360762ff893fca92cca1422e1e0a54cc3b9ba60"
+    },
+    "reward_scope": "此技能版本在冻结评测范围内的相对提升积分；不代表全网或所有任务提升",
+    "ranking_weights_deployed": false,
+    "audit_sha256": "92d0d3b38e580aeb769924e8d78b7ac395f71d27e7265fea78784449cce168a4"
+  },
+  "policy_before_sha256": "bc60c6945a9af22b2443d24b507cbb58de28deda51a7acc7b893246226851003",
+  "policy_after_sha256": "bc60c6945a9af22b2443d24b507cbb58de28deda51a7acc7b893246226851003",
+  "policy_unchanged": true,
+  "production_connection_verified": false,
+  "limits": [
+    "公开模拟预测数据；未训练模型；不代表临床有效性",
+    "单次任务未证明技能贡献或网络增益"
+  ]
+}

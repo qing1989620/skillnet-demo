@@ -9,8 +9,9 @@ from .contracts import projection_check
 from .governance import fingerprint, evaluation_profile
 from .scenarios import scenarios, evaluate_artifacts
 from . import reward_gates
+from . import research
 
-VERSION = 'outcome-evidence-v3'
+VERSION = 'outcome-evidence-v4'
 NETWORK_REASON = '单次运行只产生经验观察；未证明技能的因果贡献或跨任务增益，正式排序与技能网络不更新'
 
 
@@ -21,12 +22,15 @@ def digest(value):
 def prepare_contract(task: str) -> dict:
     """Freeze the independent reference before execution; model plans are not references."""
     case = next((c for c in scenarios() if c['task'].strip() == task.strip()), None)
+    research_case = research.research_scenario()
+    is_research = research_case['task'].strip() == task.strip()
+    case = research_case if is_research else case
     return dict(version=VERSION, reward_policy_sha256=reward_gates.policy_sha256(), profile=evaluation_profile(),
                 task_sha256=hashlib.sha256(task.strip().encode()).hexdigest(),
-                source='frozen_business_reference' if case else 'user_task_without_independent_reference',
+                source='frozen_research_reference' if is_research else 'frozen_business_reference' if case else 'user_task_without_independent_reference',
                 case_id=case['id'] if case else None,
                 reference_sha256=digest(case) if case else None,
-                scope='月度汇总的独立算术、图表存在和模拟数据标记；不评价报告洞察' if case else '仅核对执行事实和可重算的步骤契约；不能证明用户整体目标已满足',
+                scope=research_case['scope'] if is_research else '月度汇总的独立算术、图表存在和模拟数据标记；不评价报告洞察' if case else '仅核对执行事实和可重算的步骤契约；不能证明用户整体目标已满足',
                 unverified=['用户满意度', '报告洞察与业务价值', '技能的因果贡献', '网络是否整体提升'])
 
 
@@ -64,9 +68,10 @@ def assess(run, workspace: Path, library) -> dict:
     if any(not c['passed'] for c in integrity):
         issues.append('登记文件缺失或指纹不一致，证据不能用于学习')
     if anchored and intact and expected['case_id']:
-        case = next(c for c in scenarios() if c['id'] == expected['case_id'])
+        is_research = expected['source'] == 'frozen_research_reference'
+        case = None if is_research else next(c for c in scenarios() if c['id'] == expected['case_id'])
         try:
-            reference = evaluate_artifacts(case, run, workspace)
+            reference = research.evaluate_artifacts(run, workspace) if is_research else evaluate_artifacts(case, run, workspace)
         except (OSError, ValueError, KeyError, UnicodeError):
             issues.append('独立参考检查不可用；保留未知，不能当作低分')
         if reference:
@@ -74,7 +79,10 @@ def assess(run, workspace: Path, library) -> dict:
             # SVG existence and a simulation label cannot grade a visualization or report.
             numeric = [c for c in reference['checks'] if c['name'] not in ('矢量图存在', '报告标注模拟数据')]
             for step in run.steps:
-                if any(a.name in paths and a.name.endswith('monthly_summary.csv') for a in step.artifacts):
+                if is_research:
+                    outputs = {a.name for a in step.artifacts if a.name in paths}
+                    independent.setdefault(step.idx, []).extend(c for c in numeric if c.get('artifact_name') in outputs)
+                elif any(a.name in paths and a.name.endswith('monthly_summary.csv') for a in step.artifacts):
                     independent.setdefault(step.idx, []).extend(numeric)
     if anchored and intact:
         for step in run.steps:

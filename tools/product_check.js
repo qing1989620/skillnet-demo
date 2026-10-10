@@ -93,7 +93,26 @@ assert.match(Product.assessmentHTML(failedRun),/奖励暂不发放/);
 for(const name of ['briefing','chat','app','run','graph','index']){
   const html=fs.readFileSync(path.join(__dirname,'../web',name+'.html'),'utf8');
   assert.ok(html.includes('/static/assets/product.js'),name+' uses shared evidence');
+  assert.ok(html.includes('/static/assets/ecosystem.css'),name+' uses task value styling');
   const scripts=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
   scripts.forEach(m=>new Function(m[1]));
 }
+const researchManifest=JSON.parse(fs.readFileSync(path.join(__dirname,'../docs/evidence/research-ecosystem-files.json'),'utf8'));
+for(const record of researchManifest){
+  const raw=fs.readFileSync(path.join(__dirname,'..',record.path));
+  assert.equal(require('node:crypto').createHash('sha256').update(raw).digest('hex'),record.sha256);
+}
+const researchRun=JSON.parse(fs.readFileSync(path.join(__dirname,'../out/runs/f11ad204-20261010-100815-58a8.json'),'utf8'));
+const value=Product.valueHTML(researchRun);
+assert.match(value,/5 个真实文件/);
+assert.match(value,/20\/20 项独立参考检查/);
+assert.match(value,/4\/12 道奖励门通过/);
+assert.match(value,/S1 线上联调待验证/);
+assert.equal(Product.valueHTML({...researchRun,status:'EXECUTING'}),'');
+assert.doesNotMatch(Product.valueHTML({...researchRun,staged:{quality_assessment:{scope:'<script>evil</script>'}}}),/<script>/);
+assert.match(Product.assessmentHTML(researchRun),/执行前冻结的科研样本与指标参考/);
+assert.match(Product.resourcesButtonHTML({name:'example',source:'github'}),/data-skill-resources/);
+assert.equal(Product.resourcesButtonHTML({name:'seed',source:'seed'}),'');
+assert.doesNotMatch(Product.resourcesHTML({name:'<script>',repository:'<img>',files:[{path:'<iframe>',sha256:'" onmouseover="evil'}]}),/<script>|<img>|<iframe>| onmouseover="evil/);
+assert.match(Product.resourcesHTML({files:[]}),/脚本作为参考文件读取，不自动运行/);
 console.log('Product: true dependencies, noncontiguous steps, learning gate, partial verification, repairs, safe text and all six page scripts passed.');

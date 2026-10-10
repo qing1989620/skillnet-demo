@@ -581,12 +581,13 @@
   }
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=20261010.1"></script>
+<script src="/static/assets/ui.js?v=20261010.3"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=20261010.1"></script>
-<link rel="stylesheet" href="/static/assets/showcase.css?v=20261010.1">
-<link rel="stylesheet" href="/static/assets/refinement.css?v=20261010.1">
-<link rel="stylesheet" href="/static/assets/quality.css?v=20261010.1">
+<script src="/static/assets/product.js?v=20261010.3"></script>
+<link rel="stylesheet" href="/static/assets/showcase.css?v=20261010.3">
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261010.3">
+<link rel="stylesheet" href="/static/assets/quality.css?v=20261010.3">
+<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261010.3">
 </head>
 <body>
 
@@ -609,7 +610,7 @@
 <header class="hero" id="top">
   <div class="hwrap">
     <div>
-      <div class="h-kicker">SKILLNET-S1 · AGENT 技能运维层</div>
+      <div class="h-kicker">SKILLNET-S1 · 科研能力生态</div>
       <h1>让一次提问，<br>调动一整个<br><span class="em">能力网络。</span></h1>
       <div class="h-sub">从找到能力，到协作执行，再到验收与进化。<br>让你看到 Agent <b>如何做成这件事，<br>经验如何被核验，何时才有资格影响网络。</b></div>
       <div class="h-actions">
@@ -684,7 +685,7 @@
     </div>
   </div>
   </details>
-  <div class="show-tools"><button class="btn" type="button" data-show-run="b5492bb7-20261010-083743-1b37">同为 9 分 · 执行失败不发奖</button><button class="btn" type="button" data-show-run="b5492bb7-20261010-083955-a445">十二门核验 · 经营月报 4/12</button><button class="btn" type="button" data-show-run="1624c869-20261010-084055-eeaf">缺少标准答案 · 3/12 不发奖</button><button class="btn" type="button" data-show-run="b5492bb7-20261009-232823-34fe">独立判据通过 · 经营月报</button><button class="btn" type="button" data-show-run="1624c869-20261009-232919-0fe0">同为 8 分，为何不学习？</button><button class="btn" type="button" data-show-run="b5492bb7-20261008-174014-44aa">历史经营任务 · 3 步回放</button><button class="btn" type="button" data-show-run="02f80093-20261008-175420-f527">历史同文件追问 · 原值已核验</button><button class="btn" type="button" data-show-run="7356cc57-20261008-012151-3b64">历史科研任务 · 3 步回放</button><button class="btn" type="button" data-show-run="7c29f741-20261008-163216-a4ef">内核记录 · 1 步真实执行</button><button class="btn" id="demo-seven" style="background:#fff;color:var(--brand2);border:1px solid var(--brand2);font-size:12px" onclick="runDemo()">七阶段完整演示（本页）</button><p>对照两次真实任务的判据、结果和影子观察。原有完整演示、同题对照、代码、文件预览与会话历史均可继续使用。</p></div>
+  <div class="show-tools"><button class="btn" type="button" data-show-run="f11ad204-20261010-100815-58a8">科研复现 · 泄漏排查与指标重算</button><button class="btn" type="button" data-show-run="b5492bb7-20261010-083743-1b37">同为 9 分 · 执行失败不发奖</button><button class="btn" type="button" data-show-run="b5492bb7-20261010-083955-a445">十二门核验 · 经营月报 4/12</button><button class="btn" type="button" data-show-run="1624c869-20261010-084055-eeaf">缺少标准答案 · 3/12 不发奖</button><button class="btn" type="button" data-show-run="b5492bb7-20261009-232823-34fe">独立判据通过 · 经营月报</button><button class="btn" type="button" data-show-run="1624c869-20261009-232919-0fe0">同为 8 分，为何不学习？</button><button class="btn" type="button" data-show-run="b5492bb7-20261008-174014-44aa">历史经营任务 · 3 步回放</button><button class="btn" type="button" data-show-run="02f80093-20261008-175420-f527">历史同文件追问 · 原值已核验</button><button class="btn" type="button" data-show-run="7356cc57-20261008-012151-3b64">历史科研任务 · 3 步回放</button><button class="btn" type="button" data-show-run="7c29f741-20261008-163216-a4ef">内核记录 · 1 步真实执行</button><button class="btn" id="demo-seven" style="background:#fff;color:var(--brand2);border:1px solid var(--brand2);font-size:12px" onclick="runDemo()">七阶段完整演示（本页）</button><p>对照两次真实任务的判据、结果和影子观察。原有完整演示、同题对照、代码、文件预览与会话历史均可继续使用。</p></div>
   <div id="ver-badge" title="当前页面版本；点击可强制刷新" onclick="forceRefresh()"
        style="position:fixed;right:14px;bottom:14px;z-index:99;font:11px/1 var(--mono,monospace);
        color:#9aa7b3;background:rgba(255,255,255,.85);border:1px solid var(--line);
@@ -708,18 +709,18 @@
   <div class="pain3">
     <div class="pain">
       <h4>技能找不准</h4>
-      <p>前沿 Agent 在真实社区技能池上做检索，完整度只有个位数到 30%；关键词检索基本不可用。</p>
-      <div class="src">SkillNet 论文 · SkillNet-Gym 实测（浙大 / 阿里 / 蚂蚁 / 腾讯，arXiv 2603.04448）</div>
+      <p>技能越来越多，找到名称还不够；还需要知道来源、适用条件与实际采用理由。</p>
+      <div class="src">参考：SkillNet · 技能发现、关系分析与任务路由</div>
     </div>
     <div class="pain">
       <h4>编排会崩塌</h4>
-      <p>即使检索到技能，要求按依赖关系组织成工作流时，硬任务分数进一步大幅下滑。</p>
-      <div class="src">同上 · "Frontier Agents Exhibit Weak Skill Composition Ability"</div>
+      <p>方案写得完整，并不表示文件真的能逐步传递。我们把依赖、执行和实际产物连在一起核对。</p>
+      <div class="src">本项目：Runtime DAG · 输入输出契约 · 修复记录</div>
     </div>
     <div class="pain">
       <h4>能力只进不出</h4>
-      <p>AI 科学家系统是静态流水线，反复走同一条死路；把经验蒸馏成可复用技能，MLE-bench 提升 134.3%。</p>
-      <div class="src">EvoScientist（华为）/ Repo-To-Skill（BAAI 等）实证</div>
+      <p>一次运行产生经验，只有独立对照证明提升，才值得奖励和准入；缺少证据的结果保留未知。</p>
+      <div class="src">本项目：独立结果复核 · 候选隔离 · 十二门准入</div>
     </div>
   </div>
   <div class="evibar">
@@ -731,8 +732,8 @@
 <!-- ==================== 幕 2 · 方案 ==================== -->
 <section class="wrap" id="s2">
   <div class="kicker">SOLUTION · 我们的框架</div>
-  <h2>五阶段闭环：把四篇论文的拼图拼完整</h2>
-  <div class="sub">四篇代表性工作各占一块拼图；SkillNet-S1 把这些能力串成可运行的闭环，并加上评估与治理层。</div>
+  <h2>把成熟能力，接成 S1 的科研生态</h2>
+  <div class="sub">以技能标准、能力检索、真实执行和独立评价为基础，让一次科研任务留下可交付、可复核、可积累的资产。</div>
   <div class="arch">
     <svg width="100%" viewBox="0 0 1000 208" xmlns="http://www.w3.org/2000/svg" font-family="Microsoft YaHei">
       <defs><marker id="ar" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#24557a"/></marker></defs>
@@ -753,23 +754,24 @@
       <!-- 反馈回路 -->
       <path d="M 910 108 L 910 152 L 298 152 L 298 110" fill="none" stroke="#2e7d4f" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arg)"/>
       <defs><marker id="arg" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#2e7d4f"/></marker></defs>
-      <text x="604" y="146" text-anchor="middle" font-size="11" fill="#2e7d4f">反馈回流：实测奖励更新选择策略 · 新技能回流库（这次演示就会跑一遍）</text>
+      <text x="604" y="146" text-anchor="middle" font-size="11" fill="#2e7d4f">经验积累：单次运行先隔离为候选 · 十二门全部通过后奖励该版本 · 正式排序另行验证</text>
       <!-- 治理底座 -->
       <rect x="14" y="168" width="976" height="32" rx="4" fill="#f2f5f8" stroke="#dde4ea"/>
-      <text x="502" y="188" text-anchor="middle" font-size="11" fill="#5b6b7c">治理底座（四篇论文都没有的）：开发 / 冻结任务集与元数据溯源（历史划分待复核） · manifest 数据源 · 全链路成本账本 · 降级显式可观测 · 证据分级标注 · 置信度分流（自动 / 确认 / 直答）</text>
+      <text x="502" y="188" text-anchor="middle" font-size="11" fill="#5b6b7c">治理与交付：来源和版本 · 真实文件指纹 · 独立结果范围 · 预算与成本 · 隔离候选 · S1 证据包契约</text>
     </svg>
     <div class="legend">
       <span><i style="background:#1a3a5c"></i>实现并已验证</span>
-      <span><i style="background:#2e7d4f"></i>本次演示将现场运行</span>
+      <span><i style="background:#2e7d4f"></i>执行可现场运行；晋级需要独立对照</span>
     </div>
   </div>
 
   <div class="map4">
-    <div class="m4"><b>SkillNet（浙大·阿里·蚂蚁·腾讯）</b><span>技能契约 · 关系本体 · Fabric 路由</span><span class="cov">缺：选择策略 / 进化 / 治理</span></div>
-    <div class="m4"><b>COBRA-Skills（港中深等）</b><span>LinUCB 选择 · 进化算子</span><span class="cov">缺：检索 / 本体 / 评估治理</span></div>
-    <div class="m4"><b>Repo-To-Skill（BAAI 等）</b><span>仓库蒸馏成技能 · 验证门槛</span><span class="cov">缺：闭环与度量体系</span></div>
-    <div class="m4"><b>EvoScientist（华为）</b><span>进化管理角色 · 分型记忆</span><span class="cov">缺：技能资产化与检索</span></div>
+    <div class="m4"><b>Agent Skills 开放标准</b><span>复用指令、脚本与资源包</span><a class="cov" href="https://agentskills.io/" target="_blank" rel="noopener">技能可移植 · 标准来源 ↗</a></div>
+    <div class="m4"><b>SkillNet</b><span>技能发现、关系与路由</span><a class="cov" href="https://github.com/zjunlp/SkillNet" target="_blank" rel="noopener">能力供给 · 研究参考 ↗</a></div>
+    <div class="m4"><b>LangSmith 评价体系</b><span>代码、模型与配对评价</span><a class="cov" href="https://docs.langchain.com/langsmith/evaluation-types" target="_blank" rel="noopener">评价分层 · 工程参考 ↗</a></div>
+    <div class="m4"><b>AOCI-CODE</b><span>版本化代码认知与治理</span><a class="cov" href="https://github.com/aoci-spec/aoci-code" target="_blank" rel="noopener">系统认知 · 审查参考 ↗</a></div>
   </div>
+  <p class="sub">以上是生态与设计参考；当前实现及接入范围以运行证据和服务契约为准。<a href="https://s1.liliai.cn/cases/arrhythmia_multilabel_physio_features_ml_cross_patient" target="_blank" rel="noopener">S1 公开科研案例 ↗</a> 强调跨患者验证与产物留存，本演示据此增加模拟科研复核场景。</p>
 </section>
 
 <!-- ==================== 运行中心 ==================== -->
@@ -934,7 +936,7 @@
     <div class="kp"><div class="n"><span data-live="edges">—</span></div><div class="t">类型化关系边 · 图驱动编排</div></div>
     <div class="kp"><div class="n">160</div><div class="t">维任务-技能联合上下文（当前 LinUCB 实现）</div></div>
     <div class="kp"><div class="n">31</div><div class="t">项交付自检（verify.py）</div></div>
-    <div class="kp"><div class="n">206</div><div class="t">项自动化回归（0.9 交付验证）</div></div>
+    <div class="kp"><div class="n">314</div><div class="t">项自动化回归（当前交付验证）</div></div>
     <div class="kp"><div class="n">7</div><div class="t">项真实运行内核证据</div></div>
     <div class="kp"><div class="n">8</div><div class="t">个框架 / 目录导出落点</div></div>
     <div class="kp"><div class="n">2</div><div class="t">套任务集（历史划分元数据待复核）</div></div>
@@ -947,20 +949,20 @@
     变为「科研方法 + 交付物产出」的完整体系。脚本可幂等重跑（tools/import_member_skills.py）。
   </div>
   <div class="next">
-    <b>接入公司产品的路径已备好：</b>Phase 1 只读接入（Agent 调 /api/search 注入技能，1–2 周）→
-    Phase 2 业务反馈回传为奖励，建立业务任务集 → Phase 3 候选技能人工审批门 + 回滚。
-    详细方案见《SkillNet-S1-说明文档.pdf》。
+    <b>接入公司产品的路径已备好：</b>先接入检索与技能正文工具，再接入有预算的执行、项目附件和证据包。
+    业务反馈作为评价线索；候选通过独立对照与十二门核验后，才进入版本准入流程。
+    S1 保留身份、项目权限和现有 Agent 主流程；线上连接需实际联调。
   </div>
 
   <details class="script">
     <summary>汇报脚本（3 分钟讲法，内部参考）</summary>
     <div class="in">
       <ol>
-        <li><b>30 秒 · 问题：</b>行业证据开场——前沿 Agent 在真实技能池上检索完整度只有个位数到 30%，编排硬任务崩塌（SkillNet-Gym）。这不是模型不够强，是缺一层技能基础设施。</li>
-        <li><b>60 秒 · 方案：</b>指着架构图讲五段闭环；强调四篇论文各占一块，我们是唯一把闭环串起来并加治理层的。重点讲绿色虚线：实测奖励回流、新技能回流库。</li>
-        <li><b>90 秒 · 现场演示：</b>选一个示例任务点「运行闭环」。Stage 1 指着表讲 Fabric 为什么补进了 BM25 漏掉的技能（trace 里有关系扩展证据）；Stage 2 讲 DAG 顺序；Stage 3 强调主客观分离；Stage 4 强调「这次演示本身就在给库加资产」。</li>
-        <li><b>30 秒 · 差异化：</b>对照表扫一遍——选择策略、进化、治理、跨框架导出都是论文没有的；主动讲 held-out 治理（我们主动暴露了过拟合），体现科研诚信。</li>
-        <li><b>收尾：</b>三阶段接入路径 + 「这套东西可以直接接到 S1 的 Agent 编排层上，Phase 1 两周就能出对比数据」。</li>
+        <li><b>30 秒 · 定位：</b>这是 S1 的科研能力生态层：从任务找到可用方法，让执行结果留下可核对、可复用的资产。</li>
+        <li><b>30 秒 · 生态：</b>复用成熟技能标准与研究思路；演示重点是它们如何一起服务真实科研流程。</li>
+        <li><b>90 秒 · 现场：</b>回放模拟科研复核任务，沿七阶段查看技能选择、样本泄漏排查、真实文件传递与指标重算，再打开“这次运行，留下了什么”。</li>
+        <li><b>30 秒 · 积累：</b>说明样本检查通过的范围；候选经验必须通过十二道门才能奖励，单次任务没有证明网络变强。</li>
+        <li><b>收尾：</b>导出证据包，展示 S1 的三个落点：项目会话、项目附件与候选能力资产。当前服务契约可用，S1 生产联调待验证。</li>
       </ol>
     </div>
   </details>
@@ -969,7 +971,7 @@
 </section>
 
 <script>
-const PAGE_VER = "2026-10-10.gates.1";
+const PAGE_VER = "2026-10-10.ecosystem.3";
 const API = location.origin;
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -2612,6 +2614,6 @@ window.__SELFTEST__ = function(){
   }, 4000);
 })();
 </script>
-<script src="/static/assets/showcase.js?v=20261010.1"></script>
+<script src="/static/assets/showcase.js?v=20261010.3"></script>
 </body>
 </html>

@@ -15,7 +15,7 @@
   const number = (x, fallback=0) => Number.isFinite(Number(x)) ? Number(x) : fallback;
   const statusName = s => ({COMPLETED:'已完成',PARTIAL:'部分完成',FAILED:'失败',CANCELLED:'已取消',BUDGET_EXCEEDED:'预算已达上限',INTERRUPTED:'运行中断'}[s] || s || '待启动');
   const stepName = s => ({pending:'待执行',running:'执行中',done:'已完成',failed:'失败',skipped:'已跳过'}[s] || '待执行');
-  const PUBLIC_REPLAY_ID='b5492bb7-20261010-083955-a445';
+  const PUBLIC_REPLAY_ID='f11ad204-20261010-100815-58a8';
   function createState(task='',mode='idle') {
     return {task,mode,id:null,seq:0,phase:0,view:null,phases:PHASES.map(()=> 'pending'),nodes:[],selected:[],ranking:[],retrieval:{},orchestration:{},checks:[],artifacts:[],feedback:[],judge:null,evolution:null,logs:[],started:0,elapsed:0,finished:false,error:'',snapshot:null};
   }
@@ -195,7 +195,7 @@
     const answer=fin.staged?.final_reply || fin.error || '本次没有生成最终文本，请查看步骤和文件证据。';
     const verdict=fin.staged?.acceptance;
     const value=fin.evolution?.candidate?'新经验已进入候选区，等待冻结任务的真实执行验证；当前技能库尚未新增。':fin.evolution?.accepted?`本次经验已沉淀为 ${fin.evolution.name}，可进入后续任务复用。`:fin.staged?.learning_gate?.eligible===false?`本次经验暂不写入技能库：${fin.staged.learning_gate.skip_reason}。结果与证据保留供核对，避免学习未经确认的经验。`:fin.evolution?.skip_reason||'本次未新增技能；已有运行、验收和反馈记录保留供后续复盘。';
-    $('show-answer-body').innerHTML=`${root.Product?.assessmentHTML(fin)||''}<div class="show-value">${esc(statusName(fin.status))} · 验收${verdict?({passed:'通过',failed:'未通过',unknown:'有待确认'}[verdict.state]||verdict.state):'见逐项证据'} · ${esc(value)}</div><div class="rp-body">${typeof root.mdToHtml==='function'?root.mdToHtml(answer):esc(answer).replace(/\n/g,'<br>')}</div>`;
+    $('show-answer-body').innerHTML=`${root.Product?.valueHTML(fin)||''}${root.Product?.assessmentDetailsHTML(fin)||''}<div class="show-value">${esc(statusName(fin.status))} · 验收${verdict?({passed:'通过',failed:'未通过',unknown:'有待确认'}[verdict.state]||verdict.state):'见逐项证据'} · ${esc(value)}</div><div class="rp-body">${typeof root.mdToHtml==='function'?root.mdToHtml(answer):esc(answer).replace(/\n/g,'<br>')}</div>`;
     $('show-files-body').innerHTML=arr(fin.artifacts).slice().sort((a,b)=>number(b.from_step)-number(a.from_step)).map(a=>{const url='/api/runs/'+encodeURIComponent(fin.run_id)+'/artifacts/'+encodeURIComponent(a.name);return `<div class="show-file"><b>${esc(a.name)}</b><p>${esc(a.kind||'真实运行产物')}${a.from_step!=null?' · Step '+(number(a.from_step)+1)+' 产出':''} · ${(number(a.bytes)/1024).toFixed(1)} KB · SHA-256 ${esc(String(a.sha256||'未记录').slice(0,16))}${a.sha256?'…':''}</p><button type="button" data-show-artifact="${esc(a.name)}">查看文件</button><a href="${url}" download="${esc(a.name)}">下载</a>${/\.(png|jpg|jpeg|webp|svg)$/i.test(a.name)?`<img src="${url}" alt="本次实际运行生成的 ${esc(a.name)}" loading="lazy">`:''}</div>`;}).join('')||'<p style="font-size:12px;color:#7a909e">本次没有登记可下载文件。</p>';
     $('show-evidence-link').href='/run?id='+encodeURIComponent(fin.run_id);
     const modes=fin.retrieval||{},feedback=arr(fin.feedback),orchestration=fin.staged?.orchestration||{};
