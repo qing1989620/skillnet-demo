@@ -103,8 +103,29 @@ def collect(task: str, workspace: Path, *, mode='auto', emit=None, checkpoint=No
                   sources=[], attempts=[], discovery=dict(state='not_needed', candidates=[], attempts=[]), boundary=BOUNDARY)
     emit = emit or (lambda *_args, **_kw: None)
     checkpoint = checkpoint or (lambda: None)
-    if not decision['enabled'] or not web_search.capabilities()['enabled']:
+
+    def discover_references():
+        checkpoint()
+        from .skill_discovery import discover, capability_terms
+        terms = ('identity verification source citation research' if decision['identity_name']
+                 else capability_terms(task))
+        report['discovery'] = discover(terms, timeout=18)
+        emit('web.skills.discovered', **report['discovery'], reference_only=bool(report.get('reference_only')),
+             needed=report['needed'], reason=report['reason'])
+
+    if not web_search.capabilities()['enabled']:
         report['state'] = 'disabled' if decision['needed'] else 'not_needed'
+        return report
+    if not decision['enabled']:
+        # Missing local methods may need discovery even when the task's facts
+        # already come from user data. This must not turn data analysis into an
+        # external-fact task or bypass an explicit offline/private policy.
+        if discover_missing and mode == 'auto' and intent(task, 'on')['enabled']:
+            report.update(reference_only=True, enabled=True,
+                reason='无需采集外部事实；因本地供给缺失，仅检索隔离方法参考')
+            discover_references()
+        else:
+            report['state'] = 'disabled' if decision['needed'] else 'not_needed'
         return report
     root = workspace / 'artifacts'
     root.mkdir(parents=True, exist_ok=True)
@@ -162,11 +183,7 @@ def collect(task: str, workspace: Path, *, mode='auto', emit=None, checkpoint=No
     good = sum(s['state'] in ('fetched', 'extracted') and bool(s.get('text')) for s in report['sources'])
     report['state'] = 'success' if good and good == len(report['sources']) else 'partial' if good else 'unavailable'
     if discover_missing:
-        checkpoint()
-        from .skill_discovery import discover
-        report['discovery'] = discover('identity verification source citation research' if decision['identity_name']
-                                       else 'web research source citation verification', timeout=18)
-        emit('web.skills.discovered', **report['discovery'])
+        discover_references()
     # One immutable index for code, plus each original source entity snapshot.
     report['evidence_file'] = 'web_sources.json'
     index = json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False).encode('utf-8')

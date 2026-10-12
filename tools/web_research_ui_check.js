@@ -47,6 +47,10 @@ live=Product.reduceWebEvent(live,'web.citations.checked',{state:'unknown',verifi
 assert.doesNotMatch(Product.webResearchHTML({web_research:live}),/<img|<script/);
 assert.match(Product.webEventText('web.search.completed',{candidates:2}),/候选仍需打开核验/);
 assert.match(Product.webEventText('web.source.checked',{state:'extracted',retrieval_mode:'provider_extract'}),/提供方摘录/);
+const referenceOnly=Product.reduceWebEvent(null,'web.skills.discovered',{reference_only:true,needed:false,reason:'仅补充隔离方法参考',candidates:[]});
+assert.equal(referenceOnly.needed,false);assert.equal(referenceOnly.reference_only,true);assert.equal(referenceOnly.state,'not_needed');
+assert.match(Product.webResearchHTML({web_research:referenceOnly}),/仅补充隔离方法参考/);
+assert.doesNotMatch(Product.webResearchHTML({web_research:referenceOnly}),/原站已打开|正在核验来源/);
 
 async function dialogOwnership(){
   const sourceCode=read('web/assets/product.js'),code=between(sourceCode,'async function inspectWebEvidence(button){','async function inspectValue(button){');

@@ -111,7 +111,10 @@
     if(type==='web.search.started'){report.state='searching';report.queries=[data.query||''];}
     if(type==='web.search.completed'){report.state=Number(data.candidates)>0?'checking':data.state||'unknown';report.attempts=Array.isArray(data.attempts)?data.attempts:[];}
     if(type==='web.source.checked'){report.sources=[...(Array.isArray(report.sources)?report.sources:[]).filter(s=>s.source_id!==data.source_id),{...data}];}
-    if(type==='web.skills.discovered')report.discovery={...data};
+    if(type==='web.skills.discovered'){
+      report.discovery={...data};
+      if(data.reference_only===true){report.reference_only=true;report.needed=false;report.state='not_needed';report.reason=data.reason||'仅检索隔离方法参考';}
+    }
     if(type==='web.citations.checked')report.citation_audit={...data};
     return report;
   }

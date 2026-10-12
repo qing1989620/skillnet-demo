@@ -1,9 +1,9 @@
 {
-  "version": "skillnet-web-ui-observations-v12",
+  "version": "skillnet-web-ui-observations-v13",
   "observed_date_local": "2026-10-13",
   "browser": "Codex In-app Browser",
-  "asset_version": "20261013.12",
-  "page_version": "2026-10-13.web.12",
+  "asset_version": "20261013.13",
+  "page_version": "2026-10-13.web.13",
   "scope": "Native browser review of the public Crossref completed run network evidence view, not full-site certification.",
   "run_id": "558a5f21-20261013-010459-6d6e",
   "views": [
@@ -14,12 +14,16 @@
       },
       "dialog_bounds": {
         "x": 195,
-        "y": 109,
+        "y": 109.3,
         "width": 1050,
-        "height": 681
+        "height": 681.4
       },
       "horizontal_overflow": false,
-      "screenshot": "docs/frontend-audit/screenshots/web-sources-desktop-v12.jpg"
+      "screenshot": "docs/frontend-audit/screenshots/web-sources-desktop-v13.jpg",
+      "screenshot_dimensions": {
+        "width": 1440,
+        "height": 900
+      }
     },
     {
       "viewport": {
@@ -33,7 +37,11 @@
         "height": 637
       },
       "horizontal_overflow": false,
-      "screenshot": "docs/frontend-audit/screenshots/web-sources-mobile-v12.jpg"
+      "screenshot": "docs/frontend-audit/screenshots/web-sources-mobile-v13.jpg",
+      "screenshot_dimensions": {
+        "width": 390,
+        "height": 843
+      }
     }
   ],
   "native_checks": [
@@ -68,7 +76,8 @@
     "SSE reducer and safe rendering",
     "Unsafe URL and untrusted text rejection",
     "Exact run/snapshot links",
-    "Stale, closed, failed and identity-mismatched dialog requests"
+    "Stale, closed, failed and identity-mismatched dialog requests",
+    "Reference-only discovery events do not pretend a factual source check is running"
   ],
   "unverified": [
     "All sixteen complete parent views",
@@ -78,8 +87,8 @@
     "S1 production deployment and live authorization/attachment flow"
   ],
   "screenshots_sha256": {
-    "docs/frontend-audit/screenshots/web-sources-desktop-v12.jpg": "e359bb9690abe6d0489af4429566cc1702458ec59184bc4adf1b4ca82be35e00",
-    "docs/frontend-audit/screenshots/web-sources-mobile-v12.jpg": "95fd58066656a3e7a8dd4c21db60fdef9e0cce50ab05155c50ef1ca066902b92"
+    "docs/frontend-audit/screenshots/web-sources-desktop-v13.jpg": "e359bb9690abe6d0489af4429566cc1702458ec59184bc4adf1b4ca82be35e00",
+    "docs/frontend-audit/screenshots/web-sources-mobile-v13.jpg": "2f996e9e2b881653a290e8e9137f8873fceda37b6034e73e2c6ab155b9fc741d"
   },
-  "note": "Earlier frontend audit records remain historical. No private task history or private person output is included."
+  "note": "v13 repeats the two bounded source layouts, exact index preview, nested close, Escape/focus and viewport reset. Reference-only discovery UI has controlled-state checks, not a native full task claim. Earlier v12 screenshots remain historical."
 }

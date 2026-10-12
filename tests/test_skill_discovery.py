@@ -102,6 +102,71 @@ def test_discovery_queries_never_export_names_user_text_urls_or_credentials(acqu
         '张例明', 'sk-private-key', 'payroll.csv', 'internal.invalid', 'user@example.org'])
 
 
+@pytest.mark.parametrize('task,expected', [
+    ('identity source citation research', 'identity verification citation verification source verification web research'),
+    ('前端 React 界面和交互优化', 'frontend development'),
+    ('frontend development with Vue and accessible CSS', 'frontend development'),
+    ('后端 FastAPI 服务端接口优化', 'backend development'),
+    ('backend development using Django REST API', 'backend development'),
+    ('数据统计分析和可视化图表', 'data analysis data visualization'),
+    ('data visualization using matplotlib', 'data analysis data visualization'),
+    ('用 FreeCAD 做 CAD 机械设计和工程制图', 'CAD design'),
+    ('设计 Fusion 360 装配模型', 'CAD design'),
+    ('前端数据可视化 React 看板', 'data analysis frontend development data visualization'),
+    ('无匹配能力的普通请求', 'web research source verification'),
+])
+def test_capability_terms_use_stable_public_labels_and_domain_specific_queries(task, expected):
+    assert discovery.capability_terms(task) == expected
+    assert discovery._query(task) == 'site:github.com "SKILL.md" ' + expected
+
+
+def test_capability_terms_never_return_private_raw_content():
+    private = ('张例明的内部项目ProjectZeta，api_key=sk-private-credential '
+        'C:/Users/qing/payroll.csv https://internal.invalid/private user@example.org；'
+        '员工薪酬=123456、账号987654；优化前端可视化界面')
+    terms = discovery.capability_terms(private)
+    assert terms == 'frontend development data visualization'
+    assert all(value not in terms for value in [
+        '张例明', 'ProjectZeta', 'sk-private', 'payroll.csv', 'internal.invalid',
+        'user@example.org', '123456', '987654'])
+    assert set(terms.split()) <= set(' '.join(label for label, _ in discovery._CAPABILITIES).split())
+
+
+@pytest.mark.parametrize('task,expected', [
+    ('制作可视化图表', 'data visualization'),
+    ('前端 后端 渲染 CAD', 'frontend development backend development data visualization CAD design'),
+    ('无匹配能力的普通请求', 'web research source verification'),
+])
+def test_public_capability_terms_are_idempotent_without_gaining_or_dropping_labels(task, expected):
+    terms = discovery.capability_terms(task)
+    assert terms == expected
+    assert discovery.capability_terms(terms) == terms
+    assert discovery.capability_terms(discovery.capability_terms(terms)) == terms
+    assert discovery._query(terms) == discovery._query(task)
+
+
+def test_canonical_terms_detection_never_passes_through_non_whitelisted_text():
+    raw = 'frontend development private-project-Zeta https://internal.invalid token=private-credential'
+    terms = discovery.capability_terms(raw)
+    assert terms == 'frontend development' and terms != raw
+    assert discovery._PUBLIC_TERMS.fullmatch(raw) is None
+    assert discovery._PUBLIC_TERMS.fullmatch(terms)
+
+
+@pytest.mark.parametrize('task,expected', [
+    ('优化前端 React 界面', 'frontend development'),
+    ('改进数据统计分析和图表可视化', 'data analysis data visualization'),
+    ('优化后端 FastAPI 接口', 'backend development'),
+    ('CAD 机械设计', 'CAD design'),
+])
+def test_discover_sends_capability_query_instead_of_unrelated_citation_terms(acquisition, task, expected):
+    _, _, searches, _, _ = acquisition()
+    report = discovery.discover(task)
+    assert searches[0][0] == 'site:github.com "SKILL.md" ' + expected
+    assert report['query'] == searches[0][0]
+    assert 'citation' not in searches[0][0]
+
+
 @pytest.mark.parametrize('url', [
     'http://github.com/example/research/blob/main/SKILL.md',
     'https://github.com.evil.org/example/research/blob/main/SKILL.md',

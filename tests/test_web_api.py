@@ -22,6 +22,21 @@ TOKEN = 'web-api-offline-test-token'
 AUTH = {'X-SkillNet-Token': TOKEN}
 
 
+def test_s1_capsule_preserves_reference_only_discovery_without_exporting_remote_body(tmp_path):
+    from skillnet.evidence import capsule
+    run = runtime.Run(run_id='reference-only-12345678', task='计算给定数据', task_fp='reference', status='COMPLETED')
+    run.staged['web_research'] = dict(needed=False, reference_only=True, state='not_needed',
+        reason='仅补充方法参考', sources=[], discovery=dict(state='success', candidates=[dict(
+            name='online-method', sha256='a'*64, state='quarantined_reference', body='untrusted remote instructions')]))
+    result = capsule(run, tmp_path)
+    projected = result['web_research']
+    assert projected['reference_only'] is True and projected['needed'] is False
+    assert projected['reason'] == '仅补充方法参考' and projected['sources'] == []
+    assert projected['discovery']['candidates'][0]['sha256'] == 'a'*64
+    assert 'body' not in projected['discovery']['candidates'][0]
+    assert 'untrusted remote instructions' not in json.dumps(result)
+
+
 @pytest.fixture
 def api(tmp_path, monkeypatch):
     root = tmp_path / 'out'

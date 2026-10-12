@@ -476,11 +476,86 @@ def test_missing_skill_discovery_receives_public_capability_terms_not_private_ta
     def discover(query, **kwargs):
         calls.append((query, kwargs))
         return {"state": "candidates_only", "candidates": [{"id": "public/research"}], "attempts": []}
-    monkeypatch.setitem(sys.modules, "skillnet.skill_discovery", SimpleNamespace(discover=discover))
+    monkeypatch.setitem(sys.modules, "skillnet.skill_discovery", SimpleNamespace(discover=discover,
+        capability_terms=lambda task: "identity verification source citation research"))
     report = evidence.collect(discover_missing=True)
     assert len(calls) == 1 and report["discovery"]["state"] == "candidates_only"
     assert NAME not in calls[0][0] and "identity" in calls[0][0]
     assert report["discovery"]["candidates"] == [{"id": "public/research"}]
+
+
+def test_local_capability_gap_discovers_methods_without_creating_external_fact_evidence(evidence, monkeypatch):
+    task = "计算本地 CSV 均值并生成图表"
+    calls, events, checkpoints = [], [], []
+    terms = "data analysis statistical methodology visualization"
+    def discover(query, **kwargs):
+        calls.append((query, kwargs))
+        return {"state": "candidates_only", "candidates": [{"id": "public/data-method",
+            "reference_only": True, "execution_allowed": False, "certified": False}], "attempts": []}
+    monkeypatch.setitem(sys.modules, "skillnet.skill_discovery", SimpleNamespace(discover=discover,
+        capability_terms=lambda input_task: terms if input_task == task else pytest.fail("wrong capability task")))
+    report = web_research.collect(task, evidence.workspace, discover_missing=True,
+        emit=lambda kind, **fields: events.append((kind, fields)), checkpoint=lambda: checkpoints.append(True))
+    assert calls == [(terms, {"timeout": 18})]
+    assert report["needed"] is False and report["state"] == "not_needed"
+    assert report["sources"] == [] and report["queries"] == [] and report["attempts"] == []
+    assert not any(evidence.calls.values()) and not report.get("evidence_file")
+    assert not (evidence.workspace / "artifacts").exists()
+    assert report["discovery"]["candidates"][0]["execution_allowed"] is False
+    assert [kind for kind, _ in events] == ["web.skills.discovered"] and checkpoints
+    plan = {"steps": [{"action": "计算本地 CSV 均值", "input_files": ["data.csv"]}]}
+    assert web_research.bind_plan(copy.deepcopy(plan), report) == plan
+    assert web_research.audit_files([], report, evidence.workspace)["state"] == "not_applicable"
+    assert web_research.grounded_reply(report) is None
+    context = web_research.prompt_context(report)
+    assert "identity_ledger.csv" not in context and "factual_claims.csv" not in context
+
+
+def test_method_discovery_failure_does_not_turn_local_analysis_into_external_fact_failure(evidence, monkeypatch):
+    def discover(query, **kwargs):
+        return {"state": "unavailable", "candidates": [], "attempts": [{"state": "rate_limited"}]}
+    monkeypatch.setitem(sys.modules, "skillnet.skill_discovery", SimpleNamespace(discover=discover,
+        capability_terms=lambda task: "data analysis"))
+    report = web_research.collect("计算本地 CSV 均值", evidence.workspace, discover_missing=True)
+    assert report["needed"] is False and report["state"] == "not_needed"
+    assert report["discovery"]["state"] == "unavailable" and report["sources"] == []
+    assert not any(evidence.calls.values())
+    assert web_research.audit_files([], report, evidence.workspace)["state"] == "not_applicable"
+
+
+@pytest.mark.parametrize("task,mode,enabled", [
+    ("计算本地 CSV 均值", "off", True),
+    ("不要联网，计算本地 CSV 均值", "auto", True),
+    ("No web search. Calculate local CSV means.", "auto", True),
+    ("内部未公开保密资料，计算本地 CSV 均值", "auto", True),
+    ("Confidential employee data; calculate local CSV means.", "auto", True),
+    ("计算本地 CSV 均值", "auto", False),
+])
+def test_method_only_gap_does_not_override_offline_confidential_or_global_disabled_policy(
+        evidence, monkeypatch, task, mode, enabled):
+    def forbidden(*args, **kwargs):
+        pytest.fail("method discovery must not override an explicit privacy/network policy")
+    monkeypatch.setitem(sys.modules, "skillnet.skill_discovery", SimpleNamespace(discover=forbidden,
+        capability_terms=forbidden))
+    monkeypatch.setattr(web_research.web_search, "capabilities", lambda: {"enabled": enabled})
+    report = web_research.collect(task, evidence.workspace, mode=mode, discover_missing=True)
+    assert report["sources"] == [] and not any(evidence.calls.values())
+    assert not (evidence.workspace / "artifacts").exists()
+    assert not report.get("evidence_file")
+
+
+def test_non_identity_discovery_routes_task_capabilities_instead_of_fixed_citation_terms(evidence, monkeypatch):
+    task = "调研软件测试方法并分析数据"
+    calls = []
+    def discover(query, **kwargs):
+        calls.append(query)
+        return {"state": "candidates_only", "candidates": [], "attempts": []}
+    monkeypatch.setitem(sys.modules, "skillnet.skill_discovery", SimpleNamespace(discover=discover,
+        capability_terms=lambda input_task: "software testing data analysis" if input_task == task
+            else pytest.fail("missing original capability request")))
+    report = web_research.collect(task, evidence.workspace, discover_missing=True)
+    assert calls == ["software testing data analysis"]
+    assert report["needed"] is True and report["sources"]
 
 
 def test_non_web_task_does_not_create_artifacts_or_apply_web_audit(evidence):

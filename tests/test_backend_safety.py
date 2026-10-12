@@ -31,6 +31,11 @@ def api(tmp_path, monkeypatch):
     monkeypatch.setattr(server, "ACCESS_TOKEN", "test-access-token")
     monkeypatch.setattr(server, "_RUN_THREADS", {})
     monkeypatch.setattr(server.config, "OUT_DIR", tmp_path)
+    # These tests cover runtime accounting, not online method acquisition. An
+    # empty fixture catalogue must not start live discovery in the worker.
+    monkeypatch.setattr(server.web_research, "collect", lambda *_a, **_k: dict(
+        needed=False, enabled=False, state='not_needed', sources=[], attempts=[],
+        discovery=dict(state='not_needed', candidates=[], attempts=[])))
     client = TestClient(server.app)
     yield client, store
     client.close()

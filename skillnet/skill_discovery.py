@@ -35,13 +35,30 @@ _CAPABILITIES = (
     ('data analysis', r'data|analysis|数据|分析|统计'),
     ('document extraction', r'document|extract|PDF|文档|提取'),
     ('software testing', r'software|testing|代码|软件|测试'),
+    ('frontend development', r'front[\s-]?end|前端|界面|交互|网页|\b(?:react|vue|svelte|html|css|tailwind|UI|UX)\b|\bnext\.?js\b'),
+    ('backend development', r'back[\s-]?end|后端|服务端|服务器|接口|微服务|\b(?:fastapi|django|flask|spring|REST|GraphQL|API)\b'),
+    ('data visualization', r'visuali[sz]ation|可视化|图表|绘图|渲染|\b(?:chart|plot|matplotlib|seaborn)\b|\b(?:d3|three)\.?js\b'),
+    ('CAD design', r'\bCAD\b|计算机辅助设计|机械设计|建筑设计|装配|工程制图|\b(?:AutoCAD|FreeCAD|SolidWorks|OpenSCAD|Revit)\b|\bFusion\s*360\b'),
 )
+_PUBLIC_LABEL = '|'.join(re.escape(label) for label, _ in _CAPABILITIES)
+_PUBLIC_TERMS = re.compile(rf'(?:{_PUBLIC_LABEL})(?: (?:{_PUBLIC_LABEL})){{0,3}}')
+
+
+def capability_terms(task: str) -> str:
+    """Return at most four fixed public capability labels, never task text."""
+    # Exact whitelist-only output may cross this boundary twice. Do not infer
+    # another capability from a label's words (e.g. "data visualization").
+    public = ' '.join(task.split())
+    if _PUBLIC_TERMS.fullmatch(public):
+        return public
+    # Matching selects labels from the whitelist; names, private prompts, URLs,
+    # file paths and credentials can never be interpolated into the result.
+    words = [label for label, pattern in _CAPABILITIES if re.search(pattern, task, re.I)]
+    return ' '.join(words[:4] or ['web research source verification'])
 
 
 def _query(value: str) -> str:
-    # Never forward names, private prompts, URLs, file paths or credentials.
-    words = [label for label, pattern in _CAPABILITIES if re.search(pattern, value, re.I)]
-    return 'site:github.com "SKILL.md" ' + ' '.join(words[:4] or ['web research source verification'])
+    return 'site:github.com "SKILL.md" ' + capability_terms(value)
 
 
 def _blob_url(value) -> tuple[str, str, str, str] | None:
