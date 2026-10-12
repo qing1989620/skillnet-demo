@@ -132,7 +132,7 @@
       $('show-graph-note').textContent=`${state.nodes.length} 个步骤 · ${state.nodes.filter(n=>n.status==='done').length} 已完成`;
       return;
     }
-    if(!stageSphere){host.innerHTML='<canvas class="stage-sphere" tabindex="0" role="img" aria-label="任务技能球体：方向键旋转，空格暂停"></canvas>';stageSphere=root.SkillSphere.create(host.querySelector('canvas'),{wheel:false,onSelect:n=>{if(n)root.open('/graph?skill='+encodeURIComponent(n.id),'_blank','noopener');}});stageSphere.setData(network);}
+    if(!stageSphere){host.innerHTML='<canvas class="stage-sphere" tabindex="0" role="img" aria-label="任务技能球体：方向键旋转，空格暂停"></canvas>';stageSphere=root.SkillSphere.create(host.querySelector('canvas'),{wheel:false,onSelect:n=>{if(n)root.open(root.Product?.graphURL({run:state.id,skill:n.id})||('/graph?run='+encodeURIComponent(state.id||'')+'&skill='+encodeURIComponent(n.id)),'_blank','noopener');}});stageSphere.setData(network);}
     stageSphere.highlight(state.selected);
     $('show-graph-label').textContent='CAPABILITY SPHERE · 问题驱动的能力选择';
     $('show-graph-note').textContent=network.nodes.length?`${network.nodes.length} 项能力 / ${state.selected.length} 项本轮推荐`:'读取中';
@@ -216,7 +216,7 @@
     $('show-routing').innerHTML=(root.Product?.selectionHTML(fin)||'')+(root.Product?.frontierSnapshotHTML?.(fin)||'')+(root.Product?.transitionsHTML?.(fin)||'')+(root.Product?.stateKernelHTML?.(fin)||'');
     $('show-answer-body').innerHTML=`${root.Product?.valueHTML(fin)||''}${root.Product?.assessmentDetailsHTML(fin)||''}<div class="show-value">${esc(statusName(fin.status))} · 验收${verdict?({passed:'通过',failed:'未通过',unknown:'有待确认'}[verdict.state]||verdict.state):'见逐项证据'} · ${esc(value)}</div><div class="rp-body">${typeof root.mdToHtml==='function'?root.mdToHtml(answer):esc(answer).replace(/\n/g,'<br>')}</div>`;
     $('show-files-body').innerHTML=arr(fin.artifacts).slice().sort((a,b)=>number(b.from_step)-number(a.from_step)).map(a=>{const url='/api/runs/'+encodeURIComponent(fin.run_id)+'/artifacts/'+encodeURIComponent(a.name);return `<div class="show-file"><b>${esc(a.name)}</b><p>${esc(a.kind||'真实运行产物')}${a.from_step!=null?' · Step '+(number(a.from_step)+1)+' 产出':''} · ${(number(a.bytes)/1024).toFixed(1)} KB · SHA-256 ${esc(String(a.sha256||'未记录').slice(0,16))}${a.sha256?'…':''}</p><button type="button" data-show-artifact="${esc(a.name)}">查看文件</button><a href="${url}" download="${esc(a.name)}">下载</a>${/\.(png|jpg|jpeg|webp|svg)$/i.test(a.name)?`<img src="${url}" alt="本次实际运行生成的 ${esc(a.name)}" loading="lazy">`:''}</div>`;}).join('')||'<p style="font-size:12px;color:#7a909e">本次没有登记可下载文件。</p>';
-    $('show-evidence-link').href='/run?id='+encodeURIComponent(fin.run_id);
+    $('show-evidence-link').href=root.Product?.runURL({run:fin.run_id})||('/run?id='+encodeURIComponent(fin.run_id));
     const modes=fin.retrieval||{},feedback=arr(fin.feedback),orchestration=fin.staged?.orchestration||{};
     const evidence=[
       ['三档检索', ['bm25','hybrid','fabric'].map(m=>m.toUpperCase()+' '+(modes[m]?arr(modes[m].selected).length:'—')).join(' / '),'同题对照，检索来源可查'],
@@ -265,9 +265,9 @@
       else body.textContent='此格式请下载原文件后查看。';
     }catch(e){if(generation===previewGeneration)body.textContent='文件读取失败：'+(e.message||e);}
   }
-  async function inspectStep(idx){let n=state.nodes.find(s=>s.idx===idx);if(!n)return;const id=state.id;const dialog=$('show-preview');$('show-preview-title').textContent=`Step ${idx+1} · ${n.skill||'通用动作'}`;$('show-preview-body').innerHTML='<pre>'+esc(n.action)+'</pre>';dialog.showModal();const generation=++previewGeneration;
-    try{if(id&&state.mode!=='replay'){const snap=await safeGet('/api/runs/'+encodeURIComponent(id));if(generation!==previewGeneration||!dialog.open)return;n=arr(snap.steps).find(s=>s.idx===idx)||n;}else if(state.mode==='replay'){const stored=arr(state.snapshot?.steps).find(s=>s.idx===idx);if(n.status==='done'||n.status==='failed')n=stored||n;}
-      $('show-preview-body').innerHTML=stepEvidenceHTML(n);
+  async function inspectStep(idx){let n=state.nodes.find(s=>s.idx===idx);if(!n)return;const id=state.id;let run=state.snapshot;const dialog=$('show-preview');$('show-preview-title').textContent=`Step ${idx+1} · ${n.skill||'通用动作'}`;$('show-preview-body').innerHTML='<pre>'+esc(n.action)+'</pre>';dialog.showModal();const generation=++previewGeneration;
+    try{if(id&&state.mode!=='replay'){const snap=await safeGet('/api/runs/'+encodeURIComponent(id));if(generation!==previewGeneration||!dialog.open)return;n=arr(snap.steps).find(s=>s.idx===idx)||n;run=snap;}else if(state.mode==='replay'){const stored=arr(state.snapshot?.steps).find(s=>s.idx===idx);if(n.status==='done'||n.status==='failed')n=stored||n;}
+      $('show-preview-body').innerHTML=stepEvidenceHTML(n)+((n.status==='done'||n.status==='failed')&&run?(root.Product?.stepReviewHTML({...run,run_id:id},n)||''):'');
     }catch(e){if(generation===previewGeneration&&dialog.open)$('show-preview-body').textContent='步骤记录读取失败：'+(e.message||e);}
   }
   function present(){const entering=!document.body.classList.contains('showcase-presenting');if(entering)presentationFocus=document.activeElement;document.body.classList.toggle('showcase-presenting',entering);$('show-present').textContent=entering?'退出汇报模式':'汇报模式';if(!entering&&presentationFocus)presentationFocus.focus();renderNetwork();}

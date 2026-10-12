@@ -65,16 +65,17 @@
   /* 移除 graph 页原有的局部背景定义（改由共享层统一控制） */
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=20261012.9"></script>
+<script src="/static/assets/ui.js?v=20261012.11"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=20261012.9"></script>
-<link rel="stylesheet" href="/static/assets/frontier.css?v=20261012.9">
-<script src="/static/assets/frontier.js?v=20261012.9"></script>
-<link rel="stylesheet" href="/static/assets/refinement.css?v=20261012.9">
-<link rel="stylesheet" href="/static/assets/quality.css?v=20261012.9">
-<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261012.9">
-<link rel="stylesheet" href="/static/assets/sphere.css?v=20261012.9">
-<script src="/static/assets/sphere.js?v=20261012.9"></script>
+<script src="/static/assets/product.js?v=20261012.11"></script>
+<link rel="stylesheet" href="/static/assets/frontier.css?v=20261012.11">
+<script src="/static/assets/frontier.js?v=20261012.11"></script>
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261012.11">
+<link rel="stylesheet" href="/static/assets/quality.css?v=20261012.11">
+<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261012.11">
+<link rel="stylesheet" href="/static/assets/sphere.css?v=20261012.11">
+<link rel="stylesheet" href="/static/assets/graph-explorer.css?v=20261012.11">
+<script src="/static/assets/sphere.js?v=20261012.11"></script>
 </head>
 <body>
 <div class="load" id="load">正在加载技能图谱…</div>
@@ -100,7 +101,7 @@
   <div class="row"><span class="ln" style="border-color:rgba(160,180,210,.5);border-top-style:dotted"></span>similar_to 相似</div>
 </div>
 
-<aside id="graph-task-panel" class="sphere-task" hidden><small>QUESTION → CAPABILITY → EVIDENCE</small><p id="graph-task-note"></p><button id="graph-capabilities" type="button" data-capability-report>核对状态变化与证据缺口 ↗</button><a id="graph-run-link">本次执行轨迹 ↗</a></aside>
+<aside id="graph-task-panel" class="sphere-task" aria-label="本次执行与球体高亮" hidden><small>QUESTION → CAPABILITY → EVIDENCE</small><label for="graph-step">沿真实步骤探索</label><select id="graph-step"><option value="all">全部采用技能</option></select><p id="graph-task-note" role="status"></p><details class="graph-task-details"><summary>核对本步输入、产物与条件</summary><div id="graph-task-detail"></div><button id="graph-capabilities" type="button" data-capability-report>重新核对状态变化与证据缺口 ↗</button><a id="graph-run-link">本次执行轨迹 ↗</a></details></aside>
 <div class="ctrl">
   <button class="btn" id="btnZoomOut" aria-label="缩小图谱">−</button>
   <button class="btn" id="btnZoomIn" aria-label="放大图谱">＋</button>
@@ -112,14 +113,16 @@
 
 <div class="card" id="card" role="region" aria-labelledby="cName">
   <button class="close" type="button" aria-label="关闭技能详情">×</button>
+  <div class="graph-card-navigation"><button id="graph-back" type="button" disabled>← 返回上一技能</button><small id="graph-card-context"></small></div>
   <h3 id="cName" tabindex="-1"></h3>
+  <p id="graph-selected-note" role="status"></p>
   <div class="dom" id="cDom"></div>
   <div class="kv" id="cKv"></div>
   <div class="rel" id="cRel"></div><div class="graph-contract" id="cContract"></div><a class="graph-contract-link" id="cContractLink">打开完整执行契约 ↗</a>
 </div>
 <div class="tip" id="tip"></div>
 
-<script src="/static/assets/graph-sphere.js?v=20261012.9"></script>
+<script src="/static/assets/graph-sphere.js?v=20261012.11"></script>
 
 <script>
 /* 自检模式（?selftest=1）：收集 JS 运行时错误与关键元素/函数检查，结果写入 #selftest-out 与标题。

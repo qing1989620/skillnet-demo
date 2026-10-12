@@ -1,0 +1,61 @@
+/* Keep the globe unobstructed until the user explicitly opens recorded evidence. */
+html[data-product=graph] .sphere-task{width:320px;max-height:calc(100dvh - 520px);overflow:auto;padding:15px 16px;scrollbar-width:thin;box-shadow:0 12px 40px #0003}
+/* Filters and recorded evidence share the left rail. Closing filters restores
+   the same task DOM, including its selected step and expanded evidence. */
+html[data-product=graph] body:has(.graph-filters[open]) .sphere-task{display:none}
+html[data-product=graph] .sphere-task>label{display:block;margin-top:9px;color:#d4e9df;font-size:12px}
+html[data-product=graph] .sphere-task select{width:100%;max-width:100%;padding:9px 10px;margin:7px 0 1px;border:1px solid #567f7b;border-radius:7px;background:#153a45;color:#def1e6;font:12px/1.5 Microsoft YaHei,sans-serif}
+html[data-product=graph] .sphere-task #graph-task-note{font-size:11px;line-height:1.8;color:#b2d1ca;margin:7px 0 10px;overflow-wrap:anywhere}
+html[data-product=graph] .graph-task-details{border-top:1px solid #4a6a65;padding-top:8px}
+html[data-product=graph] .graph-task-details>summary{font-size:12px;cursor:pointer;color:#dcca9a;padding:4px 0;list-style:revert}
+html[data-product=graph] .graph-task-details[open]>summary{margin-bottom:10px}
+html[data-product=graph] .graph-task-details :is(button,a){max-width:100%;overflow-wrap:anywhere}
+html[data-product=graph] .graph-task-details :is(ul,ol){padding-left:17px}
+html[data-product=graph] .graph-task-details li{margin:8px 0}
+html[data-product=graph] .graph-task-details small{display:block;font:10px/1.8 Microsoft YaHei,sans-serif;overflow-wrap:anywhere;color:#a5c5be}
+html[data-product=graph] .graph-step-list{display:grid;gap:8px}
+html[data-product=graph] .graph-step-list button{width:100%;border:1px solid #567c72;border-radius:7px;padding:10px;background:#184244;color:#d3e7d9}
+html[data-product=graph] .graph-step-heading{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;margin-top:12px}
+html[data-product=graph] .graph-step-heading b{font-weight:500;color:#e0eee1}
+html[data-product=graph] .graph-step-heading span{color:#c8d59c}
+html[data-product=graph] .graph-step-files h4,html[data-product=graph] #graph-task-detail details h4{font-size:12px;font-weight:500;color:#d6dfba;margin:14px 0 5px}
+html[data-product=graph] .graph-step-files .product-files{display:block;margin:8px 0}
+html[data-product=graph] .graph-step-files .product-files>button{width:100%;display:flex;padding:9px;border:1px solid #567d74;border-radius:6px;margin:7px 0;gap:8px;background:#153a45}
+html[data-product=graph] .graph-step-files .product-files b{font-size:11px;color:#d5eade}
+html[data-product=graph] .graph-step-files .product-files .file-glyph{font-size:9px;padding:3px;background:#234b4d;color:#c8d59c}
+html[data-product=graph] #graph-task-detail>details{margin:14px 0;padding:10px;border:1px solid #4e706a;border-radius:7px}
+html[data-product=graph] #graph-task-detail>details summary{cursor:pointer;color:#d3d8ae;font-size:11px}
+html[data-product=graph] .graph-unknown{color:#b4c6a4;font-size:11px;line-height:1.8;margin:8px 0}
+html[data-product=graph] .sphere-task .state-kernel{padding:13px;margin:14px 0;background:#153b40;border-color:#537a70;color:#bcd5c5}
+html[data-product=graph] .sphere-task .state-kernel h3{font-size:14px;color:#d7e8d8;line-height:1.7}
+html[data-product=graph] .sphere-task .state-kernel .transition-overview-grid{display:block}
+html[data-product=graph] .sphere-task .state-kernel article{padding:10px;background:#1c4545;border-color:#567c70;color:#c3d9cc}
+html[data-product=graph] .sphere-task .state-kernel article h4{color:#dce9d5}
+html[data-product=graph] .sphere-task .state-kernel p{font-size:11px;color:#bdd1c0;line-height:1.9}
+html[data-product=graph] .graph-card-navigation{display:flex;align-items:start;flex-direction:column;gap:7px;padding:0 30px 12px 0}
+html[data-product=graph] .graph-card-navigation button{font:11px Microsoft YaHei,sans-serif;background:#1c4448;border:1px solid #5b8079;border-radius:6px;color:#d1e5d8;padding:7px 10px;cursor:pointer}
+html[data-product=graph] .graph-card-navigation button:disabled{opacity:.45;cursor:default}
+html[data-product=graph] .graph-card-navigation small{font-size:10px;color:#9fc2b6;line-height:1.7;overflow-wrap:anywhere}
+html[data-product=graph] #graph-selected-note{font-size:11px;line-height:1.8;color:#dbc48c;margin:7px 0}
+html[data-product=graph] #graph-selected-note:empty{display:none}
+html[data-product=graph] .graph-rel-heading{margin-top:16px;padding-top:12px;border-top:1px solid #496b67;color:#cbe3d5}
+html[data-product=graph] .graph-rel-heading small{display:block;margin:5px 0;font-size:10px;color:#9cbdb4}
+html[data-product=graph] .card .rel section{margin:13px 0}
+html[data-product=graph] .card .rel h4{font-size:11px;font-weight:500;color:#d9d1a4}
+html[data-product=graph] .card .rel h4 span{padding:1px 6px;border-radius:4px;font-size:10px;line-height:1.5;margin-left:5px;color:#c5dbcd;border-color:#4a6f68}
+html[data-product=graph] .graph-rel-boundary{font-size:10px;line-height:1.9;color:#9fc0b4;margin:12px 0 5px}
+html[data-product=graph] :is(#graph-step,#graph-back,.graph-task-details summary,.card .rel button):focus-visible{outline:2px solid #e1c486;outline-offset:3px}
+@media(max-width:860px){
+  html[data-product=graph] .sphere-task{left:16px;right:16px;width:auto;bottom:106px;max-height:34dvh;padding:10px 13px}
+  html[data-product=graph] .sphere-task>small{display:none}
+  html[data-product=graph] .sphere-task>label{font-size:11px;margin-top:0}
+  html[data-product=graph] .sphere-task select{padding:8px;margin-top:5px;font-size:11px}
+  html[data-product=graph] .sphere-task #graph-task-note{max-height:3.6em;overflow:auto;margin:5px 0 7px;font-size:10px}
+  html[data-product=graph] .graph-task-details{padding-top:5px}
+  html[data-product=graph] .graph-task-details>summary{font-size:11px;padding:3px 0}
+  html[data-product=graph] body.graph-skill-open .sphere-task{display:none}
+  html[data-product=graph] .card{max-height:42dvh}
+}
+@media(max-height:720px) and (min-width:861px){
+  html[data-product=graph] .sphere-task{max-height:32dvh;left:320px;bottom:86px}
+}

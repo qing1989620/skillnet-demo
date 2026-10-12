@@ -3,6 +3,14 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const Product = require('../web/assets/product.js');
+assert.equal(Product.graphURL({run:'run /?&id=evil',skill:'清洗"<&',domain:'data/science',step:2,origin:'https://evil.invalid'}),'/graph?run=run%20%2F%3F%26id%3Devil&skill=%E6%B8%85%E6%B4%97%22%3C%26&domain=data%2Fscience&step=2');
+assert.equal(Product.graphURL({step:'0'}),'/graph?step=0');
+assert.equal(Product.graphURL(null),'/graph');assert.equal(Product.runURL(null),'/runs');
+assert.equal(Product.graphURL({skill:'\ud800'}),'/graph','malformed Unicode must not break rendering');
+assert.equal(Product.graphURL({run:'',skill:'\u0000bad',step:'1e3'}),'/graph');
+for(const invalid of [-1,1.2,Infinity,Number.MAX_SAFE_INTEGER+1,'02',' 2','+2',null,undefined])assert.equal(Product.stepIndex(invalid),null);
+assert.equal(Product.runURL({run:'历史/1&step=99',step:'2'}),'/run?id=%E5%8E%86%E5%8F%B2%2F1%26step%3D99&step=2');
+assert.equal(Product.runURL({step:2}),'/runs','no run id must not select an unrelated last_run');
 const run = {run_id:'demo',status:'COMPLETED',skills:['csv'],ranking:[{name:'csv'}],retrieval:{selected:['csv']},
   steps:[{idx:0,skill:'csv',action:'read',status:'done',depends_on:[2],checks:[{passed:true}],verifications:[{item:'image',passed:false}]},
     {idx:2,skill:'plot',action:'root',status:'done',depends_on:[],n_attempts:2}],
@@ -12,6 +20,20 @@ assert.ok(Product.dag(run).nodes.find(s=>s.idx===2).x<Product.dag(run).nodes.fin
 assert.equal(Product.metrics(run).confirmed,0);
 assert.equal(Product.metrics(run).repairs,1);
 assert.equal(Product.metrics(run).gate.reason,'semantic blocked');
+const traceRun={...run,steps:[{idx:0,skill:'csv',action:'读取',status:'done',artifacts:[{name:'first.csv'}],checks:[{name:'schema',passed:true}]},{idx:4,skill:'csv',action:'复核',status:'failed',artifacts:[{name:'second.csv'}],checks:[]}],staged:{skill_versions:{csv:{sha256:'historical-version'}},quality_assessment:{observations:[{idx:0,independent_checks:[{name:'reference',passed:false}]}]}}};
+const trace=Product.skillTraceHTML(traceRun,'csv',4);
+assert.match(trace,/historical-version/);assert.match(trace,/独立结果检查 0\/1/);
+assert.ok(trace.indexOf('STEP 5')<trace.indexOf('STEP 1'),'preferred noncontiguous idx must be shown first');
+assert.match(trace,/first.csv/);assert.match(trace,/data-kernel-step="4" data-run="demo"/);
+assert.match(trace,/graph\?run=demo&amp;skill=csv&amp;step=4/);
+assert.match(Product.skillTraceHTML(traceRun,'unused'),/本轮没有该技能的实际执行步骤/);
+assert.doesNotMatch(Product.skillTraceHTML(traceRun,'unused'),/data-kernel-step/,'recommended-only skills cannot acquire executed steps');
+assert.match(Product.skillTraceHTML(null,'csv'),/没有关联的运行上下文/);
+const review=Product.stepReviewHTML(traceRun,traceRun.steps[0]);
+assert.match(review,/程序检查：1\/1/);assert.match(review,/独立结果检查：0\/1/);
+assert.match(review,/data-capability-skill="csv" data-run="demo" data-step="0"/);
+const unsafeTrace=Product.skillTraceHTML({...traceRun,run_id:'<script>run</script>',steps:[{idx:0,skill:'<script>',action:'<img src=x onerror=x>',artifacts:[{name:'<iframe>'}],checks:[]}],staged:{}},'<script>');
+assert.doesNotMatch(unsafeTrace,/<script>|<img|<iframe>/);assert.match(unsafeTrace,/&lt;img/);
 assert.match(Product.valueHTML({...run,artifacts:[{kind:'任务输入'},{kind:'跨轮输入'},{kind:'csv'}]}),/1 个真实文件/,'task inputs are evidence, not new deliverables');
 for(const prefix of ['state-kernel','state-kernel-blocked','state-kernel-overbroad','state-kernel-value-drift']){
   const records=JSON.parse(fs.readFileSync(path.join(__dirname,'../docs/evidence',prefix+'-files.json'),'utf8'));
@@ -123,6 +145,7 @@ assert.match(routing,/读取原表，不生成替代数据/);
 assert.match(routing,/编排采用 · 本轮未执行/);
 assert.match(routing,/检索推荐 · 编排未采用/);
 assert.match(routing,/Step 1 · 实际读取 · 失败/);
+assert.match(routing,/选择 → 执行 → 复核/);assert.match(routing,/data-capability-skill="csv" data-run="a" data-step="0"/);
 assert.match(routing,/other11/,'all rejected candidates remain inspectable');
 assert.doesNotMatch(routing,/<script>/);
 assert.match(Product.selectionHTML({retrieval:{fabric:{selection:{method:'task_utility'},selected:[]}}}),/没有推荐适用技能/);
@@ -170,4 +193,4 @@ const selectedRun=JSON.parse(fs.readFileSync(path.join(__dirname,'../out/runs/f1
 assert.match(Product.selectionHTML(selectedRun),/descriptive-stats-csv-summary/);
 assert.match(Product.selectionHTML(selectedRun),/编排采用 · 本轮未执行/);
 assert.match(Product.selectionHTML(selectedRun),/1 个步骤采用通用执行/);
-console.log('Product: true dependencies, noncontiguous steps, learning gate, partial verification, repairs, safe text and all six page scripts passed.');
+console.log('Product: true dependencies, noncontiguous steps, learning gate, partial verification, repairs, safe context URLs, progressive skill evidence, safe text and all six page scripts passed.');

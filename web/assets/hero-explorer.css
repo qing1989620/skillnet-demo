@@ -1,0 +1,45 @@
+/* Exploration stays below the sphere: backgrounds, rotation and the older DAG
+ * stage keep their own canvas and controls, including at narrow widths. */
+html[data-product=briefing] .hero-planet{min-width:0}
+html[data-product=briefing] .hero-explorer{margin-top:12px;padding:16px 18px;border:1px solid #55756d80;border-radius:10px;background:linear-gradient(115deg,#102e38df,#153b3bc7);color:#bfd7cd;font-size:12px;line-height:1.7;overflow-wrap:anywhere}
+html[data-product=briefing] .hero-explorer-heading{display:flex;align-items:baseline;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;margin-bottom:10px}
+html[data-product=briefing] .hero-explorer-heading>span{color:#e4eddb;letter-spacing:1px;font-size:13px}
+html[data-product=briefing] .hero-explorer-scope{font-size:11px;color:#a8c8bd;margin:0}
+html[data-product=briefing] .hero-domain-choices{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+html[data-product=briefing] .hero-explorer :is(button,a){font:inherit;color:#bee2d1;cursor:pointer;border:1px solid #63877b80;border-radius:6px;background:#143840;padding:7px 10px;text-decoration:none;min-height:34px;max-width:100%;overflow-wrap:anywhere;white-space:normal;text-align:left}
+html[data-product=briefing] .hero-explorer .hero-domain{font-size:10px;letter-spacing:.2px;min-height:32px;padding:5px 8px;display:inline-flex;align-items:center;gap:5px}
+html[data-product=briefing] .hero-domain>i{display:inline-block;width:6px;height:6px;flex:0 0 6px;border-radius:50%}
+html[data-product=briefing] .hero-explorer .hero-domain[aria-pressed=true]{color:#f0dfb8;border-color:#c0aa76;background:#45504366}
+html[data-product=briefing] .hero-explorer :is(button,a):hover{border-color:#b2dcc4;background:#22453f}
+html[data-product=briefing] .hero-explorer :is(button,a,input):focus-visible{outline:2px solid #dfc18c;outline-offset:3px}
+html[data-product=briefing] .hero-search-panel>summary{cursor:pointer;font-size:11px;color:#c7d9c3;list-style-position:inside}
+html[data-product=briefing] .hero-search-panel>summary:focus-visible{outline:2px solid #dfc18c;outline-offset:3px}
+html[data-product=briefing] .hero-search-panel[open]>.hero-search-row{margin-top:10px}
+html[data-product=briefing] .hero-search-row{display:grid;grid-template-columns:auto minmax(0,1fr);gap:12px;align-items:center}
+html[data-product=briefing] .hero-search-row label{font-size:11px;white-space:nowrap;color:#c5d8c8}
+html[data-product=briefing] .hero-search-row input{display:block;width:100%;min-width:0;border:1px solid #63837b;border-radius:6px;background:#0c2832bd;color:#e2ede5;padding:8px 10px;font:12px/1.5 Microsoft YaHei,sans-serif}
+html[data-product=briefing] .hero-search-row input::placeholder{color:#91afa8}
+html[data-product=briefing] .hero-search-hint{font-size:10px;color:#a5bfb4;margin-top:6px}
+html[data-product=briefing] .hero-search-status{margin-top:10px;font-size:11px;color:#c9d8bc}
+html[data-product=briefing] .hero-search-results{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;list-style:none;padding:0;margin:10px 0;max-height:240px;overflow:auto;overscroll-behavior:contain}
+html[data-product=briefing] .hero-search-results>li{min-width:0}
+html[data-product=briefing] .hero-search-results button{display:block;width:100%;padding:8px 10px}
+html[data-product=briefing] .hero-search-results button>span{font-size:11px;line-height:1.7;display:block}
+html[data-product=briefing] .hero-search-results small{font-size:10px;color:#abc4b4;display:block}
+html[data-product=briefing] .hero-skill-card{padding-top:12px;margin-top:12px;border-top:1px solid #5d7e6d}
+html[data-product=briefing] .hero-skill-heading{display:flex;align-items:start;gap:12px;justify-content:space-between}
+html[data-product=briefing] .hero-skill-heading h3{color:#e6eddd;font-size:13px;line-height:1.8;font-weight:500;letter-spacing:.2px;min-width:0;margin:0}
+html[data-product=briefing] .hero-explorer .hero-skill-close{padding:0 9px;min-height:28px;font-size:18px;flex:0 0 auto}
+html[data-product=briefing] .hero-skill-source{font-size:10px;color:#b9c19a;margin-top:3px}
+html[data-product=briefing] .hero-skill-purpose{color:#d4e5d8;margin:10px 0;max-height:110px;overflow:auto;overscroll-behavior:contain;font-size:12px;line-height:1.9}
+html[data-product=briefing] .hero-skill-purpose[data-state=error]{color:#f2c9ab}
+html[data-product=briefing] .hero-skill-relations{font-size:11px;color:#a6cfbb;margin:8px 0}
+html[data-product=briefing] .hero-skill-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+html[data-product=briefing] .hero-skill-actions :is(button,a){font-size:11px}
+html[data-product=briefing] .hero-skill-boundary{font-size:10px;color:#a8bfb2;margin-top:10px}
+@media(max-width:600px){
+  html[data-product=briefing] .hero-explorer{padding:14px 12px}
+  html[data-product=briefing] .hero-search-row{grid-template-columns:1fr;gap:6px}
+  html[data-product=briefing] .hero-search-results{grid-template-columns:1fr}
+  html[data-product=briefing] .hero-domain-choices{gap:6px}
+}

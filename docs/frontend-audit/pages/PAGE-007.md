@@ -1,47 +1,76 @@
 # PAGE-007 Deployment information
 
-路由 `/runs#system`；源码 `web/app.html`；源码证据 EV-004；运行浏览器证据：该独立 hash 视图未单独运行验收；同文档其它入口证据不能替代。
+Route `/runs#system`; source `web/app.html`; entry evidence EV-004, EV-050.
 
-身份/数据/环境：{"role": "local demo viewer, configured token as required; S1 tenant runtime unavailable", "data": "empty, real stored fixture, long names and hostile filename/text variants", "network": "normal, reordered completion, HTTP failure, reconnect; actual browser interception pending", "viewport": "390×844, 1440×900, 200% zoom; not yet executed", "input": "mouse, touch, keyboard Tab/Enter/Space/Escape; not yet executed", "lifecycle": "initial entry, repeated entry, query change, interruption, back/forward, page hide"}。
+Evidence applies only to its named baseline, action and parent context. Complete-view scenarios remain blocked. Repeated records share an equivalence class only within the documented template and parent contract.
 
-## 全部逻辑实例
+## Logical instances
 
-| CMP | DEF / BP | 定位 | 处置 / TASK | 检查 |
+| Instance | Definition / blueprint | Parent | Locator and variant | Disposition / tasks | Eight dimensions and additional checks |
+|---|---|---|---|---|---|
+| CMP-071 Page shell/navigation/status | DEF-009 / BP-009 | page | web/app.html: header / nav / main; implementation web/app.html: show / startRun / loadLatest / health / v-intro; variants: route /runs#system; conditional and repeated data templates listed in label/locator | investigate / TASK-007 | behavior:blocked(CHK-0585); states:blocked(CHK-0586); semantics_accessibility:blocked(CHK-0587); layout_content:blocked(CHK-0588); data_effects:blocked(CHK-0589); security_privacy:blocked(CHK-0590); performance_lifecycle:blocked(CHK-0591); maintainability_integration:passed(CHK-0592) |
+| CMP-072 Connection settings and toast | DEF-001 / BP-001 | page | web/app.html: UI.bootstrap / #ui-connection-dialog; implementation web/assets/ui.js: UI.bootstrap / connection dialog / UI.json / UI.readSessions; variants: route /runs#system; conditional and repeated data templates listed in label/locator | investigate / TASK-007, TASK-017 | behavior:blocked(CHK-0593); states:blocked(CHK-0594); semantics_accessibility:blocked(CHK-0595); layout_content:blocked(CHK-0596); data_effects:blocked(CHK-0597); security_privacy:blocked(CHK-0598); performance_lifecycle:blocked(CHK-0599); maintainability_integration:passed(CHK-0600); security_privacy:passed(CHK-1287) |
+| CMP-073 Current runtime/API/worker details | DEF-013 / BP-013 | page | web/app.html: sys-meta / sys-body / loadSystem; implementation web/app.html: loadSystem / v-system; variants: route /runs#system; conditional and repeated data templates listed in label/locator | investigate / TASK-007, TASK-024 | behavior:blocked(CHK-0601); states:blocked(CHK-0602); semantics_accessibility:blocked(CHK-0603); layout_content:blocked(CHK-0604); data_effects:blocked(CHK-0605); security_privacy:blocked(CHK-0606); performance_lifecycle:blocked(CHK-0607); maintainability_integration:passed(CHK-0608); data_effects:passed(CHK-1308) |
+| CMP-074 S1 implementation/production boundary | DEF-013 / BP-013 | page | web/app.html: v-system; implementation web/app.html: loadSystem / v-system; variants: route /runs#system; conditional and repeated data templates listed in label/locator | investigate / TASK-007, TASK-030 | behavior:blocked(CHK-0609); states:blocked(CHK-0610); semantics_accessibility:blocked(CHK-0611); layout_content:blocked(CHK-0612); data_effects:blocked(CHK-0613); security_privacy:blocked(CHK-0614); performance_lifecycle:blocked(CHK-0615); maintainability_integration:passed(CHK-0616) |
+| CMP-167 Capability frontier experiment launcher/dialog — Deployment information | DEF-032 / BP-032 | page | web/app.html: frontier.js/frontier.css includes; /runs#system #frontier-launch → #frontier-dialog; variants: closed/loading/lab-error/scenario-empty/POST-pending/observed-success/rejected-by-oracle/unknown/closed-during-request | investigate / TASK-035, TASK-038 | behavior:blocked(CHK-1515); states:blocked(CHK-1516); semantics_accessibility:blocked(CHK-1517); layout_content:blocked(CHK-1518); data_effects:blocked(CHK-1519); security_privacy:blocked(CHK-1520); performance_lifecycle:blocked(CHK-1521); maintainability_integration:blocked(CHK-1522); maintainability_integration:passed(CHK-1523) |
+
+## Scenarios
+
+| Scenario | Current status | Scope and expected result | Evidence / findings | History |
 |---|---|---|---|---|
-| CMP-071 Page shell/navigation/status | DEF-009 / BP-009 | web/app.html: header / nav / main; implementation web/app.html: show / startRun / loadLatest / health / v-intro | investigate / TASK-007 | behavior:blocked(CHK-0585); states:blocked(CHK-0586); semantics_accessibility:blocked(CHK-0587); layout_content:blocked(CHK-0588); data_effects:blocked(CHK-0589); security_privacy:blocked(CHK-0590); performance_lifecycle:blocked(CHK-0591); maintainability_integration:passed(CHK-0592) |
-| CMP-072 Connection settings and toast | DEF-001 / BP-001 | web/app.html: UI.bootstrap / #ui-connection-dialog; implementation web/assets/ui.js: UI.bootstrap / connection dialog / UI.json / UI.readSessions | investigate / TASK-007, TASK-017 | behavior:blocked(CHK-0593); states:blocked(CHK-0594); semantics_accessibility:blocked(CHK-0595); layout_content:blocked(CHK-0596); data_effects:blocked(CHK-0597); security_privacy:blocked(CHK-0598); performance_lifecycle:blocked(CHK-0599); maintainability_integration:passed(CHK-0600); security_privacy:passed(CHK-1287) |
-| CMP-073 Current runtime/API/worker details | DEF-013 / BP-013 | web/app.html: sys-meta / sys-body / loadSystem; implementation web/app.html: loadSystem / v-system | investigate / TASK-007, TASK-024 | behavior:blocked(CHK-0601); states:blocked(CHK-0602); semantics_accessibility:blocked(CHK-0603); layout_content:blocked(CHK-0604); data_effects:blocked(CHK-0605); security_privacy:blocked(CHK-0606); performance_lifecycle:blocked(CHK-0607); maintainability_integration:passed(CHK-0608); data_effects:passed(CHK-1308) |
-| CMP-074 S1 implementation/production boundary | DEF-013 / BP-013 | web/app.html: v-system; implementation web/app.html: loadSystem / v-system | investigate / TASK-007, TASK-030 | behavior:blocked(CHK-0609); states:blocked(CHK-0610); semantics_accessibility:blocked(CHK-0611); layout_content:blocked(CHK-0612); data_effects:blocked(CHK-0613); security_privacy:blocked(CHK-0614); performance_lifecycle:blocked(CHK-0615); maintainability_integration:passed(CHK-0616) |
+| SCN-007 Deployment information browser journey and recovery | blocked | CMP-071, CMP-072, CMP-073, CMP-074; The user can complete Deployment information without lost state, stale overwrite or duplicate side effects., All registered controls have accessible names and usable focus; dialogs close and restore focus; visual hierarchy/background stay coherent., Unknown/blocked/missing evaluation is distinguished from pass/zero/reward; real data/source links remain available. | FND-014 | [] |
+| SCN-017 Token clear/close race — bounded Node regression | passed | CMP-002, CMP-032, CMP-048, CMP-054, CMP-062, CMP-069, CMP-072, CMP-076, CMP-091, CMP-112, CMP-117, CMP-124, CMP-131, CMP-138, CMP-145, CMP-148; Candidate validation has a generation and AbortController; only the latest still-open dialog may commit., All assertions in tools/frontend_resilience_check.js: tokenRace pass. | EV-019, FND-001 | [] |
+| SCN-024 Late mission/evaluation/system/health responses overwrite newer state — bounded Node regression | passed | CMP-051, CMP-070, CMP-073; Each health/latest/evaluation/system request owns its current generation; outdated success/failure cannot overwrite the latest result., All assertions in tools/frontend_resilience_check.js: centreRequestOwnership pass. | EV-019, FND-008 | [] |
+| SCN-070 Final full frontier integration on /runs#system | blocked | CMP-167; Only the current session renders; fixed public POST and accurate scoped oracle results remain distinct from the production workflow., Parent layout/background, internal scrolling and accessible control/feedback behavior remain usable; actual failures have recovery. |  | [] |
 
-每项八维及独立回归的证据/阻塞原因详见对应 CHK。source traceability 通过仅表示来源可追溯；其他运行项没有被自动变为通过。
+## Instance plans
 
-## 场景
+### CMP-071 Page shell/navigation/status
 
-| SCN | 状态 | 操作顺序 | 预期 | 证据/阻塞 |
-|---|---|---|---|---|
-| SCN-007 Deployment information browser journey and recovery | blocked | Open /runs#system directly and via navigation; use back/forward. → Visit every registered control/template on this view using pointer and Tab/Enter/Space/Escape. → Exercise loading, empty, failure, late response, repeated action and long/untrusted content; recover. → Repeat at 390×844, 1440×900 and 200% zoom; capture scroll, dialog focus, console/network and screenshot evidence. | The user can complete Deployment information without lost state, stale overwrite or duplicate side effects.；All registered controls have accessible names and usable focus; dialogs close and restore focus; visual hierarchy/background stay coherent.；Unknown/blocked/missing evaluation is distinguished from pass/zero/reward; real data/source links remain available. | Partial actual IAB evidence exists for six initial pages at two sizes and selected keyboard/replay interactions. This full-route scenario still lacks complete controls/error/re-entry/network-fault/zoom/accessibility evidence; execute the remaining assertions on a named final deployment. |
-| SCN-017 Token clear/close race — bounded Node regression | passed | token validation pending → clear → reject late request → validate new candidate → close → resolve old response | Candidate validation has a generation and AbortController; only the latest still-open dialog may commit.；All assertions in tools/frontend_resilience_check.js: tokenRace pass. | EV-019 |
-| SCN-024 Late mission/evaluation/system/health responses overwrite newer state — bounded Node regression | passed | health B completes then health A fails → latest A waits for detail; B completes; A detail fails → evaluation/system B completes; A fails | Each health/latest/evaluation/system request owns its current generation; outdated success/failure cannot overwrite the latest result.；All assertions in tools/frontend_resilience_check.js: centreRequestOwnership pass. | EV-019 |
+**Rationale:** Read source, preserve this implementation; runtime-specific evidence for Page shell/navigation/status is missing.
 
-## 保持与补证
+**Instance changes:** Keep route /runs#system and locator header / nav / main behavior; verify/fix only reproduced failures after browser exercise.
 
-保留原有视觉背景、球体、七阶段和真实运行/跨轮文件契约。该视图运行、键盘焦点、布局和异常恢复均以列出的浏览器 SCN 继续补证；只改可复现问题，不能以其它页面或共享函数单测替代本视图验收。
+**Acceptance criteria:** Page shell/navigation/status remains usable with expected state/data/focus at this route., Verify the registered conditional templates and long/untrusted data boundaries.
 
+**Regression scenario ids:** SCN-007
 
-## CMP-167 能力边界研究界面增量
+### CMP-072 Connection settings and toast
 
-DEF-032 / BP-032；web/app.html: frontier.js/frontier.css includes; /runs#system #frontier-launch → #frontier-dialog。处置 investigate；TASK TASK-035, TASK-038；SCN SCN-070。
+**Rationale:** Read source, preserve this implementation; runtime-specific evidence for Connection settings and toast is missing.
 
-Composite responsibility includes native close/select/execute/evidence-link/details/error/status children; their independent states and actions are explicitly separated by SCN-054..060. Wrappers, cards and text are layout/content of this composite. Shared controlled DOM assertions are not inherited full-page passes; this parent context retains its own blocked scenario.
+**Instance changes:** Keep route /runs#system and locator UI.bootstrap / #ui-connection-dialog behavior; verify/fix only reproduced failures after browser exercise.
 
-| CHK | 维度 | 状态 | 证据/范围 |
-|---|---|---|---|
-| CHK-1515 | behavior | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1516 | states | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1517 | semantics_accessibility | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1518 | layout_content | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1519 | data_effects | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1520 | security_privacy | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1521 | performance_lifecycle | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1522 | maintainability_integration | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1523 | maintainability_integration | passed | EV-050 |
+**Acceptance criteria:** Connection settings and toast remains usable with expected state/data/focus at this route., Verify the registered conditional templates and long/untrusted data boundaries.
+
+**Regression scenario ids:** SCN-007
+
+### CMP-073 Current runtime/API/worker details
+
+**Rationale:** Read source, preserve this implementation; runtime-specific evidence for Current runtime/API/worker details is missing.
+
+**Instance changes:** Keep route /runs#system and locator sys-meta / sys-body / loadSystem behavior; verify/fix only reproduced failures after browser exercise.
+
+**Acceptance criteria:** Current runtime/API/worker details remains usable with expected state/data/focus at this route., Verify the registered conditional templates and long/untrusted data boundaries.
+
+**Regression scenario ids:** SCN-007
+
+### CMP-074 S1 implementation/production boundary
+
+**Rationale:** Read source, preserve this implementation; runtime-specific evidence for S1 implementation/production boundary is missing.
+
+**Instance changes:** Keep route /runs#system and locator v-system behavior; verify/fix only reproduced failures after browser exercise.
+
+**Acceptance criteria:** S1 implementation/production boundary remains usable with expected state/data/focus at this route., Verify the registered conditional templates and long/untrusted data boundaries.
+
+**Regression scenario ids:** SCN-007
+
+### CMP-167 Capability frontier experiment launcher/dialog — Deployment information
+
+**Rationale:** Shared logic/source inspected; /runs#system has distinct navigation/parent layout and requires its own native browser acceptance.
+
+**Instance changes:** Preserve original /runs#system task/navigation/background; keep one frontier trigger and validate scoped modal in this parent., Verify independent lab/scenario failures, public POST lifecycle, keyboard return target and source-versus-projection digest labels.
+
+**Acceptance criteria:** /runs#system preserves its original task while the frontier surface is operable and scrollable., Unknown, declared reachability, observed outcome and reward stay separate; closing does not resurrect stale results.
+
+**Regression scenario ids:** SCN-070

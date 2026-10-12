@@ -13,8 +13,8 @@ const tick = () => new Promise(resolve=>setImmediate(resolve));
 async function settled(){await tick();await tick();}
 async function until(test,label){for(let n=0;n<200;n++){if(test())return;await tick();}assert.fail(label);}
 
-function harness(){
-  const ids=new Map(),listeners=new Map(),windowListeners=new Map(),pending=[];
+function harness({pathname='/',search=''}={}){
+  const ids=new Map(),listeners=new Map(),windowListeners=new Map(),pending=[],events=[];
   class Element {
     constructor(tag){this.tag=tag;this.dataset={};this.open=false;this.disabled=false;this._html='';this._children=new Map();this.handlers=new Map();this.writes=0;}
     set innerHTML(value){this._html=String(value);this._children=new Map();this.writes++;}
@@ -53,15 +53,15 @@ function harness(){
   const document={readyState:'loading',documentElement:{dataset:{}},body,
     createElement:tag=>new Element(tag),getElementById:id=>ids.get(id)||null,querySelector:()=>null,
     addEventListener(type,handler){const list=listeners.get(type)||[];list.push(handler);listeners.set(type,list);},
-    dispatchEvent(){}};
+    dispatchEvent(event){events.push(event);}};
   const UI={mark:'',productNav:()=>'',errorHTML:error=>'<p class="error">'+core.esc(error?.message||error)+'</p>',
     json(url){if(url==='/api/scenarios')return Promise.resolve({items:[]});const d=defer();pending.push({kind:'json',url,...d});return d.promise;},
     fetch(url){const d=defer();pending.push({kind:'fetch',url,...d});return d.promise;}};
   const window={document,UI,addEventListener(type,handler){const list=windowListeners.get(type)||[];list.push(handler);windowListeners.set(type,list);}};
-  vm.runInNewContext(source,{window,document,location:{pathname:'/'},crypto:webcrypto,TextDecoder,Uint8Array,Blob,URL,
-    setTimeout,clearTimeout,Event,CustomEvent:class{}},{filename:'web/assets/product.js'});
+  vm.runInNewContext(source,{window,document,location:{pathname,search},crypto:webcrypto,TextDecoder,Uint8Array,Blob,URL,URLSearchParams,
+    setTimeout,clearTimeout,Event,CustomEvent:class{constructor(type,options){this.type=type;this.detail=options.detail;}}},{filename:'web/assets/product.js'});
   for(const handler of listeners.get('DOMContentLoaded')||[])handler();
-  return {pending,document,ids,window,
+  return {pending,events,document,ids,window,
     button(dataset){return Object.assign(new Element('button'),{dataset});},
     click(button){for(const handler of listeners.get('click')||[])handler({target:button});},
     key(button,key){let prevented=false;for(const handler of listeners.get('keydown')||[])handler({target:button,key,preventDefault(){prevented=true;}});return prevented;},
@@ -222,13 +222,68 @@ async function missingStepAndKeyboard(){
   assert.ok(!dialog.snapshot().includes('正在读取与核对'),'missing step must settle into an explicit empty/error state');
 }
 
+async function contextualPassport(){
+  const h=harness();
+  const request=(skill,run,step)=>{const button=h.button({capabilitySkill:skill,run,step});h.click(button);return {button,requests:h.pending.slice(-2)};};
+  const declaration=(r,name,sha)=>r.requests.find(p=>p.url.startsWith('/api/skill/')).resolve({passport:{name,skill_sha256:sha,activation:[],inputs:[],effects:[]}});
+  const execution=(r,id,sha)=>r.requests.find(p=>p.url.startsWith('/api/runs/')).resolve({run_id:id,steps:[{idx:2,skill:'same/skill',action:'historical action',status:'done',checks:[],artifacts:[{name:'real.csv'}]}],staged:{skill_versions:{'same/skill':{sha256:sha}}}});
+  const a=request('same/skill','old/run','2'),b=request('same/skill','new/run','2');
+  assert.equal(b.requests[0].url,'/api/skill/same%2Fskill');assert.equal(b.requests[1].url,'/api/runs/new%2Frun');
+  declaration(b,'same/skill','CURRENT_NEW');execution(b,'new/run','HISTORICAL_NEW');
+  const dialog=h.ids.get('passport-dialog');await until(()=>b.button.disabled===false,'context passport did not settle');
+  const latest=dialog.snapshot();
+  assert.match(latest,/CURRENT_NEW/);assert.match(latest,/HISTORICAL_NEW/);assert.match(latest,/real.csv/);
+  assert.match(latest,/当前声明不能代替执行时技能版本/);
+  assert.match(latest,/graph\?run=new%2Frun&amp;skill=same%2Fskill&amp;step=2/);
+  assert.match(latest,/run\?id=new%2Frun&amp;step=2/);
+  declaration(a,'same/skill','CURRENT_OLD');execution(a,'old/run','HISTORICAL_OLD');
+  await until(()=>a.button.disabled===false,'stale context passport did not settle');
+  assert.equal(dialog.snapshot(),latest,'stale paired responses must not mix current and historical contexts');
+
+  const missingCurrent=request('same/skill','history-only','2');
+  missingCurrent.requests[0].reject(new Error('removed from current library'));execution(missingCurrent,'history-only','PRESERVED_HISTORY');
+  await until(()=>missingCurrent.button.disabled===false,'history-only passport did not settle');
+  assert.match(dialog.snapshot(),/PRESERVED_HISTORY/);assert.match(dialog.snapshot(),/当前技能声明暂不可读取/);
+
+  const missingHistory=request('same/skill','unreadable','2');
+  declaration(missingHistory,'same/skill','CURRENT_AVAILABLE');missingHistory.requests[1].reject(new Error('unavailable run'));
+  await until(()=>missingHistory.button.disabled===false,'declaration-only passport did not settle');
+  assert.match(dialog.snapshot(),/CURRENT_AVAILABLE/);assert.match(dialog.snapshot(),/关联运行读取失败/);
+  assert.doesNotMatch(dialog.snapshot(),/data-kernel-step/,'a declaration cannot manufacture historical execution');
+
+  const mismatch=request('same/skill','requested','2');declaration(mismatch,'same/skill','DECLARATION');execution(mismatch,'different-run','WRONG_HISTORY');
+  await until(()=>mismatch.button.disabled===false,'mismatched run passport did not settle');
+  assert.doesNotMatch(dialog.snapshot(),/WRONG_HISTORY/,'response run identity must match requested context');
+}
+
+async function stepRunOwnership(){
+  const h=harness({pathname:'/run',search:'?id=current%2Frun'});
+  h.click(h.button({capabilitySkill:'skill'}));const passport=h.ids.get('passport-dialog');
+  h.click(h.button({kernelStep:'2',run:'current/run'}));
+  assert.equal(passport.open,false,'local step focus must dismiss the covering passport');
+  assert.equal(h.events.at(-1).type,'kernel-step-focus');assert.equal(h.events.at(-1).detail.idx,2);
+  const count=h.events.length;
+  h.click(h.button({kernelStep:'2',run:'other/run'}));
+  assert.equal(h.events.length,count,'another run must not focus the current run at the same numeric idx');
+  assert.equal(h.pending.at(-1).url,'/api/runs/other%2Frun');
+  h.pending.at(-1).resolve({run_id:'other/run',steps:[{idx:2,action:'other run evidence',skill:'manual',inputs:[],checks:[],artifacts:[]}]});
+  await until(()=>h.ids.get('kernel-step-dialog').snapshot().includes('other run evidence'),'cross-run evidence did not render');
+  const before=h.pending.length;h.click(h.button({kernelStep:'NaN',run:'other/run'}));
+  assert.equal(h.pending.length,before,'invalid idx must not issue an evidence request');
+  h.click(h.button({kernelStep:'2',run:'expected/run'}));
+  h.pending.at(-1).resolve({run_id:'wrong/run',steps:[{idx:2,action:'must not show wrong run',skill:'manual'}]});
+  await until(()=>h.ids.get('kernel-step-dialog').snapshot().includes('运行身份不匹配'),'step identity mismatch was not rejected');
+  assert.doesNotMatch(h.ids.get('kernel-step-dialog').snapshot(),/must not show wrong run/);
+}
+
 (async()=>{
   const failures=[];
   const checks=[...descriptors.map(d=>[d.name,()=>dialogOwnership(d)]),
     ['artifact ownership and bounded source preview',artifactOwnership],['resource integrity',resourceIntegrity],
     ['hostile content and state semantics',hostileContent],['capability counter escaping',capabilityCounterEscaping],
-    ['missing step and keyboard activation',missingStepAndKeyboard]];
+    ['missing step and keyboard activation',missingStepAndKeyboard],
+    ['context passport declaration/history isolation',contextualPassport],['step run identity and local focus',stepRunOwnership]];
   for(const [name,check] of checks){try{await check();}catch(error){failures.push(new Error(name+': '+error.message,{cause:error}));}}
   if(failures.length)throw new AggregateError(failures,'Product dialog failures: '+failures.length);
-  console.log('Product dialog controller: 7 dialog classes, stale success/catch, close/cancel/pagehide, same-file cross-run streams/images, resource/step/state XSS, unknown vs failed, missing step and keyboard activation passed (controlled DOM; no browser rendering claim).');
+  console.log('Product dialog controller: 7 dialog classes, stale success/catch, close/cancel/pagehide, same-file cross-run streams/images, resource/step/state XSS, unknown vs failed, missing step, keyboard activation, paired declaration/history isolation and cross-run focus passed (controlled DOM; no browser rendering claim).');
 })().catch(error=>{console.error(error);process.exitCode=1;});

@@ -1,46 +1,65 @@
 # PAGE-006 Evaluation reports
 
-路由 `/runs#eval`；源码 `web/app.html`；源码证据 EV-004；运行浏览器证据：该独立 hash 视图未单独运行验收；同文档其它入口证据不能替代。
+Route `/runs#eval`; source `web/app.html`; entry evidence EV-004, EV-050.
 
-身份/数据/环境：{"role": "local demo viewer, configured token as required; S1 tenant runtime unavailable", "data": "empty, real stored fixture, long names and hostile filename/text variants", "network": "normal, reordered completion, HTTP failure, reconnect; actual browser interception pending", "viewport": "390×844, 1440×900, 200% zoom; not yet executed", "input": "mouse, touch, keyboard Tab/Enter/Space/Escape; not yet executed", "lifecycle": "initial entry, repeated entry, query change, interruption, back/forward, page hide"}。
+Evidence applies only to its named baseline, action and parent context. Complete-view scenarios remain blocked. Repeated records share an equivalence class only within the documented template and parent contract.
 
-## 全部逻辑实例
+## Logical instances
 
-| CMP | DEF / BP | 定位 | 处置 / TASK | 检查 |
+| Instance | Definition / blueprint | Parent | Locator and variant | Disposition / tasks | Eight dimensions and additional checks |
+|---|---|---|---|---|---|
+| CMP-068 Page shell/navigation/status | DEF-009 / BP-009 | page | web/app.html: header / nav / main; implementation web/app.html: show / startRun / loadLatest / health / v-intro; variants: route /runs#eval; conditional and repeated data templates listed in label/locator | investigate / TASK-006 | behavior:blocked(CHK-0557); states:blocked(CHK-0558); semantics_accessibility:blocked(CHK-0559); layout_content:blocked(CHK-0560); data_effects:blocked(CHK-0561); security_privacy:blocked(CHK-0562); performance_lifecycle:blocked(CHK-0563); maintainability_integration:passed(CHK-0564) |
+| CMP-069 Connection settings and toast | DEF-001 / BP-001 | page | web/app.html: UI.bootstrap / #ui-connection-dialog; implementation web/assets/ui.js: UI.bootstrap / connection dialog / UI.json / UI.readSessions; variants: route /runs#eval; conditional and repeated data templates listed in label/locator | investigate / TASK-006, TASK-017 | behavior:blocked(CHK-0565); states:blocked(CHK-0566); semantics_accessibility:blocked(CHK-0567); layout_content:blocked(CHK-0568); data_effects:blocked(CHK-0569); security_privacy:blocked(CHK-0570); performance_lifecycle:blocked(CHK-0571); maintainability_integration:passed(CHK-0572); security_privacy:passed(CHK-1286) |
+| CMP-070 Actual experiment/empty/error template | DEF-012 / BP-012 | page | web/app.html: eval-body / loadEval; implementation web/app.html: loadEval / v-eval; variants: route /runs#eval; conditional and repeated data templates listed in label/locator | investigate / TASK-006, TASK-024 | behavior:blocked(CHK-0573); states:blocked(CHK-0574); semantics_accessibility:blocked(CHK-0575); layout_content:blocked(CHK-0576); data_effects:blocked(CHK-0577); security_privacy:blocked(CHK-0578); performance_lifecycle:blocked(CHK-0579); maintainability_integration:passed(CHK-0580); data_effects:passed(CHK-1307) |
+| CMP-166 Capability frontier experiment launcher/dialog — Evaluation reports | DEF-032 / BP-032 | page | web/app.html: frontier.js/frontier.css includes; /runs#eval #frontier-launch → #frontier-dialog; variants: closed/loading/lab-error/scenario-empty/POST-pending/observed-success/rejected-by-oracle/unknown/closed-during-request | investigate / TASK-035, TASK-038 | behavior:blocked(CHK-1506); states:blocked(CHK-1507); semantics_accessibility:blocked(CHK-1508); layout_content:blocked(CHK-1509); data_effects:blocked(CHK-1510); security_privacy:blocked(CHK-1511); performance_lifecycle:blocked(CHK-1512); maintainability_integration:blocked(CHK-1513); maintainability_integration:passed(CHK-1514) |
+
+## Scenarios
+
+| Scenario | Current status | Scope and expected result | Evidence / findings | History |
 |---|---|---|---|---|
-| CMP-068 Page shell/navigation/status | DEF-009 / BP-009 | web/app.html: header / nav / main; implementation web/app.html: show / startRun / loadLatest / health / v-intro | investigate / TASK-006 | behavior:blocked(CHK-0557); states:blocked(CHK-0558); semantics_accessibility:blocked(CHK-0559); layout_content:blocked(CHK-0560); data_effects:blocked(CHK-0561); security_privacy:blocked(CHK-0562); performance_lifecycle:blocked(CHK-0563); maintainability_integration:passed(CHK-0564) |
-| CMP-069 Connection settings and toast | DEF-001 / BP-001 | web/app.html: UI.bootstrap / #ui-connection-dialog; implementation web/assets/ui.js: UI.bootstrap / connection dialog / UI.json / UI.readSessions | investigate / TASK-006, TASK-017 | behavior:blocked(CHK-0565); states:blocked(CHK-0566); semantics_accessibility:blocked(CHK-0567); layout_content:blocked(CHK-0568); data_effects:blocked(CHK-0569); security_privacy:blocked(CHK-0570); performance_lifecycle:blocked(CHK-0571); maintainability_integration:passed(CHK-0572); security_privacy:passed(CHK-1286) |
-| CMP-070 Actual experiment/empty/error template | DEF-012 / BP-012 | web/app.html: eval-body / loadEval; implementation web/app.html: loadEval / v-eval | investigate / TASK-006, TASK-024 | behavior:blocked(CHK-0573); states:blocked(CHK-0574); semantics_accessibility:blocked(CHK-0575); layout_content:blocked(CHK-0576); data_effects:blocked(CHK-0577); security_privacy:blocked(CHK-0578); performance_lifecycle:blocked(CHK-0579); maintainability_integration:passed(CHK-0580); data_effects:passed(CHK-1307) |
+| SCN-006 Evaluation reports browser journey and recovery | blocked | CMP-068, CMP-069, CMP-070; The user can complete Evaluation reports without lost state, stale overwrite or duplicate side effects., All registered controls have accessible names and usable focus; dialogs close and restore focus; visual hierarchy/background stay coherent., Unknown/blocked/missing evaluation is distinguished from pass/zero/reward; real data/source links remain available. |  | [] |
+| SCN-017 Token clear/close race — bounded Node regression | passed | CMP-002, CMP-032, CMP-048, CMP-054, CMP-062, CMP-069, CMP-072, CMP-076, CMP-091, CMP-112, CMP-117, CMP-124, CMP-131, CMP-138, CMP-145, CMP-148; Candidate validation has a generation and AbortController; only the latest still-open dialog may commit., All assertions in tools/frontend_resilience_check.js: tokenRace pass. | EV-019, FND-001 | [] |
+| SCN-024 Late mission/evaluation/system/health responses overwrite newer state — bounded Node regression | passed | CMP-051, CMP-070, CMP-073; Each health/latest/evaluation/system request owns its current generation; outdated success/failure cannot overwrite the latest result., All assertions in tools/frontend_resilience_check.js: centreRequestOwnership pass. | EV-019, FND-008 | [] |
+| SCN-069 Final full frontier integration on /runs#eval | blocked | CMP-166; Only the current session renders; fixed public POST and accurate scoped oracle results remain distinct from the production workflow., Parent layout/background, internal scrolling and accessible control/feedback behavior remain usable; actual failures have recovery. |  | [] |
 
-每项八维及独立回归的证据/阻塞原因详见对应 CHK。source traceability 通过仅表示来源可追溯；其他运行项没有被自动变为通过。
+## Instance plans
 
-## 场景
+### CMP-068 Page shell/navigation/status
 
-| SCN | 状态 | 操作顺序 | 预期 | 证据/阻塞 |
-|---|---|---|---|---|
-| SCN-006 Evaluation reports browser journey and recovery | blocked | Open /runs#eval directly and via navigation; use back/forward. → Visit every registered control/template on this view using pointer and Tab/Enter/Space/Escape. → Exercise loading, empty, failure, late response, repeated action and long/untrusted content; recover. → Repeat at 390×844, 1440×900 and 200% zoom; capture scroll, dialog focus, console/network and screenshot evidence. | The user can complete Evaluation reports without lost state, stale overwrite or duplicate side effects.；All registered controls have accessible names and usable focus; dialogs close and restore focus; visual hierarchy/background stay coherent.；Unknown/blocked/missing evaluation is distinguished from pass/zero/reward; real data/source links remain available. | Partial actual IAB evidence exists for six initial pages at two sizes and selected keyboard/replay interactions. This full-route scenario still lacks complete controls/error/re-entry/network-fault/zoom/accessibility evidence; execute the remaining assertions on a named final deployment. |
-| SCN-017 Token clear/close race — bounded Node regression | passed | token validation pending → clear → reject late request → validate new candidate → close → resolve old response | Candidate validation has a generation and AbortController; only the latest still-open dialog may commit.；All assertions in tools/frontend_resilience_check.js: tokenRace pass. | EV-019 |
-| SCN-024 Late mission/evaluation/system/health responses overwrite newer state — bounded Node regression | passed | health B completes then health A fails → latest A waits for detail; B completes; A detail fails → evaluation/system B completes; A fails | Each health/latest/evaluation/system request owns its current generation; outdated success/failure cannot overwrite the latest result.；All assertions in tools/frontend_resilience_check.js: centreRequestOwnership pass. | EV-019 |
+**Rationale:** Read source, preserve this implementation; runtime-specific evidence for Page shell/navigation/status is missing.
 
-## 保持与补证
+**Instance changes:** Keep route /runs#eval and locator header / nav / main behavior; verify/fix only reproduced failures after browser exercise.
 
-保留原有视觉背景、球体、七阶段和真实运行/跨轮文件契约。该视图运行、键盘焦点、布局和异常恢复均以列出的浏览器 SCN 继续补证；只改可复现问题，不能以其它页面或共享函数单测替代本视图验收。
+**Acceptance criteria:** Page shell/navigation/status remains usable with expected state/data/focus at this route., Verify the registered conditional templates and long/untrusted data boundaries.
 
+**Regression scenario ids:** SCN-006
 
-## CMP-166 能力边界研究界面增量
+### CMP-069 Connection settings and toast
 
-DEF-032 / BP-032；web/app.html: frontier.js/frontier.css includes; /runs#eval #frontier-launch → #frontier-dialog。处置 investigate；TASK TASK-035, TASK-038；SCN SCN-069。
+**Rationale:** Read source, preserve this implementation; runtime-specific evidence for Connection settings and toast is missing.
 
-Composite responsibility includes native close/select/execute/evidence-link/details/error/status children; their independent states and actions are explicitly separated by SCN-054..060. Wrappers, cards and text are layout/content of this composite. Shared controlled DOM assertions are not inherited full-page passes; this parent context retains its own blocked scenario.
+**Instance changes:** Keep route /runs#eval and locator UI.bootstrap / #ui-connection-dialog behavior; verify/fix only reproduced failures after browser exercise.
 
-| CHK | 维度 | 状态 | 证据/范围 |
-|---|---|---|---|
-| CHK-1506 | behavior | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1507 | states | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1508 | semantics_accessibility | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1509 | layout_content | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1510 | data_effects | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1511 | security_privacy | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1512 | performance_lifecycle | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1513 | maintainability_integration | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1514 | maintainability_integration | passed | EV-050 |
+**Acceptance criteria:** Connection settings and toast remains usable with expected state/data/focus at this route., Verify the registered conditional templates and long/untrusted data boundaries.
+
+**Regression scenario ids:** SCN-006
+
+### CMP-070 Actual experiment/empty/error template
+
+**Rationale:** Read source, preserve this implementation; runtime-specific evidence for Actual experiment/empty/error template is missing.
+
+**Instance changes:** Keep route /runs#eval and locator eval-body / loadEval behavior; verify/fix only reproduced failures after browser exercise.
+
+**Acceptance criteria:** Actual experiment/empty/error template remains usable with expected state/data/focus at this route., Verify the registered conditional templates and long/untrusted data boundaries.
+
+**Regression scenario ids:** SCN-006
+
+### CMP-166 Capability frontier experiment launcher/dialog — Evaluation reports
+
+**Rationale:** Shared logic/source inspected; /runs#eval has distinct navigation/parent layout and requires its own native browser acceptance.
+
+**Instance changes:** Preserve original /runs#eval task/navigation/background; keep one frontier trigger and validate scoped modal in this parent., Verify independent lab/scenario failures, public POST lifecycle, keyboard return target and source-versus-projection digest labels.
+
+**Acceptance criteria:** /runs#eval preserves its original task while the frontier surface is operable and scrollable., Unknown, declared reachability, observed outcome and reward stay separate; closing does not resurrect stale results.
+
+**Regression scenario ids:** SCN-069

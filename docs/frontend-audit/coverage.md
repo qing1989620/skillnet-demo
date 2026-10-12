@@ -21,23 +21,23 @@
 {
   "pages_in_scope": 16,
   "pages_excluded": 0,
-  "definitions": 32,
-  "instances_in_scope": 176,
+  "definitions": 33,
+  "instances_in_scope": 221,
   "checks": {
-    "blocked": 1316,
-    "passed": 292
+    "blocked": 1631,
+    "passed": 394
   },
   "scenarios": {
-    "blocked": 32,
-    "passed": 51
+    "blocked": 36,
+    "passed": 64
   },
   "findings": {
     "P1": 4,
-    "P2": 16,
+    "P2": 17,
     "P3": 1
   },
-  "component_plans": 176,
-  "tasks": 38
+  "component_plans": 221,
+  "tasks": 41
 }
 ~~~
 
@@ -45,17 +45,17 @@
 
 | 页面 | 路由 | 组件实例 | 已通过 / 失败 / 阻塞 / 未检查 / 不适用 |
 |---|---|---|---|
-| PAGE-001 Executive briefing | / | 39 | 110 / 0 / 278 / 0 / 0 |
-| PAGE-002 Conversation | /chat | 17 | 26 / 0 / 124 / 0 / 0 |
-| PAGE-003 Mission centre | /runs#mission | 7 | 12 / 0 / 54 / 0 / 0 |
+| PAGE-001 Executive briefing | / | 58 | 162 / 0 / 411 / 0 / 0 |
+| PAGE-002 Conversation | /chat | 22 | 31 / 0 / 159 / 0 / 0 |
+| PAGE-003 Mission centre | /runs#mission | 12 | 17 / 0 / 89 / 0 / 0 |
 | PAGE-004 Run catalogue | /runs#runs | 9 | 10 / 0 / 68 / 0 / 0 |
 | PAGE-005 Skill catalogue | /runs#skills | 8 | 10 / 0 / 61 / 0 / 0 |
 | PAGE-006 Evaluation reports | /runs#eval | 4 | 6 / 0 / 33 / 0 / 0 |
 | PAGE-007 Deployment information | /runs#system | 5 | 7 / 0 / 40 / 0 / 0 |
-| PAGE-008 Run detail | /run?id=&lt;run-id&gt; | 16 | 20 / 0 / 117 / 0 / 0 |
-| PAGE-009 Spherical skill network | /graph?run=&amp;skill=&amp;domain= | 22 | 31 / 0 / 159 / 0 / 0 |
+| PAGE-008 Run detail | /run?id=&lt;run-id&gt; | 16 | 21 / 0 / 117 / 0 / 0 |
+| PAGE-009 Spherical skill network | /graph?run=&amp;skill=&amp;domain= | 33 | 65 / 0 / 236 / 0 / 0 |
 | PAGE-010 Developer overview | /dashboard#overview | 6 | 9 / 0 / 47 / 0 / 0 |
-| PAGE-011 Plan contrast | /dashboard#demo | 8 | 10 / 0 / 61 / 0 / 0 |
+| PAGE-011 Plan contrast | /dashboard#demo | 13 | 15 / 0 / 96 / 0 / 0 |
 | PAGE-012 Developer skill inspector | /dashboard#skills?skill= | 8 | 9 / 0 / 61 / 0 / 0 |
 | PAGE-013 Retrieval/routing laboratory | /dashboard#search | 8 | 9 / 0 / 61 / 0 / 0 |
 | PAGE-014 Execution laboratory | /dashboard#run | 8 | 10 / 0 / 61 / 0 / 0 |
@@ -152,7 +152,7 @@
 | CMP-084 | BP-014 | investigate | TASK-008 | Read source, preserve this implementation; runtime-specific evidence for Event type filter is missing. |
 | CMP-085 | BP-014 | investigate | TASK-008 | Read source, preserve this implementation; runtime-specific evidence for Follow events toggle is missing. |
 | CMP-086 | BP-014 | investigate | TASK-008 | Read source, preserve this implementation; runtime-specific evidence for Timeline event/check group templates is missing. |
-| CMP-087 | BP-014 | investigate | TASK-008 | Read source, preserve this implementation; runtime-specific evidence for Step/event/attempt inspector is missing. |
+| CMP-087 | BP-014 | investigate | TASK-008, TASK-040 | Read source, preserve this implementation; runtime-specific evidence for Step/event/attempt inspector is missing. |
 | CMP-088 | BP-014 | investigate | TASK-008 | Read source, preserve this implementation; runtime-specific evidence for Proof and final result is missing. |
 | CMP-089 | BP-014 | investigate | TASK-008, TASK-020 | Read source, preserve this implementation; runtime-specific evidence for Missing-ID/error/static variant is missing. |
 | CMP-090 | BP-015 | investigate | TASK-009 | Read source, preserve this implementation; runtime-specific evidence for Page shell/navigation/status is missing. |
@@ -165,7 +165,7 @@
 | CMP-097 | BP-015 | investigate | TASK-009 | Read source, preserve this implementation; runtime-specific evidence for Neighbours toggle is missing. |
 | CMP-098 | BP-015 | investigate | TASK-009 | Read source, preserve this implementation; runtime-specific evidence for Task-only toggle is missing. |
 | CMP-099 | BP-015 | investigate | TASK-009 | Read source, preserve this implementation; runtime-specific evidence for Visible/catalogue HUD is missing. |
-| CMP-100 | BP-015 | investigate | TASK-009 | Read source, preserve this implementation; runtime-specific evidence for Recorded-task panel and run link is missing. |
+| CMP-100 | BP-015 | investigate | TASK-009, TASK-040, TASK-041 | Read source, preserve this implementation; runtime-specific evidence for Recorded-task panel and run link is missing. |
 | CMP-101 | BP-002 | investigate | TASK-009 | Read source, preserve this implementation; runtime-specific evidence for Capability report action is missing. |
 | CMP-102 | BP-015 | investigate | TASK-009 | Read source, preserve this implementation; runtime-specific evidence for Zoom actions is missing. |
 | CMP-103 | BP-015 | investigate | TASK-009 | Read source, preserve this implementation; runtime-specific evidence for Reset action is missing. |
@@ -173,7 +173,7 @@
 | CMP-105 | BP-015 | investigate | TASK-009 | Read source, preserve this implementation; runtime-specific evidence for Labels toggle is missing. |
 | CMP-106 | BP-015 | investigate | TASK-009, TASK-028 | Read source, preserve this implementation; runtime-specific evidence for Evolved-only toggle is missing. |
 | CMP-107 | BP-015 | investigate | TASK-009, TASK-028 | Read source, preserve this implementation; runtime-specific evidence for Selected node card and close is missing. |
-| CMP-108 | BP-015 | investigate | TASK-009 | Read source, preserve this implementation; runtime-specific evidence for Related skill controls is missing. |
+| CMP-108 | BP-015 | investigate | TASK-009, TASK-040 | Read source, preserve this implementation; runtime-specific evidence for Related skill controls is missing. |
 | CMP-109 | BP-015 | investigate | TASK-009 | Read source, preserve this implementation; runtime-specific evidence for Capability/version/resources contract is missing. |
 | CMP-110 | BP-015 | investigate | TASK-009 | Read source, preserve this implementation; runtime-specific evidence for Loading/error overlay and tooltip is missing. |
 | CMP-111 | BP-016 | investigate | TASK-010 | Read source, preserve this implementation; runtime-specific evidence for Page shell/navigation/status is missing. |
@@ -223,8 +223,8 @@
 | CMP-155 | BP-026 | investigate | TASK-001, TASK-031 | Controller faults are covered by actual controlled DOM assertions; native dialog keyboard/focus/layout still needs homepage browser evidence. |
 | CMP-156 | BP-027 | investigate | TASK-001, TASK-031, TASK-034 | Controller faults are covered by actual controlled DOM assertions; native dialog keyboard/focus/layout still needs homepage browser evidence. |
 | CMP-157 | BP-028 | investigate | TASK-001, TASK-031 | Controller faults are covered by actual controlled DOM assertions; native dialog keyboard/focus/layout still needs homepage browser evidence. |
-| CMP-158 | BP-029 | investigate | TASK-001, TASK-031 | Controller faults are covered by actual controlled DOM assertions; native dialog keyboard/focus/layout still needs homepage browser evidence. |
-| CMP-159 | BP-030 | investigate | TASK-001, TASK-031 | Controller faults are covered by actual controlled DOM assertions; native dialog keyboard/focus/layout still needs homepage browser evidence. |
+| CMP-158 | BP-029 | investigate | TASK-001, TASK-031, TASK-040 | Controller faults are covered by actual controlled DOM assertions; native dialog keyboard/focus/layout still needs homepage browser evidence. |
+| CMP-159 | BP-030 | investigate | TASK-001, TASK-031, TASK-040 | Controller faults are covered by actual controlled DOM assertions; native dialog keyboard/focus/layout still needs homepage browser evidence. |
 | CMP-160 | BP-031 | investigate | TASK-001, TASK-031 | Controller faults are covered by actual controlled DOM assertions; native dialog keyboard/focus/layout still needs homepage browser evidence. |
 | CMP-161 | BP-032 | investigate | TASK-035, TASK-038, TASK-036, TASK-037 | Shared logic/source inspected; / has distinct navigation/parent layout and requires its own native browser acceptance. |
 | CMP-162 | BP-032 | investigate | TASK-035, TASK-038 | Shared logic/source inspected; /chat has distinct navigation/parent layout and requires its own native browser acceptance. |
@@ -242,6 +242,51 @@
 | CMP-174 | BP-032 | investigate | TASK-035, TASK-038 | Shared logic/source inspected; /dashboard#run has distinct navigation/parent layout and requires its own native browser acceptance. |
 | CMP-175 | BP-032 | investigate | TASK-035, TASK-038 | Shared logic/source inspected; /dashboard#results has distinct navigation/parent layout and requires its own native browser acceptance. |
 | CMP-176 | BP-032 | investigate | TASK-035, TASK-038 | Shared logic/source inspected; /dashboard#adapters has distinct navigation/parent layout and requires its own native browser acceptance. |
+| CMP-177 | BP-033 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Hero capability explorer region and catalogue scope status acceptance in PAGE-001 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-178 | BP-033 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Domain chips and all-catalogue scope acceptance in PAGE-001 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-179 | BP-033 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Search expansion acceptance in PAGE-001 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-180 | BP-033 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Skill search field and label acceptance in PAGE-001 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-181 | BP-033 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Search-result row template acceptance in PAGE-001 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-182 | BP-033 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Search match count and empty feedback acceptance in PAGE-001 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-183 | BP-033 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Selected declaration card acceptance in PAGE-001 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-184 | BP-033 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Selected-card close action acceptance in PAGE-001 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-185 | BP-033 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Selected skill source, purpose and typed relation summary acceptance in PAGE-001 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-186 | BP-029 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Selected-card capability passport action acceptance in PAGE-001 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-187 | BP-033 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Selected-purpose retry action acceptance in PAGE-001 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-188 | BP-033 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Selected-card full graph link acceptance in PAGE-001 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-189 | BP-033 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Catalogue read retry action acceptance in PAGE-001 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-190 | BP-033 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Original hero full-graph link integration acceptance in PAGE-001 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-191 | BP-015 | investigate | TASK-039, TASK-040, TASK-041 | Actual source and shared logic were reviewed; native Original-step selector acceptance in PAGE-009 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-192 | BP-015 | investigate | TASK-039, TASK-040, TASK-041 | Actual source and shared logic were reviewed; native Task evidence disclosure acceptance in PAGE-009 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-193 | BP-015 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native All-task step navigation template acceptance in PAGE-009 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-194 | BP-015 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Recorded input/output evidence region acceptance in PAGE-009 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-195 | BP-015 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Step checks, state conditions and unknown boundaries acceptance in PAGE-009 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-196 | BP-015 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Back to previously explored skill acceptance in PAGE-009 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-197 | BP-015 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Selection and filter-hidden task context acceptance in PAGE-009 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-198 | BP-030 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Selected-step code/contract/repair inspector action acceptance in PAGE-009 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-199 | BP-029 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Graph nested step passport with historical context acceptance in PAGE-009 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-200 | BP-031 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Recorded input preview action template acceptance in PAGE-009 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-201 | BP-031 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Recorded output preview action template acceptance in PAGE-009 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-202 | BP-002 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Progressive skill selection to execution evidence acceptance in PAGE-001 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-203 | BP-030 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Associated-step execution and review action acceptance in PAGE-001 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-204 | BP-029 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Run-associated current skill passport acceptance in PAGE-001 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-205 | BP-002 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Run/skill/step sphere location link acceptance in PAGE-001 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-206 | BP-028 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Explicit file/transition recheck action acceptance in PAGE-001 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-207 | BP-002 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Progressive skill selection to execution evidence acceptance in PAGE-002 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-208 | BP-030 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Associated-step execution and review action acceptance in PAGE-002 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-209 | BP-029 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Run-associated current skill passport acceptance in PAGE-002 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-210 | BP-002 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Run/skill/step sphere location link acceptance in PAGE-002 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-211 | BP-028 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Explicit file/transition recheck action acceptance in PAGE-002 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-212 | BP-002 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Progressive skill selection to execution evidence acceptance in PAGE-003 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-213 | BP-030 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Associated-step execution and review action acceptance in PAGE-003 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-214 | BP-029 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Run-associated current skill passport acceptance in PAGE-003 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-215 | BP-002 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Run/skill/step sphere location link acceptance in PAGE-003 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-216 | BP-028 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Explicit file/transition recheck action acceptance in PAGE-003 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-217 | BP-002 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Progressive skill selection to execution evidence acceptance in PAGE-011 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-218 | BP-030 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Associated-step execution and review action acceptance in PAGE-011 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-219 | BP-029 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Run-associated current skill passport acceptance in PAGE-011 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-220 | BP-002 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Run/skill/step sphere location link acceptance in PAGE-011 is not yet merged. Do not treat the shared harness as an instance browser pass. |
+| CMP-221 | BP-028 | investigate | TASK-039, TASK-040 | Actual source and shared logic were reviewed; native Explicit file/transition recheck action acceptance in PAGE-011 is not yet merged. Do not treat the shared harness as an instance browser pass. |
 
 ## 问题索引
 
@@ -268,6 +313,7 @@
 | FND-019 Frontier v7 dialog ignored centered modal margin | P2 | confirmed | resolved | PAGE-001, CMP-161 |
 | FND-020 Global footer styles overrode frontier modal footer | P2 | confirmed | resolved | PAGE-001, CMP-161 |
 | FND-021 Disabled frontier submit left native focus on BODY | P2 | confirmed | resolved | PAGE-001, CMP-161 |
+| FND-022 Graph v10 recorded-task pane overlaps the filter header | P2 | confirmed | resolved | PAGE-009, CMP-100, CMP-191, CMP-192 |
 
 ## 任务顺序
 
@@ -288,6 +334,8 @@
 | TASK-035 Verify shared frontier IIFE fault logic | 1 | root frontend implementation / IAB QA |  | verified |
 | TASK-036 Repair and natively recheck v7 frontier modal/footer cascade | 1 | root frontend implementation / IAB QA |  | verified |
 | TASK-037 Repair and natively recheck disabled-submit focus | 1 | root frontend implementation / IAB QA |  | verified |
+| TASK-039 Verify bounded exploration/shared-context controller logic | 1 | frontend implementation and audit verifier |  | verified |
+| TASK-041 Repair and natively recheck graph task/filter overlap | 1 | graph frontend implementation / root IAB QA |  | verified |
 | TASK-001 Executive briefing runtime/visual acceptance | 2 | frontend QA with runtime/browser access |  | blocked |
 | TASK-002 Conversation runtime/visual acceptance | 2 | frontend QA with runtime/browser access |  | blocked |
 | TASK-003 Mission centre runtime/visual acceptance | 2 | frontend QA with runtime/browser access |  | blocked |
@@ -311,6 +359,7 @@
 | TASK-029 Global chip binding replaces injected scenario actions browser verification | 2 | frontend QA with browser access |  | implemented |
 | TASK-030 Historical growth and S1 deployment labels overstate supported evidence browser verification | 2 | frontend QA with browser access |  | implemented |
 | TASK-038 Complete frontier integration in all sixteen parent views | 2 | frontend QA with target browser and S1 environment |  | blocked |
+| TASK-040 Complete bounded native exploration and actual parent-context acceptance | 2 | root native IAB QA and frontend owners | TASK-039 | blocked |
 
 ## 发布门槛
 
@@ -330,6 +379,7 @@
 
 ## 下一步
 
+- Merge root exploration-ui-observations.json only into matching narrow native v10 checks; do not promote controlled DOM or screenshots to all sixteen full-view/production passes.
 - Execute all remaining full-route SCN assertions without promoting partial viewport checks to full coverage.
 - Verify 200% zoom, screen reader, reduced-motion actual OS/browser setting, all 16 view full-page/error states, browser network fault injection, S1 production integration, performance budget.
 - Recheck any source changed after the recorded IAB asset version; source SHA-256 does not identify deployment by itself.

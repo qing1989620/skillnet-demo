@@ -4,9 +4,9 @@
 
 使用用户指定的 BadbotAI/BadGoods「前端审查助手」，提交 76d20b19c8b2a6513d1516d42fdcc42a2b8c394f，按 full/implement 执行。第三方技能仅用于审查，未纳入项目提交；其 LICENSE-NOTICE 未授予开源或商业再分发许可。
 
-范围是 6 个 HTML 文档、16 个独立视图、32 个实际实现定义、176 个逻辑组件实例。重复记录按同一路由、模板和交互契约登记；不同条件分支与控制责任列在 locator/variant 中，装饰包装归属最近实例。源码已读；真实 IAB 已核验六个文档入口及指定交互，尚未完成十六个视图及条件分支的运行导航核对，因此发现状态仍为 limited。
+范围是 6 个 HTML 文档、16 个独立视图、33 个实际实现定义、221 个逻辑组件实例。重复记录按同一路由、模板和交互契约登记；不同条件分支与控制责任列在 locator/variant 中，装饰包装归属最近实例。源码已读；真实 IAB 已核验六个文档入口及指定交互，尚未完成十六个视图及条件分支的运行导航核对，因此发现状态仍为 limited。
 
-已执行八项 Node 检查，均退出 0；21 个明确的 Node/controlled DOM 场景通过。另合并 root 真实 IAB 的 12 个双尺寸首屏检查和 4 个具体布局/键盘/回放场景，以及 2 个浏览器发现的修复复验。16 个全视图验收场景仍 blocked，6 组较广的源码修复仍 fixed_unverified。不能宣布全站或生产验收通过。
+先前审查批次已执行八项 Node 检查，均退出 0；当时登记 21 个明确的 Node/controlled DOM 场景通过。另合并 root 真实 IAB 的 12 个双尺寸首屏检查和 4 个具体布局/键盘/回放场景，以及 2 个浏览器发现的修复复验。16 个全视图验收场景仍 blocked，6 组较广的源码修复仍 fixed_unverified。不能宣布全站或生产验收通过。
 
 主要修复包括：连接候选令牌的提交与清除时序；跨多次 await 的检索结果所有权；可选元数据故障隔离；不可用 storage 的创建/详情恢复；会话缓存数据白名单；文件/技能预览的代际所有权和动态名称转义；共享演示按钮的绑定边界；球体暂停状态及选择焦点；无效模型评分/0 次尝试/资产增长文案；状态契约事件的声明、阻断和效果展示。
 
@@ -44,3 +44,15 @@ FND-018：任务输入与跨轮输入从新增交付计数中排除，仍保留�
 v7 真实截图确认弹窗贴左上和 footer 覆盖；root 原生运行另报告提交禁用后焦点落 BODY。对应 FND-019..021 保留历史证据，当前源码修复登记 fixed_unverified，等待最终 v8 结构化观察。原有 16 全视图场景和 8 个生产门槛不变；本增量 16 个共享组件父上下文完整验收仍 blocked。
 
 最终局部复验补充（v8/v9）：[原生观察](frontier-ui-observations.json) 及截图已核验居中、footer 间距、提交与 Escape 焦点、390px 宽度、成功/反例结果和六文档入口。FND-019..021 已按限定复验 resolved；v7 失败场景仍保留。SCN-080..083 为局部新证据，不替代 16 个完整父视图及生产门槛。
+
+## Sphere exploration and execution-context audit increment
+
+Added DEF-033 / BP-033 and CMP-177..190 for the homepage catalogue explorer below the existing sphere: domains, search disclosure/input/results/status, selected declaration/close/purpose/passport/retry and safe full-sphere links. CMP-191..201 register graph original-step selection, evidence disclosure/navigation, recorded inputs/artifacts/checks/conditions, previous skill/context and existing preview/passport actions. CMP-202..221 register progressive skill evidence, step, passport, graph location and recheck controls in the four actual parents: homepage, conversation, mission centre and real scenario demo. A static experiment summary was not relabelled as an execution skill-card surface.
+
+The ledger now records 33 definitions, 221 instances, 2025 checks and 100 scenarios (64 passed, 36 blocked). Five actual Node commands -- hero_explorer_check, graph_explorer_check, product_check, product_dialog_check and showcase_check -- exited 0. EV-056..058 / SCN-088..095 describe controlled shared logic only; they do not prove native rendering or every parent context. The new showcase inspector append still needs its own native scenario.
+
+[Actual native observations](exploration-ui-observations.json), EV-061 and SCN-097..100 cover only named subsets: desktop domain counts/reset and keyboard skill selection; mobile search and declaration purpose; original manual/executable graph steps and directed relations; the homepage public replay skill trace, recorded/current SHA separation and step inspector; valid run step=2 navigation and invalid step999 fallback. The homepage observation does not certify the other three skill-trace parents. Later run refresh ownership, native failure injection, screen reader, zoom, touch and performance budgets remain outside this finite evidence.
+
+FND-022 retains v10 failure evidence EV-059/060 and SCN-096.history: task top371 intersected filter362..401, concealing the heading. Its current state is resolved only for the measured v11 desktop/mobile repair (EV-061/062): desktop task top435 with height380 is below the filter ending400.4; filters temporarily hide the same task and closing restores the recorded step/disclosure; the mobile skill card also hides/restores the pane, with no observed horizontal overflow at390px. This does not close broader SCN-085 or all-layout finding FND-009. Original FND-019..021 and their v7 failure history / bounded v8-v9 resolutions remain intact.
+
+The ledger check with --require-plan passes without structural gaps. Blueprints, all instance dispositions, eight review dimensions and task coverage are complete as records. Broader SCN-084..087, all original16 complete views and all8 production gates remain blocked; audit_coverage_closed=false and production_gates_satisfied=false. Source manifests, root-native observations and command logs remain separate evidence with their own baselines; finite old/current observations never imply acceptance of the final deployment.

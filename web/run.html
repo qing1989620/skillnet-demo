@@ -156,15 +156,15 @@
   .tabs{display:none}
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=20261012.9"></script>
+<script src="/static/assets/ui.js?v=20261012.11"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=20261012.9"></script>
-<link rel="stylesheet" href="/static/assets/frontier.css?v=20261012.9">
-<script src="/static/assets/frontier.js?v=20261012.9"></script>
-<link rel="stylesheet" href="/static/assets/refinement.css?v=20261012.9">
-<link rel="stylesheet" href="/static/assets/quality.css?v=20261012.9">
-<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261012.9">
-<link rel="stylesheet" href="/static/assets/sphere.css?v=20261012.9">
+<script src="/static/assets/product.js?v=20261012.11"></script>
+<link rel="stylesheet" href="/static/assets/frontier.css?v=20261012.11">
+<script src="/static/assets/frontier.js?v=20261012.11"></script>
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261012.11">
+<link rel="stylesheet" href="/static/assets/quality.css?v=20261012.11">
+<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261012.11">
+<link rel="stylesheet" href="/static/assets/sphere.css?v=20261012.11">
 </head>
 <body>
 <header>
@@ -290,7 +290,12 @@ async function refresh(){
   $("rid").textContent = RUN.run_id || "";
   $("stepstat").textContent = `${(RUN.step_stats||{}).done||0}/${(RUN.step_stats||{}).total||0}`;
   $("budget").textContent = "¥" + (RUN.budget?.max_cost_yuan ?? 0.2).toFixed(2);
-  if(!SELECTED && RUN.steps?.length)SELECTED={kind:"step",idx:RUN.steps[0].idx};
+  if(!SELECTED && RUN.steps?.length){
+    const rawStep=QS.get('step'),requested=rawStep!==null&&/^\d+$/.test(rawStep)?Number(rawStep):null;
+    const target=Number.isSafeInteger(requested)?RUN.steps.find(s=>s.idx===requested):null;
+    SELECTED={kind:'step',idx:(target||RUN.steps[0]).idx};
+    if(rawStep!==null&&!target)UI.toast('该步骤不在本次记录中，已展示首个实际步骤。');
+  }
   renderGraph(); renderTimelineMeta();
   const m=Product.metrics(RUN);let proof=document.getElementById("run-proof");if(!proof){proof=document.createElement("div");proof.id="run-proof";proof.className="run-proof";$("task").parentNode.appendChild(proof);}proof.innerHTML=`程序验收 ${m.passed}/${m.checks} · 语义确认 ${m.confirmed}/${m.semantic} · ${esc(m.gate.eligible===false?"学习未准入："+m.gate.reason:m.gate.eligible===true?"具备学习准入证据":"尚未记录学习结论")} <button type="button" data-run-value data-run="${esc(RUN.run_id)}">交付与证据 ↗</button>`;
   if (SELECTED) renderInspector();

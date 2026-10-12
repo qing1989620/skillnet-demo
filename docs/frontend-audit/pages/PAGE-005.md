@@ -1,50 +1,109 @@
 # PAGE-005 Skill catalogue
 
-路由 `/runs#skills`；源码 `web/app.html`；源码证据 EV-004；运行浏览器证据：该独立 hash 视图未单独运行验收；同文档其它入口证据不能替代。
+Route `/runs#skills`; source `web/app.html`; entry evidence EV-004, EV-050.
 
-身份/数据/环境：{"role": "local demo viewer, configured token as required; S1 tenant runtime unavailable", "data": "empty, real stored fixture, long names and hostile filename/text variants", "network": "normal, reordered completion, HTTP failure, reconnect; actual browser interception pending", "viewport": "390×844, 1440×900, 200% zoom; not yet executed", "input": "mouse, touch, keyboard Tab/Enter/Space/Escape; not yet executed", "lifecycle": "initial entry, repeated entry, query change, interruption, back/forward, page hide"}。
+Evidence applies only to its named baseline, action and parent context. Complete-view scenarios remain blocked. Repeated records share an equivalence class only within the documented template and parent contract.
 
-## 全部逻辑实例
+## Logical instances
 
-| CMP | DEF / BP | 定位 | 处置 / TASK | 检查 |
+| Instance | Definition / blueprint | Parent | Locator and variant | Disposition / tasks | Eight dimensions and additional checks |
+|---|---|---|---|---|---|
+| CMP-061 Page shell/navigation/status | DEF-009 / BP-009 | page | web/app.html: header / nav / main; implementation web/app.html: show / startRun / loadLatest / health / v-intro; variants: route /runs#skills; conditional and repeated data templates listed in label/locator | investigate / TASK-005 | behavior:blocked(CHK-0497); states:blocked(CHK-0498); semantics_accessibility:blocked(CHK-0499); layout_content:blocked(CHK-0500); data_effects:blocked(CHK-0501); security_privacy:blocked(CHK-0502); performance_lifecycle:blocked(CHK-0503); maintainability_integration:passed(CHK-0504) |
+| CMP-062 Connection settings and toast | DEF-001 / BP-001 | page | web/app.html: UI.bootstrap / #ui-connection-dialog; implementation web/assets/ui.js: UI.bootstrap / connection dialog / UI.json / UI.readSessions; variants: route /runs#skills; conditional and repeated data templates listed in label/locator | investigate / TASK-005, TASK-017 | behavior:blocked(CHK-0505); states:blocked(CHK-0506); semantics_accessibility:blocked(CHK-0507); layout_content:blocked(CHK-0508); data_effects:blocked(CHK-0509); security_privacy:blocked(CHK-0510); performance_lifecycle:blocked(CHK-0511); maintainability_integration:passed(CHK-0512); security_privacy:passed(CHK-1285) |
+| CMP-063 Query input | DEF-011 / BP-011 | page | web/app.html: q; implementation web/app.html: loadSkills / q / skill-domain / skill-source / skills-body; variants: route /runs#skills; conditional and repeated data templates listed in label/locator | investigate / TASK-005 | behavior:blocked(CHK-0513); states:blocked(CHK-0514); semantics_accessibility:blocked(CHK-0515); layout_content:blocked(CHK-0516); data_effects:blocked(CHK-0517); security_privacy:blocked(CHK-0518); performance_lifecycle:blocked(CHK-0519); maintainability_integration:passed(CHK-0520) |
+| CMP-064 Domain/source filters | DEF-011 / BP-011 | page | web/app.html: skill-domain / skill-source; implementation web/app.html: loadSkills / q / skill-domain / skill-source / skills-body; variants: route /runs#skills; conditional and repeated data templates listed in label/locator | investigate / TASK-005 | behavior:blocked(CHK-0521); states:blocked(CHK-0522); semantics_accessibility:blocked(CHK-0523); layout_content:blocked(CHK-0524); data_effects:blocked(CHK-0525); security_privacy:blocked(CHK-0526); performance_lifecycle:blocked(CHK-0527); maintainability_integration:passed(CHK-0528) |
+| CMP-065 Result row and empty/error templates | DEF-011 / BP-011 | page | web/app.html: skills-body / loadSkills; implementation web/app.html: loadSkills / q / skill-domain / skill-source / skills-body; variants: route /runs#skills; conditional and repeated data templates listed in label/locator | investigate / TASK-005, TASK-018 | behavior:blocked(CHK-0529); states:blocked(CHK-0530); semantics_accessibility:blocked(CHK-0531); layout_content:blocked(CHK-0532); data_effects:blocked(CHK-0533); security_privacy:blocked(CHK-0534); performance_lifecycle:blocked(CHK-0535); maintainability_integration:passed(CHK-0536); data_effects:passed(CHK-1297) |
+| CMP-066 Catalogue count | DEF-011 / BP-011 | page | web/app.html: skills-meta; implementation web/app.html: loadSkills / q / skill-domain / skill-source / skills-body; variants: route /runs#skills; conditional and repeated data templates listed in label/locator | investigate / TASK-005 | behavior:blocked(CHK-0537); states:blocked(CHK-0538); semantics_accessibility:blocked(CHK-0539); layout_content:blocked(CHK-0540); data_effects:blocked(CHK-0541); security_privacy:blocked(CHK-0542); performance_lifecycle:blocked(CHK-0543); maintainability_integration:passed(CHK-0544) |
+| CMP-067 Pagination actions | DEF-011 / BP-011 | page | web/app.html: skill-prev / skill-next; implementation web/app.html: loadSkills / q / skill-domain / skill-source / skills-body; variants: route /runs#skills; conditional and repeated data templates listed in label/locator | investigate / TASK-005 | behavior:blocked(CHK-0545); states:blocked(CHK-0546); semantics_accessibility:blocked(CHK-0547); layout_content:blocked(CHK-0548); data_effects:blocked(CHK-0549); security_privacy:blocked(CHK-0550); performance_lifecycle:blocked(CHK-0551); maintainability_integration:passed(CHK-0552) |
+| CMP-165 Capability frontier experiment launcher/dialog — Skill catalogue | DEF-032 / BP-032 | page | web/app.html: frontier.js/frontier.css includes; /runs#skills #frontier-launch → #frontier-dialog; variants: closed/loading/lab-error/scenario-empty/POST-pending/observed-success/rejected-by-oracle/unknown/closed-during-request | investigate / TASK-035, TASK-038 | behavior:blocked(CHK-1497); states:blocked(CHK-1498); semantics_accessibility:blocked(CHK-1499); layout_content:blocked(CHK-1500); data_effects:blocked(CHK-1501); security_privacy:blocked(CHK-1502); performance_lifecycle:blocked(CHK-1503); maintainability_integration:blocked(CHK-1504); maintainability_integration:passed(CHK-1505) |
+
+## Scenarios
+
+| Scenario | Current status | Scope and expected result | Evidence / findings | History |
 |---|---|---|---|---|
-| CMP-061 Page shell/navigation/status | DEF-009 / BP-009 | web/app.html: header / nav / main; implementation web/app.html: show / startRun / loadLatest / health / v-intro | investigate / TASK-005 | behavior:blocked(CHK-0497); states:blocked(CHK-0498); semantics_accessibility:blocked(CHK-0499); layout_content:blocked(CHK-0500); data_effects:blocked(CHK-0501); security_privacy:blocked(CHK-0502); performance_lifecycle:blocked(CHK-0503); maintainability_integration:passed(CHK-0504) |
-| CMP-062 Connection settings and toast | DEF-001 / BP-001 | web/app.html: UI.bootstrap / #ui-connection-dialog; implementation web/assets/ui.js: UI.bootstrap / connection dialog / UI.json / UI.readSessions | investigate / TASK-005, TASK-017 | behavior:blocked(CHK-0505); states:blocked(CHK-0506); semantics_accessibility:blocked(CHK-0507); layout_content:blocked(CHK-0508); data_effects:blocked(CHK-0509); security_privacy:blocked(CHK-0510); performance_lifecycle:blocked(CHK-0511); maintainability_integration:passed(CHK-0512); security_privacy:passed(CHK-1285) |
-| CMP-063 Query input | DEF-011 / BP-011 | web/app.html: q; implementation web/app.html: loadSkills / q / skill-domain / skill-source / skills-body | investigate / TASK-005 | behavior:blocked(CHK-0513); states:blocked(CHK-0514); semantics_accessibility:blocked(CHK-0515); layout_content:blocked(CHK-0516); data_effects:blocked(CHK-0517); security_privacy:blocked(CHK-0518); performance_lifecycle:blocked(CHK-0519); maintainability_integration:passed(CHK-0520) |
-| CMP-064 Domain/source filters | DEF-011 / BP-011 | web/app.html: skill-domain / skill-source; implementation web/app.html: loadSkills / q / skill-domain / skill-source / skills-body | investigate / TASK-005 | behavior:blocked(CHK-0521); states:blocked(CHK-0522); semantics_accessibility:blocked(CHK-0523); layout_content:blocked(CHK-0524); data_effects:blocked(CHK-0525); security_privacy:blocked(CHK-0526); performance_lifecycle:blocked(CHK-0527); maintainability_integration:passed(CHK-0528) |
-| CMP-065 Result row and empty/error templates | DEF-011 / BP-011 | web/app.html: skills-body / loadSkills; implementation web/app.html: loadSkills / q / skill-domain / skill-source / skills-body | investigate / TASK-005, TASK-018 | behavior:blocked(CHK-0529); states:blocked(CHK-0530); semantics_accessibility:blocked(CHK-0531); layout_content:blocked(CHK-0532); data_effects:blocked(CHK-0533); security_privacy:blocked(CHK-0534); performance_lifecycle:blocked(CHK-0535); maintainability_integration:passed(CHK-0536); data_effects:passed(CHK-1297) |
-| CMP-066 Catalogue count | DEF-011 / BP-011 | web/app.html: skills-meta; implementation web/app.html: loadSkills / q / skill-domain / skill-source / skills-body | investigate / TASK-005 | behavior:blocked(CHK-0537); states:blocked(CHK-0538); semantics_accessibility:blocked(CHK-0539); layout_content:blocked(CHK-0540); data_effects:blocked(CHK-0541); security_privacy:blocked(CHK-0542); performance_lifecycle:blocked(CHK-0543); maintainability_integration:passed(CHK-0544) |
-| CMP-067 Pagination actions | DEF-011 / BP-011 | web/app.html: skill-prev / skill-next; implementation web/app.html: loadSkills / q / skill-domain / skill-source / skills-body | investigate / TASK-005 | behavior:blocked(CHK-0545); states:blocked(CHK-0546); semantics_accessibility:blocked(CHK-0547); layout_content:blocked(CHK-0548); data_effects:blocked(CHK-0549); security_privacy:blocked(CHK-0550); performance_lifecycle:blocked(CHK-0551); maintainability_integration:passed(CHK-0552) |
+| SCN-005 Skill catalogue browser journey and recovery | blocked | CMP-061, CMP-062, CMP-063, CMP-064, CMP-065, CMP-066, CMP-067; The user can complete Skill catalogue without lost state, stale overwrite or duplicate side effects., All registered controls have accessible names and usable focus; dialogs close and restore focus; visual hierarchy/background stay coherent., Unknown/blocked/missing evaluation is distinguished from pass/zero/reward; real data/source links remain available. |  | [] |
+| SCN-017 Token clear/close race — bounded Node regression | passed | CMP-002, CMP-032, CMP-048, CMP-054, CMP-062, CMP-069, CMP-072, CMP-076, CMP-091, CMP-112, CMP-117, CMP-124, CMP-131, CMP-138, CMP-145, CMP-148; Candidate validation has a generation and AbortController; only the latest still-open dialog may commit., All assertions in tools/frontend_resilience_check.js: tokenRace pass. | EV-019, FND-001 | [] |
+| SCN-018 Chained skill metadata overwrites a newer query — bounded Node regression | passed | CMP-065; Guard after each await/catch/finally and keep a successfully loaded page if optional metadata fails., All assertions in tools/frontend_resilience_check.js: skillsRace pass. | EV-019, FND-002 | [] |
+| SCN-068 Final full frontier integration on /runs#skills | blocked | CMP-165; Only the current session renders; fixed public POST and accurate scoped oracle results remain distinct from the production workflow., Parent layout/background, internal scrolling and accessible control/feedback behavior remain usable; actual failures have recovery. |  | [] |
 
-每项八维及独立回归的证据/阻塞原因详见对应 CHK。source traceability 通过仅表示来源可追溯；其他运行项没有被自动变为通过。
+## Instance plans
 
-## 场景
+### CMP-061 Page shell/navigation/status
 
-| SCN | 状态 | 操作顺序 | 预期 | 证据/阻塞 |
-|---|---|---|---|---|
-| SCN-005 Skill catalogue browser journey and recovery | blocked | Open /runs#skills directly and via navigation; use back/forward. → Visit every registered control/template on this view using pointer and Tab/Enter/Space/Escape. → Exercise loading, empty, failure, late response, repeated action and long/untrusted content; recover. → Repeat at 390×844, 1440×900 and 200% zoom; capture scroll, dialog focus, console/network and screenshot evidence. | The user can complete Skill catalogue without lost state, stale overwrite or duplicate side effects.；All registered controls have accessible names and usable focus; dialogs close and restore focus; visual hierarchy/background stay coherent.；Unknown/blocked/missing evaluation is distinguished from pass/zero/reward; real data/source links remain available. | Partial actual IAB evidence exists for six initial pages at two sizes and selected keyboard/replay interactions. This full-route scenario still lacks complete controls/error/re-entry/network-fault/zoom/accessibility evidence; execute the remaining assertions on a named final deployment. |
-| SCN-017 Token clear/close race — bounded Node regression | passed | token validation pending → clear → reject late request → validate new candidate → close → resolve old response | Candidate validation has a generation and AbortController; only the latest still-open dialog may commit.；All assertions in tools/frontend_resilience_check.js: tokenRace pass. | EV-019 |
-| SCN-018 Chained skill metadata overwrites a newer query — bounded Node regression | passed | A result waits for stats → B result/stats completes → A stats completes → A errors after B success; stats outage after valid page | Guard after each await/catch/finally and keep a successfully loaded page if optional metadata fails.；All assertions in tools/frontend_resilience_check.js: skillsRace pass. | EV-019 |
+**Rationale:** Read source, preserve this implementation; runtime-specific evidence for Page shell/navigation/status is missing.
 
-## 保持与补证
+**Instance changes:** Keep route /runs#skills and locator header / nav / main behavior; verify/fix only reproduced failures after browser exercise.
 
-保留原有视觉背景、球体、七阶段和真实运行/跨轮文件契约。该视图运行、键盘焦点、布局和异常恢复均以列出的浏览器 SCN 继续补证；只改可复现问题，不能以其它页面或共享函数单测替代本视图验收。
+**Acceptance criteria:** Page shell/navigation/status remains usable with expected state/data/focus at this route., Verify the registered conditional templates and long/untrusted data boundaries.
 
+**Regression scenario ids:** SCN-005
 
-## CMP-165 能力边界研究界面增量
+### CMP-062 Connection settings and toast
 
-DEF-032 / BP-032；web/app.html: frontier.js/frontier.css includes; /runs#skills #frontier-launch → #frontier-dialog。处置 investigate；TASK TASK-035, TASK-038；SCN SCN-068。
+**Rationale:** Read source, preserve this implementation; runtime-specific evidence for Connection settings and toast is missing.
 
-Composite responsibility includes native close/select/execute/evidence-link/details/error/status children; their independent states and actions are explicitly separated by SCN-054..060. Wrappers, cards and text are layout/content of this composite. Shared controlled DOM assertions are not inherited full-page passes; this parent context retains its own blocked scenario.
+**Instance changes:** Keep route /runs#skills and locator UI.bootstrap / #ui-connection-dialog behavior; verify/fix only reproduced failures after browser exercise.
 
-| CHK | 维度 | 状态 | 证据/范围 |
-|---|---|---|---|
-| CHK-1497 | behavior | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1498 | states | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1499 | semantics_accessibility | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1500 | layout_content | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1501 | data_effects | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1502 | security_privacy | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1503 | performance_lifecycle | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1504 | maintainability_integration | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
-| CHK-1505 | maintainability_integration | passed | EV-050 |
+**Acceptance criteria:** Connection settings and toast remains usable with expected state/data/focus at this route., Verify the registered conditional templates and long/untrusted data boundaries.
+
+**Regression scenario ids:** SCN-005
+
+### CMP-063 Query input
+
+**Rationale:** Read source, preserve this implementation; runtime-specific evidence for Query input is missing.
+
+**Instance changes:** Keep route /runs#skills and locator q behavior; verify/fix only reproduced failures after browser exercise.
+
+**Acceptance criteria:** Query input remains usable with expected state/data/focus at this route., Verify the registered conditional templates and long/untrusted data boundaries.
+
+**Regression scenario ids:** SCN-005
+
+### CMP-064 Domain/source filters
+
+**Rationale:** Read source, preserve this implementation; runtime-specific evidence for Domain/source filters is missing.
+
+**Instance changes:** Keep route /runs#skills and locator skill-domain / skill-source behavior; verify/fix only reproduced failures after browser exercise.
+
+**Acceptance criteria:** Domain/source filters remains usable with expected state/data/focus at this route., Verify the registered conditional templates and long/untrusted data boundaries.
+
+**Regression scenario ids:** SCN-005
+
+### CMP-065 Result row and empty/error templates
+
+**Rationale:** Read source, preserve this implementation; runtime-specific evidence for Result row and empty/error templates is missing.
+
+**Instance changes:** Keep route /runs#skills and locator skills-body / loadSkills behavior; verify/fix only reproduced failures after browser exercise.
+
+**Acceptance criteria:** Result row and empty/error templates remains usable with expected state/data/focus at this route., Verify the registered conditional templates and long/untrusted data boundaries.
+
+**Regression scenario ids:** SCN-005
+
+### CMP-066 Catalogue count
+
+**Rationale:** Read source, preserve this implementation; runtime-specific evidence for Catalogue count is missing.
+
+**Instance changes:** Keep route /runs#skills and locator skills-meta behavior; verify/fix only reproduced failures after browser exercise.
+
+**Acceptance criteria:** Catalogue count remains usable with expected state/data/focus at this route., Verify the registered conditional templates and long/untrusted data boundaries.
+
+**Regression scenario ids:** SCN-005
+
+### CMP-067 Pagination actions
+
+**Rationale:** Read source, preserve this implementation; runtime-specific evidence for Pagination actions is missing.
+
+**Instance changes:** Keep route /runs#skills and locator skill-prev / skill-next behavior; verify/fix only reproduced failures after browser exercise.
+
+**Acceptance criteria:** Pagination actions remains usable with expected state/data/focus at this route., Verify the registered conditional templates and long/untrusted data boundaries.
+
+**Regression scenario ids:** SCN-005
+
+### CMP-165 Capability frontier experiment launcher/dialog — Skill catalogue
+
+**Rationale:** Shared logic/source inspected; /runs#skills has distinct navigation/parent layout and requires its own native browser acceptance.
+
+**Instance changes:** Preserve original /runs#skills task/navigation/background; keep one frontier trigger and validate scoped modal in this parent., Verify independent lab/scenario failures, public POST lifecycle, keyboard return target and source-versus-projection digest labels.
+
+**Acceptance criteria:** /runs#skills preserves its original task while the frontier surface is operable and scrollable., Unknown, declared reachability, observed outcome and reward stay separate; closing does not resurrect stale results.
+
+**Regression scenario ids:** SCN-068

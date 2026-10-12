@@ -581,18 +581,20 @@
   }
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=20261012.9"></script>
+<script src="/static/assets/ui.js?v=20261012.11"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=20261012.9"></script>
-<link rel="stylesheet" href="/static/assets/frontier.css?v=20261012.9">
-<script src="/static/assets/frontier.js?v=20261012.9"></script>
-<link rel="stylesheet" href="/static/assets/showcase.css?v=20261012.9">
-<link rel="stylesheet" href="/static/assets/refinement.css?v=20261012.9">
-<link rel="stylesheet" href="/static/assets/quality.css?v=20261012.9">
-<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261012.9">
-<link rel="stylesheet" href="/static/assets/presentation.css?v=20261012.9">
-<link rel="stylesheet" href="/static/assets/sphere.css?v=20261012.9">
-<script src="/static/assets/sphere.js?v=20261012.9"></script>
+<script src="/static/assets/product.js?v=20261012.11"></script>
+<link rel="stylesheet" href="/static/assets/frontier.css?v=20261012.11">
+<script src="/static/assets/frontier.js?v=20261012.11"></script>
+<link rel="stylesheet" href="/static/assets/showcase.css?v=20261012.11">
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261012.11">
+<link rel="stylesheet" href="/static/assets/quality.css?v=20261012.11">
+<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261012.11">
+<link rel="stylesheet" href="/static/assets/presentation.css?v=20261012.11">
+<link rel="stylesheet" href="/static/assets/sphere.css?v=20261012.11">
+<script src="/static/assets/sphere.js?v=20261012.11"></script>
+<link rel="stylesheet" href="/static/assets/hero-explorer.css?v=20261012.11">
+<script src="/static/assets/hero-explorer.js?v=20261012.11"></script>
 </head>
 <body>
 
@@ -630,12 +632,12 @@
         <div class="hm"><div class="n" id="hm-domains">—</div><div class="t">能力领域</div></div>
       </div>
     </div>
-    <div class="h-net" id="heroNet">
+    <div class="hero-planet"><div class="h-net" id="heroNet">
       <canvas id="netcv" aria-label="真实技能关系星图，可悬停查看技能详情"></canvas>
       <span class="tag">CAPABILITY SPHERE · 拖动旋转 / 点击探索</span>
       <div class="h-tip" id="nettip"></div>
-      <div class="h-legend" id="netlegend"></div><div class="sphere-hero-controls"><button type="button" id="hero-rotate">暂停旋转</button><a href="/graph">进入能力星球 ↗</a></div>
-    </div>
+      <div class="sphere-hero-controls"><button type="button" id="hero-rotate">暂停旋转</button><a href="/graph">进入能力星球 ↗</a></div>
+    </div><div class="hero-explorer" id="hero-explorer" aria-label="探索真实技能目录"></div></div>
   </div>
   <div class="hero-foot"><span>QUESTION → CAPABILITY → EXECUTION → EVIDENCE → EVOLUTION</span><span>球体来自真实技能目录 · 位置用于浏览，能力边界由契约与执行证据说明</span></div>
 </header>
@@ -978,7 +980,7 @@
 </section>
 
 <script>
-const PAGE_VER = "2026-10-12.frontier.9";
+const PAGE_VER = "2026-10-12.explore.11";
 const API = location.origin;
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -2219,9 +2221,10 @@ fillLiveNumbers();
   document.getElementById('hero-rotate').onclick=e=>{const paused=sphere.pause();e.target.textContent=paused?'继续旋转':'暂停旋转';e.target.setAttribute('aria-pressed',String(paused));};
   const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
   document.getElementById('hero-rotate').textContent=reduced?'继续旋转':'暂停旋转';
-  let W=0,H=0,dagMode=null,raf=0,visible=true,heroSelected=null;
+  let W=0,H=0,dagMode=null,raf=0,visible=true,explorer=null;
   const ctx=cv.getContext('2d');
-  const sphere=SkillSphere.create(sc,{wheel:false,onHover(n,p){tip.style.opacity=n?1:0;if(n){tip.textContent=n.id+' · '+n.domain;tip.style.left=Math.max(0,Math.min(p.x+10,box.clientWidth-240))+'px';tip.style.top=Math.min(p.y+10,box.clientHeight-65)+'px';}},onSelect(n){heroSelected=n&&heroSelected!==n.id?n.id:null;sphere.select(heroSelected);if(heroSelected){sphere.focus(heroSelected);document.getElementById('hero-rotate').textContent='继续旋转';}box.querySelector('.sphere-hero-controls a').href=heroSelected?'/graph?skill='+encodeURIComponent(heroSelected):'/graph';}});
+  const sphere=SkillSphere.create(sc,{wheel:false,onPause(paused){const button=document.getElementById('hero-rotate');button.textContent=paused?'继续旋转':'暂停旋转';button.setAttribute('aria-pressed',String(paused));},onHover(n,p){tip.style.opacity=n?1:0;if(n){tip.textContent=n.id+' · '+n.domain;tip.style.left=Math.max(0,Math.min(p.x+10,box.clientWidth-240))+'px';tip.style.top=Math.min(p.y+10,box.clientHeight-65)+'px';}},onSelect(n){explorer?.select(n,true);}});
+  explorer=HeroExplorer.mount({host:document.getElementById('hero-explorer'),sphere,canvas:sc,graphLink:box.querySelector('.sphere-hero-controls a'),reload:loadCatalogue});
   function resize(){W=box.clientWidth;H=box.clientHeight;const dpr=Math.min(2,devicePixelRatio||1);cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);if(dagMode){layoutDagTargets();drawDag();}}
   new ResizeObserver(resize).observe(box);
   function dagDepth(nodesDag) {
@@ -2261,14 +2264,15 @@ fillLiveNumbers();
   window.HeroNet = {
     highlight(ids){sphere.highlight(ids);},
     select(ids){sphere.highlight(ids);},
-    dagify(nodes){if(!nodes?.length)return;dagMode={nodes,state:new Map(),started:performance.now(),starts:new Map(nodes.map(n=>[n.idx,sphere.position(n.skill)]))};layoutDagTargets();sphere.enable(false);sc.style.opacity=1;sc.hidden=reduced;cv.hidden=false;tip.style.opacity=0;drawDag();cancelAnimationFrame(raf);if(!reduced)raf=requestAnimationFrame(tickDag);},
+    dagify(nodes){if(!nodes?.length)return;explorer.suspend(true);dagMode={nodes,state:new Map(),started:performance.now(),starts:new Map(nodes.map(n=>[n.idx,sphere.position(n.skill)]))};layoutDagTargets();sphere.enable(false);sc.style.opacity=1;sc.hidden=reduced;cv.hidden=false;tip.style.opacity=0;drawDag();cancelAnimationFrame(raf);if(!reduced)raf=requestAnimationFrame(tickDag);},
     stepState(idx,status){if(!dagMode)return;dagMode.state.set(idx,status);drawDag();},
-    exitDag(){dagMode=null;cancelAnimationFrame(raf);raf=0;cv.hidden=true;sc.hidden=false;sc.style.opacity=1;sphere.enable(true);sphere.highlight([]);},
+    exitDag(){dagMode=null;cancelAnimationFrame(raf);raf=0;cv.hidden=true;sc.hidden=false;sc.style.opacity=1;sphere.enable(true);sphere.highlight([]);explorer.suspend(false);},
     clear(){sphere.highlight([]);}
   };
   const ob=new IntersectionObserver(es=>{visible=es[0].isIntersecting;if(!visible){cancelAnimationFrame(raf);raf=0;}else if(dagMode&&!reduced&&!raf)raf=requestAnimationFrame(tickDag);},{threshold:.01});ob.observe(box);
   document.addEventListener('visibilitychange',()=>{cancelAnimationFrame(raf);raf=0;if(!document.hidden&&visible&&dagMode&&!reduced)raf=requestAnimationFrame(tickDag);});
-  UI.json('/api/graph').then(g=>{sphere.setData(g);window.__NODES__=g.nodes.length;const domains=new Map();g.nodes.forEach(n=>domains.set(n.domain,(domains.get(n.domain)||0)+1));[['hm-skills',g.nodes.length],['hm-edges',g.edges.length],['hm-evolved',g.nodes.filter(n=>n.generation>0).length],['hm-domains',domains.size]].forEach(([id,value])=>{const el=document.getElementById(id);if(el)el.textContent=value;});document.getElementById('netlegend').innerHTML=[...domains].sort((a,b)=>b[1]-a[1]).slice(0,4).map(([d,n])=>'<span><i style="background:'+SkillSphere.color(d)+'"></i>'+UI.esc(d)+' '+n+'</span>').join('');}).catch(e=>{document.getElementById('netlegend').textContent='能力网络读取失败：'+e.message;});
+  function loadCatalogue(){return UI.json('/api/graph').then(g=>{sphere.setData(g);explorer.setData(g);window.__NODES__=g.nodes.length;const domains=new Map();g.nodes.forEach(n=>domains.set(n.domain,(domains.get(n.domain)||0)+1));[['hm-skills',g.nodes.length],['hm-edges',g.edges.length],['hm-evolved',g.nodes.filter(n=>n.generation>0).length],['hm-domains',domains.size]].forEach(([id,value])=>{const el=document.getElementById(id);if(el)el.textContent=value;});}).catch(e=>{explorer.failed(e);});}
+  loadCatalogue();
 })();
 
 /* 自检项（仅 selftest 模式读取） */
@@ -2320,6 +2324,6 @@ window.__SELFTEST__ = function(){
   }, 4000);
 })();
 </script>
-<script src="/static/assets/showcase.js?v=20261012.9"></script>
+<script src="/static/assets/showcase.js?v=20261012.11"></script>
 </body>
 </html>
