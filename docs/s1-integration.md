@@ -218,3 +218,9 @@ python -m skillnet.worker
 Linux API / worker 使用拥有上述目录的非 root 账号。执行容器沿用该 UID / GID，避免 bind mount 无法写入；root worker 会明确报错，不将目录改为全员可写。Docker 限制已在 Linux CI 中实际验证，包含连续文件传递和超时终止，见 [容器实测](../out/docker-smoke.json)；Windows Docker 与公司环境仍需分别验证。
 
 本机真实测试覆盖排队后 API 重启、执行期间 API 重启、取消、不同签名身份的 Run/产物隔离以及终态 SSE 回放，见 `out/deployment-smoke.json`。这不替代目标 S1 的 SSO、真实项目权限、附件系统及生产网络验收；线上状态仍为未验证。
+
+## 只读能力变化报告
+
+`GET /api/runs/{id}/capabilities` 继承服务令牌和签名项目隔离。S1 后端可调用 `client.get_capabilities(run_id)`，SDK 会核对报告摘要、运行 ID 和来源证据包摘要格式。报告包含实际输入、登记产物、真实文件交接、独立结果检查和证据缺口；它不发奖、不修改历史、不把声明当作实测条件。
+
+`source_capsule_sha256` 绑定生成报告时的证据快照。需要和另一次 `get_evidence` 对账时，应比较该摘要；并发任务推进或文件变化可能导致新快照不同，应重新读取，不能静默视为相同。图表质量、跨任务因果贡献、能力基和生产 S1 接入均不因此得到证明。详细边界见 [能力球体复核](capability-sphere-review.md)。

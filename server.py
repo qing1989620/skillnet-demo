@@ -396,7 +396,8 @@ def skill_detail(name: str) -> dict[str, Any]:
     s = lib().get(name)
     if not s:
         raise HTTPException(404, f"技能不存在: {name}")
-    return {"skill": s.to_dict(), "markdown": s.to_skill_md()}
+    from skillnet.capabilities import passport
+    return {"skill": s.to_dict(), "markdown": s.to_skill_md(), "passport": passport(s)}
 
 
 @app.get('/api/skill/{name}/package', dependencies=[Depends(require_token)])
@@ -1824,6 +1825,13 @@ def run_evidence(run_id: str):
     if run is None:
         raise HTTPException(404, 'Run 不存在')
     return capsule(run, config.OUT_DIR/'runs'/run_id)
+
+
+@app.get('/api/runs/{run_id}/capabilities', dependencies=[Depends(require_token)])
+def run_capabilities(run_id: str):
+    """Observed state changes and evidence gaps, with current file integrity."""
+    from skillnet.capabilities import transitions
+    return transitions(run_evidence(run_id))
 
 
 @app.get("/api/runs/{run_id}/stream")

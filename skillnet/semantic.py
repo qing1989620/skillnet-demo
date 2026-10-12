@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import threading
+import uuid
 
 from .index import VectorIndex
 
@@ -57,15 +58,29 @@ class DenseIndex:
     def fit(self, ids, texts):
         key = hashlib.sha256(json.dumps([self.status['revision'], self.status['max_tokens'], ids, texts], ensure_ascii=False).encode()).hexdigest()
         cache = ROOT / 'data/semantic-cache' / (key + '.npz')
+        matrix = None
         if cache.exists():
-            with self.np.load(cache, allow_pickle=False) as data:
-                matrix = data['embeddings']
-        else:
+            try:
+                with self.np.load(cache, allow_pickle=False) as data:
+                    cached = data['embeddings']
+                if cached.shape == (len(ids), 384):
+                    matrix = cached
+            except (OSError, ValueError, KeyError, EOFError):
+                pass  # Cache is optional; a damaged/busy file must not stop routing.
+        if matrix is None:
             matrix = self.embed(texts, 'passage: ')
-            cache.parent.mkdir(parents=True, exist_ok=True)
-            temp = cache.with_name(key + '-' + str(os.getpid()) + '.tmp.npz')
-            self.np.savez_compressed(temp, embeddings=matrix)
-            os.replace(temp, cache)
+            temp = cache.with_name(f'{key}-{os.getpid()}-{uuid.uuid4().hex}.tmp.npz')
+            try:
+                cache.parent.mkdir(parents=True, exist_ok=True)
+                self.np.savez_compressed(temp, embeddings=matrix)
+                os.replace(temp, cache)
+            except OSError:
+                pass  # Windows readers can briefly prevent replacement; use memory.
+            finally:
+                try:
+                    temp.unlink(missing_ok=True)
+                except OSError:
+                    pass
         if matrix.shape != (len(ids), 384):
             raise ValueError('Semantic cache shape mismatch')
         self.snapshot = (list(ids), matrix)

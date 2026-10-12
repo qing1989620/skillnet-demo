@@ -99,10 +99,12 @@
   function stopPolling(){if(poller)clearInterval(poller);poller=null;requestGeneration++;}
   function fact(title,detail=''){return `<div class="show-fact"><b>${esc(title)}</b>${detail?`<small>${esc(detail)}</small>`:''}</div>`;}
   function done(i){return state.phases[i]==='done';}
+  let stageSphere=null;
   function renderNetwork() {
     const host=$('show-network'), narrow=host.clientWidth<430;
     host.dataset.dag=String(state.nodes.length>0);
     if(state.nodes.length){
+      if(stageSphere){stageSphere.destroy();stageSphere=null;}
       const layout=dagLayout(state.nodes,narrow);const edge=[],nodes=[];
       state.nodes.forEach(n=>{const p=layout.points.get(n.idx);arr(n.depends_on).forEach(dep=>{const a=layout.points.get(dep);if(!a)return;const active=n.status==='running';const path=narrow?`M ${a.x+a.w/2},${a.y+a.h} C ${a.x+a.w/2},${a.y+a.h+9} ${p.x+p.w/2},${p.y-9} ${p.x+p.w/2},${p.y}`:`M ${a.x+a.w},${a.y+38} C ${a.x+a.w+20},${a.y+38} ${p.x-20},${p.y+38} ${p.x},${p.y+38}`;edge.push(`<path d="${path}" class="sc-dag-edge ${active?'active':''}" marker-end="url(#sc-arrow)"/>`);});
         const action=String(n.action||'通用执行').slice(0,Math.floor((p.w-24)/12)),name=String(n.skill||'通用执行').slice(0,Math.floor((p.w-24)/5.2));
@@ -113,15 +115,12 @@
       $('show-graph-note').textContent=`${state.nodes.length} 个步骤 · ${state.nodes.filter(n=>n.status==='done').length} 已完成`;
       return;
     }
-    const selected=new Set(state.selected),width=640,height=278,pts=new Map();
-    const counts={};const visible=network.nodes.filter(n=>{const i=counts[n.domain]||0;counts[n.domain]=i+1;return selected.has(n.id)||n.source!=='github'||i<12;});
-    visible.forEach((n,i)=>{const angle=i*2.399963;const r=Math.sqrt((i+.5)/Math.max(1,visible.length));pts.set(n.id,{x:320+Math.cos(angle)*r*276,y:135+Math.sin(angle)*r*110});});
-    const links=network.edges.map(e=>{const a=pts.get(e.source),b=pts.get(e.target);return a&&b?`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="sc-link"/>`:'';}).join('');
-    const nodes=visible.map(n=>{const p=pts.get(n.id),hot=selected.has(n.id);return `<g><title>${esc(n.id)} · ${esc(n.domain)}</title><circle cx="${p.x}" cy="${p.y}" r="${hot?5:2.3}" class="sc-node ${hot?'hot':''}"/>${hot?`<text x="${p.x}" y="${p.y-10}" text-anchor="middle" font-size="10" fill="#c5f6e6">${esc(String(n.id).slice(0,30))}</text>`:''}</g>`;}).join('');
-    host.innerHTML=`<svg viewBox="0 0 ${width} ${height}" aria-label="来自真实技能库的能力网络"><ellipse cx="320" cy="135" rx="276" ry="110" class="sc-orbit"/><ellipse cx="320" cy="135" rx="195" ry="78" class="sc-orbit"/>${links}${nodes}${!network.nodes.length?'<text x="320" y="140" text-anchor="middle" fill="#9cb6c9" font-size="14">正在读取技能网络…</text>':''}<text x="320" y="265" text-anchor="middle" fill="#819eb5" font-size="10">${selected.size?'亮点 = 本次选中的技能':'提出问题，能力网络将收束为可执行路径'}</text></svg>`;
-    $('show-graph-label').textContent='LIVE SKILL NETWORK · 实时资产';
-    $('show-graph-note').textContent=network.nodes.length?`${network.nodes.length} 项能力 / ${network.edges.length} 条关系`:'读取中';
+    if(!stageSphere){host.innerHTML='<canvas class="stage-sphere" tabindex="0" role="img" aria-label="任务技能球体：方向键旋转，空格暂停"></canvas>';stageSphere=root.SkillSphere.create(host.querySelector('canvas'),{wheel:false,onSelect:n=>{if(n)root.open('/graph?skill='+encodeURIComponent(n.id),'_blank','noopener');}});stageSphere.setData(network);}
+    stageSphere.highlight(state.selected);
+    $('show-graph-label').textContent='CAPABILITY SPHERE · 问题驱动的能力选择';
+    $('show-graph-note').textContent=network.nodes.length?`${network.nodes.length} 项能力 / ${state.selected.length} 项本轮推荐`:'读取中';
   }
+
   function phaseFacts(i) {
     const snap=state.snapshot||{},staged=snap.staged||{};
     if(!done(i)&&!(i===4&&state.nodes.length)&&!(i===5&&state.checks.length))return fact('等待本阶段的真实结果','运行后展示实际值，未执行阶段不填充演示数字。');
@@ -195,7 +194,7 @@
     const answer=fin.staged?.final_reply || fin.error || '本次没有生成最终文本，请查看步骤和文件证据。';
     const verdict=fin.staged?.acceptance;
     const value=fin.evolution?.candidate?'新经验已进入候选区，等待冻结任务的真实执行验证；当前技能库尚未新增。':fin.evolution?.accepted?`本次经验已沉淀为 ${fin.evolution.name}，可进入后续任务复用。`:fin.staged?.learning_gate?.eligible===false?`本次经验暂不写入技能库：${fin.staged.learning_gate.skip_reason}。结果与证据保留供核对，避免学习未经确认的经验。`:fin.evolution?.skip_reason||'本次未新增技能；已有运行、验收和反馈记录保留供后续复盘。';
-    $('show-routing').innerHTML=root.Product?.selectionHTML(fin)||'';
+    $('show-routing').innerHTML=(root.Product?.selectionHTML(fin)||'')+(root.Product?.transitionsHTML?.(fin)||'');
     $('show-answer-body').innerHTML=`${root.Product?.valueHTML(fin)||''}${root.Product?.assessmentDetailsHTML(fin)||''}<div class="show-value">${esc(statusName(fin.status))} · 验收${verdict?({passed:'通过',failed:'未通过',unknown:'有待确认'}[verdict.state]||verdict.state):'见逐项证据'} · ${esc(value)}</div><div class="rp-body">${typeof root.mdToHtml==='function'?root.mdToHtml(answer):esc(answer).replace(/\n/g,'<br>')}</div>`;
     $('show-files-body').innerHTML=arr(fin.artifacts).slice().sort((a,b)=>number(b.from_step)-number(a.from_step)).map(a=>{const url='/api/runs/'+encodeURIComponent(fin.run_id)+'/artifacts/'+encodeURIComponent(a.name);return `<div class="show-file"><b>${esc(a.name)}</b><p>${esc(a.kind||'真实运行产物')}${a.from_step!=null?' · Step '+(number(a.from_step)+1)+' 产出':''} · ${(number(a.bytes)/1024).toFixed(1)} KB · SHA-256 ${esc(String(a.sha256||'未记录').slice(0,16))}${a.sha256?'…':''}</p><button type="button" data-show-artifact="${esc(a.name)}">查看文件</button><a href="${url}" download="${esc(a.name)}">下载</a>${/\.(png|jpg|jpeg|webp|svg)$/i.test(a.name)?`<img src="${url}" alt="本次实际运行生成的 ${esc(a.name)}" loading="lazy">`:''}</div>`;}).join('')||'<p style="font-size:12px;color:#7a909e">本次没有登记可下载文件。</p>';
     $('show-evidence-link').href='/run?id='+encodeURIComponent(fin.run_id);
@@ -268,7 +267,7 @@
     document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('showcase-presenting')&&!$('show-preview').open){present();}const step=e.target.closest?.('[data-show-step]');if(step&&(e.key==='Enter'||e.key===' ')){e.preventDefault();inspectStep(number(step.dataset.showStep));}});
     $('show-preview-close').addEventListener('click',()=>{previewGeneration++;$('show-preview').close();});$('show-preview').addEventListener('close',()=>{previewGeneration++;});
     new ResizeObserver(()=>renderNetwork()).observe($('show-network'));
-    safeGet('/api/graph').then(g=>{network={nodes:arr(g.nodes),edges:arr(g.edges)};renderNetwork();}).catch(()=>{$('show-graph-note').textContent='技能网络读取失败，可在连接设置中检查服务';});
+    safeGet('/api/graph').then(g=>{network={nodes:arr(g.nodes),edges:arr(g.edges)};if(stageSphere)stageSphere.setData(network);renderNetwork();}).catch(()=>{$('show-graph-note').textContent='技能网络读取失败，可在连接设置中检查服务';});
     render();
   }
   root.Showcase={start,created,event,finish,fail,present,loadRecord,reset,beforeLegacy,replay:()=>loadRecord(PUBLIC_REPLAY_ID,true)};

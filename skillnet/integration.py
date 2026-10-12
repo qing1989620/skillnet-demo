@@ -398,6 +398,21 @@ class SkillNetClient:
             raise IntegrationError('digest_mismatch', 'SkillNet evidence capsule does not match its digest or run')
         return data
 
+    def get_capabilities(self, run_id: str) -> dict[str, Any]:
+        """Read observed transitions; verify document digest and run binding."""
+        from .evidence import digest
+        data = self._json('GET', self._run_path(run_id) + '/capabilities')
+        body = {k:v for k,v in data.items() if k != 'report_sha256'}
+        try:
+            valid = (data.get('version') == 'skillnet-transitions-v1' and data.get('run_id') == run_id
+                and re.fullmatch(r'[0-9a-f]{64}', data.get('source_capsule_sha256',''))
+                and data.get('report_sha256') == digest(body))
+        except (ValueError, TypeError):
+            valid = False
+        if not valid:
+            raise IntegrationError('digest_mismatch', 'SkillNet capability report does not match its digest or run')
+        return data
+
     def iter_run_events(self, run_id: str, *, last_event_id: str | None = None) -> Iterator[dict[str, Any]]:
         headers = {"Accept": "text/event-stream"}
         if last_event_id is not None:

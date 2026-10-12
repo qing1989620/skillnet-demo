@@ -173,7 +173,8 @@ def test_capsule_partial_and_historical_records_do_not_gain_a_quality_claim(tmp_
     assert not evidence.capsule(run,tmp_path)['handoff_ready']
 
 
-def test_s1_evidence_endpoint_checks_service_token_and_signed_project_scope(tmp_path, monkeypatch):
+@pytest.mark.parametrize('suffix',['evidence','capabilities'])
+def test_s1_evidence_endpoint_checks_service_token_and_signed_project_scope(tmp_path, monkeypatch,suffix):
     store = runtime.RunStore(tmp_path/'runs')
     run = make_run(tmp_path/'runs'/'research-evidence-test')
     identity = S1Context('tenant','user','project')
@@ -183,19 +184,90 @@ def test_s1_evidence_endpoint_checks_service_token_and_signed_project_scope(tmp_
     monkeypatch.setattr(server.config,'OUT_DIR',tmp_path)
     monkeypatch.setattr(server,'ACCESS_TOKEN','test-token')
     monkeypatch.setattr(server,'S1_SIGNING_KEY','s1-test-key')
-    path='/api/runs/research-evidence-test/evidence'
+    path='/api/runs/research-evidence-test/'+suffix
     client = TestClient(server.app)
     try:
         assert client.get(path).status_code == 401
         headers=sign('s1-test-key','GET',path,b'',identity)
         assert client.get(path,headers=headers).status_code == 401
         headers['X-SkillNet-Token']='test-token'
-        assert client.get(path,headers=headers).json()['handoff_ready']
+        response=client.get(path,headers=headers)
+        assert response.status_code==200
+        if suffix=='evidence':assert response.json()['handoff_ready']
+        else:assert response.json()['version']=='skillnet-transitions-v1'
         other=sign('s1-test-key','GET',path,b'',S1Context('tenant','user','other'))
         other['X-SkillNet-Token']='test-token'
         assert client.get(path,headers=other).status_code == 404
     finally:
         client.close()
+
+
+def test_capability_projection_preserves_scope_and_unknown_visualization(tmp_path):
+    from skillnet.capabilities import transitions
+    run=make_run(tmp_path)
+    run.staged['quality_assessment']=assessment.assess(run,tmp_path,library())
+    run.staged['skill_versions']={'clean':{'sha256':'b'*64},'metrics':{'sha256':'c'*64}}
+    run.steps[1].skill='manual'
+    before=copy.deepcopy(run.to_dict())
+    report=transitions(evidence.capsule(run,tmp_path))
+    assert run.to_dict()==before
+    assert report['summary']['observed_in_scope']==2
+    assert report['steps'][2]['observation']=='not_confirmed'
+    assert report['steps'][1]['skill'] is None
+    assert report['steps'][0]['skill_sha256']=='b'*64
+    assert {g['kind'] for g in report['evidence_gaps']} >= {'unbound_skill','missing_independent_verifier'}
+    assert report['composition'] and all(e['integrity']=='passed' for e in report['composition'])
+    assert not any(report['research_status'].values())
+    assert report['report_sha256']==evidence.digest({k:v for k,v in report.items() if k!='report_sha256'})
+
+
+@pytest.mark.parametrize('damage',['file','input_digest','input_producer','duplicate','scope'])
+def test_capability_transition_does_not_certify_broken_or_unanchored_evidence(tmp_path,damage):
+    from skillnet.capabilities import transitions
+    run=make_run(tmp_path)
+    run.staged['quality_assessment']=assessment.assess(run,tmp_path,library())
+    if damage=='file':(tmp_path/'artifacts'/run.steps[0].artifacts[0].name).write_text('tampered',encoding='utf-8')
+    if damage=='input_digest':run.steps[1].input_artifacts[0]['sha256']='f'*64
+    if damage=='input_producer':run.steps[1].input_artifacts[0]['from_step']=9
+    if damage=='scope':run.staged['quality_assessment']['reference_anchored_before_execution']=False
+    cap=evidence.capsule(run,tmp_path)
+    if damage=='duplicate':cap['files'].append(copy.deepcopy(cap['files'][0]))
+    report=transitions(cap)
+    assert report['steps'][1]['observation']=='not_confirmed'
+    if damage in ('input_digest','input_producer','duplicate','file'):
+        assert any(e['integrity']!='passed' for e in report['composition'])
+
+
+def test_passport_is_a_versioned_declaration_not_a_probability():
+    from skillnet.capabilities import passport
+    from skillnet.governance import fingerprint
+    skill=Skill('extract-table','提取表格','research',use_when=['文本层 PDF'],outputs=['table.csv'],
+        pitfalls=['扫描件须 OCR'],stats={'exec_ok':99,'exec_total':100,'verified_improvement_points':25})
+    before=copy.deepcopy(skill.to_dict())
+    data=passport(skill)
+    assert skill.to_dict()==before and data['skill_sha256']==fingerprint(skill)
+    assert data['failure_boundary']==['扫描件须 OCR']
+    assert data['evidence_kind']=='current_declaration'
+    assert data['empirical_success_probability'] is None and data['causal_effect'] is None
+
+
+@pytest.mark.parametrize('damage',['none','digest','run','source','nonfinite'])
+def test_sdk_capability_digest_and_identity(tmp_path,damage):
+    from skillnet.capabilities import transitions
+    data=transitions(evidence.capsule(make_run(tmp_path),tmp_path))
+    if damage=='digest':data['scope']='changed'
+    if damage=='run':data['run_id']='other'
+    if damage=='source':data['source_capsule_sha256']='not a digest'
+    if damage in ('run','source'):data['report_sha256']=evidence.digest({k:v for k,v in data.items() if k!='report_sha256'})
+    if damage=='nonfinite':data['summary']['steps']=float('nan')
+    def handler(request):
+        assert request.url.path=='/api/runs/research-evidence-test/capabilities'
+        return httpx.Response(200,content=json.dumps(data).encode())
+    with SkillNetClient(ClientConfig(),transport=httpx.MockTransport(handler)) as client:
+        if damage=='none':assert client.get_capabilities('research-evidence-test')['summary']['steps']==3
+        else:
+            with pytest.raises(IntegrationError) as error:client.get_capabilities('research-evidence-test')
+            assert error.value.code=='digest_mismatch'
 
 
 @pytest.mark.parametrize('damage',['none','digest','run','nonfinite'])

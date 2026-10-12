@@ -581,14 +581,16 @@
   }
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=20261010.4"></script>
+<script src="/static/assets/ui.js?v=20261012.1"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=20261010.4"></script>
-<link rel="stylesheet" href="/static/assets/showcase.css?v=20261010.4">
-<link rel="stylesheet" href="/static/assets/refinement.css?v=20261010.4">
-<link rel="stylesheet" href="/static/assets/quality.css?v=20261010.4">
-<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261010.4">
-<link rel="stylesheet" href="/static/assets/presentation.css?v=20261010.4">
+<script src="/static/assets/product.js?v=20261012.1"></script>
+<link rel="stylesheet" href="/static/assets/showcase.css?v=20261012.1">
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261012.1">
+<link rel="stylesheet" href="/static/assets/quality.css?v=20261012.1">
+<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261012.1">
+<link rel="stylesheet" href="/static/assets/presentation.css?v=20261012.1">
+<link rel="stylesheet" href="/static/assets/sphere.css?v=20261012.1">
+<script src="/static/assets/sphere.js?v=20261012.1"></script>
 </head>
 <body>
 
@@ -628,12 +630,12 @@
     </div>
     <div class="h-net" id="heroNet">
       <canvas id="netcv" aria-label="真实技能关系星图，可悬停查看技能详情"></canvas>
-      <span class="tag">LIVE SKILL NETWORK · 真实技能库 · 可拖拽 / 悬停</span>
+      <span class="tag">CAPABILITY SPHERE · 拖动旋转 / 点击探索</span>
       <div class="h-tip" id="nettip"></div>
-      <div class="h-legend" id="netlegend"></div>
+      <div class="h-legend" id="netlegend"></div><div class="sphere-hero-controls"><button type="button" id="hero-rotate">暂停旋转</button><a href="/graph">进入能力星球 ↗</a></div>
     </div>
   </div>
-  <div class="hero-foot"><span>QUESTION → CAPABILITY → EXECUTION → EVIDENCE → EVOLUTION</span><span>右侧每个节点，都是当前技能库中的真实能力 · 可拖拽与探索</span></div>
+  <div class="hero-foot"><span>QUESTION → CAPABILITY → EXECUTION → EVIDENCE → EVOLUTION</span><span>球体来自真实技能目录 · 位置用于浏览，能力边界由契约与执行证据说明</span></div>
 </header>
 
 <nav class="chapter-nav" aria-label="演示章节"><div class="wrap"><span>沿一次提问，看见能力如何协作</span><a href="#s3">内核现场</a><a href="#s1">问题</a><a href="#s2">框架</a><a href="#runcenter">运行</a><a href="#sproduct">界面</a><a href="#s4">能力</a><a href="#s5">验证</a><a href="#s6">交付</a><a href="#top" aria-label="回到首屏">↑</a></div></nav>
@@ -974,7 +976,7 @@
 </section>
 
 <script>
-const PAGE_VER = "2026-10-10.retrieval.4";
+const PAGE_VER = "2026-10-12.sphere.1";
 const API = location.origin;
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -2194,315 +2196,34 @@ fillLiveNumbers();
 </script>
 
 <script>
-/* ================= HERO · 真实技能星图（数据来自 /api/graph，非插画） ================= */
-(function () {
-  const box = document.getElementById("heroNet");
-  const cv = document.getElementById("netcv");
-  const tip = document.getElementById("nettip");
-  const legendEl = document.getElementById("netlegend");
-  if (!box || !cv) return;
-  const ctx = cv.getContext("2d");
-  const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  const PALETTE = ["#88bde5", "#8dd6bd", "#e2bf88", "#bcb2e7", "#85d6d9", "#d9ab94", "#c2d794", "#9caeed", "#eeaca3", "#aebfd0"];
-  let W = 0, H = 0, DPR = 1;
-  let nodes = [], edges = [], adj = new Map();     // id -> [{other, type}]
-  let alpha = 0, hover = null, drag = null, dragMoved = false, focusSet = null;
-  let visible = true, inited = false;
-  let dagMode = null, dagT = 0, dagTarget = 0;
-
-  function resize() {
-    const r = box.getBoundingClientRect();
-    DPR = window.devicePixelRatio || 1;
-    const oldW = W, oldH = H;
-    W = r.width; H = r.height;
-    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
-    if (dagMode) { layoutDagTargets(); dagT = 0; }
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    if (inited) {
-      if (oldW && oldH) nodes.forEach(n => { n.x *= W / oldW; n.y *= H / oldH; });
-      tick.drawn = false;
-      draw();
-    }
-  }
-  window.addEventListener("resize", () => { resize(); });
-
-  const hash = s => { let h = 0; for (const c of s) h = ((h * 31 + c.charCodeAt(0)) >>> 0); return h; };
-  const colorOf = (() => { const m = new Map(); return d => { if (!m.has(d)) m.set(d, PALETTE[hash(d) % PALETTE.length]); return m.get(d); }; })();
-
-  async function load() {
-    try {
-      const [g, st] = await Promise.all([
-        fetch(API + "/api/graph").then(r => r.json()),
-        fetch(API + "/api/stats").then(r => r.json()).catch(() => ({}))
-      ]);
-      edges = (g.edges || []).map(e => ({ s: e.source, t: e.target }));
-      const domCount = {};
-      const allNodes=g.nodes||[],domainTotals={},groupCounts={};
-      allNodes.forEach(n=>domainTotals[n.domain]=(domainTotals[n.domain]||0)+1);
-      const visibleNodes=allNodes.filter(n=>{const i=groupCounts[n.domain]||0;groupCounts[n.domain]=i+1;return n.source!=='github'||i<12;});
-      nodes = visibleNodes.map(n => ({
-        id: n.id, dom: n.domain || "其他", ev: (n.generation || 0) > 0 || (n.generation || 0) > 0,
-        deg: 0, reward: n.mean_reward, pulls: n.pulls || 0,
-        x: 0, y: 0, vx: 0, vy: 0, fixed: false
-      }));
-      const byIdL = new Map(nodes.map(n => [n.id, n]));
-      edges = edges.filter(e => byIdL.has(e.s) && byIdL.has(e.t));
-      idx.clear(); nodes.forEach((n, i) => idx.set(n.id, i));
-      for (const e of edges) {
-        byIdL.get(e.s).deg++; byIdL.get(e.t).deg++;
-        if (!adj.has(e.s)) adj.set(e.s, []); adj.get(e.s).push(e.t);
-        if (!adj.has(e.t)) adj.set(e.t, []); adj.get(e.t).push(e.s);
-      }
-      // 初始位置：按领域聚拢在圆周附近
-      const doms = [...new Set(nodes.map(n => n.dom))];
-      doms.forEach((d, i) => {
-        const a = (i / doms.length) * Math.PI * 2;
-        const cx = W / 2 + Math.cos(a) * W * 0.28, cy = H / 2 + Math.sin(a) * H * 0.30;
-        domCount[d] = 0;
-        nodes.filter(n => n.dom === d).forEach(n => {
-          n.x = cx + (Math.random() - 0.5) * 90; n.y = cy + (Math.random() - 0.5) * 90; domCount[d]++;
-        });
-      });
-      // 只呈现已读取的实际计数。
-      const stats = st && typeof st === "object" ? st : {};
-      const domN = typeof stats.domains === "number" ? stats.domains
-        : (stats.domains && typeof stats.domains === "object" ? Object.keys(stats.domains).length : doms.length);
-      const evN = typeof stats.evolved === "number" ? stats.evolved : nodes.filter(n => n.ev).length;
-      window.__NODES__ = allNodes.length;        // 供自检读取
-      roll($("hm-skills"), allNodes.length); roll($("hm-edges"), g.edges.length);
-      roll($("hm-evolved"), evN); roll($("hm-domains"), domN);
-      // 图例：前 5 大领域 + 进化标记
-      const top = Object.entries(domainTotals).sort((a, b) => b[1] - a[1]).slice(0, 5);
-      legendEl.innerHTML = top.map(([d, c]) =>
-        `<span><i style="background:${colorOf(d)}"></i>${d} ${c}</span>`).join("")
-        + `<span><i class="ev"></i>进化技能 ${evN}</span>`;
-      inited = true; alpha = REDUCED ? 0 : 1;
-      pickBig();
-      if (REDUCED) { for (let i = 0; i < 320; i++) step(1); draw(); }
-      else if (!tick.raf) tick.raf = requestAnimationFrame(tick);
-    } catch (e) {
-      ctx.fillStyle = "#8a97a4"; ctx.font = "12px Microsoft YaHei"; ctx.textAlign = "center";
-      ctx.fillText("星图数据加载失败（服务未启动？）", W / 2, H / 2);
-    }
-  }
-
-  function roll(el, target) { if(el)el.textContent=target; }
-
-  function step(dt) {
-    if (dagMode) { alpha = 0; return; }       // DAG 形态下物理停用，坐标交给形态迁移
-    const a = Math.max(alpha, 0.02);
-    for (let i = 0; i < nodes.length; i++) {
-      const n = nodes[i];
-      // 斥力（栅格加速足够：98 节点 O(n²) 无压力）
-      for (let j = i + 1; j < nodes.length; j++) {
-        const o = nodes[j];
-        let dx = n.x - o.x, dy = n.y - o.y, d2 = dx * dx + dy * dy;
-        if (d2 < 1) { dx = Math.random() - 0.5; dy = Math.random() - 0.5; d2 = 1; }
-        if (d2 > 36000) continue;                 // 远距离截断
-        const f = 2400 / d2 * a, d = Math.sqrt(d2);
-        const fx = dx / d * f, fy = dy / d * f;
-        n.vx += fx; n.vy += fy; o.vx -= fx; o.vy -= fy;
-      }
-      // 向心力
-      n.vx += (W / 2 - n.x) * 0.0035 * a; n.vy += (H / 2 - n.y) * 0.0055 * a;
-    }
-    // 弹簧
-    for (const e of edges) {
-      const s = byId(e.s), t = byId(e.t); if (!s || !t) continue;
-      const dx = t.x - s.x, dy = t.y - s.y, d = Math.max(1, Math.hypot(dx, dy));
-      const f = (d - 62) * 0.028 * a, fx = dx / d * f, fy = dy / d * f;
-      s.vx += fx; s.vy += fy; t.vx -= fx; t.vy -= fy;
-    }
-    // 积分
-    for (const n of nodes) {
-      if (n === drag || n.fixed) { n.vx = n.vy = 0; continue; }
-      n.vx *= 0.86; n.vy *= 0.86;
-      n.x = Math.max(14, Math.min(W - 14, n.x + Math.max(-24, Math.min(24, n.vx))));
-      n.y = Math.max(14, Math.min(H - 14, n.y + Math.max(-24, Math.min(24, n.vy))));
-    }
-    alpha *= 0.991;
-  }
-  const idx = new Map();
-  function byId(id) { return nodes[idx.get(id)]; }
-
-  const big = new Set();                               // 常显标签：度数前 14
-  function pickBig() { [...nodes].sort((a, b) => b.deg - a.deg).slice(0, 10).forEach(n => big.add(n.id)); }
-
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    ctx.strokeStyle = "rgba(151,204,215,.13)"; ctx.lineWidth = .7;
-    for (const scale of [.7, 1]) {
-      ctx.beginPath(); ctx.ellipse(W / 2, H / 2, W * .42 * scale, H * .38 * scale, -.18, 0, Math.PI * 2); ctx.stroke();
-    }
-    const dimAll = focusSet !== null;
-    // 边
-    if (dagMode) { drawDagEdges(); } else for (const e of edges) {
-      const s = byId(e.s), t = byId(e.t); if (!s || !t) continue;
-      const hot = hover && (e.s === hover.id || e.t === hover.id);
-      const inF = dimAll && (focusSet.has(e.s) && focusSet.has(e.t));
-      let aLine = hot ? 0.85 : (focusSet ? (inF ? 0.5 : 0.05) : 0.14);
-      if (focusSet && !inF && !hot) aLine = 0.05;
-      ctx.strokeStyle = hot ? "rgba(156,237,218," + aLine + ")" : "rgba(174,208,232," + aLine + ")";
-      ctx.lineWidth = hot ? 1.4 : 0.8;
-      ctx.beginPath(); ctx.moveTo(s.x, s.y); ctx.lineTo(t.x, t.y); ctx.stroke();
-    }
-    // 节点
-    for (const n of nodes) {
-      const isH = hover === n;
-      const dim = (focusSet && !focusSet.has(n.id)) || (hover && hover !== n && !(adj.get(hover.id) || []).includes(n.id));
-      const r = 3 + Math.min(7, n.deg * 0.55) + (isH ? 2.2 : 0);
-      ctx.globalAlpha = dim ? 0.13 : 1;
-      ctx.shadowBlur = n.ev ? 12 : 6; ctx.shadowColor = colorOf(n.dom);
-      ctx.fillStyle = colorOf(n.dom);
-      ctx.beginPath(); ctx.arc(n.x, n.y, r, 0, 6.2832); ctx.fill(); ctx.shadowBlur = 0;
-      if (n.ev) { ctx.strokeStyle = "rgba(201,138,45,.85)"; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.arc(n.x, n.y, r + 2.4, 0, 6.2832); ctx.stroke(); }
-      if (isH) { ctx.strokeStyle = "rgba(36,85,122,.9)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(n.x, n.y, r + 5, 0, 6.2832); ctx.stroke(); }
-      if (dagMode && dagMode.byNode.has(n)) {   // DAG 节点状态环（真实 Runtime 状态）
-        const di = dagMode.byNode.get(n);
-        const stt = dagMode.state.get(di) || "pending";
-        const col = stt === "running" ? "#24557a" : stt === "done" ? "#2e7d4f"
-          : stt === "failed" ? "#a8433a" : stt === "skipped" ? "#9aa7b3" : "#c98a2d";
-        ctx.strokeStyle = col; ctx.lineWidth = 2.2;
-        ctx.beginPath(); ctx.arc(n.x, n.y, r + 5.5, 0, 6.2832); ctx.stroke();
-        if (stt === "running") {                // 执行中脉冲
-          const p = (performance.now() / 600) % 1;
-          ctx.globalAlpha = (dim ? 0.13 : 1) * (1 - p) * 0.55;
-          ctx.beginPath(); ctx.arc(n.x, n.y, r + 5.5 + p * 7, 0, 6.2832); ctx.stroke();
-          ctx.globalAlpha = dim ? 0.13 : 1;
-        }
-      }
-      ctx.globalAlpha = 1;
-    }
-    // 标签（LOD：常显前 14 + 悬停邻域）
-    ctx.font = "9.5px 'Microsoft YaHei'"; ctx.textAlign = "left"; ctx.textBaseline = "middle";
-    for (const n of nodes) {
-      const show = big.has(n.id) || (hover && (n === hover || (adj.get(hover.id) || []).includes(n.id))) || (focusSet && focusSet.has(n.id));
-      if (!show) continue;
-      const dim = (focusSet && !focusSet.has(n.id)) || (hover && hover !== n && !(adj.get(hover.id) || []).includes(n.id));
-      ctx.globalAlpha = dim ? 0.15 : 0.92;
-      ctx.fillStyle = "#c7dce9";
-      if (n.x > W - 130) { ctx.textAlign = "right"; ctx.fillText(n.id, n.x - 9, n.y); ctx.textAlign = "left"; }
-      else ctx.fillText(n.id, n.x + 9, n.y);
-      ctx.globalAlpha = 1;
-    }
-  }
-
-  function tick() {
-    tick.raf = 0;
-    if (!visible || !inited) return;              // 恢复时由 IntersectionObserver 重新拉起
-    if (dagMode) { tickDag(); draw(); tick.raf = requestAnimationFrame(tick); return; }  // artifact flow 需连续帧
-    if (alpha > 0.003) { step(1); draw(); tick.drawn = false; }
-    else if (!tick.drawn) { draw(); tick.drawn = true; }
-    tick.raf = requestAnimationFrame(tick);
-  }
-
-  function pos(ev) { const r = cv.getBoundingClientRect(); return { x: ev.clientX - r.left, y: ev.clientY - r.top }; }
-  function pick(p) {
-    let best = null, bd = 1e9;
-    for (const n of nodes) { const d = Math.hypot(n.x - p.x, n.y - p.y); if (d < bd && d < 16) { bd = d; best = n; } }
-    return best;
-  }
-  cv.addEventListener("pointermove", ev => {
-    const p = pos(ev);
-    if (drag) { drag.x = p.x; drag.y = p.y; drag.vx = drag.vy = 0; dragMoved = true; alpha = Math.max(alpha, 0.3); draw(); return; }
-    const n = pick(p);
-    if (n !== hover) { hover = n; cv.style.cursor = n ? "pointer" : "crosshair"; if (!n) tip.style.opacity = 0; draw(); }
-    if (n) {
-      tip.innerHTML = `<b>${n.id}</b><br>领域 ${n.dom} · ${n.deg} 条关系<br>${n.ev ? "进化技能 · " : ""}质量分 ${n.reward != null ? n.reward.toFixed(2) : "—"} · 调用 ${n.pulls} 次`;
-      const br = box.getBoundingClientRect();
-      tip.style.left = Math.min(p.x + 14, br.width - 200) + "px";
-      tip.style.top = Math.min(p.y + 12, br.height - 70) + "px";
-      tip.style.opacity = 1;
-    }
-  });
-  cv.addEventListener("pointerdown", ev => {
-    const p = pos(ev); const n = pick(p);
-    if (n) { drag = n; dragMoved = false; cv.setPointerCapture(ev.pointerId); }
-  });
-  cv.addEventListener("pointerup", ev => {
-    if (drag && !dragMoved) {                       // 点击：聚焦邻域
-      if (focusSet && focusSet.has(drag.id)) focusSet = null;
-      else { focusSet = new Set([drag.id, ...(adj.get(drag.id) || [])]); }
-      alpha = Math.max(alpha, 0.25); draw();
-    }
-    drag = null;
-  });
-  cv.addEventListener("pointerleave", () => { hover = null; tip.style.opacity = 0; draw(); });
-
-  new IntersectionObserver(es => {
-    visible = es[0].isIntersecting;
-    if (visible && inited && !REDUCED && !tick.raf) tick.raf = requestAnimationFrame(tick);
-  }, { threshold: 0.02 }).observe(box);
-
-  // ============ WOW-1：Run 事件驱动星图（真实 SSE 事件，非预制动画） ============
-  // dagMode：选中的技能从 force 布局位置平滑迁移到 DAG 列布局（同一批对象，
-  // 同一 id 空间：Skill ID → Graph Node → Candidate → RunStep）。
-
-  function skillNode(name) { return name ? nodes.find(n => n.id === name) : null; }
-
+/* ================= HERO · spherical catalogue + actual execution DAG ================= */
+(function(){
+  const box=document.getElementById('heroNet'),cv=document.getElementById('netcv'),tip=document.getElementById('nettip');
+  const sc=document.createElement('canvas');sc.id='hero-sphere';sc.tabIndex=0;sc.setAttribute('role','img');sc.setAttribute('aria-label','球体技能网络：拖动或方向键旋转，加减键缩放，空格暂停；完整探索入口支持搜索。');box.prepend(sc);cv.hidden=true;
+  document.getElementById('hero-rotate').onclick=e=>{const paused=sphere.pause();e.target.textContent=paused?'继续旋转':'暂停旋转';e.target.setAttribute('aria-pressed',String(paused));};
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.getElementById('hero-rotate').textContent=reduced?'继续旋转':'暂停旋转';
+  let W=0,H=0,dagMode=null,raf=0,visible=true,heroSelected=null;
+  const ctx=cv.getContext('2d');
+  const sphere=SkillSphere.create(sc,{wheel:false,onHover(n,p){tip.style.opacity=n?1:0;if(n){tip.textContent=n.id+' · '+n.domain;tip.style.left=Math.max(0,Math.min(p.x+10,box.clientWidth-240))+'px';tip.style.top=Math.min(p.y+10,box.clientHeight-65)+'px';}},onSelect(n){heroSelected=n&&heroSelected!==n.id?n.id:null;sphere.select(heroSelected);if(heroSelected){sphere.focus(heroSelected);document.getElementById('hero-rotate').textContent='继续旋转';}box.querySelector('.sphere-hero-controls a').href=heroSelected?'/graph?skill='+encodeURIComponent(heroSelected):'/graph';}});
+  function resize(){W=box.clientWidth;H=box.clientHeight;const dpr=Math.min(2,devicePixelRatio||1);cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);if(dagMode){layoutDagTargets();drawDag();}}
+  new ResizeObserver(resize).observe(box);
   function dagDepth(nodesDag) {
-    const dep = new Map();
-    function d(i) {
-      if (dep.has(i)) return dep.get(i);
-      const n = nodesDag[i] || nodesDag[nodesDag.findIndex(x => x.idx === i)];
-      const ds = (n && n.depends_on || []).map(d);
-      const v = ds.length ? Math.max(...ds) + 1 : 0;
-      dep.set(i, v); return v;
-    }
-    nodesDag.forEach(n => d(n.idx));
-    return dep;
+    const dep=new Map(),by=new Map(nodesDag.map(n=>[n.idx,n])),visiting=new Set();
+    function d(i){if(dep.has(i))return dep.get(i);if(visiting.has(i)||!by.has(i))return 0;visiting.add(i);const ds=(by.get(i).depends_on||[]).filter(x=>by.has(x)).map(d);visiting.delete(i);const value=ds.length?Math.max(...ds)+1:0;dep.set(i,value);return value;}
+    nodesDag.forEach(n=>d(n.idx));return dep;
   }
 
-  function tickDag() {
-    if (dagT < dagTarget) {
-      dagT = Math.min(dagTarget, dagT + 1 / 42);   // ~42 帧完成形态迁移
-      const e = 1 - Math.pow(1 - dagT, 3);
-      dagMode.map.forEach((node, idx) => {
-        const tgt = dagMode.targets.get(idx);
-        if (!tgt) return;
-        node.x += (tgt.x - node.x) * 0.16 * (0.4 + e);
-        node.y += (tgt.y - node.y) * 0.16 * (0.4 + e);
-      });
-      tick.drawn = false;
-    }
+  function tickDag(){
+    raf=0;if(!dagMode||!visible||document.hidden)return;drawDag();
+    if(!reduced)raf=requestAnimationFrame(tickDag);
   }
-
-  function drawDagEdges() {
-    const d = dagMode, map = d.map;
-    for (const n of d.nodes) {
-      const t = map.get(n.idx); if (!t) continue;
-      for (const di of (n.depends_on || [])) {
-        const s = map.get(di); if (!s) continue;
-        const stt = d.state.get(di) || "pending";
-        const sts = d.state.get(n.idx) || "pending";
-        const active = (stt === "done" || stt === "failed") && sts !== "skipped";
-        ctx.strokeStyle = stt === "failed" ? "rgba(168,67,58,.75)"
-          : active ? "rgba(36,85,122,.8)" : "rgba(34,48,62,.18)";
-        ctx.lineWidth = active ? 1.6 : 1;
-        // 箭头
-        const dx = t.x - s.x, dy = t.y - s.y, len = Math.max(1, Math.hypot(dx, dy));
-        const pad = 9, ex = t.x - dx / len * pad, ey = t.y - dy / len * pad;
-        const sx = s.x + dx / len * pad, sy = s.y + dy / len * pad;
-        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
-        if (active) {
-          const a = Math.atan2(dy, dx);
-          ctx.fillStyle = stt === "failed" ? "rgba(168,67,58,.9)" : "rgba(36,85,122,.9)";
-          ctx.beginPath();
-          ctx.moveTo(ex, ey);
-          ctx.lineTo(ex - 7 * Math.cos(a - .42), ey - 7 * Math.sin(a - .42));
-          ctx.lineTo(ex - 7 * Math.cos(a + .42), ey - 7 * Math.sin(a + .42));
-          ctx.closePath(); ctx.fill();
-          if (sts === "running") {           // artifact flow：流动的小点
-            const tt = (performance.now() / 700) % 1;
-            ctx.beginPath(); ctx.arc(sx + dx * tt, sy + dy * tt, 2.4, 0, 6.2832);
-            ctx.fillStyle = "rgba(36,85,122,.95)"; ctx.fill();
-          }
-        }
-      }
-    }
+  function drawDag(){
+    ctx.clearRect(0,0,W,H);if(!dagMode)return;
+    const d=dagMode,t=reduced?1:Math.min(1,(performance.now()-d.started)/720),ease=1-Math.pow(1-t,3),points=new Map([...d.targets].map(([idx,p])=>{const start=d.starts.get(idx)||{x:W/2,y:H/2};return [idx,{x:start.x+(p.x-start.x)*ease,y:start.y+(p.y-start.y)*ease}];}));sc.style.opacity=String(1-ease);if(t>=1)sc.hidden=true;
+    for(const node of d.nodes)for(const dep of node.depends_on||[]){const a=points.get(dep),b=points.get(node.idx);if(!a||!b)continue;ctx.strokeStyle='#a5d6cba0';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();const angle=Math.atan2(b.y-a.y,b.x-a.x),ex=b.x-Math.cos(angle)*10,ey=b.y-Math.sin(angle)*10;ctx.fillStyle='#a5d6cba0';ctx.beginPath();ctx.moveTo(ex,ey);ctx.lineTo(ex-6*Math.cos(angle-.45),ey-6*Math.sin(angle-.45));ctx.lineTo(ex-6*Math.cos(angle+.45),ey-6*Math.sin(angle+.45));ctx.closePath();ctx.fill();if(d.state.get(node.idx)==='running'&&!reduced){const t=(performance.now()/1200)%1;ctx.fillStyle='#e5cf96';ctx.beginPath();ctx.arc(a.x+(b.x-a.x)*t,a.y+(b.y-a.y)*t,3,0,Math.PI*2);ctx.fill();}}
+    for(const n of d.nodes){const p=points.get(n.idx),st=d.state.get(n.idx)||'pending';const color=st==='done'?'#a2e5c5':st==='failed'?'#f5b59c':st==='running'?'#e5cf96':'#89a8b9';ctx.fillStyle=color;ctx.shadowColor=color;ctx.shadowBlur=12;ctx.beginPath();ctx.arc(p.x,p.y,6,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.textAlign='center';ctx.font='11px Microsoft YaHei';ctx.fillText('STEP '+(n.idx+1)+' · '+(n.skill==='manual'?'通用执行':n.skill||'通用执行').slice(0,24),p.x,p.y+24);}
   }
-
   function layoutDagTargets() {
     const nodesDag = dagMode.nodes;
       // 目标坐标
@@ -2522,50 +2243,16 @@ fillLiveNumbers();
   }
 
   window.HeroNet = {
-    highlight(ids) {
-      if (!inited || !ids || !ids.length) return;
-      focusSet = new Set(ids.filter(id => nodes.some(n => n.id === id)));
-      alpha = Math.max(alpha, 0.35); tick.drawn = false; if (REDUCED) draw();
-    },
-    select(names) {                          // 排序/选择完成：被选中的进一步提高权重
-      if (!inited || !names || !names.length) return;
-      focusSet = new Set(names.filter(id => nodes.some(n => n.id === id)));
-      alpha = Math.max(alpha, 0.3); tick.drawn = false; if (REDUCED) draw();
-    },
-    dagify(nodesDag) {                       // dag.ready：收束成执行 DAG
-      if (!inited || !nodesDag || !nodesDag.length) return;
-      const map = new Map(), idOf = new Map();
-      nodesDag.forEach(n => {
-        const node = skillNode(n.skill);
-        if (node) { map.set(n.idx, node); idOf.set(n.idx, node.id); }
-      });
-      if (map.size < 2) return;
-      dagMode = { nodes: nodesDag, map, idOf, state: new Map() };
-      dagMode.byNode = new Map();
-      map.forEach((node, i) => dagMode.byNode.set(node, i));
-      dagMode.targets = null;
-      layoutDagTargets();
-      dagT = 0; dagTarget = 1;
-      focusSet = new Set([...idOf.values()]);
-      alpha = 0.05;                          // 力布局停用，交给形态迁移
-      tick.drawn = false; if (REDUCED) { dagT = dagTarget = 1; draw(); }
-    },
-    stepState(idx, status) {                 // running/done/failed/skipped/repair
-      if (!dagMode) return;
-      dagMode.state.set(idx, status);
-      tick.drawn = false; if (REDUCED) draw();
-    },
-    exitDag() {
-      if (!dagMode) return;
-      dagMode = null; focusSet = null;
-      alpha = 0.6; tick.drawn = false; if (REDUCED) draw();
-    },
-    clear() { focusSet = null; tick.drawn = false; if (REDUCED) draw(); }
+    highlight(ids){sphere.highlight(ids);},
+    select(ids){sphere.highlight(ids);},
+    dagify(nodes){if(!nodes?.length)return;dagMode={nodes,state:new Map(),started:performance.now(),starts:new Map(nodes.map(n=>[n.idx,sphere.position(n.skill)]))};layoutDagTargets();sphere.enable(false);sc.style.opacity=1;sc.hidden=reduced;cv.hidden=false;tip.style.opacity=0;drawDag();cancelAnimationFrame(raf);if(!reduced)raf=requestAnimationFrame(tickDag);},
+    stepState(idx,status){if(!dagMode)return;dagMode.state.set(idx,status);drawDag();},
+    exitDag(){dagMode=null;cancelAnimationFrame(raf);raf=0;cv.hidden=true;sc.hidden=false;sc.style.opacity=1;sphere.enable(true);sphere.highlight([]);},
+    clear(){sphere.highlight([]);}
   };
-
-  // 数据加载
-  resize();
-  load();
+  const ob=new IntersectionObserver(es=>{visible=es[0].isIntersecting;if(!visible){cancelAnimationFrame(raf);raf=0;}else if(dagMode&&!reduced&&!raf)raf=requestAnimationFrame(tickDag);},{threshold:.01});ob.observe(box);
+  document.addEventListener('visibilitychange',()=>{cancelAnimationFrame(raf);raf=0;if(!document.hidden&&visible&&dagMode&&!reduced)raf=requestAnimationFrame(tickDag);});
+  UI.json('/api/graph').then(g=>{sphere.setData(g);window.__NODES__=g.nodes.length;const domains=new Map();g.nodes.forEach(n=>domains.set(n.domain,(domains.get(n.domain)||0)+1));[['hm-skills',g.nodes.length],['hm-edges',g.edges.length],['hm-evolved',g.nodes.filter(n=>n.generation>0).length],['hm-domains',domains.size]].forEach(([id,value])=>{const el=document.getElementById(id);if(el)el.textContent=value;});document.getElementById('netlegend').innerHTML=[...domains].sort((a,b)=>b[1]-a[1]).slice(0,4).map(([d,n])=>'<span><i style="background:'+SkillSphere.color(d)+'"></i>'+UI.esc(d)+' '+n+'</span>').join('');}).catch(e=>{document.getElementById('netlegend').textContent='能力网络读取失败：'+e.message;});
 })();
 
 /* 自检项（仅 selftest 模式读取） */
@@ -2617,6 +2304,6 @@ window.__SELFTEST__ = function(){
   }, 4000);
 })();
 </script>
-<script src="/static/assets/showcase.js?v=20261010.4"></script>
+<script src="/static/assets/showcase.js?v=20261012.1"></script>
 </body>
 </html>

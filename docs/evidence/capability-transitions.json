@@ -1,0 +1,215 @@
+{
+  "version": "skillnet-transitions-v1",
+  "run_id": "f11ad204-20261010-110841-6d42",
+  "source_capsule_sha256": "cc42b6aaddf80dadf239a1edd1370664dc5fba0458780518786789b04eac8de4",
+  "source": "recorded_execution_and_rehashed_files",
+  "scope_verified": true,
+  "scope": "模拟预测数据的样本去重、跨集合受试者排除、固定阈值测试集混淆矩阵与派生指标；不评价模型或临床有效性",
+  "steps": [
+    {
+      "idx": 0,
+      "action": "读取原始 CSV，按 sample_id 去重保留首次出现记录；统计同时出现在多个 split 的 subject_id 并删除其全部记录；在删除跨 split 受试者后统计 score 缺失行并删除；输出 clean_predictions.csv（保留原列与原值）与 cohort_audit.csv（列名 check,count，仅含 raw_rows,duplicate_rows,cross_split_subjects,cross_split_rows,missing_score_rows,eligible_test_rows 六行）。",
+      "skill": "data-cleaning",
+      "skill_sha256": "3b234cb8dc2c52709178f6013330acc0797350c7c4a005ae06d467eb416edca1",
+      "version_capture": "before_execution",
+      "status": "done",
+      "observation": "observed_in_scope",
+      "inputs": [],
+      "effects": [
+        {
+          "name": "step1_clean_predictions.csv",
+          "sha256": "f0d13b6c91404558e755f0ed2773653a07e014a9f167a92abf25c12e0748d639",
+          "integrity": "passed"
+        },
+        {
+          "name": "step1_cohort_audit.csv",
+          "sha256": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7",
+          "integrity": "passed"
+        }
+      ],
+      "checks": {
+        "passed": 15,
+        "total": 15
+      },
+      "independent_checks": {
+        "passed": 8,
+        "total": 8
+      },
+      "applicability": "not_measured",
+      "causal_contribution": "not_measured",
+      "boundary": "只陈述本次文件与限定范围检查，不外推跨任务成功率"
+    },
+    {
+      "idx": 1,
+      "action": "读取 clean_predictions.csv 与 cohort_audit.csv，仅取清洗后 split == 'test' 的行，以固定阈值 score >= 0.5 判为阳性，与 label 比较计算 tp/fp/tn/fn，再计算 accuracy、precision、recall、f1，输出 heldout_metrics.csv（列名 metric,value，仅含 n,tp,fp,tn,fn,accuracy,precision,recall,f1 九行，至少 10 位有效数字）。",
+      "skill": null,
+      "skill_sha256": null,
+      "version_capture": "unrecorded",
+      "status": "done",
+      "observation": "observed_in_scope",
+      "inputs": [
+        {
+          "name": "step1_clean_predictions.csv",
+          "sha256": "f0d13b6c91404558e755f0ed2773653a07e014a9f167a92abf25c12e0748d639",
+          "producer_step": 0,
+          "integrity": "passed"
+        },
+        {
+          "name": "step1_cohort_audit.csv",
+          "sha256": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7",
+          "producer_step": 0,
+          "integrity": "passed"
+        }
+      ],
+      "effects": [
+        {
+          "name": "step2_heldout_metrics.csv",
+          "sha256": "9b4018abf3313010c3cf5c455f2e09fb78c06026f790ff069ebb52222b7100b3",
+          "integrity": "passed"
+        }
+      ],
+      "checks": {
+        "passed": 10,
+        "total": 10
+      },
+      "independent_checks": {
+        "passed": 10,
+        "total": 10
+      },
+      "applicability": "not_measured",
+      "causal_contribution": "not_measured",
+      "boundary": "只陈述本次文件与限定范围检查，不外推跨任务成功率"
+    },
+    {
+      "idx": 2,
+      "action": "读取 cohort_audit.csv 与 heldout_metrics.csv，绘制审计计数与 heldout 指标图并导出 figure.svg，同时撰写 report.md，明确写明“模拟数据”“固定阈值”“不代表临床有效性”，并解释数据泄漏风险与复用边界。",
+      "skill": "scientific-visualization",
+      "skill_sha256": "2d2d8637f4064d52bbdbad35734def7138f2e8d118b8bf91108d8f84726b5efa",
+      "version_capture": "before_execution",
+      "status": "done",
+      "observation": "not_confirmed",
+      "inputs": [
+        {
+          "name": "step1_clean_predictions.csv",
+          "sha256": "f0d13b6c91404558e755f0ed2773653a07e014a9f167a92abf25c12e0748d639",
+          "producer_step": 0,
+          "integrity": "passed"
+        },
+        {
+          "name": "step1_cohort_audit.csv",
+          "sha256": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7",
+          "producer_step": 0,
+          "integrity": "passed"
+        },
+        {
+          "name": "step2_heldout_metrics.csv",
+          "sha256": "9b4018abf3313010c3cf5c455f2e09fb78c06026f790ff069ebb52222b7100b3",
+          "producer_step": 1,
+          "integrity": "passed"
+        }
+      ],
+      "effects": [
+        {
+          "name": "step3_figure.svg",
+          "sha256": "9d75f178564f98315520bb9c85d5e0caf129f090790272ee6098ba3e176c5443",
+          "integrity": "passed"
+        },
+        {
+          "name": "step3_report.md",
+          "sha256": "98f8088d122ccf924068927f7281524a837b3915ae7ec71c23fe60358c80c3ff",
+          "integrity": "passed"
+        }
+      ],
+      "checks": {
+        "passed": 10,
+        "total": 10
+      },
+      "independent_checks": {
+        "passed": 0,
+        "total": 0
+      },
+      "applicability": "not_measured",
+      "causal_contribution": "not_measured",
+      "boundary": "只陈述本次文件与限定范围检查，不外推跨任务成功率"
+    }
+  ],
+  "composition": [
+    {
+      "source": 0,
+      "target": 1,
+      "file": "step1_clean_predictions.csv",
+      "source_run_id": "f11ad204-20261010-110841-6d42",
+      "sha256": "f0d13b6c91404558e755f0ed2773653a07e014a9f167a92abf25c12e0748d639",
+      "kind": "recorded_file_consumption",
+      "integrity": "passed",
+      "boundary": "文件交接可复核，不证明上下游技能语义兼容或因果贡献"
+    },
+    {
+      "source": 0,
+      "target": 1,
+      "file": "step1_cohort_audit.csv",
+      "source_run_id": "f11ad204-20261010-110841-6d42",
+      "sha256": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7",
+      "kind": "recorded_file_consumption",
+      "integrity": "passed",
+      "boundary": "文件交接可复核，不证明上下游技能语义兼容或因果贡献"
+    },
+    {
+      "source": 0,
+      "target": 2,
+      "file": "step1_clean_predictions.csv",
+      "source_run_id": "f11ad204-20261010-110841-6d42",
+      "sha256": "f0d13b6c91404558e755f0ed2773653a07e014a9f167a92abf25c12e0748d639",
+      "kind": "recorded_file_consumption",
+      "integrity": "passed",
+      "boundary": "文件交接可复核，不证明上下游技能语义兼容或因果贡献"
+    },
+    {
+      "source": 0,
+      "target": 2,
+      "file": "step1_cohort_audit.csv",
+      "source_run_id": "f11ad204-20261010-110841-6d42",
+      "sha256": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7",
+      "kind": "recorded_file_consumption",
+      "integrity": "passed",
+      "boundary": "文件交接可复核，不证明上下游技能语义兼容或因果贡献"
+    },
+    {
+      "source": 1,
+      "target": 2,
+      "file": "step2_heldout_metrics.csv",
+      "source_run_id": "f11ad204-20261010-110841-6d42",
+      "sha256": "9b4018abf3313010c3cf5c455f2e09fb78c06026f790ff069ebb52222b7100b3",
+      "kind": "recorded_file_consumption",
+      "integrity": "passed",
+      "boundary": "文件交接可复核，不证明上下游技能语义兼容或因果贡献"
+    }
+  ],
+  "evidence_gaps": [
+    {
+      "kind": "unbound_skill",
+      "step": 1,
+      "reason": "该动作由通用执行完成，尚未绑定可复用技能；不是任务无法完成"
+    },
+    {
+      "kind": "missing_independent_verifier",
+      "step": 2,
+      "reason": "本步骤没有独立结果判据，不能从运行成功推断能力已验证"
+    }
+  ],
+  "summary": {
+    "steps": 3,
+    "observed_in_scope": 2,
+    "verified_file_links": 5,
+    "file_links": 5,
+    "evidence_gaps": 2
+  },
+  "research_status": {
+    "learned_causal_model": false,
+    "behavioral_equivalence": false,
+    "minimal_basis": false,
+    "reachable_space_proven": false
+  },
+  "boundary": "证据缺口不等于缺少真实能力；文件组合不等于因果技能代数；报告不会发奖或修改技能库",
+  "report_sha256": "89194e47ec76e31ecb5886dc76afab8beb298da76aef844d7c06abf58166626f"
+}
