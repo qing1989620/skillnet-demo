@@ -156,15 +156,15 @@
   }
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=20261012.11"></script>
+<script src="/static/assets/ui.js?v=20261013.12"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=20261012.11"></script>
-<link rel="stylesheet" href="/static/assets/frontier.css?v=20261012.11">
-<script src="/static/assets/frontier.js?v=20261012.11"></script>
-<link rel="stylesheet" href="/static/assets/refinement.css?v=20261012.11">
-<link rel="stylesheet" href="/static/assets/quality.css?v=20261012.11">
-<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261012.11">
-<link rel="stylesheet" href="/static/assets/sphere.css?v=20261012.11">
+<script src="/static/assets/product.js?v=20261013.12"></script>
+<link rel="stylesheet" href="/static/assets/frontier.css?v=20261013.12">
+<script src="/static/assets/frontier.js?v=20261013.12"></script>
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261013.12">
+<link rel="stylesheet" href="/static/assets/quality.css?v=20261013.12">
+<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261013.12">
+<link rel="stylesheet" href="/static/assets/sphere.css?v=20261013.12">
 </head>
 <body>
 
@@ -192,6 +192,7 @@
   <div class="msgs" id="msgs" tabindex="0" role="region" aria-label="对话与执行证据"></div>
   <div class="composer">
     <div class="chips" id="chips"></div>
+    <div class="web-composer"><label for="web-mode">网络证据</label><select id="web-mode" aria-describedby="web-mode-help"><option value="auto">自动判断</option><option value="on">主动联网</option><option value="off">关闭新采集</option></select><span id="web-service-status" role="status">正在读取采集配置，尚未验证网络可用性…</span><p id="web-mode-help">自动判断是否需要外部事实；实际查询与结果逐项留证。</p></div>
     <div class="inputrow">
       <textarea id="q" aria-label="研究任务" placeholder="输入问题或任务，Enter 发送 · Shift+Enter 换行。可连续追问，系统会自动带上本对话的上下文"></textarea>
       <button class="send" id="send" onclick="submitQ()">发送</button>
@@ -481,7 +482,9 @@ async function submitQ(){
   const q = ta.value.trim(); if (!q) return;
   if (!cur()) newSession();
   const s = cur();
+  const webMode = document.getElementById('web-mode').value;
   busy = true;
+  document.getElementById('web-mode').disabled = true;
   document.getElementById("send").disabled = true;
   document.getElementById("send").textContent = "运行中…";
   document.querySelector(".newbtn").disabled = true;
@@ -489,7 +492,7 @@ async function submitQ(){
   document.getElementById("cancel-active").disabled = true;
 
   const history = s.turns.map(t => ({ q: t.q, a: t.reply_digest || "", run_id:t.run_id||"" })).slice(-3);
-  const turn = { q, run_id: null, ts: Date.now(), status: "running" };
+  const turn = { q, run_id: null, ts: Date.now(), status: "running", web_mode:webMode };
   s.turns.push(turn);
   if (!s.title) s.title = q.slice(0, 34);
   saveSessions(); renderSidebar(); renderMain();
@@ -498,10 +501,10 @@ async function submitQ(){
   document.getElementById("msgs").scrollTop = document.getElementById("msgs").scrollHeight;
 
   try {
-    const r = await fetch(`${API}/api/runs`, {
+    const r = await UI.fetch(`${API}/api/runs`, {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ task: q, k: 5, max_steps: 3, max_cost_yuan: 1.0,
-                             max_seconds: 420, history })
+                             max_seconds: 420, history, web_mode:webMode })
     });
     if (!r.ok){
       const d = await r.json().catch(() => ({}));
@@ -531,6 +534,7 @@ async function submitQ(){
     saveSessions();
   } finally {
     busy = false;
+    document.getElementById('web-mode').disabled = false;
     document.getElementById("send").disabled = false;
     document.getElementById("send").textContent = "发送";
     document.querySelector(".newbtn").disabled = false;
@@ -567,16 +571,19 @@ function onEvent(i, ev){
   const live=document.getElementById(`chat-live-${i}`);
   if(live){
     const model=LIVE_MODELS[i]||(LIVE_MODELS[i]={steps:[],log:[]});
+    if(t.startsWith('web.'))model.web_research=Product.reduceWebEvent(model.web_research,t,d,cur()?.turns[i]?.web_mode||'auto');
     if(t==='dag.ready')model.steps=(d.nodes||[]).map(n=>({...n,status:'pending'}));
     const step=model.steps.find(s=>s.idx===ev.step);
     if(step&&t==='step.started')step.status='running';
     if(step&&t==='step.completed')step.status=d.status||'done';
     const text=t==='retrieval.completed'?`检索候选：${(d.selected||[]).join('、')}`:t==='ranking.completed'?'任务条件化排序已完成':t==='plan.created'?`方案：${d.approach||''}`:t==='step.started'?`步骤 ${ev.step+1} · ${d.action||''}`:t==='step.retry'?`步骤 ${ev.step+1} 自动修复：${d.reason||''}`:t==='artifact.created'?`交付产物：${d.name}`:t==='evolution.proposed'?(d.accepted?'新技能已准入':d.skip_reason||d.feedback?.find(f=>f.skip_reason)?.skip_reason||'本次未准入新技能'):'';
-    if(text)model.log.push(text);
-    live.innerHTML=Product.dagHTML(model)+`<div class="chat-live-log">${model.log.slice(-4).map(text=>`<p>${esc(text)}</p>`).join('')}</div>`;
+    const webText=Product.webEventText(t,d);
+    if(text||webText)model.log.push(text||webText);
+    live.innerHTML=Product.webResearchHTML(model,{compact:true})+Product.dagHTML(model)+`<div class="chat-live-log">${model.log.slice(-4).map(text=>`<p>${esc(text)}</p>`).join('')}</div>`;
   }
   const P = k => document.getElementById(`ph-${k}-${i}`);
   const phase = (key,state,ms)=>setPhase(key,state,ms,i);
+  if(t.startsWith('web.'))setSub(i,Product.webEventText(t,d)||'正在核验网络来源…');
   if (t === "retrieval.completed"){ phase("retrieval","done",d.duration_ms); phase("ranking","run");
     setSub(i, `检索完成：三档对照，候选 ${(d.selected || []).length} 个`); }
   else if (t === "ranking.completed"){ phase("ranking","done"); phase("orchestration","run"); }
@@ -598,6 +605,8 @@ function onEvent(i, ev){
 }
 
 /* ---------- 启动 ---------- */
+document.getElementById('web-mode').addEventListener('change',event=>{document.getElementById('web-mode-help').textContent=Product.webModeHelp(event.target.value);});
+jget('/api/web/capabilities',8000).then(data=>{document.getElementById('web-service-status').textContent=Product.webCapabilitiesText(data);}).catch(()=>{document.getElementById('web-service-status').textContent='无法读取采集配置 · 不代表已联网，结果以本次来源记录为准';});
 const sessionsButton = document.getElementById("sessions-toggle"), sessionSide = document.querySelector(".side");
 function closeSessions(){ sessionSide.classList.remove("mobile-open"); sessionsButton.setAttribute("aria-expanded","false"); }
 sessionsButton.addEventListener("click",()=>{const open = sessionSide.classList.toggle("mobile-open");sessionsButton.setAttribute("aria-expanded",String(open));if(open)document.querySelector(".newbtn").focus();});

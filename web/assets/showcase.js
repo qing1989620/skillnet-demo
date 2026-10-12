@@ -35,6 +35,7 @@
     else if(t==='retrieval.completed') {s.selected=arr(d.selected);s.retrieval=d;complete(0);log=`检索完成 · 推荐 ${s.selected.length} 个技能，供后续编排核对`;}
     else if(t==='ranking.completed') {s.ranking=arr(d.entries);complete(1);log=`策略排序完成 · 首位 ${d.top || '无候选'}`;}
     else if(t==='orchestration.completed') {s.orchestration=d;s.selected=arr(d.order || d.skills);complete(2);log=`编排采用 ${s.selected.length} 项技能 · ${arr(d.edges).length} 条关系`;}
+    else if(t.startsWith('web.')) {log=typeof Product!=='undefined'&&Product.webEventText?Product.webEventText(t,d):'正在取得真实网络证据';}
     else if(t==='plan.created') {s.approach=d.approach || '';s.planSteps=number(d.steps);complete(3);log=`方案已生成 · ${s.planSteps} 个规划动作`;}
     else if(t==='dag.ready') {s.nodes=arr(d.nodes).filter(n=>Number.isInteger(n.idx)).map(n=>({...n,status:'pending'}));log=`执行 DAG 就绪 · ${s.nodes.length} 步 · 依赖来自 ${d.workflow_source || '执行引擎'}`;}
     else if(t==='capability.frontier') {s.frontier=d.frontier;log=`实际输入已观测 · ${arr(d.frontier?.diagnosis?.gaps).length} 项条件缺口待验证 · 只读投影，不自动执行或发奖`;}

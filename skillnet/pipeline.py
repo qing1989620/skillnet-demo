@@ -25,6 +25,7 @@ Orchestrator 会输出一个 DAG，但 Runtime **只执行其中一步**——DA
 from __future__ import annotations
 
 import contextvars
+import json
 import pathlib
 import re
 import shutil
@@ -100,7 +101,7 @@ def build_steps(plan: dict[str, Any], workflow: list[list[str]] | None = None) -
     for i, st in enumerate(steps_plan):
         s = st if isinstance(st, dict) else {"action": str(st)}
         step = RunStep(idx=i, action=str(s.get("action") or ""), skill=s.get("skill") or None)
-        step.contract = {k: s[k] for k in ('input_files', 'output_files', 'data_checks', 'verification', 'expected_output', 'check', 'requires', 'ensures') if k in s}
+        step.contract = {k: s[k] for k in ('input_files', 'output_files', 'data_checks', 'verification', 'expected_output', 'check', 'requires', 'ensures', 'web_context') if k in s}
         step.dependency_reason = '方案顺序兜底'
         step.depends_on = [i - 1] if i > 0 else []
         out.append(step)
@@ -308,7 +309,8 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         phase = "code_gen" if attempt == 1 else f"repair{attempt - 1}_llm"
         if attempt == 1:
             prompt = _gen_code_prompt(run.task, {"action": step.action, "key_params": [],
-                                                 "expected_output": step.contract.get('expected_output', '')}, skill, stack,
+                                                 "expected_output": step.contract.get('expected_output', ''),
+                                                 "web_context": step.contract.get('web_context')}, skill, stack,
                                       mode=mode, carried=carried)
             prompt += '\n本步骤文件契约：' + str(step.contract) + '\n只完成本步职责；缺失约定输入必须报错，禁止重造数据。'
         else:
@@ -380,6 +382,20 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         attempt_checks = checks_mod.run_checks(attempt_paths, result)
         immutable_inputs = {orig:workspace / 'artifacts' / aname for aname,orig in carry_pairs}
         attempt_checks += contracts.contract_checks(step.contract, attempt_paths, carried, input_paths=immutable_inputs)
+        host_verifications = []
+        if run.staged.get('web_research', {}).get('needed'):
+            from . import web_research
+            source_check = web_research.audit_files(attempt_paths, run.staged['web_research'], workspace,
+                require_identity=bool(run.staged['web_research'].get('identity_name') and step.idx == 0))
+            if source_check['rows']:
+                step.state_evidence['web_citations'] = source_check
+                if source_check['state'] == 'failed':
+                    attempt_checks.append(dict(name='外部来源绑定与原文核验', passed=False,
+                        required=True, detail=json.dumps(source_check, ensure_ascii=False)[:3000]))
+                host_verifications.append(dict(layer='host_web', item='外部来源绑定与原文核验',
+                    passed=source_check['state']=='verified', state='passed' if source_check['state']=='verified' else source_check['state'],
+                    evidence=json.dumps(source_check, ensure_ascii=False)[:3000]))
+                _emit(run, 'web.citations.checked', step=step.idx, **source_check)
         frozen = run.staged.get('state_policy', {}).get('frozen', {}).get(str(step.idx)) or {}
         post_specs = frozen.get('declaration', {}).get('ensures',
             step.contract.get('ensures', state_policy.file_predicates(step.contract.get('output_files', []))))
@@ -407,10 +423,10 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
                             else '服务端冻结参考逐项复算，不使用模型评分'))
         if skill:
             attempt_checks += checks_mod.checks_from_skill(skill.verification, attempt_paths)
-        attempt_verifications = []
+        attempt_verifications = list(host_verifications)
         if at.ok and skill and any(not checks_mod.parse_assertions([v]) for v in skill.verification):
             t_verify = now_ms()
-            attempt_verifications = _verify_with_skill(skill, run.task, step.action, code,
+            attempt_verifications += _verify_with_skill(skill, run.task, step.action, code,
                 result.get('stdout') or '', [p.name for p in attempt_paths], artifact_paths=attempt_paths,
                 input_paths=list(immutable_inputs.values()))
             step.stages['verify_sem_ms'] = step.stages.get('verify_sem_ms', 0) + now_ms() - t_verify
@@ -478,7 +494,7 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
     _emit(run, "verification.started", step=step.idx)
     _t = now_ms()
     step.checks = [ProgrammaticCheck(**c) for c in attempt_checks]
-    step.verifications = [VerificationResult(layer='llm', **v) for v in attempt_verifications]
+    step.verifications = [VerificationResult(**dict({'layer':'llm'}, **v)) for v in attempt_verifications]
     step.stages["verify_det_ms"] = now_ms() - _t
 
     # ---- L3 技能验收（LLM，仅对非 machine-readable 条目）----
@@ -589,19 +605,30 @@ def _run_steps_graph(run: Run, workspace: pathlib.Path, lib: Any,
                     producer_ancestors[consumer] = found
                 return producer in producer_ancestors[consumer]
             grouped = {}
+            declared = st.contract.get('input_files')
+            # An explicit empty list is meaningful. Legacy plans without this
+            # field retain their previous ancestry-based input behavior.
+            requested = set(declared) if isinstance(declared, list) else None
             for artifact in run.artifacts:
                 if artifact.from_step not in ancestors and artifact.kind not in ('跨轮输入','任务输入'):
                     continue
                 logical = artifact.logical_name or re.sub(r'^step\d+_', '', artifact.name)
+                if requested is not None and logical not in requested and artifact.name not in requested:
+                    continue
                 grouped.setdefault(logical, []).append(artifact)
             inputs, conflicts = [], []
             for logical, versions in sorted(grouped.items()):
                 produced = [a for a in versions if a.kind not in ('跨轮输入','任务输入') and a.from_step in ancestors]
                 # Any current-run producer supersedes the imported version. Among
                 # current producers, discard those with a newer producer descendant.
+                current_inputs = [a for a in versions if a.kind == '任务输入'
+                                  and a.source_run_id == run.run_id]
+                # Fresh host evidence is the input version for this run. A
+                # carried snapshot must not compete with it merely because both
+                # use the same logical name; two fresh versions remain ambiguous.
                 selected = ([a for a in produced if not any(
                     a.from_step != other.from_step and before(a.from_step, other.from_step)
-                    for other in produced)] if produced else versions)
+                    for other in produced)] if produced else current_inputs or versions)
                 if len(selected) == 1:
                     inputs.append(selected[0])
                 else:
@@ -659,7 +686,9 @@ def _run_steps_graph(run: Run, workspace: pathlib.Path, lib: Any,
                 if isinstance(outcome, BudgetExceeded):
                     budget_hit = outcome
                     continue
-                required_failed = any(not c.passed for c in st.checks if c.required) or any(v.state == 'failed' for v in st.verifications)
+                web_gate = st.state_evidence.get('web_citations', {})
+                required_failed = (any(not c.passed for c in st.checks if c.required) or any(v.state == 'failed' for v in st.verifications)
+                    or bool(web_gate.get('identity_rows') and web_gate.get('identity_state') != 'verified'))
                 if st.status == STEP_FAILED or required_failed:
                     reason = st.error or '上游步骤的必要验收未通过，禁止使用其产物继续执行'
                     skipped = _mark_downstream_skipped(run, st.idx, reason)
@@ -744,6 +773,9 @@ def execute_run(run: Run, lib: Any, workspace: pathlib.Path,
     for i, st in enumerate(steps_plan):
         if len(picked) >= max_steps:
             break
+        if i == 0 and run.staged.get('web_research', {}).get('identity_name'):
+            picked.append(i)
+            continue
         action = st.get("action") if isinstance(st, dict) else str(st)
         if step_filter is not None:
             if step_filter(i, st if isinstance(st, dict) else {"action": str(action)}):

@@ -200,6 +200,7 @@ class ResearchAgent:
             "csv_no_missing(columns)、csv_unique(columns)、csv_numeric_range(column,min,max)、"
             "csv_values_in(column,values:[0,1])、csv_disjoint_groups(entity,group)、file_exists；每条都必须有 kind/file，file 必须等于真实 input_files/output_files 文件名，不能用描述或别名。"
             "仅有自然语言的条件不要伪造机器判据，保留在 risks。未知或不满足的前置条件会在代码生成之前阻断。"
+            "csv_* 条件只能用于 .csv 文件；web_sources.json 等 JSON 输入只能声明 file_exists，JSON 结构由分析代码读取校验，不能把 sources 当 CSV 表头。"
             "这些声明不是参考答案，产物仍会被独立核验。\n"
             "csv_numeric_range 对该列每一行生效：不要给混合单位的长表 value 列统一设 [0,1]；"
             "例如 metric,value 同时含 n/tp/fp 等计数与 accuracy/f1 等比例，计数可大于1，此时仅声明结构与非空，数值正确性交给独立逐指标复算。"
@@ -218,6 +219,19 @@ class ResearchAgent:
             model=self.model,
         )
         parsed = _safe_json(raw)
+        errors = _format_contract_errors(parsed)
+        if errors:
+            # Repair a malformed plan at the planning boundary, instead of
+            # deleting checks or spending executor attempts on impossible IO.
+            repair = chat([{'role':'system','content':system}, {'role':'user','content':user},
+                {'role':'assistant','content':raw}, {'role':'user','content':
+                    '方案格式检查未通过：'+json.dumps(errors,ensure_ascii=False)+
+                    '。请保留任务目标、数据与必要验收，修正文件类型不匹配的条件；JSON不可按CSV验收，已有来源指纹由宿主核对。完整输出修正JSON。'}],
+                role='executor', temperature=0.1, max_tokens=max_tokens, model=self.model)
+            parsed = _safe_json(repair)
+            parsed['_plan_repairs'] = [dict(reason='file_predicate_type_mismatch', errors=errors,
+                                           remaining=_format_contract_errors(parsed))]
+            raw = repair
         return AgentRun(task=task, style=style, skills=skills, response=parsed, raw=raw)
 
     # ------------------------------------------------------------------
@@ -258,6 +272,22 @@ def _safe_json(text: str) -> dict[str, Any]:
     except Exception:  # noqa: BLE001
         return {"approach": text.strip()[:1500], "steps": [], "risks": [], "artifacts": [],
                 "_parse_failed": True}
+
+
+def _format_contract_errors(plan: dict) -> list[str]:
+    errors = []
+    for index, step in enumerate(plan.get('steps') or []):
+        if not isinstance(step, dict):
+            continue
+        for field in ('requires','ensures'):
+            specs = step.get(field)
+            if not isinstance(specs, list):
+                continue
+            for spec in specs:
+                if (isinstance(spec, dict) and str(spec.get('kind','')).startswith('csv_')
+                        and not str(spec.get('file','')).lower().endswith('.csv')):
+                    errors.append(f'步骤{index+1}.{field}: {spec.get("kind")} 不能检查非CSV文件 {spec.get("file")}')
+    return errors[:16]
 
 
 def dumps(obj: Any) -> str:

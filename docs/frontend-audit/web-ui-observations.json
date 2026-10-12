@@ -1,0 +1,85 @@
+{
+  "version": "skillnet-web-ui-observations-v12",
+  "observed_date_local": "2026-10-13",
+  "browser": "Codex In-app Browser",
+  "asset_version": "20261013.12",
+  "page_version": "2026-10-13.web.12",
+  "scope": "Native browser review of the public Crossref completed run network evidence view, not full-site certification.",
+  "run_id": "558a5f21-20261013-010459-6d6e",
+  "views": [
+    {
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "dialog_bounds": {
+        "x": 195,
+        "y": 109,
+        "width": 1050,
+        "height": 681
+      },
+      "horizontal_overflow": false,
+      "screenshot": "docs/frontend-audit/screenshots/web-sources-desktop-v12.jpg"
+    },
+    {
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "dialog_bounds": {
+        "x": 16,
+        "y": 103.5,
+        "width": 358.4,
+        "height": 637
+      },
+      "horizontal_overflow": false,
+      "screenshot": "docs/frontend-audit/screenshots/web-sources-mobile-v12.jpg"
+    }
+  ],
+  "native_checks": [
+    {
+      "check": "Network evidence dialog opens from the run header",
+      "state": "passed"
+    },
+    {
+      "check": "Actual HTTP 200 records, provider origin, snapshot SHA, explicit Asia/Shanghai time and source-vs-conclusion distinction visible",
+      "state": "passed"
+    },
+    {
+      "check": "Escape closes the dialog and focus returns to its network trigger",
+      "state": "passed"
+    },
+    {
+      "check": "Snapshot action opens web_sources.json for the exact current run; displayed SHA matches the frozen index",
+      "state": "passed",
+      "index_sha256": "7c721c4e202cd7375db08acea97e73f119d1fe971b5bb2105cea1ae7b8560ab3"
+    },
+    {
+      "check": "Nested artifact preview closes, then source dialog closes and returns focus",
+      "state": "passed"
+    },
+    {
+      "check": "Temporary viewport override reset at end",
+      "state": "passed"
+    }
+  ],
+  "controlled_node_scope": [
+    "Three actual request mode handlers auto/on/off",
+    "SSE reducer and safe rendering",
+    "Unsafe URL and untrusted text rejection",
+    "Exact run/snapshot links",
+    "Stale, closed, failed and identity-mismatched dialog requests"
+  ],
+  "unverified": [
+    "All sixteen complete parent views",
+    "Physical touch device",
+    "Screen reader",
+    "200 percent browser zoom",
+    "S1 production deployment and live authorization/attachment flow"
+  ],
+  "screenshots_sha256": {
+    "docs/frontend-audit/screenshots/web-sources-desktop-v12.jpg": "e359bb9690abe6d0489af4429566cc1702458ec59184bc4adf1b4ca82be35e00",
+    "docs/frontend-audit/screenshots/web-sources-mobile-v12.jpg": "95fd58066656a3e7a8dd4c21db60fdef9e0cce50ab05155c50ef1ca066902b92"
+  },
+  "note": "Earlier frontend audit records remain historical. No private task history or private person output is included."
+}

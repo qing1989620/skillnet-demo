@@ -119,5 +119,12 @@ def capsule(run, workspace: Path):
     if isinstance(staged.get('capability_frontier'), dict) and staged['capability_frontier']:
         from .frontier_bridge import with_integrity
         value['capability_frontier'] = with_integrity(staged['capability_frontier'], files)
+    if isinstance(staged.get('web_research'), dict) and staged['web_research'].get('needed'):
+        web = staged['web_research']
+        value['web_research'] = {key:web.get(key) for key in ('version','mode','state','queries','attempts','citation_audit','boundary')}
+        value['web_research']['sources'] = [{k:v for k,v in s.items() if k != 'text'} for s in web.get('sources', [])]
+        discovery = web.get('discovery', {})
+        value['web_research']['discovery'] = {k:v for k,v in discovery.items() if k != 'candidates'}
+        value['web_research']['discovery']['candidates'] = [{k:v for k,v in s.items() if k != 'body'} for s in discovery.get('candidates', [])]
     value['capsule_sha256'] = digest(value)
     return value

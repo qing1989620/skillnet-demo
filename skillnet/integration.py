@@ -67,6 +67,7 @@ class RunInput(_Input):
     max_llm_calls: int = Field(default=40, ge=5, le=200)
     history: list[HistoryInput] = Field(default_factory=list, max_length=20)
     artifact_refs: list[ArtifactInput] = Field(default_factory=list, max_length=16)
+    web_mode: Literal['auto', 'on', 'off'] = 'auto'
 
 
 @dataclass(frozen=True)
@@ -108,6 +109,7 @@ def integration_manifest() -> dict[str, Any]:
         "authentication": {"header": "X-SkillNet-Token", "scope": "service-to-service"},
         "operations": {
             "health": {"method": "GET", "path": "/api/health"},
+            "web_capabilities": {"method": "GET", "path": "/api/web/capabilities", "availability": "configuration_only"},
             "search": {"method": "POST", "path": "/api/search", "default_mode": "hybrid"},
             "load_skill": {"method": "GET", "path": "/api/skill/{name}"},
             "skill_package": {"method": "GET", "path": "/api/skill/{name}/package"},

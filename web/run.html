@@ -156,15 +156,15 @@
   .tabs{display:none}
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=20261012.11"></script>
+<script src="/static/assets/ui.js?v=20261013.12"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=20261012.11"></script>
-<link rel="stylesheet" href="/static/assets/frontier.css?v=20261012.11">
-<script src="/static/assets/frontier.js?v=20261012.11"></script>
-<link rel="stylesheet" href="/static/assets/refinement.css?v=20261012.11">
-<link rel="stylesheet" href="/static/assets/quality.css?v=20261012.11">
-<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261012.11">
-<link rel="stylesheet" href="/static/assets/sphere.css?v=20261012.11">
+<script src="/static/assets/product.js?v=20261013.12"></script>
+<link rel="stylesheet" href="/static/assets/frontier.css?v=20261013.12">
+<script src="/static/assets/frontier.js?v=20261013.12"></script>
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261013.12">
+<link rel="stylesheet" href="/static/assets/quality.css?v=20261013.12">
+<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261013.12">
+<link rel="stylesheet" href="/static/assets/sphere.css?v=20261013.12">
 </head>
 <body>
 <header>
@@ -237,6 +237,7 @@ const fmtMs = ms => ms >= 1000 ? (ms/1000).toFixed(1) + "s" : Math.max(0, Math.r
 const fmtTs = ms => { const d = new Date(ms); return d.toTimeString().slice(0,8) + "." + String(d.getMilliseconds()).padStart(3,"0"); };
 
 let RUN = null;          // 最近一次 /api/runs/{id}
+let LIVE_WEB_REPORT = null;
 let EVENTS = [];         // 收到的全部事件
 let SELECTED = null;     // {kind:"step"|"artifact"|"attempt", idx?, name?}
 const T0 = Date.now();
@@ -279,7 +280,7 @@ window.addEventListener("pagehide",()=>streamController?.abort());
 async function refresh(){
   if(refreshPending)return refreshPending;
   refreshPending = UI.json(`${API}/api/runs/${encodeURIComponent(RUN_ID)}`);
-  try { RUN = await refreshPending; }
+  try { RUN = await refreshPending;if(!RUN.staged?.web_research&&LIVE_WEB_REPORT)RUN.staged={...(RUN.staged||{}),web_research:LIVE_WEB_REPORT}; }
   catch(error) { $("stream-state").textContent="同步失败";if(!RUN){$("timeline").innerHTML=UI.errorHTML(error);$("task").textContent="无法读取执行记录";$("cancel").disabled=true;}return; }
   finally { refreshPending=null; }
   $("status").textContent = ({"COMPLETED":"已完成","PARTIAL":"部分完成","FAILED":"失败","RUNNING":"运行中",
@@ -297,7 +298,7 @@ async function refresh(){
     if(rawStep!==null&&!target)UI.toast('该步骤不在本次记录中，已展示首个实际步骤。');
   }
   renderGraph(); renderTimelineMeta();
-  const m=Product.metrics(RUN);let proof=document.getElementById("run-proof");if(!proof){proof=document.createElement("div");proof.id="run-proof";proof.className="run-proof";$("task").parentNode.appendChild(proof);}proof.innerHTML=`程序验收 ${m.passed}/${m.checks} · 语义确认 ${m.confirmed}/${m.semantic} · ${esc(m.gate.eligible===false?"学习未准入："+m.gate.reason:m.gate.eligible===true?"具备学习准入证据":"尚未记录学习结论")} <button type="button" data-run-value data-run="${esc(RUN.run_id)}">交付与证据 ↗</button>`;
+  const m=Product.metrics(RUN);let proof=document.getElementById("run-proof");if(!proof){proof=document.createElement("div");proof.id="run-proof";proof.className="run-proof";$("task").parentNode.appendChild(proof);}proof.innerHTML=`程序验收 ${m.passed}/${m.checks} · 语义确认 ${m.confirmed}/${m.semantic} · ${esc(m.gate.eligible===false?"学习未准入："+m.gate.reason:m.gate.eligible===true?"具备学习准入证据":"尚未记录学习结论")} <button type="button" data-run-value data-run="${esc(RUN.run_id)}">交付与证据 ↗</button>${RUN.staged?.web_research?` <button type="button" data-web-evidence data-run="${esc(RUN.run_id)}">网络来源与台账 ↗</button>`:''}`;
   if (SELECTED) renderInspector();
   const done = TERMINAL.includes(RUN.status);
   $("cancel").disabled = done;
@@ -351,7 +352,7 @@ function renderGraph(){
     if(inputs.length)parts.push(`<div class="gedge">${inputs.map(a=>`<span class="art" data-art="${esc(a.name)}" data-from="${a.from_step??''}">${esc(a.logical_name)} ← ${a.from_step==null?'外部/任务输入':'S'+(a.from_step+1)}</span>`).join('')}</div>`);
     else if((s.inputs||[]).length)parts.push(`<div class="gedge"><span>输入：${esc(s.inputs.join('、'))}（旧记录未登记版本）</span></div>`);
   });
-  host.innerHTML = Product.dagHTML(RUN)+parts.join("");
+  host.innerHTML = Product.dagHTML(RUN)+parts.join("")+Product.webResearchHTML(RUN,{compact:true});
   if (!STATIC_MODE && !TERMINAL.includes(RUN.status) && PERF.ttfv == null && RUN.steps.length) {
     PERF.ttfv = Date.now() - PERF.t0;
     // 上报（落盘到 Run，供审计）：一次 per page load
@@ -382,6 +383,7 @@ const EV_STYLE = t => t.startsWith("run.completed") || t === "execution.finished
 const EV_TEXT = (ev) => {
   const d = ev.data || {};
   switch (ev.type) {
+    case 'web.search.started':case 'web.search.completed':case 'web.source.checked':case 'web.skills.discovered':case 'web.citations.checked':return esc(Product.webEventText(ev.type,d));
     case "run.started": return `任务已创建 · <b>${esc((d.task||"").slice(0,90))}</b>`;
     case "retrieval.completed": return `检索完成 · <b>${(d.selected||[]).length}</b> 个候选 · 分流 <b>${esc(d.decision||"")}</b> · ${fmtMs(d.duration_ms||0)}`;
     case "ranking.completed": return `任务条件化排序 · 首选： <b>${esc(d.top||"—")}</b>`;
@@ -464,6 +466,7 @@ function reactTo(ev){
     clearTimeout(refreshTimer);refreshTimer=setTimeout(refresh,120);
   }
   if (ev.type === "run.finished") refresh();
+  if(ev.type.startsWith('web.')){LIVE_WEB_REPORT=Product.reduceWebEvent(LIVE_WEB_REPORT||RUN?.staged?.web_research,ev.type,ev.data||{});if(RUN){RUN.staged={...(RUN.staged||{}),web_research:LIVE_WEB_REPORT};renderGraph();}clearTimeout(refreshTimer);refreshTimer=setTimeout(refresh,120);}
 }
 
 /* ---------- Inspector ---------- */

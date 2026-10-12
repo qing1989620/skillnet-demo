@@ -77,6 +77,58 @@
     const measured=observations.filter(o=>(o.independent_checks||[]).length),generic=steps.filter(s=>!s.skill||s.skill==='manual'),unmeasured=steps.length-measured.length;
     return `<section class="transition-overview" aria-label="能力的实际状态变化"><header><div><small>INPUT STATE → OBSERVED EFFECT → EVIDENCE</small><h3>能力有没有发挥作用，沿实际产物检查</h3></div><button type="button" data-capability-report data-run="${esc(run.run_id)}">重新核对文件与证据 ↗</button></header><div class="transition-overview-grid">${steps.map(s=>{const o=observations.find(o=>o.idx===s.idx),checks=o?.independent_checks||[];return `<article><small>STEP ${Number(s.idx)+1} · ${esc(s.skill&&s.skill!=='manual'?s.skill:'通用执行')}</small><h4>${esc(s.action)}</h4><p><b>实际输入</b> ${esc((s.input_artifacts||[]).map(f=>f.logical_name||f.name).join(' / ')||'本次任务输入')}</p><i>↓</i><p><b>登记产物</b> ${esc((s.artifacts||[]).map(f=>f.logical_name||f.name).join(' / ')||'尚无登记产物')}</p><strong>${checks.length?'执行时独立结果检查 '+checks.filter(c=>c.passed===true).length+'/'+checks.length:'独立结果判据待补齐'}</strong></article>`;}).join('')}</div><p>${generic.length} 个通用步骤尚未绑定技能 · ${unmeasured} 个步骤缺少独立结果判据。以上是执行时记录；点击核对可重新检查物理文件。单次变化仍不证明技能因果贡献。</p></section>`;
   }
+  function webURL(value){
+    if(typeof value!=='string'||value.length>8192||/[\u0000-\u0020\u007f\\]/.test(value))return '';
+    try{const url=new URL(value);if(!['https:','http:'].includes(url.protocol)||url.username||url.password||!url.hostname||url.port&&!['80','443'].includes(url.port))return '';
+      const host=url.hostname.toLowerCase().replace(/\.$/,'');if(host==='localhost'||/\.(localhost|local|internal|home|lan|invalid|test)$/.test(host))return '';
+      if(/^\d+(?:\.\d+){3}$/.test(host)){const [a,b]=host.split('.').map(Number);if(a===0||a===10||a===127||a===169&&b===254||a===172&&b>=16&&b<=31||a===192&&b===168||a===100&&b>=64&&b<=127||a>=224)return '';}
+      if(host.includes(':')&&!/^\[[23][0-9a-f]{0,3}:/.test(host))return '';
+      return url.href;}catch(_){return '';}
+  }
+  function webCapabilitiesText(data){
+    if(!data||typeof data!=='object')return '尚未读取网络服务配置';
+    if(data.enabled!==true)return '网络采集已停用 · 本次不会自动取得新来源';
+    return `网络采集已配置 · ${data.keyless===true?'匿名额度':data.key_configured===true?'已配置服务凭据':'提供方状态待核验'} · 实际可用性在每次请求中核验`;
+  }
+  function webModeHelp(mode){return ({auto:'自动判断是否需要外部事实；实际查询与结果逐项留证。',on:'主动搜索公开来源；任务中禁止联网或标记保密资料时仍会阻断。',off:'本次不发起新搜索；已有材料不代表已完成联网核验。'})[mode]||'请选择网络证据模式。';}
+  function webRetrievedAt(value){
+    if(typeof value!=='string'||!value)return '取得时间未记录';
+    const date=new Date(value);
+    if(!/(?:Z|[+-]\d{2}:?\d{2})$/i.test(value)||!Number.isFinite(date.getTime()))return `时间未解析（原记录：${value}）`;
+    try{return '北京时间 '+new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).format(date).replace(/\//g,'-');}catch(_){return date.toISOString()+'（UTC）';}
+  }
+  function webEventText(type,data={}){
+    const count=value=>Number.isSafeInteger(value)&&value>=0?value:0;
+    return ({'web.search.started':()=>`开始真实网络搜索：${data.query||'公开检索词'}`,
+      'web.search.completed':()=>`网络搜索返回 ${count(data.candidates)} 个来源候选 · 候选仍需打开核验`,
+      'web.source.checked':()=>`来源 ${data.source_id||''} · ${data.retrieval_mode==='provider_extract'?'提供方摘录':data.state==='fetched'?'原站快照已取得':'未取得可确认快照'} · ${data.reason||data.state||'待核验'}`,
+      'web.skills.discovered':()=>`外部技能发现：${Array.isArray(data.candidates)?data.candidates.length:0} 个候选 · 隔离审查后才可采用`,
+      'web.citations.checked':()=>`来源台账检查：${count(data.verified)} 条有有限支持 / ${count(data.unknown)} 条未确认 / ${count(data.failed)} 条未通过`})[type]?.()||'';
+  }
+  function reduceWebEvent(previous,type,data={},mode='auto'){
+    if(!type.startsWith('web.'))return previous;
+    const report={version:'live-web-observation',mode,needed:true,state:'checking',queries:[],sources:[],...(previous||{})};
+    if(type==='web.search.started'){report.state='searching';report.queries=[data.query||''];}
+    if(type==='web.search.completed'){report.state=Number(data.candidates)>0?'checking':data.state||'unknown';report.attempts=Array.isArray(data.attempts)?data.attempts:[];}
+    if(type==='web.source.checked'){report.sources=[...(Array.isArray(report.sources)?report.sources:[]).filter(s=>s.source_id!==data.source_id),{...data}];}
+    if(type==='web.skills.discovered')report.discovery={...data};
+    if(type==='web.citations.checked')report.citation_audit={...data};
+    return report;
+  }
+  function webResearchHTML(run,options={}){
+    const report=run?.staged?.web_research||run?.web_research;
+    if(!report||typeof report!=='object')return '';
+    const rows=value=>Array.isArray(value)?value.filter(v=>v&&typeof v==='object'):[];
+    const sources=rows(report.sources),audit=report.citation_audit||{},items=rows(audit.items),discovery=report.discovery||{},skills=rows(discovery.candidates);
+    const isDirect=s=>s.state==='fetched'&&s.retrieval_mode==='direct_fetch'&&Number.isInteger(s.status_code)&&s.status_code>=200&&s.status_code<300;
+    const direct=sources.filter(isDirect),extracted=sources.filter(s=>s.state==='extracted'&&s.retrieval_mode==='provider_extract');
+    const statuses={success:'来源采集完成，结论另行核验',searching:'正在搜索公开来源',checking:'正在核验来源',fetched:'已取得原站快照',extracted:'仅取得提供方摘录',available:'已取得部分来源',collected:'已取得部分来源',partial:'部分来源可用',disabled:'本次未发起新采集',not_needed:'本次未判定需要网络搜索',failed:'未取得可用来源',unavailable:'来源服务不可用',unknown:'尚未确认',blocked:'来源访问被阻断',unsupported:'来源格式尚不支持',too_large:'来源超出读取预算',rate_limited:'提供方额度受限',empty:'没有来源命中'};
+    const count=value=>Number.isSafeInteger(value)&&value>=0?value:0,hash=value=>typeof value==='string'&&/^[a-f0-9]{64}$/i.test(value)?value:'';
+    const external=(value,label)=>{const url=webURL(value);return url?`<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(label||url)} ↗</a>`:`<span class="web-unlinked">${esc(label||value||'未登记来源地址')} · 地址不可直接打开</span>`;};
+    const snapshot=(file,sha)=>typeof file==='string'&&/^[A-Za-z0-9_.-]+$/.test(file)&&!file.startsWith('.')&&contextText(run.run_id)?`<button type="button" data-artifact-preview data-run="${esc(run.run_id)}" data-file="${esc(file)}" data-sha="${esc(hash(sha))}">核对冻结快照 ↗</button>`:'';
+    const title=statuses[report.state]||'已有网络采集记录，需逐项核对';
+    return `<section class="web-research ${options.compact?'compact':''}" aria-label="本次任务的网络来源与核验"><header><div><small>SEARCH → OPEN → SNAPSHOT → CHECK</small><h3>外部事实，从搜索到可复核来源</h3></div><span class="web-status">${esc(title)}</span></header><p class="web-reason">${esc(({auto:'按任务需要采集',on:'主动采集公开来源',off:'已关闭本次新采集'}[report.mode])||'未记录采集模式')}${report.reason?' · '+esc(report.reason):''}。搜索命中、原站打开与事实核验分别记录。</p><div class="web-metrics"><div><b>${direct.length}</b><span>原站快照</span></div><div><b>${extracted.length}</b><span>提供方摘录</span></div><div><b>${sources.length-direct.length-extracted.length}</b><span>来源未取得</span></div><div><b>${count(audit.unknown)+count(audit.failed)}</b><span>台账未确认 / 未通过</span></div></div>${Array.isArray(report.queries)&&report.queries.length?`<details class="web-query"><summary>本次实际公共检索词 · ${report.queries.length} 条</summary><ul>${report.queries.map(q=>`<li>${esc(q)}</li>`).join('')}</ul></details>`:''}<div class="web-sources">${sources.map(s=>`<article><div class="web-source-head"><small>${esc(s.source_id||'SOURCE')} · ${esc(s.provider||'来源未记录')}</small><strong>${esc(isDirect(s)?'原站已打开':s.state==='extracted'&&s.retrieval_mode==='provider_extract'?'提供方摘录 · 原站未确认':s.state==='fetched'?'记录不完整 · 原站状态未确认':statuses[s.state]||'未确认')}</strong></div><h4>${external(s.url,s.title||s.url)}</h4><p>${s.retrieval_mode==='direct_fetch'&&s.status_code!=null?'原站 HTTP '+esc(s.status_code):'原站 HTTP 未确认'}${s.retrieved_at?' · '+esc(webRetrievedAt(s.retrieved_at)):''}</p><p>${esc(s.reason==='public source snapshot fetched; claims remain unverified'?'已保存原站正文快照；来源陈述仍需核验':s.reason||'未记录具体取得状态；不能把命中摘要当作核验。')}</p>${hash(s.sha256)?`<details><summary>冻结来源 SHA-256 · ${esc(s.sha256.slice(0,12))}…</summary><code>${esc(s.sha256)}</code><p>${esc(s.url)}</p>${snapshot(s.text_file,s.sha256)}</details>`:'<p class="web-evidence-gap">未登记可重新核对的来源快照指纹。</p>'}</article>`).join('')||`<p class="web-evidence-gap">${report.state==='searching'?'搜索请求正在进行，尚无来源返回。':report.state==='not_needed'?'本次没有产生新网络来源。':'本次没有取得可登记来源。缺失来源不以模拟记录补足。'}</p>`}</div><details class="web-audit"><summary>摘录与人物台账支持${audit.state?'':' · 尚未检查'} · ${count(audit.verified)} 有限支持 / ${count(audit.unknown)} 未确认 / ${count(audit.failed)} 未通过</summary><p>通过仅表示记录中限定的摘录或字段支持，不能推出所有事实为真、人物已完全消歧。</p><ul>${items.map(item=>`<li><b>${item.state==='verified'?'有限支持':item.state==='failed'?'未通过':'未确认'}</b> · ${esc(item.file||'证据行')}${item.row!=null?' / 第 '+esc(item.row)+' 行':''}<p>${esc(item.reason||'未记录判据')}</p>${item.claim?`<p>${esc(item.claim)}</p>`:''}${item.quote?`<blockquote>${esc(item.quote)}</blockquote>`:''}${item.url?external(item.url,'查看该行来源'):''}</li>`).join('')||'<li>尚无逐行核验结果；没有检查不算通过。</li>'}</ul></details><details class="web-discovery"><summary>网络补充 Skill · ${skills.length} 个隔离候选</summary><p>从公开仓库寻找缺少的能力，保留来源、版本与许可；候选仅进入审查，不会自动执行下载脚本或获得奖励。</p>${skills.map(s=>`<article><h4>${external(s.source_url||s.repo,s.name||s.repo||'技能候选')}</h4><p>${esc(s.state||'待审查')} · Star ${Number.isFinite(s.stars)?esc(s.stars):'未记录'} · 许可 ${esc(s.license||'未确认')}</p><p>提交 <code>${esc(s.commit||'未固定')}</code><br>SHA-256 <code>${esc(hash(s.sha256)||'未登记')}</code></p></article>`).join('')||`<p>${discovery.state==='not_needed'?'本次未触发外部技能发现。':'本次未取得可登记的技能候选。'}</p>`}</details>${snapshot(report.evidence_file,report.evidence_sha256)}<details class="web-attempts"><summary>查看真实提供方尝试与限制</summary><pre>${esc(JSON.stringify({search:report.attempts||[],discovery:discovery.attempts||[]},null,2))}</pre></details><p class="web-boundary">${esc(report.boundary||'搜索候选与快照是来源证据。来源不可用、缺少原文或身份支持不足时保留未知，不把网页内容作为指令执行。')}</p></section>`;
+  }
   function frontierSnapshotHTML(run){
     const f=run.staged?.capability_frontier||run.capability_frontier;
     if(!f||typeof f!=='object'||typeof f.version!=='string')return '';
@@ -150,7 +202,7 @@
       ['验收','核对交付证据',`${m.passed}/${m.checks} 程序检查 · ${m.confirmed}/${m.semantic} 语义确认`,m.checks>0&&m.passed===m.checks&&m.unconfirmed.length===0],
       ['反馈','记录成功与失败',`${impact.summary?.updated_n||0} 个技能执行账本更新`,!!impact.summary],
       ['沉淀','有证据才学习',m.gate.mode==='shadow'?'影子观察 · 正式网络未更新':m.gate.eligible===false?'学习准入已拦截':run.evolution?.candidate?'候选待冻结任务验证':run.evolution?.accepted?'新技能已准入':m.gate.eligible===true?'已满足学习条件':'未记录准入结论',m.gate.eligible===true]];
-    return `<section class="kernel-evidence ${compact?'compact':''}" aria-label="本次任务内核证据"><div class="kernel-heading"><div><span class="product-eyebrow">ENGINE / EVIDENCE</span><h3>这个问题，框架实际做了什么</h3></div><a href="${esc(runURL({run:run.run_id}))}">打开完整轨迹 ↗</a><a href="${esc(graphURL({run:run.run_id}))}">本次技能子图 ↗</a></div>${selectionHTML(run)}${frontierSnapshotHTML(run)}${transitionsHTML(run)}${stateKernelHTML(run)}${valueHTML(run)}${outcomeHTML(run)}<div class="kernel-phases">${phases.map(([name,value,fact,done],i)=>`<div class="kernel-phase ${done?'done':i===4&&m.terminal?'attention':'pending'} ${!m.terminal&&i===phases.findIndex(p=>!p[3])?'current':''}"><small>0${i+1} / ${name}</small><b>${value}</b><span>${esc(fact)}</span></div>`).join('')}</div>${!compact?dagHTML(run):''}<div class="kernel-verdict ${m.unconfirmed.length||m.gate.eligible===false?'attention':''}"><b>${m.checks?m.passed===m.checks?'程序检查全部通过':'存在未通过的程序检查':'尚无程序验收证据'}</b><span>${m.unconfirmed.length?`${m.unconfirmed.length} 项语义要求尚未确认：${esc(m.unconfirmed.slice(0,3).map(v=>v.item).join('；'))}`:m.semantic?'产物语义复核已完成':'尚无产物语义复核记录'}${m.gate.reason?' · '+esc(m.gate.reason):''}</span></div>${assessmentDetailsHTML(run)}</section>`;
+    return `<section class="kernel-evidence ${compact?'compact':''}" aria-label="本次任务内核证据"><div class="kernel-heading"><div><span class="product-eyebrow">ENGINE / EVIDENCE</span><h3>这个问题，框架实际做了什么</h3></div><a href="${esc(runURL({run:run.run_id}))}">打开完整轨迹 ↗</a><a href="${esc(graphURL({run:run.run_id}))}">本次技能子图 ↗</a></div>${webResearchHTML(run)}${selectionHTML(run)}${frontierSnapshotHTML(run)}${transitionsHTML(run)}${stateKernelHTML(run)}${valueHTML(run)}${outcomeHTML(run)}<div class="kernel-phases">${phases.map(([name,value,fact,done],i)=>`<div class="kernel-phase ${done?'done':i===4&&m.terminal?'attention':'pending'} ${!m.terminal&&i===phases.findIndex(p=>!p[3])?'current':''}"><small>0${i+1} / ${name}</small><b>${value}</b><span>${esc(fact)}</span></div>`).join('')}</div>${!compact?dagHTML(run):''}<div class="kernel-verdict ${m.unconfirmed.length||m.gate.eligible===false?'attention':''}"><b>${m.checks?m.passed===m.checks?'程序检查全部通过':'存在未通过的程序检查':'尚无程序验收证据'}</b><span>${m.unconfirmed.length?`${m.unconfirmed.length} 项语义要求尚未确认：${esc(m.unconfirmed.slice(0,3).map(v=>v.item).join('；'))}`:m.semantic?'产物语义复核已完成':'尚无产物语义复核记录'}${m.gate.reason?' · '+esc(m.gate.reason):''}</span></div>${assessmentDetailsHTML(run)}</section>`;
   }
   function filesHTML(run) {
     return `<div class="product-files">${(run.artifacts||[]).map(a=>`<button type="button" data-artifact-preview data-run="${esc(run.run_id)}" data-file="${esc(a.name)}" data-sha="${esc(a.sha256||'')}"><span class="file-glyph">${esc((a.name.split('.').pop()||'FILE').toUpperCase())}</span><span><b>${esc(a.name)}</b><small>${a.kind==='跨轮输入'?'历史输入版本 · ':a.kind==='任务输入'?'冻结任务输入 · ':'本次交付 · '}${(Number(a.bytes||0)/1024).toFixed(1)} KB · 点击核对</small></span><span>↗</span></button>`).join('')}</div>`;
@@ -214,7 +266,7 @@
     return `<div class="product-experiments">${html}</div>`;
   }
   function requestEpoch(){let epoch=0;return {begin(){const mine=++epoch;return ()=>epoch===mine;},invalidate(){epoch++;}};}
-  const core={esc,graphURL,runURL,stepIndex,skillTraceHTML,stepReviewHTML,terminal,labels,metrics,dag,dagHTML,evidenceHTML,outcomeHTML,valueHTML,resourcesHTML,resourcesButtonHTML,assessmentDetailsHTML,assessmentHTML,rewardGatesHTML,rewardReceiptHTML,selectionHTML,transitionsHTML,frontierSnapshotHTML,stateKernelHTML,capabilityReportHTML,filesHTML,parseCSV,experimentsHTML,requestEpoch};
+  const core={esc,graphURL,runURL,stepIndex,skillTraceHTML,stepReviewHTML,terminal,labels,metrics,dag,dagHTML,evidenceHTML,outcomeHTML,valueHTML,resourcesHTML,resourcesButtonHTML,assessmentDetailsHTML,assessmentHTML,rewardGatesHTML,rewardReceiptHTML,selectionHTML,transitionsHTML,frontierSnapshotHTML,stateKernelHTML,capabilityReportHTML,filesHTML,parseCSV,experimentsHTML,requestEpoch,webURL,webCapabilitiesText,webModeHelp,webRetrievedAt,webEventText,reduceWebEvent,webResearchHTML};
   if(typeof module!=='undefined'&&module.exports)module.exports=core;
   if(!root?.document)return;
   root.Product=core;
@@ -258,6 +310,15 @@
         const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
         const link=document.createElement('a');link.href=url;link.download='skillnet-evidence-'+String(id).replace(/[^a-zA-Z0-9_-]/g,'')+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
       };
+    }catch(error){panel.fail(error);}finally{button.disabled=false;}
+  }
+  async function inspectWebEvidence(button){
+    const panel=beginPanel('web-evidence-dialog','网络来源与逐行核验'),dialog=panel.dialog,id=contextText(button.dataset.run);
+    if(!id){panel.fail('缺少运行身份，未读取其它任务的证据。');return;}
+    button.disabled=true;
+    try{const run=await root.UI.json('/api/runs/'+encodeURIComponent(id));
+      if(!panel.current())return;if(run.run_id!==id){panel.fail('运行身份不匹配，未展示来源。');return;}
+      dialog.innerHTML=`<header><div><small>NETWORK / SOURCE EVIDENCE</small><h3>本次搜索、原站快照与台账支持</h3></div><form method="dialog"><button>关闭</button></form></header><div class="preview-content">${webResearchHTML(run)||'<p>这条历史运行没有网络采集记录，不能事后补记为已联网。</p>'}</div>`;
     }catch(error){panel.fail(error);}finally{button.disabled=false;}
   }
   async function inspectValue(button){
@@ -326,7 +387,7 @@
       document.body.prepend(shell);
       root.UI.json('/api/health').then(h=>{document.getElementById('product-live').textContent=h.ok?(h.api_key_configured?'引擎已连接':'引擎在线 · 待配置模型'):'服务异常';}).catch(()=>{document.getElementById('product-live').textContent='连接失败';});
     }
-    document.addEventListener('click',event=>{const cap=event.target.closest('[data-capability-report]');if(cap)inspectCapabilities(cap);const passport=event.target.closest('[data-capability-skill]');if(passport)inspectPassport(passport);const button=event.target.closest('[data-artifact-preview]');if(button)preview(button);const node=event.target.closest('[data-kernel-step]');if(node)focusStep(node);const exportButton=event.target.closest('[data-evidence-export]');if(exportButton)handoff(exportButton);const valueButton=event.target.closest('[data-run-value]');if(valueButton)inspectValue(valueButton);const resourcesButton=event.target.closest('[data-skill-resources]');if(resourcesButton)inspectResources(resourcesButton);const resourceButton=event.target.closest('[data-resource-read]');if(resourceButton)readResource(resourceButton);});
+    document.addEventListener('click',event=>{const webButton=event.target.closest('[data-web-evidence]');if(webButton)inspectWebEvidence(webButton);const cap=event.target.closest('[data-capability-report]');if(cap)inspectCapabilities(cap);const passport=event.target.closest('[data-capability-skill]');if(passport)inspectPassport(passport);const button=event.target.closest('[data-artifact-preview]');if(button)preview(button);const node=event.target.closest('[data-kernel-step]');if(node)focusStep(node);const exportButton=event.target.closest('[data-evidence-export]');if(exportButton)handoff(exportButton);const valueButton=event.target.closest('[data-run-value]');if(valueButton)inspectValue(valueButton);const resourcesButton=event.target.closest('[data-skill-resources]');if(resourcesButton)inspectResources(resourcesButton);const resourceButton=event.target.closest('[data-resource-read]');if(resourceButton)readResource(resourceButton);});
     document.addEventListener('keydown',event=>{if((event.key==='Enter'||event.key===' ')&&event.target.matches('[data-kernel-step]')){event.preventDefault();focusStep(event.target);}});
     async function focusStep(node){
       const id=contextText(node.dataset.run),idx=stepIndex(node.dataset.kernelStep);if(!id||idx===null)return;
