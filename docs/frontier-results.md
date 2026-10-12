@@ -14,7 +14,7 @@
 
 ## 最终冻结实验
 
-最终完整报告 [frontier-lab.json](evidence/frontier-lab.json)，执行前协议 [frontier-protocol.json](evidence/frontier-protocol.json)。完整报告的 canonical SHA-256（排除自身摘要字段）是 `ad32999fbd35fdea8aad5c079cbea2a930f42518a13e78adb3fe898542b1bfa3`；协议是 `5c10052a1c20704bc16be41a798086d793761b59c3438696df09ec7d0e583e36`。这些不是 JSON 文件原始字节哈希。
+最终完整报告 [frontier-lab.json](evidence/frontier-lab.json)，执行前协议 [frontier-protocol.json](evidence/frontier-protocol.json)。完整报告的 canonical SHA-256（排除自身摘要字段）是 `24a40ed1a75075a47cf99d4d3882828915946a1b0b43df8561e320d3f82f0704`；协议是 `940244b6a5fe436148d3bd33c0d1c9ae3d866a3d40511d8b0154797f558b77c6`。这些不是 JSON 文件原始字节哈希。
 
 | 相同任务族与调用上限 | 有效任务独立通过 | 负例被误接受 | 实际 Python 调用 | 生成了未通过复核的指标 |
 |---|---:|---:|---:|---:|
@@ -55,3 +55,5 @@ node tools/frontier_ui_check.js
 ```
 
 下一步研究应扩充真实任务族和未建模失败条件，比较学习的条件效果预测与当前固定控制器，并以独立留出任务评价成本、负迁移和校准。不能用这一小模型的成功替代那些尚未完成的实验。
+
+Linux CI 发现严格文件审计在冷启动时拦截了延迟加载的 UTF-8 BOM 编码模块。已在启用相同约束前预加载该固定标准模块，没有扩大文件白名单；新增越界写入仍被拒绝的回归。修复前完整报告保存在 [frontier-before-portability.json.gz](evidence/frontier-before-portability.json.gz)，失败 CI 与指纹见 [frontier-portability-issue.json](evidence/frontier-portability-issue.json)。新源码重新冻结并完整复跑 391 次，数值结果相同；三次工程迭代仍是同一任务族，不扩充独立样本量。此前 v9 浏览器报告指纹属于修复前版本，保留拍摄时来源。

@@ -1,0 +1,49 @@
+{
+  "reason": "Linux isolated Python cold start lazily imports utf_8_sig after the strict file audit hook; Windows had preloaded it. Preload the exact standard codec before installing unchanged file/network restrictions. No broad stdlib read exemption.",
+  "failed_ci": "https://github.com/qing1989620/skillnet-demo/actions/runs/38223820273",
+  "before_commit": "dcf83c23e7eff61ea53cffbe46e7234e00e71356",
+  "archive_sha256": "5d4f747f2302e0e38ec3814f77e11d29d7569c156c2edfc5f5008e9970938f0e",
+  "before_raw_sha256": "c3ffc344681f38be25ccc3694cab36f51f3253c4f82f2028d9eef29f75022c8b",
+  "before_report_sha256": "ad32999fbd35fdea8aad5c079cbea2a930f42518a13e78adb3fe898542b1bfa3",
+  "before_protocol_sha256": "5c10052a1c20704bc16be41a798086d793761b59c3438696df09ec7d0e583e36",
+  "summary": {
+    "task_count": 23,
+    "valid_tasks": 16,
+    "invalid_tasks": 7,
+    "strategies": {
+      "flat": {
+        "verified": 2,
+        "valid_verified": 2,
+        "invalid_verified": 0,
+        "code_calls": 23,
+        "false_accepts": 0,
+        "unverified_metric_outputs": 7,
+        "development_verified": 1,
+        "heldout_verified": 1
+      },
+      "plan_only": {
+        "verified": 2,
+        "valid_verified": 2,
+        "invalid_verified": 0,
+        "code_calls": 3,
+        "false_accepts": 0,
+        "unverified_metric_outputs": 0,
+        "development_verified": 1,
+        "heldout_verified": 1
+      },
+      "active": {
+        "verified": 16,
+        "valid_verified": 16,
+        "invalid_verified": 0,
+        "code_calls": 42,
+        "false_accepts": 0,
+        "unverified_metric_outputs": 0,
+        "development_verified": 8,
+        "heldout_verified": 8
+      }
+    },
+    "all_obligations_passed": true,
+    "physical_code_calls": 391
+  },
+  "scope": "Windows frozen experimental evidence remains valid for its recorded code; Linux portability failure retained. Revised code requires a freshly frozen full matrix, not re-labelling old outputs."
+}

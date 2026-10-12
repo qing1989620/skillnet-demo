@@ -34,6 +34,7 @@ FACT_SPECS: dict[str, dict] = {
 }
 
 _PREFIX = '''import csv
+import encodings.utf_8_sig
 import hashlib
 import io
 import json

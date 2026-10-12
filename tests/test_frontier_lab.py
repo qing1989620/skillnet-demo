@@ -2,8 +2,8 @@
 
 Expected success is recomputed from source CSV and actual inline artifacts using
 the independent oracle. Stored scores, success labels, and oracle verdicts are
-compared only after deriving that expectation. The two serialized iterations
-remain two engineering iterations, never twice as many independent samples.
+compared only after deriving that expectation. Archived engineering iterations
+remain repeated measurements of the same tasks, never independent extra samples.
 """
 import copy
 import csv
@@ -325,3 +325,21 @@ def test_archived_first_iteration_proves_serialization_failure_and_final_repair(
         assert raw_sha(row['metric_csv'].encode('utf-8')) == row['execution']['metrics_sha256']
     assert initial['summary'] == issue['summary'] == final['summary']
     assert final['summary']['physical_code_calls'] == 391  # Never present the two iterations as n=782.
+
+
+def test_portability_archive_keeps_prior_sources_and_same_task_counts(evidence):
+    final, _ = evidence
+    compressed = (EVIDENCE / 'frontier-before-portability.json.gz').read_bytes()
+    issue = json.loads((EVIDENCE / 'frontier-portability-issue.json').read_text(encoding='utf-8'))
+    raw = gzip.decompress(compressed)
+    before = json.loads(raw)
+    assert raw_sha(compressed) == issue['archive_sha256']
+    assert raw_sha(raw) == issue['before_raw_sha256']
+    assert_digest(before)
+    assert before['report_sha256'] == issue['before_report_sha256']
+    assert before['protocol_sha256'] == issue['before_protocol_sha256']
+    assert before['summary'] == issue['summary'] == final['summary']
+    assert before['protocol']['source_sha256']['skillnet/frontier_ops.py'] != final['protocol']['source_sha256']['skillnet/frontier_ops.py']
+    for name, source in final['executed_sources'].items():
+        assert source.replace('import encodings.utf_8_sig\n', '', 1) == before['executed_sources'][name]
+        assert source.index('import encodings.utf_8_sig') < source.index('sys.addaudithook(audit)')

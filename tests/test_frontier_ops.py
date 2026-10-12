@@ -244,3 +244,14 @@ def test_nonfinite_score_fails_metrics_without_promised_artifact(tmp_path):
     assert result['status'] == 'failed'
     assert result['metrics_path'] is None
     assert 'data.range' not in frontier_ops.observe(original)['facts']
+
+
+def test_codec_initialization_does_not_expand_operator_file_access(tmp_path, monkeypatch):
+    original = write_csv(tmp_path / 'data.csv', [['a', 'p-a', 'test', '1', '0.90']])
+    sources = dict(frontier_ops._SOURCES)
+    sources['deduplicate'] += "\nPath('../outside.txt').write_text('must not escape', encoding='utf-8')\n"
+    monkeypatch.setattr(frontier_ops, '_SOURCES', sources)
+    result = frontier_ops.execute('deduplicate', original, tmp_path / 'runs')
+    assert result['status'] == 'failed'
+    assert 'operator may access only its frozen local artifacts' in result['stderr']
+    assert not (tmp_path / 'runs' / 'outside.txt').exists()
