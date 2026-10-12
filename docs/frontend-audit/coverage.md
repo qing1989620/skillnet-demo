@@ -21,23 +21,23 @@
 {
   "pages_in_scope": 16,
   "pages_excluded": 0,
-  "definitions": 31,
-  "instances_in_scope": 160,
+  "definitions": 32,
+  "instances_in_scope": 176,
   "checks": {
-    "blocked": 1188,
-    "passed": 262
+    "blocked": 1316,
+    "passed": 292
   },
   "scenarios": {
-    "blocked": 16,
-    "passed": 37
+    "blocked": 32,
+    "passed": 51
   },
   "findings": {
     "P1": 4,
-    "P2": 13,
+    "P2": 16,
     "P3": 1
   },
-  "component_plans": 160,
-  "tasks": 34
+  "component_plans": 176,
+  "tasks": 38
 }
 ~~~
 
@@ -45,22 +45,22 @@
 
 | 页面 | 路由 | 组件实例 | 已通过 / 失败 / 阻塞 / 未检查 / 不适用 |
 |---|---|---|---|
-| PAGE-001 Executive briefing | / | 38 | 95 / 0 / 270 / 0 / 0 |
-| PAGE-002 Conversation | /chat | 16 | 25 / 0 / 116 / 0 / 0 |
-| PAGE-003 Mission centre | /runs#mission | 6 | 11 / 0 / 46 / 0 / 0 |
-| PAGE-004 Run catalogue | /runs#runs | 8 | 9 / 0 / 60 / 0 / 0 |
-| PAGE-005 Skill catalogue | /runs#skills | 7 | 9 / 0 / 53 / 0 / 0 |
-| PAGE-006 Evaluation reports | /runs#eval | 3 | 5 / 0 / 25 / 0 / 0 |
-| PAGE-007 Deployment information | /runs#system | 4 | 6 / 0 / 32 / 0 / 0 |
-| PAGE-008 Run detail | /run?id=&lt;run-id&gt; | 15 | 19 / 0 / 109 / 0 / 0 |
-| PAGE-009 Spherical skill network | /graph?run=&amp;skill=&amp;domain= | 21 | 30 / 0 / 151 / 0 / 0 |
-| PAGE-010 Developer overview | /dashboard#overview | 5 | 8 / 0 / 39 / 0 / 0 |
-| PAGE-011 Plan contrast | /dashboard#demo | 7 | 9 / 0 / 53 / 0 / 0 |
-| PAGE-012 Developer skill inspector | /dashboard#skills?skill= | 7 | 8 / 0 / 53 / 0 / 0 |
-| PAGE-013 Retrieval/routing laboratory | /dashboard#search | 7 | 8 / 0 / 53 / 0 / 0 |
-| PAGE-014 Execution laboratory | /dashboard#run | 7 | 9 / 0 / 53 / 0 / 0 |
-| PAGE-015 Historical results | /dashboard#results | 3 | 4 / 0 / 25 / 0 / 0 |
-| PAGE-016 S1/export laboratory | /dashboard#adapters | 6 | 7 / 0 / 46 / 0 / 0 |
+| PAGE-001 Executive briefing | / | 39 | 110 / 0 / 278 / 0 / 0 |
+| PAGE-002 Conversation | /chat | 17 | 26 / 0 / 124 / 0 / 0 |
+| PAGE-003 Mission centre | /runs#mission | 7 | 12 / 0 / 54 / 0 / 0 |
+| PAGE-004 Run catalogue | /runs#runs | 9 | 10 / 0 / 68 / 0 / 0 |
+| PAGE-005 Skill catalogue | /runs#skills | 8 | 10 / 0 / 61 / 0 / 0 |
+| PAGE-006 Evaluation reports | /runs#eval | 4 | 6 / 0 / 33 / 0 / 0 |
+| PAGE-007 Deployment information | /runs#system | 5 | 7 / 0 / 40 / 0 / 0 |
+| PAGE-008 Run detail | /run?id=&lt;run-id&gt; | 16 | 20 / 0 / 117 / 0 / 0 |
+| PAGE-009 Spherical skill network | /graph?run=&amp;skill=&amp;domain= | 22 | 31 / 0 / 159 / 0 / 0 |
+| PAGE-010 Developer overview | /dashboard#overview | 6 | 9 / 0 / 47 / 0 / 0 |
+| PAGE-011 Plan contrast | /dashboard#demo | 8 | 10 / 0 / 61 / 0 / 0 |
+| PAGE-012 Developer skill inspector | /dashboard#skills?skill= | 8 | 9 / 0 / 61 / 0 / 0 |
+| PAGE-013 Retrieval/routing laboratory | /dashboard#search | 8 | 9 / 0 / 61 / 0 / 0 |
+| PAGE-014 Execution laboratory | /dashboard#run | 8 | 10 / 0 / 61 / 0 / 0 |
+| PAGE-015 Historical results | /dashboard#results | 4 | 5 / 0 / 33 / 0 / 0 |
+| PAGE-016 S1/export laboratory | /dashboard#adapters | 7 | 8 / 0 / 54 / 0 / 0 |
 
 ## 组件处置
 
@@ -226,6 +226,22 @@
 | CMP-158 | BP-029 | investigate | TASK-001, TASK-031 | Controller faults are covered by actual controlled DOM assertions; native dialog keyboard/focus/layout still needs homepage browser evidence. |
 | CMP-159 | BP-030 | investigate | TASK-001, TASK-031 | Controller faults are covered by actual controlled DOM assertions; native dialog keyboard/focus/layout still needs homepage browser evidence. |
 | CMP-160 | BP-031 | investigate | TASK-001, TASK-031 | Controller faults are covered by actual controlled DOM assertions; native dialog keyboard/focus/layout still needs homepage browser evidence. |
+| CMP-161 | BP-032 | investigate | TASK-035, TASK-038, TASK-036, TASK-037 | Shared logic/source inspected; / has distinct navigation/parent layout and requires its own native browser acceptance. |
+| CMP-162 | BP-032 | investigate | TASK-035, TASK-038 | Shared logic/source inspected; /chat has distinct navigation/parent layout and requires its own native browser acceptance. |
+| CMP-163 | BP-032 | investigate | TASK-035, TASK-038 | Shared logic/source inspected; /runs#mission has distinct navigation/parent layout and requires its own native browser acceptance. |
+| CMP-164 | BP-032 | investigate | TASK-035, TASK-038 | Shared logic/source inspected; /runs#runs has distinct navigation/parent layout and requires its own native browser acceptance. |
+| CMP-165 | BP-032 | investigate | TASK-035, TASK-038 | Shared logic/source inspected; /runs#skills has distinct navigation/parent layout and requires its own native browser acceptance. |
+| CMP-166 | BP-032 | investigate | TASK-035, TASK-038 | Shared logic/source inspected; /runs#eval has distinct navigation/parent layout and requires its own native browser acceptance. |
+| CMP-167 | BP-032 | investigate | TASK-035, TASK-038 | Shared logic/source inspected; /runs#system has distinct navigation/parent layout and requires its own native browser acceptance. |
+| CMP-168 | BP-032 | investigate | TASK-035, TASK-038 | Shared logic/source inspected; /run?id=&lt;run-id&gt; has distinct navigation/parent layout and requires its own native browser acceptance. |
+| CMP-169 | BP-032 | investigate | TASK-035, TASK-038 | Shared logic/source inspected; /graph?run=&amp;skill=&amp;domain= has distinct navigation/parent layout and requires its own native browser acceptance. |
+| CMP-170 | BP-032 | investigate | TASK-035, TASK-038 | Shared logic/source inspected; /dashboard#overview has distinct navigation/parent layout and requires its own native browser acceptance. |
+| CMP-171 | BP-032 | investigate | TASK-035, TASK-038 | Shared logic/source inspected; /dashboard#demo has distinct navigation/parent layout and requires its own native browser acceptance. |
+| CMP-172 | BP-032 | investigate | TASK-035, TASK-038 | Shared logic/source inspected; /dashboard#skills?skill= has distinct navigation/parent layout and requires its own native browser acceptance. |
+| CMP-173 | BP-032 | investigate | TASK-035, TASK-038 | Shared logic/source inspected; /dashboard#search has distinct navigation/parent layout and requires its own native browser acceptance. |
+| CMP-174 | BP-032 | investigate | TASK-035, TASK-038 | Shared logic/source inspected; /dashboard#run has distinct navigation/parent layout and requires its own native browser acceptance. |
+| CMP-175 | BP-032 | investigate | TASK-035, TASK-038 | Shared logic/source inspected; /dashboard#results has distinct navigation/parent layout and requires its own native browser acceptance. |
+| CMP-176 | BP-032 | investigate | TASK-035, TASK-038 | Shared logic/source inspected; /dashboard#adapters has distinct navigation/parent layout and requires its own native browser acceptance. |
 
 ## 问题索引
 
@@ -249,6 +265,9 @@
 | FND-016 Graph search lacked keyboard selection | P2 | confirmed | resolved | PAGE-009, CMP-093 |
 | FND-017 Mobile uniqueness cards inherited three inline columns and overflowed | P2 | confirmed | resolved | PAGE-001, CMP-026 |
 | FND-018 Task input was incorrectly included in newly delivered file count | P2 | confirmed | resolved | PAGE-001, CMP-156 |
+| FND-019 Frontier v7 dialog ignored centered modal margin | P2 | confirmed | resolved | PAGE-001, CMP-161 |
+| FND-020 Global footer styles overrode frontier modal footer | P2 | confirmed | resolved | PAGE-001, CMP-161 |
+| FND-021 Disabled frontier submit left native focus on BODY | P2 | confirmed | resolved | PAGE-001, CMP-161 |
 
 ## 任务顺序
 
@@ -266,6 +285,9 @@
 | TASK-032 Graph search lacked keyboard selection actual browser correction | 1 | root frontend implementation / IAB QA |  | verified |
 | TASK-033 Mobile uniqueness cards inherited three inline columns and overflowed actual browser correction | 1 | root frontend implementation / IAB QA |  | verified |
 | TASK-034 Final local deliverable count correction | 1 | root frontend implementation and Node verification |  | verified |
+| TASK-035 Verify shared frontier IIFE fault logic | 1 | root frontend implementation / IAB QA |  | verified |
+| TASK-036 Repair and natively recheck v7 frontier modal/footer cascade | 1 | root frontend implementation / IAB QA |  | verified |
+| TASK-037 Repair and natively recheck disabled-submit focus | 1 | root frontend implementation / IAB QA |  | verified |
 | TASK-001 Executive briefing runtime/visual acceptance | 2 | frontend QA with runtime/browser access |  | blocked |
 | TASK-002 Conversation runtime/visual acceptance | 2 | frontend QA with runtime/browser access |  | blocked |
 | TASK-003 Mission centre runtime/visual acceptance | 2 | frontend QA with runtime/browser access |  | blocked |
@@ -288,6 +310,7 @@
 | TASK-028 Sphere keyboard pause/focus state not reflected consistently browser verification | 2 | frontend QA with browser access |  | implemented |
 | TASK-029 Global chip binding replaces injected scenario actions browser verification | 2 | frontend QA with browser access |  | implemented |
 | TASK-030 Historical growth and S1 deployment labels overstate supported evidence browser verification | 2 | frontend QA with browser access |  | implemented |
+| TASK-038 Complete frontier integration in all sixteen parent views | 2 | frontend QA with target browser and S1 environment |  | blocked |
 
 ## 发布门槛
 

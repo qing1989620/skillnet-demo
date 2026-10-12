@@ -116,5 +116,8 @@ def capsule(run, workspace: Path):
         value['state_kernel'] = dict(policy=staged['state_policy'],
             declared_composition=staged.get('state_composition', {}),
             boundary='声明兼容性与实际条件检查分别记录；不代表因果贡献或跨任务能力已验证')
+    if isinstance(staged.get('capability_frontier'), dict) and staged['capability_frontier']:
+        from .frontier_bridge import with_integrity
+        value['capability_frontier'] = with_integrity(staged['capability_frontier'], files)
     value['capsule_sha256'] = digest(value)
     return value

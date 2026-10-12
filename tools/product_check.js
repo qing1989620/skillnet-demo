@@ -137,6 +137,24 @@ assert.match(value,/20\/20 项独立参考检查/);
 assert.match(value,/4\/12 道奖励门通过/);
 assert.match(value,/S1 线上联调待验证/);
 assert.equal(Product.valueHTML({...researchRun,status:'EXECUTING'}),'');
+assert.equal(Product.frontierSnapshotHTML(run),'','old records do not acquire synthetic capability claims');
+assert.equal(Product.frontierSnapshotHTML({...run,staged:{capability_frontier:{}}}),'');
+const frontierSnapshot={version:'frontier-bridge-v1',scope:'固定试验登记集',read_only:true,input_sha256:'c'.repeat(64),
+  observation:{facts:['data.file','data.schema'],checks:{checks:[{state:'passed'},{state:'failed'},{state:'unknown'}]}},
+  diagnosis:{state:'evidence_insufficient',gaps:[{fact:'data.unique',providers:['deduplicate'],kind:'observed_or_provider_needed'},{fact:'data.range',providers:[],kind:'no_registered_provider'}]},
+  boundary:'有限观察，不证明全库不会。'};
+const snapshotHTML=Product.frontierSnapshotHTML({...run,staged:{...run.staged,capability_frontier:frontierSnapshot}});
+assert.match(snapshotHTML,/2 项已观测事实/);assert.match(snapshotHTML,/2 项待补齐/);assert.match(snapshotHTML,/1 个候选程序/);
+assert.match(snapshotHTML,/1\/3 项输入条件通过/);assert.match(snapshotHTML,/data-frontier-open/);assert.match(snapshotHTML,/证据不足/);
+assert.match(snapshotHTML,/不自动执行或写回技能网络/);assert.match(snapshotHTML,/试验登记集没有提供者/);
+assert.match(Product.evidenceHTML({...run,staged:{...run.staged,capability_frontier:frontierSnapshot}}),/本次任务的有限能力边界观察/);
+assert.match(Product.capabilityReportHTML({capability_frontier:frontierSnapshot}),/本次任务的有限能力边界观察/);
+const unsafeSnapshot={...frontierSnapshot,version:'<script>v</script>',scope:'<img src=x onerror=x>',input_sha256:'" onfocus="evil',
+  observation:{facts:['<iframe>'],checks:[]},diagnosis:{state:'<script>',gaps:[{fact:'<svg onload=x>',providers:['<img>'],kind:'<script>'}]},boundary:'<script>evil</script>'};
+const unsafeSnapshotHTML=Product.frontierSnapshotHTML({capability_frontier:unsafeSnapshot});
+assert.doesNotMatch(unsafeSnapshotHTML,/<script>|<img|<iframe|<svg| onfocus="evil/);
+assert.match(unsafeSnapshotHTML,/&lt;script&gt;/,'unsafe evidence remains visible as text');
+assert.doesNotThrow(()=>Product.frontierSnapshotHTML({capability_frontier:{...frontierSnapshot,observation:{checks:{checks:'bad'}},diagnosis:{gaps:[null,'bad']}}}));
 assert.doesNotMatch(Product.valueHTML({...researchRun,staged:{quality_assessment:{scope:'<script>evil</script>'}}}),/<script>/);
 assert.match(Product.assessmentHTML(researchRun),/执行前冻结的科研样本与指标参考/);
 assert.match(Product.resourcesButtonHTML({name:'example',source:'github'}),/data-skill-resources/);

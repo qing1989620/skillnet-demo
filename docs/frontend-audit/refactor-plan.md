@@ -41,3 +41,17 @@
 全部任务的真实文件、执行步骤、验收、恢复和风险见 audit.json/tasks。先完成每视图浏览器验收，再与后端负责人核对 S1/队列/Docker 的实际运行；最终提交变化后重新运行八项检查与指纹记录。
 
 TASK-034：最终局部交付数量修复；phase 1 / verified；CMP-156；SCN-053；EV-046。过滤输入来源，保留原始证据，不扩大整页验收范围。
+
+
+## 能力边界研究界面增量
+
+| TASK | 范围 | 当前状态 | 验收 |
+|---|---|---|---|
+| TASK-035 Verify shared frontier IIFE fault logic | DEF-032 | verified | SCN-054, SCN-055, SCN-056, SCN-057, SCN-058, SCN-059, SCN-060 |
+| TASK-036 Repair and natively recheck v7 frontier modal/footer cascade | DEF-032, CMP-161 | implemented | SCN-061, SCN-062 |
+| TASK-037 Repair and natively recheck disabled-submit focus | DEF-032, CMP-161 | implemented | SCN-060, SCN-063 |
+| TASK-038 Complete frontier integration in all sixteen parent views | DEF-032, CMP-161, CMP-162, CMP-163, CMP-164, CMP-165, CMP-166, CMP-167, CMP-168, CMP-169, CMP-170, CMP-171, CMP-172, CMP-173, CMP-174, CMP-175, CMP-176 | blocked | SCN-064, SCN-065, SCN-066, SCN-067, SCN-068, SCN-069, SCN-070, SCN-071, SCN-072, SCN-073, SCN-074, SCN-075, SCN-076, SCN-077, SCN-078, SCN-079 |
+
+TASK-035 为实际受控 DOM 验证；TASK-036/037 源码已改但原生复验尚未合并；TASK-038 保留全 16 父视图、200%/读屏/浏览器故障/生产 S1 缺口。台账中的完整步骤、恢复和风险是权威记录。
+
+最终局部复验补充（v8/v9）：[原生观察](frontier-ui-observations.json) 及截图已核验居中、footer 间距、提交与 Escape 焦点、390px 宽度、成功/反例结果和六文档入口。FND-019..021 已按限定复验 resolved；v7 失败场景仍保留。SCN-080..083 为局部新证据，不替代 16 个完整父视图及生产门槛。

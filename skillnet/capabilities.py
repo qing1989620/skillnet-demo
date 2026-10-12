@@ -87,5 +87,7 @@ def transitions(capsule):
         boundary='证据缺口不等于缺少真实能力；文件组合不等于因果技能代数；报告不会发奖或修改技能库')
     if capsule.get('state_kernel'):
         report['state_kernel'] = capsule['state_kernel']
+    if capsule.get('capability_frontier'):
+        report['capability_frontier'] = capsule['capability_frontier']
     report['report_sha256']=digest(report)
     return report

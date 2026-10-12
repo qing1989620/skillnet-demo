@@ -276,3 +276,41 @@
 ## FND-018 Task input was incorrectly included in newly delivered file count
 
 级别 P2；confirmed；resolved。定位 CMP-156 / DEF-027。任务和跨轮输入不计作本轮新交付；Product 与 Showcase 使用相同过滤口径。实际新增断言 SCN-053（EV-046）通过；源码 EV-047；历史 v4 截图 EV-048 仅证明所呈现状态。TASK-034 保留回归任务。
+
+
+## 能力边界研究界面 v7 确认问题（最终原生复验待合并）
+
+### FND-019 Frontier v7 dialog ignored centered modal margin
+
+- 定位：DEF-032 / CMP-161 / PAGE-001；EV-052, EV-050, EV-051。
+- 级别：P2 / confirmed / fixed_unverified。
+- 实际：The desktop v7 dialog begins at x=0/y=0, while the rest of the viewport remains on its right.
+- 预期：The bounded native modal should have an even desktop inset and preserve internal scrolling.
+- 影响：The shared research presentation loses visual coherence or keyboard continuity in the demonstrated state; data/algorithm corruption is not established.
+- 根因：The native dialog margin was overridden by a higher-priority global margin reset.
+- 修复与复验：Scope the fixed/inset/auto modal margin with sufficient cascade priority; remeasure x/y/width and body scrolling in final IAB.
+- 场景：SCN-061；历史 v7 失败证据保留，不能以 Node 或新源码替代最终浏览器证明。
+
+### FND-020 Global footer styles overrode frontier modal footer
+
+- 定位：DEF-032 / CMP-161 / PAGE-001；EV-052, EV-050, EV-051。
+- 级别：P2 / confirmed / fixed_unverified。
+- 实际：The v7 screenshot shows footer content starting flush against the dialog edge and an oversized bottom area.
+- 预期：The modal footer should use its own 13px/30px spacing and adapt to the mobile 12px/18px rule.
+- 影响：The shared research presentation loses visual coherence or keyboard continuity in the demonstrated state; data/algorithm corruption is not established.
+- 根因：Unscoped page footer styles won the cascade over the shared research surface.
+- 修复与复验：Use direct-child .frontier-dialog>.frontier-footer specificity and scoped mobile spacing; remeasure actual padding and footer height.
+- 场景：SCN-062；历史 v7 失败证据保留，不能以 Node 或新源码替代最终浏览器证明。
+
+### FND-021 Disabled frontier submit left native focus on BODY
+
+- 定位：DEF-032 / CMP-161 / PAGE-001；EV-053, EV-050, EV-051。
+- 级别：P2 / confirmed / fixed_unverified。
+- 实际：Root v7 IAB reported activeElement BODY after the POST control was temporarily disabled.
+- 预期：After result/error, recover lost focus to the enabled submit while preserving a deliberate focus move within the dialog.
+- 影响：The shared research presentation loses visual coherence or keyboard continuity in the demonstrated state; data/algorithm corruption is not established.
+- 根因：Disabling the focused submit can drop native focus, and completion originally lacked a conditional recovery.
+- 修复与复验：On current success/error only, restore focus if it is BODY or outside the dialog; never steal focus from an internal control.
+- 场景：SCN-063；历史 v7 失败证据保留，不能以 Node 或新源码替代最终浏览器证明。
+
+最终局部复验补充（v8/v9）：[原生观察](frontier-ui-observations.json) 及截图已核验居中、footer 间距、提交与 Escape 焦点、390px 宽度、成功/反例结果和六文档入口。FND-019..021 已按限定复验 resolved；v7 失败场景仍保留。SCN-080..083 为局部新证据，不替代 16 个完整父视图及生产门槛。

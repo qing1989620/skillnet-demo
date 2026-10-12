@@ -81,3 +81,32 @@
 ### 最终局部计数复验
 
 CMP-156 / CHK-1450 / SCN-053 / FND-018 / TASK-034：混合来源 fixture 只计入 CSV 输出，断言通过（EV-046）。历史 v4 交付面板截图 EV-048 与最终 v5 源码分别记录；完整页面 SCN-001 仍待补齐。
+
+
+## CMP-161 能力边界研究界面增量
+
+DEF-032 / BP-032；web/briefing.html: frontier.js/frontier.css includes; / #frontier-launch → #frontier-dialog。处置 investigate；TASK TASK-035, TASK-038, TASK-036, TASK-037；SCN SCN-064。
+
+Composite responsibility includes native close/select/execute/evidence-link/details/error/status children; their independent states and actions are explicitly separated by SCN-054..060. Wrappers, cards and text are layout/content of this composite. Shared controlled DOM assertions are not inherited full-page passes; this parent context retains its own blocked scenario.
+
+| CHK | 维度 | 状态 | 证据/范围 |
+|---|---|---|---|
+| CHK-1451 | semantics_accessibility | passed | EV-051 |
+| CHK-1452 | data_effects | passed | EV-051 |
+| CHK-1453 | states | passed | EV-051 |
+| CHK-1454 | security_privacy | passed | EV-051 |
+| CHK-1455 | behavior | passed | EV-051 |
+| CHK-1456 | security_privacy | passed | EV-051 |
+| CHK-1457 | semantics_accessibility | passed | EV-051 |
+| CHK-1458 | layout_content | failed | EV-052 |
+| CHK-1459 | layout_content | failed | EV-052 |
+| CHK-1460 | semantics_accessibility | failed | EV-053 |
+| CHK-1461 | behavior | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
+| CHK-1462 | states | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
+| CHK-1463 | semantics_accessibility | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
+| CHK-1464 | layout_content | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
+| CHK-1465 | data_effects | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
+| CHK-1466 | security_privacy | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
+| CHK-1467 | performance_lifecycle | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
+| CHK-1468 | maintainability_integration | blocked | Current shared IIFE has controlled DOM logic evidence, but this distinct route/hash parent layout, keyboard/focus, scroll/error/re-entry and browser networking state matrix has not been fully executed. Final v8 named partial observations are being collected separately; screen reader, 200% zoom, performance and production S1 remain blocked. |
+| CHK-1469 | maintainability_integration | passed | EV-050 |

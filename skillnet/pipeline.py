@@ -35,7 +35,7 @@ from typing import Any, Callable
 
 from . import checks as checks_mod
 from . import config, executor, llm, runtime, sandbox
-from . import contracts, state_contracts, state_policy
+from . import contracts, state_contracts, state_policy, frontier_bridge
 from .runtime import (
     BUS, STEP_DONE, STEP_FAILED, STEP_PENDING, STEP_RUNNING, STEP_SKIPPED,
     Artifact, BudgetExceeded, ExecutionAttempt, ProgrammaticCheck, Run, RunCancelled, RunStep,
@@ -775,6 +775,12 @@ def execute_run(run: Run, lib: Any, workspace: pathlib.Path,
         st.depends_on = sorted({pos[d] for d in st.depends_on if d in pos})
 
     run.staged['state_policy'] = state_policy.bind(run, workspace)
+    capability_frontier = frontier_bridge.project(run, workspace)
+    if capability_frontier:
+        run.staged['capability_frontier'] = capability_frontier
+        _emit(run, 'capability.frontier', frontier=capability_frontier)
+    else:
+        run.staged.pop('capability_frontier', None)
     run.staged['state_composition'] = state_contracts.composition([
         dict(idx=s.idx,depends_on=s.depends_on,contract=s.contract) for s in run.steps])
     _emit(run, 'state.planned', policy=run.staged['state_policy'], composition=run.staged['state_composition'])

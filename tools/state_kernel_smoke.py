@@ -17,6 +17,8 @@ from skillnet.integration import ClientConfig,SkillNetClient
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--run',help='Recheck an existing run without a paid call')
+    parser.add_argument('--output-prefix', default='state-kernel', choices=['state-kernel', 'frontier-live'],
+                        help='Preserve earlier evidence when validating a new research iteration')
     args=parser.parse_args()
     with SkillNetClient(ClientConfig(base_url='http://127.0.0.1:8848',token=os.environ.get('SKILLNET_TOKEN',''))) as client:
         before=client._json('GET','api/learning/policy')['state_sha256']
@@ -52,15 +54,18 @@ def main():
         capabilities_sha256=capabilities['report_sha256'],
         limits=['一个公开模拟科研任务不证明跨任务质量提升、因果技能模型或全局最优选择',
             '输入和效果条件由有限词表检验；算法正确性仍由独立参考复算，图表只检查存在性'])
-    output=ROOT/'docs/evidence/state-kernel-run.json'
+    if run['staged'].get('capability_frontier'):
+        report['capability_frontier'] = run['staged']['capability_frontier']
+        report['frontier_event_count'] = event_types.count('capability.frontier')
+    output=ROOT/'docs/evidence'/f'{args.output_prefix}-run.json'
     output.write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf-8',newline='\n')
-    for name,data in [('state-kernel-capsule.json',capsule),('state-kernel-capabilities.json',capabilities)]:
+    for name,data in [(f'{args.output_prefix}-capsule.json',capsule),(f'{args.output_prefix}-capabilities.json',capabilities)]:
         (output.parent/name).write_text(json.dumps(data,ensure_ascii=False,indent=2),encoding='utf-8',newline='\n')
-    paths=[output,output.parent/'state-kernel-capsule.json',output.parent/'state-kernel-capabilities.json',
+    paths=[output,output.parent/f'{args.output_prefix}-capsule.json',output.parent/f'{args.output_prefix}-capabilities.json',
         config.OUT_DIR/'runs'/f'{run_id}.json',*[workspace/'artifacts'/a['name'] for a in run['artifacts']]]
     manifest=[dict(path=p.relative_to(ROOT).as_posix(),bytes=p.stat().st_size,
         sha256=hashlib.sha256(p.read_bytes()).hexdigest()) for p in paths]
-    (output.parent/'state-kernel-files.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8',newline='\n')
+    (output.parent/f'{args.output_prefix}-files.json').write_text(json.dumps(manifest,ensure_ascii=False,indent=2),encoding='utf-8',newline='\n')
     print(json.dumps(dict(run_id=run_id,status=run['status'],score=oracle['score'],
         cost_yuan=run['cost_yuan'],policy_unchanged=before==after,reward_applied=report['reward_applied']),ensure_ascii=False),flush=True)
     if not (run['status']=='COMPLETED' and oracle['score']==1 and report['state_policy']

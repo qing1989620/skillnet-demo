@@ -102,3 +102,10 @@ for(const a of latestRun.artifacts){
   assert.equal(require('node:crypto').createHash('sha256').update(bytes).digest('hex'),a.sha256,'shipped replay artifact must match actual registered content');
 }
 console.log('Executive stage: actual record replay, event deduplication, phase order, partial/cancelled runs, repair, DAG layouts and safe CSV preview passed.');
+
+const frontierState=createState("frontier");
+reduceEvent(frontierState,{seq:1,type:"capability.frontier",data:{frontier:{observation:{facts:["data.schema"]},diagnosis:{gaps:[{fact:"<score>",providers:["<script>"]}]}}}});
+assert.match(stateFactsHTML(frontierState,3),/真实输入观测/);
+assert.match(stateFactsHTML(frontierState,3),/&lt;score&gt;/);
+assert.doesNotMatch(stateFactsHTML(frontierState,3),/<script>/);
+assert.equal(frontierState.evolution,null);

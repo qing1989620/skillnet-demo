@@ -15,7 +15,7 @@
   const number = (x, fallback=0) => Number.isFinite(Number(x)) ? Number(x) : fallback;
   const statusName = s => ({COMPLETED:'已完成',PARTIAL:'部分完成',FAILED:'失败',CANCELLED:'已取消',BUDGET_EXCEEDED:'预算已达上限',INTERRUPTED:'运行中断'}[s] || s || '待启动');
   const stepName = s => ({pending:'待执行',running:'执行中',done:'已完成',failed:'失败',skipped:'已跳过'}[s] || '待执行');
-  const PUBLIC_REPLAY_ID='f11ad204-20261012-144805-b9e1';
+  const PUBLIC_REPLAY_ID='f11ad204-20261012-155354-d478';
   function createState(task='',mode='idle') {
     return {task,mode,id:null,seq:0,phase:0,view:null,phases:PHASES.map(()=> 'pending'),nodes:[],selected:[],ranking:[],retrieval:{},orchestration:{},checks:[],artifacts:[],feedback:[],judge:null,evolution:null,statePlan:null,logs:[],started:0,elapsed:0,finished:false,error:'',snapshot:null};
   }
@@ -37,6 +37,7 @@
     else if(t==='orchestration.completed') {s.orchestration=d;s.selected=arr(d.order || d.skills);complete(2);log=`编排采用 ${s.selected.length} 项技能 · ${arr(d.edges).length} 条关系`;}
     else if(t==='plan.created') {s.approach=d.approach || '';s.planSteps=number(d.steps);complete(3);log=`方案已生成 · ${s.planSteps} 个规划动作`;}
     else if(t==='dag.ready') {s.nodes=arr(d.nodes).filter(n=>Number.isInteger(n.idx)).map(n=>({...n,status:'pending'}));log=`执行 DAG 就绪 · ${s.nodes.length} 步 · 依赖来自 ${d.workflow_source || '执行引擎'}`;}
+    else if(t==='capability.frontier') {s.frontier=d.frontier;log=`实际输入已观测 · ${arr(d.frontier?.diagnosis?.gaps).length} 项条件缺口待验证 · 只读投影，不自动执行或发奖`;}
     else if(t==='state.planned') {s.statePlan=d;log=`组合条件 ${stateLabel(d.composition?.state)} · ${arr(d.composition?.frontier).length} 项能力缺口待处理`;}
     else if(t==='state.admission') {if(node())node().admission=d;log=`Step ${number(idx)+1} 前置条件 ${stateLabel(d.state)} · ${d.admitted?'允许进入执行':'执行已阻断'}${arr(d.checks).find(c=>c.state!=='passed')?.detail?'：'+arr(d.checks).find(c=>c.state!=='passed').detail:''}`;}
     else if(t==='state.effects') {if(node())node().effects=d;log=`Step ${number(idx)+1} 后置效果 ${stateLabel(d.state)} · 第 ${number(d.attempt)} 次尝试${arr(d.checks).find(c=>c.state!=='passed')?.detail?'：'+arr(d.checks).find(c=>c.state!=='passed').detail:''}`;}
@@ -73,7 +74,9 @@
   }
   function stateFactsHTML(s,phase){
     const plan=s.statePlan,composition=plan?.composition||{};
-    if(phase===3&&plan)return `<div class="show-fact"><b>条件组合 · ${stateLabel(composition.state)}</b><small>${arr(composition.edges).length} 条声明衔接 · ${arr(composition.frontier).length} 项能力缺口。这里只检查声明是否衔接，实际效果在执行后核验。</small></div>`+arr(composition.frontier).slice(0,3).map(g=>`<div class="show-fact"><b>STEP ${number(g.step_idx)+1} · 待补齐</b><small>${esc(g.file||'')} · ${esc(g.reason||g.detail||'条件尚未得到支持')}</small></div>`).join('');
+    const frontier=s.frontier;
+    const frontierHTML=frontier?`<div class="show-fact"><b>真实输入观测 → 有限条件缺口</b><small>${arr(frontier.observation?.facts).length} 项事实已经复读文件确认；${arr(frontier.diagnosis?.gaps).length} 项条件尚待补齐。试验登记集的诊断不代表全部技能库的能力边界。</small><button type="button" class="frontier-button" data-frontier-open>实测缺口与反例 ↗</button></div>`+arr(frontier.diagnosis?.gaps).slice(0,4).map(g=>`<div class="show-fact"><b>${esc(g.fact)}</b><small>${arr(g.providers).length?'登记提供者：'+arr(g.providers).map(esc).join(' / '):'没有直接声明提供者；可能需要新观测或补充模型，不能据此认定没有真实能力。'}</small></div>`).join(''):'';
+    if(phase===3)return frontierHTML+(plan?`<div class="show-fact"><b>条件组合 · ${stateLabel(composition.state)}</b><small>${arr(composition.edges).length} 条声明衔接 · ${arr(composition.frontier).length} 项能力缺口。这里只检查声明是否衔接，实际效果在执行后核验。</small></div>`+arr(composition.frontier).slice(0,3).map(g=>`<div class="show-fact"><b>STEP ${number(g.step_idx)+1} · 待补齐</b><small>${esc(g.file||'')} · ${esc(g.reason||g.detail||'条件尚未得到支持')}</small></div>`).join(''):'');
     if(phase===4)return s.nodes.filter(n=>n.admission||n.effects).slice(-3).map(n=>stateEvidenceHTML(n.admission,`STEP ${n.idx+1} 前置条件`)+stateEvidenceHTML(n.effects,`STEP ${n.idx+1} 后置效果`)).join('');
     return '';
   }
@@ -210,7 +213,7 @@
     const answer=fin.staged?.final_reply || fin.error || '本次没有生成最终文本，请查看步骤和文件证据。';
     const verdict=fin.staged?.acceptance;
     const value=fin.evolution?.candidate?'新经验已进入候选区，等待冻结任务的真实执行验证；当前技能库尚未新增。':fin.evolution?.accepted?`本次经验已沉淀为 ${fin.evolution.name}，可进入后续任务复用。`:fin.staged?.learning_gate?.eligible===false?`本次经验暂不写入技能库：${fin.staged.learning_gate.skip_reason}。结果与证据保留供核对，避免学习未经确认的经验。`:fin.evolution?.skip_reason||'本次未新增技能；已有运行、验收和反馈记录保留供后续复盘。';
-    $('show-routing').innerHTML=(root.Product?.selectionHTML(fin)||'')+(root.Product?.transitionsHTML?.(fin)||'')+(root.Product?.stateKernelHTML?.(fin)||'');
+    $('show-routing').innerHTML=(root.Product?.selectionHTML(fin)||'')+(root.Product?.frontierSnapshotHTML?.(fin)||'')+(root.Product?.transitionsHTML?.(fin)||'')+(root.Product?.stateKernelHTML?.(fin)||'');
     $('show-answer-body').innerHTML=`${root.Product?.valueHTML(fin)||''}${root.Product?.assessmentDetailsHTML(fin)||''}<div class="show-value">${esc(statusName(fin.status))} · 验收${verdict?({passed:'通过',failed:'未通过',unknown:'有待确认'}[verdict.state]||verdict.state):'见逐项证据'} · ${esc(value)}</div><div class="rp-body">${typeof root.mdToHtml==='function'?root.mdToHtml(answer):esc(answer).replace(/\n/g,'<br>')}</div>`;
     $('show-files-body').innerHTML=arr(fin.artifacts).slice().sort((a,b)=>number(b.from_step)-number(a.from_step)).map(a=>{const url='/api/runs/'+encodeURIComponent(fin.run_id)+'/artifacts/'+encodeURIComponent(a.name);return `<div class="show-file"><b>${esc(a.name)}</b><p>${esc(a.kind||'真实运行产物')}${a.from_step!=null?' · Step '+(number(a.from_step)+1)+' 产出':''} · ${(number(a.bytes)/1024).toFixed(1)} KB · SHA-256 ${esc(String(a.sha256||'未记录').slice(0,16))}${a.sha256?'…':''}</p><button type="button" data-show-artifact="${esc(a.name)}">查看文件</button><a href="${url}" download="${esc(a.name)}">下载</a>${/\.(png|jpg|jpeg|webp|svg)$/i.test(a.name)?`<img src="${url}" alt="本次实际运行生成的 ${esc(a.name)}" loading="lazy">`:''}</div>`;}).join('')||'<p style="font-size:12px;color:#7a909e">本次没有登记可下载文件。</p>';
     $('show-evidence-link').href='/run?id='+encodeURIComponent(fin.run_id);

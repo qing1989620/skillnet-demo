@@ -590,3 +590,44 @@ Shared artifact preview owned by preview and beginPanel; each open has a request
 | security_privacy | Escape hostile markup/numeric fields. Resource content is reference data; digest mismatch/409/size limits prevent a verified download. Authorization stays server-side. |
 | observability | Show actionable errors and unknown states, distinguish declaration/observation/reward, retain run links without exposing token values. |
 | integration | Preserve six-document navigation, real run IDs, shared Product renderers and parent-owned state/evidence APIs; final commit regression still required. |
+
+
+## BP-032 Finite capability frontier experiment surface
+
+frontier.js owns one modal/trigger, per-request generation and AbortControllers, public named scenario POST, scoped report renderers and evidence read. frontier.css supplies the independent visual surface; Product snapshot opens through data-frontier-open.
+
+| 维度 | 目标契约 |
+|---|---|
+| responsibility | Explain finite experimental diagnosis, actual operator transitions and independent oracle; never certify all skills or change production policies. |
+| interface | boot creates #frontier-launch/#frontier-dialog; delegated [data-frontier-open] opens read-only; UI.json calls only fixed /api/frontier endpoints; POST body only scenario_id. |
+| states | Closed → independent lab/scenario loading → readable or retryable read errors; POST disables controls then restores result/error; close/pagehide invalidates request ownership; no automatic POST retry. |
+| data_effects | Server public reports are authoritative. Generation plus per-kind sequence suppresses stale success/errors; 45s client timeout aborts waiting, not server execution. Evidence read uses fixed same-origin path and Blob URL cleanup. |
+| semantics_accessibility | Native dialog with labelled title/description, labelled select, named buttons, details/summary, role=status and role=alert; initial/trapped/return focus and conditional lost-focus recovery need native and assistive revalidation. |
+| styling_layout | Scope all styles to frontier classes; important auto dialog margin resists global reset; direct-child footer specificity resists page footer rules; 390px single-column controls/cards preserve background and internal scroll. |
+| performance_lifecycle | Use lightweight verified /lab projection; full trace read only on explicit evidence action; bounded display arrays/raw preview and 45s timers; clear pending requests/timers on close/pagehide. Measure real long-session memory/layout performance separately. |
+| security_privacy | No arbitrary code, paths or model keys submitted; unsafe content uses textContent, evidence_url fixed; UI.json supplies configured access token. Backend scenario whitelist, concurrency and S1 signature/nonce enforce trust; production tenant acceptance remains separate. |
+| observability | Show read/execution failures without claiming success; distinguish source report digest from projection digest, declare scope and unknowns, retain actual process calls and independent result counts. |
+| integration | Six HTML imports yield sixteen registered parent contexts; hash navigation must not duplicate triggers or remove original pages. Actual user research bridge stays read-only and opens this separate experimental surface explicitly. |
+
+16 个实例逐个登记 CMP-161..176；共享 Node 逻辑证据只证明明确的控制器断言，不使父视图八维检查通过。
+
+| CMP / PAGE | 独有父上下文 | 处置 | TASK / SCN |
+|---|---|---|---|
+| CMP-161 / PAGE-001 | web/briefing.html: frontier.js/frontier.css includes; / #frontier-launch → #frontier-dialog | investigate | TASK-035, TASK-038, TASK-036, TASK-037 / SCN-064 |
+| CMP-162 / PAGE-002 | web/chat.html: frontier.js/frontier.css includes; /chat #frontier-launch → #frontier-dialog | investigate | TASK-035, TASK-038 / SCN-065 |
+| CMP-163 / PAGE-003 | web/app.html: frontier.js/frontier.css includes; /runs#mission #frontier-launch → #frontier-dialog | investigate | TASK-035, TASK-038 / SCN-066 |
+| CMP-164 / PAGE-004 | web/app.html: frontier.js/frontier.css includes; /runs#runs #frontier-launch → #frontier-dialog | investigate | TASK-035, TASK-038 / SCN-067 |
+| CMP-165 / PAGE-005 | web/app.html: frontier.js/frontier.css includes; /runs#skills #frontier-launch → #frontier-dialog | investigate | TASK-035, TASK-038 / SCN-068 |
+| CMP-166 / PAGE-006 | web/app.html: frontier.js/frontier.css includes; /runs#eval #frontier-launch → #frontier-dialog | investigate | TASK-035, TASK-038 / SCN-069 |
+| CMP-167 / PAGE-007 | web/app.html: frontier.js/frontier.css includes; /runs#system #frontier-launch → #frontier-dialog | investigate | TASK-035, TASK-038 / SCN-070 |
+| CMP-168 / PAGE-008 | web/run.html: frontier.js/frontier.css includes; /run?id=<run-id> #frontier-launch → #frontier-dialog | investigate | TASK-035, TASK-038 / SCN-071 |
+| CMP-169 / PAGE-009 | web/graph.html: frontier.js/frontier.css includes; /graph?run=&skill=&domain= #frontier-launch → #frontier-dialog | investigate | TASK-035, TASK-038 / SCN-072 |
+| CMP-170 / PAGE-010 | web/index.html: frontier.js/frontier.css includes; /dashboard#overview #frontier-launch → #frontier-dialog | investigate | TASK-035, TASK-038 / SCN-073 |
+| CMP-171 / PAGE-011 | web/index.html: frontier.js/frontier.css includes; /dashboard#demo #frontier-launch → #frontier-dialog | investigate | TASK-035, TASK-038 / SCN-074 |
+| CMP-172 / PAGE-012 | web/index.html: frontier.js/frontier.css includes; /dashboard#skills?skill= #frontier-launch → #frontier-dialog | investigate | TASK-035, TASK-038 / SCN-075 |
+| CMP-173 / PAGE-013 | web/index.html: frontier.js/frontier.css includes; /dashboard#search #frontier-launch → #frontier-dialog | investigate | TASK-035, TASK-038 / SCN-076 |
+| CMP-174 / PAGE-014 | web/index.html: frontier.js/frontier.css includes; /dashboard#run #frontier-launch → #frontier-dialog | investigate | TASK-035, TASK-038 / SCN-077 |
+| CMP-175 / PAGE-015 | web/index.html: frontier.js/frontier.css includes; /dashboard#results #frontier-launch → #frontier-dialog | investigate | TASK-035, TASK-038 / SCN-078 |
+| CMP-176 / PAGE-016 | web/index.html: frontier.js/frontier.css includes; /dashboard#adapters #frontier-launch → #frontier-dialog | investigate | TASK-035, TASK-038 / SCN-079 |
+
+最终局部复验补充（v8/v9）：[原生观察](frontier-ui-observations.json) 及截图已核验居中、footer 间距、提交与 Escape 焦点、390px 宽度、成功/反例结果和六文档入口。FND-019..021 已按限定复验 resolved；v7 失败场景仍保留。SCN-080..083 为局部新证据，不替代 16 个完整父视图及生产门槛。

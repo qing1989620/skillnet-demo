@@ -18,6 +18,7 @@ import os
 import secrets
 import re
 import threading
+import tempfile
 import time
 from urllib.parse import quote
 from contextlib import asynccontextmanager
@@ -28,7 +29,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.responses import (FileResponse, JSONResponse, Response,
                                StreamingResponse)
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from skillnet import assessment, config, llm, runtime
 from skillnet.integration import integration_manifest
@@ -92,6 +93,7 @@ _STATE_LOCK = threading.RLock()
 ACCESS_TOKEN = os.environ.get("SKILLNET_TOKEN", "").strip()
 MAX_ACTIVE_RUNS = max(1, min(32, int(os.environ.get("SKILLNET_MAX_ACTIVE_RUNS", "4"))))
 _RUN_SLOTS = threading.BoundedSemaphore(MAX_ACTIVE_RUNS)
+_FRONTIER_SLOTS = threading.BoundedSemaphore(2)
 _RUN_THREADS: dict[str, threading.Thread] = {}
 WORKER_MODE = os.environ.get('SKILLNET_WORKER_MODE', 'thread')
 S1_SIGNING_KEY = os.environ.get('SKILLNET_S1_SIGNING_KEY', '')
@@ -229,7 +231,9 @@ def _startup_sweep() -> None:
 
 @app.middleware("http")
 async def s1_authorization(request: Request, call_next):
-    if S1_SIGNING_KEY and (request.url.path.startswith('/api/runs') or request.url.path == '/api/candidates'):
+    if S1_SIGNING_KEY and (request.url.path.startswith('/api/runs')
+                           or request.url.path.startswith('/api/frontier')
+                           or request.url.path == '/api/candidates'):
         try:
             body = bytearray()
             async for chunk in request.stream():
@@ -941,6 +945,91 @@ def adapters() -> dict[str, Any]:
 # ======================================================================
 # 实验结果
 # ======================================================================
+@app.get('/api/frontier/scenarios')
+def frontier_scenarios() -> dict[str, Any]:
+    """Public task choices; all executable source remains server-owned."""
+    from skillnet.frontier_scenarios import scenarios
+    from skillnet.frontier_runtime import BOUNDARY, VERSION
+    return {'version': VERSION, 'scenarios': scenarios(), 'boundary': BOUNDARY}
+
+
+_FRONTIER_LAB_MAX_BYTES = 32 * 1024 * 1024
+
+
+def _frontier_lab_report() -> dict[str, Any]:
+    """Read and fully verify the frozen record before making any projection."""
+    from skillnet.frontier_runtime import digest
+    path = ROOT / 'docs' / 'evidence' / 'frontier-lab.json'
+    try:
+        with path.open('rb') as stream:
+            raw = stream.read(_FRONTIER_LAB_MAX_BYTES + 1)
+        if len(raw) > _FRONTIER_LAB_MAX_BYTES:
+            raise ValueError('experiment report exceeds its read limit')
+        report = json.loads(raw.decode('utf-8'))
+        if not isinstance(report, dict) or report.get('version') != 'skillnet-frontier-lab-v1':
+            raise ValueError('not the frontier experiment protocol')
+        claimed = report.get('report_sha256')
+        if not isinstance(claimed, str) or not re.fullmatch(r'[a-f0-9]{64}', claimed):
+            raise ValueError('experiment report has no canonical digest')
+        payload = {key: value for key, value in report.items() if key != 'report_sha256'}
+        if not secrets.compare_digest(claimed, digest(payload)):
+            raise ValueError('experiment report digest mismatch')
+    except (OSError, ValueError, TypeError, UnicodeError) as exc:
+        log.warning('能力边界实验报告不可用：%s', exc)
+        raise HTTPException(503, '能力边界实验报告缺失或核验失败，请先运行并保存本版实验') from None
+    return report
+
+
+@app.get('/api/frontier/lab')
+def frontier_lab() -> Any:
+    """Lightweight verified projection, linked to the complete frozen evidence."""
+    from skillnet.frontier_runtime import digest
+    report = _frontier_lab_report()
+    projection = {key: report.get(key) for key in (
+        'version', 'scope', 'summary', 'experiments', 'active_probe', 'basis',
+        'protocol_sha256', 'boundary',
+    )}
+    projection['source_report_sha256'] = report['report_sha256']
+    projection['evidence_url'] = '/api/frontier/evidence'
+    projection['report_sha256'] = digest(projection)
+    return JSONResponse(projection, headers={'Cache-Control': 'no-store'})
+
+
+@app.get('/api/frontier/evidence')
+def frontier_evidence() -> Any:
+    """Complete byte-observation records, validated by the same frozen digest."""
+    return JSONResponse(_frontier_lab_report(), headers={'Cache-Control': 'no-store'})
+
+
+class FrontierExecuteReq(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    scenario_id: str = Field(strict=True, min_length=1, max_length=80,
+                             pattern=r'^[a-z][a-z0-9-]*$')
+
+
+@app.post('/api/frontier/execute', dependencies=[Depends(require_token)])
+def frontier_execute(req: FrontierExecuteReq) -> Any:
+    """Bounded real execution of a named public scenario, with no retained job."""
+    from skillnet.frontier_scenarios import run_scenario, scenarios
+    if req.scenario_id not in {scenario['id'] for scenario in scenarios()}:
+        raise HTTPException(422, '未知的公开实验场景')
+    if not _FRONTIER_SLOTS.acquire(blocking=False):
+        raise HTTPException(429, '已有两个能力实验正在执行，请稍后重试', headers={'Retry-After': '2'})
+    try:
+        config.OUT_DIR.mkdir(parents=True, exist_ok=True)
+        # The response is scrubbed and contains bounded CSV text before cleanup.
+        # Each invocation has fresh inputs; no client path / code / tenant data
+        # can enter the public experiment or a later invocation.
+        with tempfile.TemporaryDirectory(prefix='frontier-api-', dir=config.OUT_DIR) as folder:
+            report = run_scenario(req.scenario_id, Path(folder))
+        return JSONResponse(report, headers={'Cache-Control': 'no-store'})
+    except Exception:
+        log.exception('能力边界实验未能完成')
+        raise HTTPException(503, '能力边界实验暂时无法完成，请稍后重试') from None
+    finally:
+        _FRONTIER_SLOTS.release()
+
+
 @app.get("/api/results")
 def results() -> dict[str, Any]:
     out: dict[str, Any] = {}
