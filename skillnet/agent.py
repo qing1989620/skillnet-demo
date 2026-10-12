@@ -31,6 +31,8 @@ _RESP_SCHEMA = """{
      "input_files": ["上游真实文件名；第一步没有则空数组"],
      "output_files": ["本步生成的真实文件名；验证步骤可以为空"],
      "data_checks": [],
+     "requires": [],
+     "ensures": [],
      "verification": ["只验收本步职责，必须引用实际产物的可验证判据"],
      "check": "怎么判断这一步做对了"}
   ],
@@ -172,6 +174,11 @@ class ResearchAgent:
         input_facts = planning_data_facts(task)
         if input_facts:
             user += "【服务端解析的输入事实（不是目标答案）】\n" + json.dumps(input_facts, ensure_ascii=False) + "\n\n"
+        from .state_policy import input_catalog
+        catalog = input_catalog(task)
+        if catalog:
+            user += "【执行器会挂载的真实输入文件清单】\n" + json.dumps(catalog,ensure_ascii=False) + "\n"
+            user += "引用原始输入时必须使用清单中的实际 file（例如 raw_predictions.csv），input_files 与 requires.file 均一致；不能把‘输入原始 CSV’这种描述写成文件名。\n\n"
         if block:
             user += block + "\n\n"
         user += (
@@ -188,7 +195,18 @@ class ResearchAgent:
             "[{\"kind\":\"csv_projection\",\"input_file\":\"输入名.csv\",\"output_file\":\"输出名.csv\","
             "\"keys\":[\"唯一键列\"],\"columns\":[\"保留值列\"],\"atol\":1e-9,\"sort_by\":\"排序列\",\"ascending\":true}]。"
             "聚合、舍入或变更数值的步骤不要声明原值投影。\n"
-            "7. 控制篇幅，直接输出 JSON，不要写解释性文字。\n\n"
+            "7. requires/ensures 是待检验的状态契约，分别约束实际输入/本步产物。仅声明用户要求或技能确有需要的条件。"
+            "支持 {kind:csv_schema,file:文件名,columns:[列名],exact:false}、csv_nonempty、"
+            "csv_no_missing(columns)、csv_unique(columns)、csv_numeric_range(column,min,max)、"
+            "csv_values_in(column,values:[0,1])、csv_disjoint_groups(entity,group)、file_exists；每条都必须有 kind/file，file 必须等于真实 input_files/output_files 文件名，不能用描述或别名。"
+            "仅有自然语言的条件不要伪造机器判据，保留在 risks。未知或不满足的前置条件会在代码生成之前阻断。"
+            "这些声明不是参考答案，产物仍会被独立核验。\n"
+            "csv_numeric_range 对该列每一行生效：不要给混合单位的长表 value 列统一设 [0,1]；"
+            "例如 metric,value 同时含 n/tp/fp 等计数与 accuracy/f1 等比例，计数可大于1，此时仅声明结构与非空，数值正确性交给独立逐指标复算。"
+            "清洗前的原始数据允许有重复/缺失/泄漏，只有清洗后才声明唯一/无缺失/无泄漏。\n"
+            "若要求保留原列原值，按原始字符串读写（例如 csv.DictReader 或 pandas dtype=str），0.10 不要改写为 0.1；"
+            "保持剩余记录的原始顺序，检查时与原输入逐单元格核对。\n"
+            "8. 控制篇幅，直接输出 JSON，不要写解释性文字。\n\n"
             f"严格输出 JSON：\n{_RESP_SCHEMA}"
         )
 

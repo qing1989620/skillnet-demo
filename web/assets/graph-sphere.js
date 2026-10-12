@@ -4,9 +4,10 @@
   const $=id=>document.getElementById(id),esc=UI.esc;
   const S={nodes:[],edges:[],byId:new Map(),selected:null,onlyEvolved:false,showLabel:true};
   const filter={domain:'',relations:new Set(['depend_on','compose_with','similar_to']),neighbors:false,taskOnly:false,task:null};
-  let generation=0,run=null,visibleIds=new Set();
+  let generation=0,run=null,visibleIds=new Set(),selectionFocus=null;
   const sphere=SkillSphere.create($('cv'),{
     center:(w,h)=>({x:w>1000?w*.57:w/2,y:h<750?h*.56:h*.52}),
+    onPause:paused=>{$('btnPause').textContent=paused?'继续旋转':'暂停旋转';$('btnPause').setAttribute('aria-pressed',String(paused));},
     onSelect:n=>n?selectNode(n):closeCard(),
     onHover(n,p){const tip=$('tip');tip.style.display=n?'block':'none';if(n){tip.textContent=n.id+' · '+n.domain;tip.style.left=Math.min(p.x+12,innerWidth-240)+'px';tip.style.top=Math.min(p.y+12,innerHeight-60)+'px';}}
   });
@@ -24,15 +25,16 @@
     sphere.setFilter(n=>visibleIds.has(n.id),filter.relations);
     $('graph-visible').textContent=`当前显示 ${visibleIds.size} / ${S.nodes.length} 个技能`;
   }
-  function closeCard(){S.selected=null;generation++;sphere.select(null);$('card').classList.remove('show');refresh();}
+  function closeCard(){const focused=$('card').contains(document.activeElement);S.selected=null;generation++;sphere.select(null);$('card').classList.remove('show');refresh();if(focused)(selectionFocus?.isConnected?selectionFocus:$('graph-q')).focus({preventScroll:true});}
   async function selectNode(node){
-    S.selected=node;sphere.select(node.id);sphere.focus(node.id);$('btnPause').textContent='继续旋转';
+    if(!$('card').contains(document.activeElement))selectionFocus=document.activeElement;
+    S.selected=node;sphere.select(node.id);sphere.focus(node.id);
     $('cName').textContent=node.id;$('cDom').textContent=node.domain+' · '+(node.source==='github'?'社区导入 · 尚未执行认证':node.generation>0?'演化资产':'种子资产');
     $('cKv').textContent='历史调用 '+(node.pulls||0)+' 次 · 核验提升积分 +'+Number(node.verified_improvement_points||0).toFixed(2)+'（仅适用已验证版本）';
     $('cRel').innerHTML=S.edges.filter(e=>e.source===node.id||e.target===node.id).map(e=>`<button type="button" data-related="${esc(e.source===node.id?e.target:e.source)}">${esc(e.type)} → ${esc(e.source===node.id?e.target:e.source)}</button>`).join('');
-    $('cRel').querySelectorAll('[data-related]').forEach(b=>b.onclick=()=>{const n=S.byId.get(b.dataset.related);if(n){filter.domain='';$('graph-domain').value='';S.onlyEvolved=false;$('btnEvolved').classList.remove('on');selectNode(n);}});
+    $('cRel').querySelectorAll('[data-related]').forEach(b=>b.onclick=()=>{const n=S.byId.get(b.dataset.related);if(n){filter.domain='';$('graph-domain').value='';S.onlyEvolved=false;$('btnEvolved').classList.remove('on');$('btnEvolved').setAttribute('aria-pressed','false');selectNode(n);}});
     $('cContractLink').href='/dashboard#skills?skill='+encodeURIComponent(node.id);
-    $('card').classList.add('show');refresh();const current=++generation;$('cContract').textContent='读取能力边界…';
+    $('card').classList.add('show');$('cName').focus({preventScroll:true});refresh();const current=++generation;$('cContract').textContent='读取能力边界…';
     try{const data=await UI.json('/api/skill/'+encodeURIComponent(node.id));if(current!==generation)return;
       const p=data.passport||{},s=data.skill,list=xs=>(xs||[]).length?`<ul>${xs.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'<p>尚未声明</p>';
       $('cContract').innerHTML=`<small>CAPABILITY PASSPORT / 当前版本声明</small><h4>${esc(p.capability||s.capability||s.description)}</h4><b>何时启用</b>${list(p.activation||s.use_when)}<b>需要的输入 → 预期产物</b>${list(p.inputs||s.inputs)}${list(p.effects||s.outputs)}<b>失效边界与注意事项</b>${list(p.failure_boundary||s.pitfalls)}<b>如何验收</b>${list(p.verification||s.verification)}<p>${esc(p.boundary||'声明不代表已经实测')}</p><details><summary>版本与环境</summary><p>${esc(p.environment||'环境要求未声明')}<br>SHA-256 <code>${esc(p.skill_sha256||'未记录')}</code></p></details>${Product.rewardReceiptHTML(s)}${Product.resourcesButtonHTML(s)}`;
@@ -47,12 +49,20 @@
     const query=e.target.value.trim().toLowerCase(),host=$('graph-results');
     const matches=query?S.nodes.filter(n=>(n.id+' '+n.domain).toLowerCase().includes(query)).slice(0,20):[];
     host.innerHTML=matches.map(n=>`<button type="button" data-node="${esc(n.id)}">${esc(n.id)}<small>${esc(n.domain)}</small></button>`).join('')||(query?'<p>没有匹配技能</p>':'');
-    host.querySelectorAll('[data-node]').forEach(b=>b.onclick=()=>{const n=S.byId.get(b.dataset.node);filter.domain='';$('graph-domain').value='';S.onlyEvolved=false;$('btnEvolved').classList.remove('on');filter.taskOnly=false;$('graph-task-only').checked=false;selectNode(n);host.innerHTML='';});
+    host.querySelectorAll('[data-node]').forEach(b=>b.onclick=()=>{const n=S.byId.get(b.dataset.node);filter.domain='';$('graph-domain').value='';S.onlyEvolved=false;$('btnEvolved').classList.remove('on');$('btnEvolved').setAttribute('aria-pressed','false');filter.taskOnly=false;$('graph-task-only').checked=false;selectNode(n);host.innerHTML='';});
+  };
+  $('graph-q').onkeydown=e=>{
+    if(e.key==='Enter'||e.key==='ArrowDown'){
+      const first=$('graph-results').querySelector('[data-node]');
+      if(first){e.preventDefault();if(e.key==='Enter')first.click();else first.focus();}
+    }
   };
   $('btnZoomIn').onclick=()=>sphere.zoom(1.2);$('btnZoomOut').onclick=()=>sphere.zoom(1/1.2);
   $('btnReset').onclick=()=>{sphere.reset();closeCard();if(run)applyTask();};
   $('btnPause').textContent=matchMedia('(prefers-reduced-motion: reduce)').matches?'继续旋转':'暂停旋转';
-  $('btnPause').onclick=e=>{const paused=sphere.pause();e.target.textContent=paused?'继续旋转':'暂停旋转';e.target.setAttribute('aria-pressed',String(paused));};
+  $('btnPause').setAttribute('aria-pressed',String(sphere.snapshot().paused));
+  $('btnLabel').setAttribute('aria-pressed',String(S.showLabel));$('btnEvolved').setAttribute('aria-pressed',String(S.onlyEvolved));
+  $('btnPause').onclick=()=>sphere.pause();
   $('btnLabel').onclick=e=>{S.showLabel=!S.showLabel;sphere.labels(S.showLabel);e.target.classList.toggle('on',S.showLabel);e.target.setAttribute('aria-pressed',String(S.showLabel));};
   $('btnEvolved').onclick=e=>{S.onlyEvolved=!S.onlyEvolved;e.target.classList.toggle('on',S.onlyEvolved);e.target.setAttribute('aria-pressed',String(S.onlyEvolved));refresh();};
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeCard();$('graph-results').innerHTML='';}});

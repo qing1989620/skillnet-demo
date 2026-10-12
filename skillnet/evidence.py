@@ -66,7 +66,7 @@ def capsule(run, workspace: Path):
             and i.get('sha256') == artifact.sha256 for i in s.input_artifacts)]
         files.append(dict(name=artifact.name, logical_name=artifact.logical_name or artifact.name,
             sha256=artifact.sha256, bytes=artifact.bytes, integrity='passed' if valid else 'failed',
-            actual_sha256=actual, role='input' if artifact.kind == '跨轮输入' else 'output',
+            actual_sha256=actual, role='input' if artifact.kind in ('跨轮输入','任务输入') else 'output',
             producer_step=artifact.from_step, consumed_by=consumers, source_run_id=artifact.source_run_id or run.run_id,
             download_path=f'/api/runs/{quote(run.run_id, safe="")}/artifacts/{quote(artifact.name, safe="")}'))
     chain = []
@@ -82,6 +82,8 @@ def capsule(run, workspace: Path):
             checks=[c.to_dict() for c in step.checks],
             independent_checks=observation.get('independent_checks', []),
             semantic_advisory=[v.to_dict() for v in step.verifications]))
+        if step.state_evidence:
+            chain[-1]['state_evidence'] = step.state_evidence
     terminal = run.status in TERMINAL
     intact = bool(files) and all(f['integrity'] == 'passed' for f in files)
     scoped = intact and assessment.get('scope_verdict') == 'passed' and assessment.get('reference_anchored_before_execution') is True
@@ -110,5 +112,9 @@ def capsule(run, workspace: Path):
         limitations=['文件指纹证明文件一致性，不证明研究结论正确',
             '独立结果评价沿用执行时已冻结的范围，未对历史任务重新评分',
             '单次任务不证明技能贡献或网络增益，候选技能不自动准入'])
+    if staged.get('state_policy'):
+        value['state_kernel'] = dict(policy=staged['state_policy'],
+            declared_composition=staged.get('state_composition', {}),
+            boundary='声明兼容性与实际条件检查分别记录；不代表因果贡献或跨任务能力已验证')
     value['capsule_sha256'] = digest(value)
     return value

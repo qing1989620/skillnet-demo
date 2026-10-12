@@ -87,6 +87,11 @@ html[data-product=briefing] .script .in { background:transparent; color:#b9cfc9;
 html[data-product=briefing] footer { color:#abc6bf; border-color:#4a6b66; padding:28px 0 40px; margin-top:48px; }
 /* Modal previews use a paper surface for reading raw files. They are a separate layer. */
 html[data-product=briefing] :is(.product-preview,.show-preview-dialog,.ui-dialog) { color-scheme:light; color:#254652; background:#f6faf7; --ink:#254652; --ink2:#527371; --brand:#214e50; --brand2:#286f5e; --soft:#eaf3ee; --line:#bdd2c6; --card:#f6faf7; }
+html[data-product=briefing] .uniq-three { grid-template-columns:repeat(3,minmax(0,1fr)); }
+html[data-product=briefing] .uniq>* { min-width:0; overflow-wrap:anywhere; }
+@media(max-width:600px) {
+  html[data-product=briefing] :is(.uniq,.uniq-three) { grid-template-columns:1fr; }
+}
 @media(max-width:860px) {
   html[data-product=briefing] { --page-pad:20px; }
   html[data-product=briefing] .chapter-nav { position:static; }

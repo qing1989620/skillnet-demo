@@ -150,7 +150,7 @@
   .abtn:hover { background: var(--soft); }
   .abtn.solid { background: var(--brand); color: #fff; border-color: var(--brand); }
   .digest { font-size: 11px; color: #9aa7b3; margin-top: 8px; }
-  .layer { position: fixed; inset: 0; background: rgba(22,32,44,.55); z-index: 200; display: flex;
+  .layer { position: fixed; inset: 0; width:100vw;height:100dvh;max-width:none;max-height:none;border:0;padding:0;margin:0;background: rgba(22,32,44,.55); z-index: 200; display: flex;
     align-items: center; justify-content: center; padding: 3vh 3vw; }
   .layer .box { background: #fff; width: min(1000px, 94vw); height: min(88vh, 900px); display: flex; flex-direction: column; }
   .layer .lb { display: flex; align-items: center; gap: 12px; padding: 10px 16px; border-bottom: 1px solid var(--line); }
@@ -255,7 +255,7 @@
     padding: 9px 0; font-size: 12.5px; cursor: pointer; transition: background .15s; }
   .ws-new:hover { background: var(--brand2); }
   .ws-list { margin-top: 10px; flex: 1; overflow-y: auto; max-height: 620px; }
-  .ws-item { padding: 8px 10px; border-radius: 6px; cursor: pointer; border: 1px solid transparent;
+  .ws-item { display:block;width:100%;text-align:left;font:inherit;background:transparent;padding: 8px 10px; border-radius: 6px; cursor: pointer; border: 1px solid transparent;
     transition: background .15s, border-color .15s; }
   .ws-item:hover { background: var(--soft); }
   .ws-item.on { background: #f2f7fb; border-color: #c9d8e6; box-shadow: inset 3px 0 0 var(--brand2); }
@@ -581,16 +581,16 @@
   }
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=20261012.1"></script>
+<script src="/static/assets/ui.js?v=20261012.6"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=20261012.1"></script>
-<link rel="stylesheet" href="/static/assets/showcase.css?v=20261012.1">
-<link rel="stylesheet" href="/static/assets/refinement.css?v=20261012.1">
-<link rel="stylesheet" href="/static/assets/quality.css?v=20261012.1">
-<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261012.1">
-<link rel="stylesheet" href="/static/assets/presentation.css?v=20261012.1">
-<link rel="stylesheet" href="/static/assets/sphere.css?v=20261012.1">
-<script src="/static/assets/sphere.js?v=20261012.1"></script>
+<script src="/static/assets/product.js?v=20261012.6"></script>
+<link rel="stylesheet" href="/static/assets/showcase.css?v=20261012.6">
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261012.6">
+<link rel="stylesheet" href="/static/assets/quality.css?v=20261012.6">
+<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261012.6">
+<link rel="stylesheet" href="/static/assets/presentation.css?v=20261012.6">
+<link rel="stylesheet" href="/static/assets/sphere.css?v=20261012.6">
+<script src="/static/assets/sphere.js?v=20261012.6"></script>
 </head>
 <body>
 
@@ -691,7 +691,7 @@
     </div>
   </div>
   </details>
-  <div class="show-tools"><button class="btn" type="button" data-show-run="f11ad204-20261010-110841-6d42">科研复现 · 泄漏排查与指标重算</button><button class="btn" type="button" data-show-run="f11ad204-20261010-100815-58a8">上一版科研复核 · 原始记录</button><button class="btn" type="button" data-show-run="b5492bb7-20261010-083743-1b37">同为 9 分 · 执行失败不发奖</button><button class="btn" type="button" data-show-run="b5492bb7-20261010-083955-a445">十二门核验 · 经营月报 4/12</button><button class="btn" type="button" data-show-run="1624c869-20261010-084055-eeaf">缺少标准答案 · 3/12 不发奖</button><button class="btn" type="button" data-show-run="b5492bb7-20261009-232823-34fe">独立判据通过 · 经营月报</button><button class="btn" type="button" data-show-run="1624c869-20261009-232919-0fe0">同为 8 分，为何不学习？</button><button class="btn" type="button" data-show-run="b5492bb7-20261008-174014-44aa">历史经营任务 · 3 步回放</button><button class="btn" type="button" data-show-run="02f80093-20261008-175420-f527">历史同文件追问 · 原值已核验</button><button class="btn" type="button" data-show-run="7356cc57-20261008-012151-3b64">历史科研任务 · 3 步回放</button><button class="btn" type="button" data-show-run="7c29f741-20261008-163216-a4ef">内核记录 · 1 步真实执行</button><button class="btn" id="demo-seven" style="background:#fff;color:var(--brand2);border:1px solid var(--brand2);font-size:12px" onclick="runDemo()">七阶段完整演示（本页）</button><p>对照两次真实任务的判据、结果和影子观察。原有完整演示、同题对照、代码、文件预览与会话历史均可继续使用。</p></div>
+  <div class="show-tools"><button class="btn" type="button" data-show-run="f11ad204-20261012-144805-b9e1">状态契约 · 输入准入与 20 项独立复核</button><button class="btn" type="button" data-show-run="f11ad204-20261010-110841-6d42">科研复现 · 泄漏排查与指标重算</button><button class="btn" type="button" data-show-run="f11ad204-20261010-100815-58a8">上一版科研复核 · 原始记录</button><button class="btn" type="button" data-show-run="b5492bb7-20261010-083743-1b37">同为 9 分 · 执行失败不发奖</button><button class="btn" type="button" data-show-run="b5492bb7-20261010-083955-a445">十二门核验 · 经营月报 4/12</button><button class="btn" type="button" data-show-run="1624c869-20261010-084055-eeaf">缺少标准答案 · 3/12 不发奖</button><button class="btn" type="button" data-show-run="b5492bb7-20261009-232823-34fe">独立判据通过 · 经营月报</button><button class="btn" type="button" data-show-run="1624c869-20261009-232919-0fe0">同为 8 分，为何不学习？</button><button class="btn" type="button" data-show-run="b5492bb7-20261008-174014-44aa">历史经营任务 · 3 步回放</button><button class="btn" type="button" data-show-run="02f80093-20261008-175420-f527">历史同文件追问 · 原值已核验</button><button class="btn" type="button" data-show-run="7356cc57-20261008-012151-3b64">历史科研任务 · 3 步回放</button><button class="btn" type="button" data-show-run="7c29f741-20261008-163216-a4ef">内核记录 · 1 步真实执行</button><button class="btn" id="demo-seven" style="background:#fff;color:var(--brand2);border:1px solid var(--brand2);font-size:12px" onclick="runDemo()">七阶段完整演示（本页）</button><p>对照两次真实任务的判据、结果和影子观察。原有完整演示、同题对照、代码、文件预览与会话历史均可继续使用。</p></div>
   <div id="ver-badge" title="当前页面版本；点击可强制刷新" onclick="forceRefresh()"
        style="position:fixed;right:14px;bottom:14px;z-index:99;font:11px/1 var(--mono,monospace);
        color:#9aa7b3;background:rgba(255,255,255,.85);border:1px solid var(--line);
@@ -889,7 +889,7 @@
       <td class="ours">有 / 无技能<b>对照实验</b> + 开发 / 冻结任务集 + 配对 bootstrap 95% CI（含负面结果）</td></tr>
   </table></div>
 
-  <div class="uniq" style="grid-template-columns:repeat(3,1fr)">
+  <div class="uniq uniq-three">
     <div class="uq">
       <b>产物级技能验收</b>
       <span>本项目在执行之后继续记录验收证据。我们把技能里的 verification 变成<b>逐条验收标准</b>，
@@ -920,7 +920,7 @@
   <div class="next" style="border-left:3px solid var(--warn)">
     <b>哪里不占优（不吹）：</b>产物<b>数量</b>契约模式并非最多（实测 2 个 vs 提示词模式的 3 个）——
     它的优势在<b>可验证性与约束落地</b>，不在堆数量。七阶段演示展示方案中的一步执行；
-    对话工作台支持 DAG 分步执行。沙箱面向可信代码，不是对抗性隔离。
+    对话工作台支持 DAG 分步执行。演示默认采用宿主机子进程；已实现可选 Docker 隔离和独立 Worker，生产部署须启用并完成目标环境验收。
   </div>
 
   <div class="next" style="border-left:3px solid var(--brand)">
@@ -941,7 +941,7 @@
     <div class="kp"><div class="n"><span data-live="edges">—</span></div><div class="t">类型化关系边 · 图驱动编排</div></div>
     <div class="kp"><div class="n">160</div><div class="t">维任务-技能联合上下文（当前 LinUCB 实现）</div></div>
     <div class="kp"><div class="n">31</div><div class="t">项交付自检（verify.py）</div></div>
-    <div class="kp"><div class="n">326</div><div class="t">项自动化回归（当前交付验证）</div></div>
+    <div class="kp"><div class="n">CI</div><div class="t"><a href="https://github.com/qing1989620/skillnet-demo/actions" target="_blank" rel="noopener">自动化回归 · 查看交付记录 ↗</a></div></div>
     <div class="kp"><div class="n">7</div><div class="t">项真实运行内核证据</div></div>
     <div class="kp"><div class="n">8</div><div class="t">个框架 / 目录导出落点</div></div>
     <div class="kp"><div class="n">2</div><div class="t">套任务集（历史划分元数据待复核）</div></div>
@@ -976,7 +976,7 @@
 </section>
 
 <script>
-const PAGE_VER = "2026-10-12.sphere.1";
+const PAGE_VER = "2026-10-12.contract.6";
 const API = location.origin;
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1082,8 +1082,8 @@ function evidenceDetail(key) {
       "python -c \"from skillnet.schema import QUALITY_DIMENSIONS as Q; print(Q)\"");
     case "evolver": return wrap("技能进化 · 四算子与准入", [
       ["算子", CAP.evolver_operators.join(" / ")],
-      ["闭环", "轨迹蒸馏 → 质量准入（相似度 + 命名 + 步骤数）→ 落盘 → 星图标记"],
-      ["实测", "当前库规模 " + L.skills + "，新技能经准入闸进入共享库"],
+      ["闭环", "轨迹观察 → 候选隔离 → 冻结留出任务的配对执行 → 十二门全部通过才奖励具体版本"],
+      ["边界", "当前库规模 " + L.skills + "；导入、候选生成、奖励资格与正式排序部署分别记录，生成候选不代表能力提升"],
       ["代码", "<code>skillnet/evolver.py</code> · 演示入口 <code>POST /api/evolve</code>"]],
       "curl -s -X POST http://127.0.0.1:8848/api/evolve -H 'Content-Type: application/json' -d '{\"task\":\"示例\"}'");
     case "stats": return wrap("评估体系 · 统计检验", [
@@ -1126,8 +1126,7 @@ let WS_SESSIONS = [], WS_CUR = null, wsBusy = false;
 const WS_PHASES = [["retrieval","检索对比"],["ranking","策略选择"],["orchestration","任务编排"],
                    ["dag","DAG 收束"],["plan","研究方案"],["exec","真实执行"],["final","验收与进化"]];
 
-function wsLoad(){ try { WS_SESSIONS = JSON.parse(localStorage.getItem(WS_KEY) || "[]"); } catch { WS_SESSIONS = []; }
-  if (!Array.isArray(WS_SESSIONS)) WS_SESSIONS = []; }
+function wsLoad(){ WS_SESSIONS = UI.readSessions(WS_KEY); }
 function wsSave(){ try { localStorage.setItem(WS_KEY, JSON.stringify(WS_SESSIONS.map(s => ({...s,
   turns: s.turns.map(({_fin, _loaded, _loading, body, ...turn}) => turn)})))); } catch {} }
 function wsSess(){ return WS_SESSIONS.find(s => s.id === WS_CUR) || null; }
@@ -1145,10 +1144,11 @@ function wsRenderList(){
     return;
   }
   host.innerHTML = WS_SESSIONS.map(s => `
-    <div class="ws-item ${s.id === WS_CUR ? "on" : ""}" onclick="wsOpen('${s.id}')">
+    <button type="button" class="ws-item ${s.id === WS_CUR ? "on" : ""}" data-session="${esc(s.id)}" aria-pressed="${s.id === WS_CUR}">
       <div class="t">${esc(s.title || "（新对话）")}</div>
       <div class="m">${s.turns.length} 问 · ${new Date(s.created).toLocaleString("zh-CN", {month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit"})}</div>
-    </div>`).join("");
+    </button>`).join("");
+  host.querySelectorAll('[data-session]').forEach(button=>button.onclick=()=>wsOpen(button.dataset.session));
 }
 
 function wsPhaseBar(i){
@@ -1464,7 +1464,7 @@ async function boot() {
     const picks = [TASKS[1], TASKS[4], TASKS[5]].filter(Boolean);
     $("chips").innerHTML = '<span style="font-size:11.5px;color:#9aa7b3;margin-right:2px">试试：</span>' +
       picks.map(t => `<button class="chip" data-i="${TASKS.indexOf(t)}">${esc(t.query.slice(0, 16))}…</button>`).join("");
-    document.querySelectorAll(".chip").forEach(c => c.onclick = () => {
+    $("chips").querySelectorAll("[data-i]").forEach(c => c.onclick = () => {
       const t = TASKS[+c.dataset.i];
       $("task").value = t.query; CUR_GOLD = t.gold || [];
     });
@@ -1587,8 +1587,8 @@ function renderFeedback(d) {
     ? `<div class="nskill"><b>新候选技能：${esc(d.name)}</b>
         <div style="font-size:12px;color:var(--ink2);margin-top:3px">${esc(d.capability || "")}</div>
         <div class="meta">第 ${d.generation} 代 · 库规模 → <b style="color:var(--ok)">${d.library_size}</b></div></div>
-       <div style="margin-top:6px;color:var(--ok)">新技能下次将以探索加成的方式获得优先尝试——闭环合拢。</div>`
-    : `<div style="font-size:12.5px;color:var(--ink2)">本次轨迹未通过质量准入（阈值拦截）——治理的一部分：不是所有蒸馏都会入库。当前库规模 ${d.library_size}。</div>`;
+       <div style="margin-top:6px;color:var(--ink2)">这是该次运行的准入记录。当前协议要求独立结果与十二门证据，历史准入不证明未来任务收益。</div>`
+    : `<div style="font-size:12.5px;color:var(--ink2)">本次没有新技能准入。候选生成、独立评测、十二门奖励资格与正式部署分别判断；缺少任何必要证据都不能称为技能提升。当前库规模 ${d.library_size}。</div>`;
   return fb + (d.skip_reason && !d.accepted ? '<div class="trace">未准入原因：' + esc(d.skip_reason) + "</div>" : distill);
 }
 
@@ -1622,7 +1622,7 @@ function renderStage3(d, gold) {
   return `<div style="margin-bottom:8px;font-size:11.5px;color:#8a97a4">加载的技能契约：${contracts}</div>
     <div class="bars">${bars}</div>
     <div style="margin-top:8px">技能采纳率 <b style="color:var(--brand)">${(d.adoption * 100).toFixed(0)}%</b> ·
-    执行步骤 ${d.steps} · 盲评均分 <b style="color:var(--brand)">${j.score_valid !== false && typeof j.weighted === "number" ? j.weighted.toFixed(2) + "/10" : "不可用"}</b></div>
+    执行步骤 ${d.steps} · 盲评均分 <b style="color:var(--brand)">${j.score_valid !== false && typeof j.weighted === "number" && Number.isFinite(j.weighted) ? j.weighted.toFixed(2) + "/10" : "不可用"}</b></div>
     ${j.comment ? `<div class="trace">盲评意见：${esc(j.comment)}</div>` : ""}
     ${renderPlan(d.plan)}`;
   function brow(k, v, isObj) {
@@ -1632,12 +1632,12 @@ function renderStage3(d, gold) {
 }
 
 function renderStage4(d) {
-  if (!d.accepted) return `<div>本次轨迹未通过质量准入（阈值拦截）——治理的一部分：不是所有蒸馏都会入库。当前库规模 ${d.library_size}。</div>`;
+  if (!d.accepted) return `<div>本次没有新技能准入；候选须接受独立结果核验与冻结任务评测，十二门全部满足后才可奖励。当前库规模 ${d.library_size}。</div>`;
   return `<div class="nskill"><b>新候选技能：${esc(d.name)}</b>
     <div style="font-size:12px;color:var(--ink2);margin-top:3px">${esc(d.capability || "")}</div>
     <div class="meta">第 ${d.generation} 代 · 蒸馏记录 ${d.records} 条 · 库规模 → <b style="color:var(--ok)">${d.library_size}</b></div>
-    <div style="margin-top:8px"><button class="abtn" onclick="viewSkillRaw('${esc(d.name)}')">查看技能契约全文</button></div>
-    </div><div style="margin-top:6px;color:var(--ok)">下次遇到相似任务，它会被检索并优先推荐——闭环合拢。</div>`;
+    <div style="margin-top:8px"><button type="button" class="abtn" data-raw-skill="${esc(d.name)}">查看技能契约全文</button></div>
+    </div><div style="margin-top:6px;color:var(--ink2)">该资产可进入后续检索。是否优先采用由新任务条件决定，不能从一次准入推断持续增益。</div>`;
 }
 
 let LAST_EXEC = null;   // {task, step, skill, metrics} 供「无技能对照」复用
@@ -1753,8 +1753,8 @@ function renderArtifacts(d) {
       <div><div class="an">${esc(a.name)}</div>
       <div class="ak">${esc(a.kind)} · ${(a.bytes / 1024).toFixed(1)} KB${a.declared_as ? " · 兑现清单项：" + esc(a.declared_as) : ""}</div></div>
       <div class="sp"></div>
-      <button class="abtn" onclick="previewArtifact('${esc(d.slug)}','${esc(a.name)}')">在线查看</button>
-      <a class="abtn solid" href="${API}/api/artifact/${esc(d.slug)}/${encodeURIComponent(a.name)}?download=1">下载</a>
+      <button type="button" class="abtn" data-legacy-slug="${esc(d.slug)}" data-legacy-file="${esc(a.name)}">在线查看</button>
+      <a class="abtn solid" href="${API}/api/artifact/${encodeURIComponent(d.slug)}/${encodeURIComponent(a.name)}?download=1">下载</a>
     </div>`;
   const deliv = d.artifacts.filter(isDeliv);
   const docs = d.artifacts.filter(a => !isDeliv(a));
@@ -1774,39 +1774,54 @@ function renderArtifacts(d) {
 }
 
 /* ---------- 弹层：产物预览 / 技能全文 ---------- */
+let layerGeneration = 0;
 function closeLayer() {
-  const l = document.getElementById("layer"); if (l) l.remove();
+  layerGeneration++;
+  const l = document.getElementById("layer"); if (l) { l.close(); l.remove(); }
 }
 function openLayer(title, { html = "", src = "", text = "" } = {}) {
   closeLayer();
-  const l = document.createElement("div"); l.className = "layer"; l.id = "layer";
+  const generation = layerGeneration;
+  const l = document.createElement("dialog"); l.className = "layer"; l.id = "layer";
+  l.setAttribute('aria-label',title);
+  l.addEventListener('close',()=>{if(generation===layerGeneration)layerGeneration++;l.remove();});
   l.onclick = e => { if (e.target === l) closeLayer(); };
-  const body = html ? html : src ? `<iframe src="${src}"></iframe>` : `<pre>${esc(text)}</pre>`;
+  const body = html ? html : src ? `<iframe src="${esc(src)}" title="${esc(title)}" sandbox></iframe>` : `<pre>${esc(text)}</pre>`;
   l.innerHTML = `<div class="box"><div class="lb"><b>${esc(title)}</b>
       <button class="abtn" onclick="closeLayer()">关闭</button></div>
       <div class="lbody">${body}</div></div>`;
   document.body.appendChild(l);
+  l.showModal();
+  return generation;
 }
 async function previewArtifact(slug, name) {
   const url = API + "/api/artifact/" + encodeURIComponent(slug) + "/" + encodeURIComponent(name);
   if (/\.(html|pdf)$/i.test(name)) return openLayer(name, {src: url});
   if (/\.(png|jpg|jpeg|webp|svg)$/i.test(name)) return openLayer(name, {html: '<img src="' + esc(url) + '" alt="' + esc(name) + '" style="max-width:100%">'});
   if (/\.(xlsx|xls|zip)$/i.test(name)) return openLayer(name, {html: '<p>此文件可下载后打开。</p><a class="abtn" href="' + esc(url) + '?download=1">下载文件</a>'});
+  const generation = openLayer(name, {text:'正在读取产物…'});
   try {
     const r = await fetch(url);
     if (!r.ok) throw new Error("文件加载失败（HTTP " + r.status + "）");
-    openLayer(name, {text: await r.text()});
-  } catch (e) { openLayer(name, {text: "加载失败：" + e.message}); }
+    const text = await r.text(); if(generation!==layerGeneration)return;
+    document.querySelector('#layer .lbody').innerHTML='<pre>'+esc(text)+'</pre>';
+  } catch (e) { if(generation===layerGeneration)document.querySelector('#layer .lbody').innerHTML='<pre>'+esc('加载失败：'+e.message)+'</pre>'; }
 }
 
 async function viewSkillRaw(name) {
-  openLayer(name + " · 技能契约全文", { text: "加载中…" });
+  const generation = openLayer(name + " · 技能契约全文", { text: "加载中…" });
   try {
     const r = await fetch(`${API}/api/skill/${encodeURIComponent(name)}/raw`);
-    const d = await r.json();
-    openLayer(name + " · 技能契约全文（来源 " + d.source + "）", { text: d.content || "（空）" });
-  } catch (e) { openLayer(name, { text: "加载失败：" + e.message }); }
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const d = await r.json();if(generation!==layerGeneration)return;
+    document.querySelector('#layer .lb b').textContent=name+' · 技能契约全文（来源 '+d.source+'）';
+    document.querySelector('#layer .lbody').innerHTML='<pre>'+esc(d.content||'（空）')+'</pre>';
+  } catch (e) { if(generation===layerGeneration)document.querySelector('#layer .lbody').innerHTML='<pre>'+esc('加载失败：'+e.message)+'</pre>'; }
 }
+document.addEventListener('click',event=>{
+  const artifact=event.target.closest('[data-legacy-file]');if(artifact)previewArtifact(artifact.dataset.legacySlug,artifact.dataset.legacyFile);
+  const skill=event.target.closest('[data-raw-skill]');if(skill)viewSkillRaw(skill.dataset.rawSkill);
+});
 
 /* ---------- WOW-1：本页 Live Run —— 星图 + 阶段条全部由真实 SSE 驱动 ---------- */
 const PHASES = [
@@ -1824,7 +1839,7 @@ function stepCardHTML(s, fin) {
     const L = [];
     L.push(`<div><b>做什么：</b>${esc(s.action || "")}</div>`);
     if (s.skill) L.push(`<div><b>使用技能：</b><code>${esc(s.skill)}</code></div>`);
-    L.push(`<div><b>执行过程：</b>共 ${s.n_attempts || 1} 次尝试 · 耗时 ${fmtMs(s.duration_ms)}${fixed ? '（前几次失败，对照技能记录的陷阱自动修复）' : ""}</div>`);
+    L.push(`<div><b>执行过程：</b>共 ${s.n_attempts ?? s.attempts?.length ?? "未记录"} 次尝试 · 耗时 ${fmtMs(s.duration_ms)}${fixed ? '（前几次失败，对照技能记录的陷阱自动修复）' : ""}</div>`);
     const t0 = fin.started_at_ms || (fin.steps?.[0]?.started_at_ms) || 0;
     const totalMs = Math.max(1, fin.duration_ms || 0);
     if (t0 && s.started_at_ms && s.duration_ms > 0) {
@@ -1883,7 +1898,7 @@ function taskSummaryHTML(fin) {
       <div class="ts-step"><b>② 选择</b><span>LinUCB 按任务条件化排序，最终采用 ${s.used_n || 0} 个技能：${esc(usedList)}</span></div>
       <div class="ts-step"><b>③ 编排</b><span>按技能依赖边生成执行 DAG，${steps.length} 步真实执行（含修复后的 ${nFix} 步）</span></div>
       <div class="ts-step"><b>④ 验收</b><span>程序化验收 ${chkOk}/${chkAll} 通过${nDone < steps.length ? `，${steps.length - nDone} 步未完成` : "，全部步骤完成"}</span></div>
-      <div class="ts-step"><b>⑤ 沉淀</b><span>${(imp.new_skills || []).length ? `蒸馏并准入 ${(imp.new_skills || []).length} 个新技能（见下）` : "本次未产生通过准入的新技能（相似度/质量闸拦截）"}</span></div>
+      <div class="ts-step"><b>⑤ 沉淀</b><span>${(imp.new_skills || []).length ? `本次记录新增 ${(imp.new_skills || []).length} 个技能资产（见下），资产增加与质量提升分开判断` : "本次未新增技能；经验可保留为候选，只有冻结对照与十二门全过才具备奖励资格"}</span></div>
     </div>
     <div class="ts-metrics">
       <div><b>${imp.library_before} → ${imp.library_after}</b>技能库规模${delta ? `（+${delta}）` : ""}</div>
@@ -1893,7 +1908,7 @@ function taskSummaryHTML(fin) {
     </div>
     ${touchedRows ? `<div class="ts-sec">── 技能资产更新（本次使用后的真实统计变化）──</div>
     <table><tr><th style="width:38%">技能</th><th>变化（pulls 调用 · exec_total 执行 · exec_ok 成功 · reward_sum 奖励）</th></tr>${touchedRows}</table>` : ""}
-    ${newCards ? `<div class="ts-sec">── 能力沉淀（本次任务为 Agent 长出的新能力）──</div>${newCards}` : ""}
+    ${newCards ? `<div class="ts-sec">── 历史经验资产（适用条件与实际增益需分别验证）──</div>${newCards}` : ""}
   </div>`;
 }
 
@@ -1987,7 +2002,7 @@ function handleRunEvent(ev, runId) {
     card.id = "evo-card";
     card.style.cssText = "margin-top:10px";
     card.innerHTML = `<div style="background:var(--card);border:1px solid ${d.accepted ? "#cfe6d6" : "var(--line)"};border-left:3px solid ${d.accepted ? "var(--ok)" : "#9aa7b3"};border-radius:6px;padding:11px 15px;font-size:12.5px;color:var(--ink2)">` +
-      `<b style="color:var(--brand)">反馈回流 · 技能蒸馏</b> —— 本次任务的轨迹${d.accepted ? "已蒸馏为候选技能并通过质量准入" : "未达到准入标准（相似度/质量闸）"}：` +
+      `<b style="color:var(--brand)">反馈回流 · 技能蒸馏</b> —— 本次轨迹${d.candidate ? "已隔离为候选，待独立评测" : d.accepted ? "记录为已准入资产，不能据此推断质量提升" : "未准入；独立结果与十二门证据须分别核对"}：` +
       `${d.accepted ? `<b style="color:var(--ok)">${esc(d.name || "新技能")}</b>` : "未准入"} · 库规模 ${d.library_size} · ` +
       `<a href="/graph" target="_blank" style="color:var(--brand2)">在星图查看进化技能 →</a></div>`;
     sum.appendChild(card);
@@ -2058,8 +2073,7 @@ function renderLiveFinal(fin) {
 async function loadRunCenter(){
   const host = document.getElementById("runlist");
   try {
-    let runs = [];
-    try { runs = (await (await fetch(API + "/api/runs?limit=8")).json()).runs || []; } catch {}
+    const runs = (await UI.json(API + "/api/runs?limit=8")).runs || [];
     if (!runs.length){ host.innerHTML = '<div style="font-size:12.5px;color:#8a97a4;padding:8px 0">还没有运行记录 —— 在上方输入任务，点「实时运行」创建第一条。</div>'; return; }
     const ST = {COMPLETED:["已完成","#9cdbbc"],PARTIAL:["部分完成","#dec18b"],FAILED:["失败","#f0ae9f"],
                 RUNNING:["运行中","#9ccee1"],EXECUTING:["执行中","#9ccee1"],RETRIEVING:["检索中","#9ccee1"],
@@ -2073,9 +2087,9 @@ async function loadRunCenter(){
       '<th style="text-align:left;color:#8a97a4;padding:4px 8px;border-bottom:1px solid var(--line)">产物</th></tr>' +
       runs.map(r => {
         const pair = ST[r.status] || [r.status, "#8a97a4"];
-        return '<tr style="cursor:pointer" onclick="location.href=\'/run?id=' + encodeURIComponent(r.run_id) + '\'">' +
-          '<td style="padding:5px 8px;border-bottom:1px solid var(--line)"><span style="color:' + pair[1] + ';font-weight:600">' + pair[0] + '</span></td>' +
-          '<td style="padding:5px 8px;border-bottom:1px solid var(--line);color:var(--ink)">' + esc((r.task||"").slice(0,52)) + '</td>' +
+        return '<tr>' +
+          '<td style="padding:5px 8px;border-bottom:1px solid var(--line)"><span style="color:' + pair[1] + ';font-weight:600">' + esc(pair[0]) + '</span></td>' +
+          '<td style="padding:5px 8px;border-bottom:1px solid var(--line);color:var(--ink)"><a href="/run?id=' + encodeURIComponent(r.run_id) + '">' + esc((r.task||"").slice(0,52)) + '</a></td>' +
           '<td style="padding:5px 8px;border-bottom:1px solid var(--line)">' + fmtMs(r.duration_ms) + '</td>' +
           '<td style="padding:5px 8px;border-bottom:1px solid var(--line)">¥' + Number(r.cost_yuan||0).toFixed(3) + '</td>' +
           '<td style="padding:5px 8px;border-bottom:1px solid var(--line)">' + (r.artifacts||0) + '</td></tr>';
@@ -2304,6 +2318,6 @@ window.__SELFTEST__ = function(){
   }, 4000);
 })();
 </script>
-<script src="/static/assets/showcase.js?v=20261012.1"></script>
+<script src="/static/assets/showcase.js?v=20261012.6"></script>
 </body>
 </html>

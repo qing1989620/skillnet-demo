@@ -944,10 +944,11 @@ def adapters() -> dict[str, Any]:
 @app.get("/api/results")
 def results() -> dict[str, Any]:
     out: dict[str, Any] = {}
-    for f in sorted([*config.OUT_DIR.glob("exp*.json"), *config.OUT_DIR.glob('execution-benchmark-[0-9]*.json')]):
+    for f in sorted([*config.OUT_DIR.glob("exp*.json"), *config.OUT_DIR.glob('execution-benchmark-[0-9]*.json'),
+                     config.ROOT/'docs'/'evidence'/'capability-probes.json']):
         try:
             out[f.stem] = json.loads(f.read_text(encoding="utf-8"))
-        except json.JSONDecodeError:
+        except (json.JSONDecodeError, OSError):
             continue
     return out
 

@@ -115,13 +115,13 @@
   }
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=20261012.1"></script>
+<script src="/static/assets/ui.js?v=20261012.6"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=20261012.1"></script>
-<link rel="stylesheet" href="/static/assets/refinement.css?v=20261012.1">
-<link rel="stylesheet" href="/static/assets/quality.css?v=20261012.1">
-<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261012.1">
-<link rel="stylesheet" href="/static/assets/sphere.css?v=20261012.1">
+<script src="/static/assets/product.js?v=20261012.6"></script>
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261012.6">
+<link rel="stylesheet" href="/static/assets/quality.css?v=20261012.6">
+<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261012.6">
+<link rel="stylesheet" href="/static/assets/sphere.css?v=20261012.6">
 </head>
 <body>
 <header>
@@ -222,18 +222,21 @@ function route(){
   if (cur === "mission") loadLatest();
 }
 window.addEventListener("hashchange", route);
-window.addEventListener("skillnet:connection-changed", route);
+window.addEventListener("skillnet:connection-changed", ()=>{loadHealth();route();});
 
 /* ---------- 系统状态 ---------- */
-let HEALTH = null;
+let HEALTH = null,healthGeneration=0,latestGeneration=0,evalGeneration=0,systemGeneration=0;
 async function loadHealth(){
+  const generation=++healthGeneration;
   try {
-    HEALTH = await UI.json(API + "/api/health");
+    const health = await UI.json(API + "/api/health");
+    if(generation!==healthGeneration)return;
+    HEALTH=health;
     $("sys").innerHTML =
       `<span><span class="dot ${HEALTH.ok?"on":"off"}"></span>${HEALTH.ok?"服务在线":"服务异常"}</span>`
       + `<span>${esc(HEALTH.model||"—")}</span>`
       + `<span>${HEALTH.api_key_configured?"模型已配置":"模型待配置"}</span>`;
-  } catch { $("sys").innerHTML = '<span><span class="dot off"></span>连接失败</span>'; }
+  } catch { if(generation===healthGeneration)$("sys").innerHTML = '<span><span class="dot off"></span>连接失败</span>'; }
 }
 
 /* ---------- 示例任务 ---------- */
@@ -266,7 +269,7 @@ async function startRun(){
     });
     if (!r.ok){ const d = await r.json().catch(()=>({})); throw new Error(d.detail || r.status); }
     const d = await r.json();
-    localStorage.setItem("last_run", d.run_id);
+    try { localStorage.setItem("last_run", d.run_id); } catch (_) { /* URL remains the recoverable run identity. */ }
     location.href = `/run?id=${encodeURIComponent(d.run_id)}`;   // 立即跳 Live Run
   } catch (e) {
     UI.toast("创建 Run 失败：" + (e.message || e));
@@ -279,15 +282,17 @@ function kpis(summary){
   return [['运行总数',summary.total,'每次任务独立留痕'],['执行完成',summary.completed,'完成状态与验收分别展示'],['交付产物',summary.artifacts,'可追溯的文件资产'],['累计成本','¥'+Number(summary.cost_yuan||0).toFixed(3),'来自真实模型调用账本']].map(([label,value,note])=>`<div><small>${label}</small><b>${value??'—'}</b><span>${note}</span></div>`).join('');
 }
 async function loadLatest(){
+  const generation=++latestGeneration;
   const card=$('latest');card.style.display='block';
   try{
-    const page=await UI.json(API+'/api/runs?limit=1');$('center-kpis').innerHTML=kpis(page.summary||{});
-    if(!page.runs.length){$('latest-body').innerHTML='<div class="product-empty">还没有任务记录。<a href="/chat">开始第一次研究任务 ↗</a></div>';return;}
+    const page=await UI.json(API+'/api/runs?limit=1');if(generation!==latestGeneration)return;$('center-kpis').innerHTML=kpis(page.summary||{});
+    if(!page.runs.length){$('latest-title').textContent='最近一次任务';$('latest-meta').textContent='';$('latest-body').innerHTML='<div class="product-empty">还没有任务记录。<a href="/chat">开始第一次研究任务 ↗</a></div>';return;}
     const r=page.runs[0],full=await UI.json(API+'/api/runs/'+encodeURIComponent(r.run_id));
+    if(generation!==latestGeneration)return;
     $('latest-title').innerHTML=`最近一次任务 <span class="badge st-${esc(r.status)}">${esc(Product.labels[r.status]||r.status)}</span>`;
     $('latest-meta').innerHTML=`<a href="/run?id=${encodeURIComponent(r.run_id)}">查看执行与产物 ↗</a>`;
     $('latest-body').innerHTML=`<p style="font-size:15px;color:#244c59;margin:0 0 12px;line-height:1.9">${esc(full.task)}</p><div class="m">${fmtTime(r.started_at_ms)} · ${fmtMs(r.duration_ms)} · ¥${Number(r.cost_yuan||0).toFixed(4)} · ${r.llm_calls||0} 次模型调用</div>`+Product.evidenceHTML(full);
-  }catch(error){$('latest-body').innerHTML=UI.errorHTML(error)+'<button class="btn" onclick="loadLatest()">重新加载</button>';}
+  }catch(error){if(generation===latestGeneration)$('latest-body').innerHTML=UI.errorHTML(error)+'<button class="btn" onclick="loadLatest()">重新加载</button>';}
 }
 let runOffset=0,runGeneration=0,runSearchTimer;
 async function loadRuns(){
@@ -319,9 +324,15 @@ async function loadSkills(){
   const q=$('q').value,domain=$('skill-domain').value,source=$('skill-source').value;
   const params=new URLSearchParams({q,domain,source,offset:skillOffset,limit:60});
   let page;
-  try{page=await UI.json(API+'/api/skills?'+params);if(generation!==skillGeneration)return;SKILLS=page.items;}catch(error){$('skills-body').innerHTML=UI.errorHTML(error);return;}
-  if($('skill-domain').options.length===1){const stats=await UI.json(API+'/api/stats');$('skill-domain').insertAdjacentHTML('beforeend',Object.keys(stats.domain_distribution||{}).sort().map(d=>`<option>${esc(d)}</option>`).join(''));}
-  const rows=SKILLS;
+  try{page=await UI.json(API+'/api/skills?'+params);if(generation!==skillGeneration)return;}
+  catch(error){if(generation===skillGeneration)$('skills-body').innerHTML=UI.errorHTML(error);return;}
+  if($('skill-domain').options.length===1){
+    try{const stats=await UI.json(API+'/api/stats');if(generation!==skillGeneration)return;
+      if($('skill-domain').options.length===1)$('skill-domain').insertAdjacentHTML('beforeend',Object.keys(stats.domain_distribution||{}).sort().map(d=>`<option>${esc(d)}</option>`).join(''));
+    }catch(error){if(generation!==skillGeneration)return;UI.toast('领域选项暂不可用，技能结果仍可浏览。');}
+  }
+  if(generation!==skillGeneration)return;
+  const rows=SKILLS=page.items||[];
   $('skills-meta').textContent=`${skillOffset+ (rows.length?1:0)}–${skillOffset+rows.length} / ${page.total} 个独立 Skill · 来源和验证状态分别可查`;
   let pager=$('skill-pager');if(!pager){pager=document.createElement('div');pager.id='skill-pager';pager.className='product-pager';$('skills-body').after(pager);}
   pager.innerHTML=`<button id="skill-prev" ${skillOffset===0?'disabled':''}>上一页</button><span>${Math.floor(skillOffset/60)+1} / ${Math.max(1,Math.ceil(page.total/60))}</span><button id="skill-next" ${skillOffset+rows.length>=page.total?'disabled':''}>下一页</button>`;
@@ -346,21 +357,25 @@ $("skill-domain").onchange=$("skill-source").onchange=()=>{skillOffset=0;loadSki
 
 /* ---------- Evaluations ---------- */
 async function loadEval(){
+  const generation=++evalGeneration;
   $('eval-body').innerHTML='<div class="empty">加载实验记录…</div>';
   try{
     const [results,stats]=await Promise.all([UI.json(API+'/api/results'),UI.json(API+'/api/stats')]);
+    if(generation!==evalGeneration)return;
     $('eval-body').innerHTML=Product.experimentsHTML(results,stats);
-  }catch(error){$('eval-body').innerHTML=UI.errorHTML(error)+'<button class="btn" onclick="loadEval()">重新加载</button>';}
+  }catch(error){if(generation===evalGeneration)$('eval-body').innerHTML=UI.errorHTML(error)+'<button class="btn" onclick="loadEval()">重新加载</button>';}
 }
 
 /* ---------- System ---------- */
 async function loadSystem(){
-  let cfg,stats;
-  try { [cfg,stats,HEALTH]=await Promise.all([UI.json(API+'/api/config'),UI.json(API+'/api/stats'),UI.json(API+'/api/health')]); }catch(error){$('sys-body').innerHTML=UI.errorHTML(error)+'<button class="btn" onclick="loadSystem()">重新加载</button>';return;}
+  const generation=++systemGeneration;
+  let cfg,stats,health;
+  try { [cfg,stats,health]=await Promise.all([UI.json(API+'/api/config'),UI.json(API+'/api/stats'),UI.json(API+'/api/health')]);if(generation!==systemGeneration)return; }catch(error){if(generation===systemGeneration)$('sys-body').innerHTML=UI.errorHTML(error)+'<button class="btn" onclick="loadSystem()">重新加载</button>';return;}
+  const HEALTH=health;
   $("sys-meta").textContent = HEALTH ? `ui ${HEALTH.ui_version||"—"} · skills ${HEALTH.skills}` : "";
   $("sys-body").innerHTML = `
     <div class="product-kpis"><div><small>执行并发</small><b>${HEALTH.runtime?.active_runs??0} / ${HEALTH.runtime?.max_active_runs??'—'}</b><span>活动任务 / 最大槽位</span></div><div><small>技能资产</small><b>${stats.total}</b><span>${stats.evolved} 个演化技能</span></div><div><small>模型连接</small><b style="font-size:19px">${HEALTH.api_key_configured?'已配置':'待配置'}</b><span>${esc(HEALTH.model)}</span></div><div><small>访问保护</small><b style="font-size:19px">${HEALTH.token_required?'已启用':'未启用'}</b><span>连接设置仅保存当前标签页令牌</span></div></div>
-    <div class="product-block" style="margin-bottom:22px"><h3>S1 接入与运行边界</h3><p>已实现 HTTP 客户端、任务工具处理器、事件订阅、取消与产物下载。<a href="/dashboard#adapters">查看接口与接入示例 ↗</a> · <a href="/docs" target="_blank">打开 API 文档 ↗</a></p><p>当前为单进程科研演示部署；宿主机子进程执行已知任务代码。生产接入还需要独立执行隔离、身份映射与跨进程队列，S1 线上联调尚未完成。</p></div>
+    <div class="product-block" style="margin-bottom:22px"><h3>S1 接入与运行边界</h3><p>已实现 HTTP 客户端、任务工具处理器、事件订阅、取消与产物下载。<a href="/dashboard#adapters">查看接口与接入示例 ↗</a> · <a href="/docs" target="_blank">打开 API 文档 ↗</a></p><p>当前 Worker：${esc(HEALTH.runtime?.deployment||'未记录')} · 执行隔离：${esc(HEALTH.runtime?.isolation||'未记录')}。已实现 SQLite 持久队列、独立 Worker、签名身份范围与 Docker 执行配置；具体启用情况以当前部署为准，S1 线上联调及生产环境验收尚未完成。</p></div>
     <div class="grid2">
       <div><div style="font:600 12px inherit;margin-bottom:8px">Runtime</div>
         <table>

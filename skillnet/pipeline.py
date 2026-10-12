@@ -35,7 +35,7 @@ from typing import Any, Callable
 
 from . import checks as checks_mod
 from . import config, executor, llm, runtime, sandbox
-from . import contracts
+from . import contracts, state_contracts, state_policy
 from .runtime import (
     BUS, STEP_DONE, STEP_FAILED, STEP_PENDING, STEP_RUNNING, STEP_SKIPPED,
     Artifact, BudgetExceeded, ExecutionAttempt, ProgrammaticCheck, Run, RunCancelled, RunStep,
@@ -100,7 +100,7 @@ def build_steps(plan: dict[str, Any], workflow: list[list[str]] | None = None) -
     for i, st in enumerate(steps_plan):
         s = st if isinstance(st, dict) else {"action": str(st)}
         step = RunStep(idx=i, action=str(s.get("action") or ""), skill=s.get("skill") or None)
-        step.contract = {k: s[k] for k in ('input_files', 'output_files', 'data_checks', 'verification', 'expected_output', 'check') if k in s}
+        step.contract = {k: s[k] for k in ('input_files', 'output_files', 'data_checks', 'verification', 'expected_output', 'check', 'requires', 'ensures') if k in s}
         step.dependency_reason = '方案顺序兜底'
         step.depends_on = [i - 1] if i > 0 else []
         out.append(step)
@@ -237,6 +237,41 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
     step.started_at_ms = now_ms()
     _emit(run, "step.started", step=step.idx, action=step.action[:160], skill=step.skill)
 
+    def admit(input_paths):
+        specs = step.contract.get('requires', state_policy.file_predicates(step.contract.get('input_files', [])))
+        pre = state_contracts.evaluate(specs, input_paths) if specs else dict(state='not_declared',checks=[])
+        frozen = (run.staged.get('state_policy', {}).get('frozen', {}).get(str(step.idx)) or {})
+        if frozen and frozen.get('sha256') != state_policy.digest(state_policy.declaration(step)):
+            pre['checks'].append(dict(predicate=dict(kind='frozen_contract',file=''),state='unknown',detail='执行前冻结的状态契约发生变化',evidence={}))
+        for conflict in step.state_evidence.get('input_conflicts', []):
+            pre['checks'].append(dict(predicate=dict(kind='ambiguous_input',file=conflict.get('logical_name','')),
+                state='unknown',detail='存在不可比较的输入生产者，未猜测选取版本',evidence=conflict))
+        for logical, item in versions.items():
+            actual = _sha256_file(input_paths[logical]) if logical in input_paths else ''
+            snapshots = [c.get('evidence', {}).get('sha256') for c in pre['checks']
+                if isinstance(c.get('predicate'),dict) and c['predicate'].get('file')==logical and c.get('evidence', {}).get('sha256')]
+            if not item['sha256'] or actual != item['sha256'] or any(h!=item['sha256'] for h in snapshots):
+                pre['checks'].append(dict(predicate=dict(kind='input_integrity',file=logical),state='unknown',
+                    detail='实际输入字节与登记版本不一致，未生成代码',evidence=dict(expected_sha256=item['sha256'],actual_sha256=actual)))
+        states = [c['state'] for c in pre['checks']]
+        if states:
+            pre['state'] = 'failed' if 'failed' in states else 'unknown' if 'unknown' in states else 'passed'
+        pre.update(admitted=pre['state'] in ('passed','not_declared'),
+            contract_sha256=state_policy.digest(state_policy.declaration(step)), source=step.contract.get('state_contract_source','plan_hypothesis'))
+        step.state_evidence['pre'] = pre
+        _emit(run, 'state.admission', step=step.idx, **pre)
+        if not pre['admitted']:
+            step.checks = [ProgrammaticCheck(**c) for c in state_policy.check_rows(pre, '准入')]
+            step.status = STEP_FAILED
+            step.error = '前置条件不满足' if pre['state']=='failed' else '前置条件或输入版本未知，自动执行已阻断'
+            step.verify_skip_reason = '未调用代码生成；这是本次输入/契约问题，不是技能负贡献证据'
+            step.ended_at_ms = now_ms()
+            for check in step.checks:
+                _emit(run, 'check.result', step=step.idx, **check.to_dict())
+            _emit(run, 'step.completed', step=step.idx, status=step.status, n_attempts=0, artifacts=0,
+                  duration_ms=step.duration_ms, checks=f'0/{len(step.checks)}')
+        return pre['admitted']
+
     stack = sandbox.available_stack()
     code = ""
     result: dict[str, Any] = {}
@@ -267,6 +302,9 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         if attempt == 1 and carried:
             step.input_artifacts = list(versions.values())
             _emit(run, "step.inputs", step=step.idx, files=carried, artifacts=step.input_artifacts)
+        # Inspect the exact copy the executor will receive, before any model call.
+        if not admit({orig:workdir/orig for _name,orig in carry_pairs}):
+            return
         phase = "code_gen" if attempt == 1 else f"repair{attempt - 1}_llm"
         if attempt == 1:
             prompt = _gen_code_prompt(run.task, {"action": step.action, "key_params": [],
@@ -342,6 +380,31 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         attempt_checks = checks_mod.run_checks(attempt_paths, result)
         immutable_inputs = {orig:workspace / 'artifacts' / aname for aname,orig in carry_pairs}
         attempt_checks += contracts.contract_checks(step.contract, attempt_paths, carried, input_paths=immutable_inputs)
+        frozen = run.staged.get('state_policy', {}).get('frozen', {}).get(str(step.idx)) or {}
+        post_specs = frozen.get('declaration', {}).get('ensures',
+            step.contract.get('ensures', state_policy.file_predicates(step.contract.get('output_files', []))))
+        contract_changed = bool(frozen and frozen.get('sha256') != state_policy.digest(state_policy.declaration(step)))
+        if post_specs or contract_changed:
+            output_paths = {p.relative_to(workdir).as_posix():p for p in attempt_paths if p.is_relative_to(workdir)}
+            post = state_contracts.evaluate(post_specs, output_paths)
+            if contract_changed:
+                post['checks'].append(dict(predicate=dict(kind='frozen_contract',file=''),state='unknown',
+                    detail='执行期间契约变化，按冻结条件复核且拒绝放行',evidence={}))
+                post['state'] = 'failed' if any(c['state']=='failed' for c in post['checks']) else 'unknown'
+            step.state_evidence['post'] = post
+            attempt_checks += state_policy.check_rows(post, '效果')
+            _emit(run, 'state.effects', step=step.idx, attempt=attempt, **post)
+        if run.staged.get('state_policy', {}).get('host_reference')=='research-reproducibility-v1':
+            from . import research
+            actual_files={p.relative_to(workdir).as_posix():p for p in attempt_paths if p.is_relative_to(workdir)}
+            reference=research.evaluate_files(actual_files)
+            owned=set(step.contract.get('output_files', []))
+            extra_targets={'report.scope_labels':'report.md','figure.present':'figure.svg'}
+            for c in reference['checks']:
+                if (c.get('output') or extra_targets.get(c['name'])) in owned:
+                    attempt_checks.append(dict(name='独立结果：'+c['name'],passed=c['passed'],required=True,
+                        detail='服务端冻结参考逐项复算；保留原列、原始字符串与行序，不能只保留浮点数相等' if c['name']=='clean_predictions.original_values'
+                            else '服务端冻结参考逐项复算，不使用模型评分'))
         if skill:
             attempt_checks += checks_mod.checks_from_skill(skill.verification, attempt_paths)
         attempt_verifications = []
@@ -359,7 +422,7 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         _emit(run, "step.attempt", step=step.idx, attempt=attempt, ok=at.ok,
               error_kind=at.error_kind, duration_ms=at.duration_ms,
               stdout=at.stdout[-2000:], stderr=at.stderr[-1000:])
-        if at.ok and (not failures or skill is None and not any(step.contract.get(k) for k in ('input_files', 'output_files', 'verification'))):
+        if at.ok and not failures:
             break
         if attempt < max_attempts:
             _emit(run, "step.retry", step=step.idx, attempt=attempt,
@@ -391,6 +454,25 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         run.artifacts.append(art)
         _emit(run, "artifact.created", step=step.idx, name=name, bytes=art.bytes,
               sha256=art.sha256, kind=art.kind)
+
+    post = step.state_evidence.get('post')
+    if post:
+        registered = {a.logical_name:a for a in step.artifacts}
+        mismatches = []
+        for check in post.get('checks', []):
+            evidence = check.get('evidence') or {}
+            spec = check.get('predicate')
+            logical = spec.get('file') if isinstance(spec,dict) else None
+            artifact = registered.get(logical)
+            if evidence.get('sha256') and (not artifact or artifact.sha256!=evidence['sha256']):
+                mismatches.append(dict(predicate=dict(kind='output_integrity',file=logical),state='unknown',
+                    detail='登记产物字节与效果检查快照不一致，拒绝放行',
+                    evidence=dict(expected_sha256=evidence['sha256'],actual_sha256=artifact.sha256 if artifact else None)))
+        if mismatches:
+            post['checks'].extend(mismatches)
+            post['state'] = 'failed' if any(c['state']=='failed' for c in post['checks']) else 'unknown'
+            attempt_checks += state_policy.check_rows(dict(checks=mismatches), '效果版本')
+            _emit(run,'state.effects',step=step.idx,attempt=len(step.attempts),**post)
 
     # ---- L1 确定性检查 + L2 技能断言 ----
     _emit(run, "verification.started", step=step.idx)
@@ -431,6 +513,9 @@ def run_step(run: Run, step: RunStep, lib: Any, workspace: pathlib.Path,
         step.status = STEP_DONE
         if step.checks and not any(c.passed for c in step.checks) and not step.verifications:
             step.verify_skip_reason = "产物未通过任何确定性检查，且无 L3 验收结果"
+    if step.state_evidence.get('post', {}).get('state') in ('failed', 'unknown'):
+        step.status = STEP_FAILED
+        step.error = '真实输出未通过冻结的效果契约，已阻断下游'
     for c in step.checks:
         _emit(run, "check.result", step=step.idx, name=c.name, passed=c.passed, detail=c.detail, required=c.required)
     for v in step.verifications:
@@ -488,19 +573,43 @@ def _run_steps_graph(run: Run, workspace: pathlib.Path, lib: Any,
                         ancestors.add(pred)
                         collect(pred)
             collect(st.idx)
-            distances = {st.idx: 0}
-            queue = [st.idx]
-            while queue:
-                node = queue.pop(0)
-                for pred in by_idx[node].depends_on:
-                    distance = distances[node] + 1
-                    if pred not in distances or distance < distances[pred]:
-                        distances[pred] = distance
-                        queue.append(pred)
-            # Completion order of parallel siblings must not select file versions.
-            # Copy distant producers first; nearest dependency wins, ties by idx.
-            inputs = sorted((a for a in run.artifacts if a.from_step in ancestors or a.kind == '跨轮输入'),
-                            key=lambda a: (-distances.get(a.from_step, 1000), a.from_step if a.from_step is not None else -1, a.name))
+            # "Latest" is the producer ancestry partial order, not shortest graph
+            # distance: a direct shortcut to an old producer must not shadow its
+            # descendant's newer output. Incomparable versions have no safe winner.
+            producer_ancestors = {}
+            def before(producer, consumer):
+                if consumer not in producer_ancestors:
+                    found = set()
+                    queue = list(by_idx[consumer].depends_on)
+                    while queue:
+                        node = queue.pop()
+                        if node not in found:
+                            found.add(node)
+                            queue.extend(by_idx[node].depends_on)
+                    producer_ancestors[consumer] = found
+                return producer in producer_ancestors[consumer]
+            grouped = {}
+            for artifact in run.artifacts:
+                if artifact.from_step not in ancestors and artifact.kind not in ('跨轮输入','任务输入'):
+                    continue
+                logical = artifact.logical_name or re.sub(r'^step\d+_', '', artifact.name)
+                grouped.setdefault(logical, []).append(artifact)
+            inputs, conflicts = [], []
+            for logical, versions in sorted(grouped.items()):
+                produced = [a for a in versions if a.kind not in ('跨轮输入','任务输入') and a.from_step in ancestors]
+                # Any current-run producer supersedes the imported version. Among
+                # current producers, discard those with a newer producer descendant.
+                selected = ([a for a in produced if not any(
+                    a.from_step != other.from_step and before(a.from_step, other.from_step)
+                    for other in produced)] if produced else versions)
+                if len(selected) == 1:
+                    inputs.append(selected[0])
+                else:
+                    conflicts.append(dict(logical_name=logical, reason='ambiguous_producer_versions',
+                        candidates=[dict(name=a.name, from_step=a.from_step, source_run_id=a.source_run_id,
+                                         sha256=a.sha256) for a in sorted(selected, key=lambda a: a.name)]))
+            if conflicts:
+                st.state_evidence['input_conflicts'] = conflicts
             up = [a.name for a in inputs]
             # 每步保留自己的增量明细，同时向 Run 父账本汇总。并行兄弟步骤
             # 不能用共享总额的前后差值计费，那会把彼此调用计入各自步骤。
@@ -664,6 +773,11 @@ def execute_run(run: Run, lib: Any, workspace: pathlib.Path,
     pos = {old: new for new, old in enumerate(picked)}
     for st in run.steps:
         st.depends_on = sorted({pos[d] for d in st.depends_on if d in pos})
+
+    run.staged['state_policy'] = state_policy.bind(run, workspace)
+    run.staged['state_composition'] = state_contracts.composition([
+        dict(idx=s.idx,depends_on=s.depends_on,contract=s.contract) for s in run.steps])
+    _emit(run, 'state.planned', policy=run.staged['state_policy'], composition=run.staged['state_composition'])
 
     run.status = runtime.STATUS_EXECUTING
     # DAG = Runtime：把解析后的权威执行图广播给前端（WOW-1 的收束目标就是这张图）

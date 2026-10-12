@@ -1,0 +1,30 @@
+# PAGE-012 Developer skill inspector
+
+路由 `/dashboard#skills?skill=`；源码 `web/index.html`；源码证据 EV-007；运行浏览器证据：该独立 hash 视图未单独运行验收；同文档其它入口证据不能替代。
+
+身份/数据/环境：{"role": "local demo viewer, configured token as required; S1 tenant runtime unavailable", "data": "empty, real stored fixture, long names and hostile filename/text variants", "network": "normal, reordered completion, HTTP failure, reconnect; actual browser interception pending", "viewport": "390×844, 1440×900, 200% zoom; not yet executed", "input": "mouse, touch, keyboard Tab/Enter/Space/Escape; not yet executed", "lifecycle": "initial entry, repeated entry, query change, interruption, back/forward, page hide"}。
+
+## 全部逻辑实例
+
+| CMP | DEF / BP | 定位 | 处置 / TASK | 检查 |
+|---|---|---|---|---|
+| CMP-123 Page shell/navigation/status | DEF-016 / BP-016 | web/index.html: header / nav / main; implementation web/index.html: tabs / metabar / show | investigate / TASK-012 | behavior:blocked(CHK-1021); states:blocked(CHK-1022); semantics_accessibility:blocked(CHK-1023); layout_content:blocked(CHK-1024); data_effects:blocked(CHK-1025); security_privacy:blocked(CHK-1026); performance_lifecycle:blocked(CHK-1027); maintainability_integration:passed(CHK-1028) |
+| CMP-124 Connection settings and toast | DEF-001 / BP-001 | web/index.html: UI.bootstrap / #ui-connection-dialog; implementation web/assets/ui.js: UI.bootstrap / connection dialog / UI.json / UI.readSessions | investigate / TASK-012, TASK-017 | behavior:blocked(CHK-1029); states:blocked(CHK-1030); semantics_accessibility:blocked(CHK-1031); layout_content:blocked(CHK-1032); data_effects:blocked(CHK-1033); security_privacy:blocked(CHK-1034); performance_lifecycle:blocked(CHK-1035); maintainability_integration:passed(CHK-1036); security_privacy:passed(CHK-1292) |
+| CMP-125 Skill query input | DEF-019 / BP-019 | web/index.html: skillQ; implementation web/index.html: loadCatalog / skillList / skillDetail / catalog-prev / catalog-next | investigate / TASK-012 | behavior:blocked(CHK-1037); states:blocked(CHK-1038); semantics_accessibility:blocked(CHK-1039); layout_content:blocked(CHK-1040); data_effects:blocked(CHK-1041); security_privacy:blocked(CHK-1042); performance_lifecycle:blocked(CHK-1043); maintainability_integration:passed(CHK-1044) |
+| CMP-126 Domain filter | DEF-019 / BP-019 | web/index.html: skillDomain; implementation web/index.html: loadCatalog / skillList / skillDetail / catalog-prev / catalog-next | investigate / TASK-012 | behavior:blocked(CHK-1045); states:blocked(CHK-1046); semantics_accessibility:blocked(CHK-1047); layout_content:blocked(CHK-1048); data_effects:blocked(CHK-1049); security_privacy:blocked(CHK-1050); performance_lifecycle:blocked(CHK-1051); maintainability_integration:passed(CHK-1052) |
+| CMP-127 Skill list/count/empty/error templates | DEF-019 / BP-019 | web/index.html: skillList / skillCount; implementation web/index.html: loadCatalog / skillList / skillDetail / catalog-prev / catalog-next | investigate / TASK-012 | behavior:blocked(CHK-1053); states:blocked(CHK-1054); semantics_accessibility:blocked(CHK-1055); layout_content:blocked(CHK-1056); data_effects:blocked(CHK-1057); security_privacy:blocked(CHK-1058); performance_lifecycle:blocked(CHK-1059); maintainability_integration:passed(CHK-1060) |
+| CMP-128 Skill contract/detail template | DEF-019 / BP-019 | web/index.html: skillDetail; implementation web/index.html: loadCatalog / skillList / skillDetail / catalog-prev / catalog-next | investigate / TASK-012 | behavior:blocked(CHK-1061); states:blocked(CHK-1062); semantics_accessibility:blocked(CHK-1063); layout_content:blocked(CHK-1064); data_effects:blocked(CHK-1065); security_privacy:blocked(CHK-1066); performance_lifecycle:blocked(CHK-1067); maintainability_integration:passed(CHK-1068) |
+| CMP-129 Catalogue pagination controls | DEF-019 / BP-019 | web/index.html: catalog-prev / catalog-next; implementation web/index.html: loadCatalog / skillList / skillDetail / catalog-prev / catalog-next | investigate / TASK-012 | behavior:blocked(CHK-1069); states:blocked(CHK-1070); semantics_accessibility:blocked(CHK-1071); layout_content:blocked(CHK-1072); data_effects:blocked(CHK-1073); security_privacy:blocked(CHK-1074); performance_lifecycle:blocked(CHK-1075); maintainability_integration:passed(CHK-1076) |
+
+每项八维及独立回归的证据/阻塞原因详见对应 CHK。source traceability 通过仅表示来源可追溯；其他运行项没有被自动变为通过。
+
+## 场景
+
+| SCN | 状态 | 操作顺序 | 预期 | 证据/阻塞 |
+|---|---|---|---|---|
+| SCN-012 Developer skill inspector browser journey and recovery | blocked | Open /dashboard#skills?skill= directly and via navigation; use back/forward. → Visit every registered control/template on this view using pointer and Tab/Enter/Space/Escape. → Exercise loading, empty, failure, late response, repeated action and long/untrusted content; recover. → Repeat at 390×844, 1440×900 and 200% zoom; capture scroll, dialog focus, console/network and screenshot evidence. | The user can complete Developer skill inspector without lost state, stale overwrite or duplicate side effects.；All registered controls have accessible names and usable focus; dialogs close and restore focus; visual hierarchy/background stay coherent.；Unknown/blocked/missing evaluation is distinguished from pass/zero/reward; real data/source links remain available. | Partial actual IAB evidence exists for six initial pages at two sizes and selected keyboard/replay interactions. This full-route scenario still lacks complete controls/error/re-entry/network-fault/zoom/accessibility evidence; execute the remaining assertions on a named final deployment. |
+| SCN-017 Token clear/close race — bounded Node regression | passed | token validation pending → clear → reject late request → validate new candidate → close → resolve old response | Candidate validation has a generation and AbortController; only the latest still-open dialog may commit.；All assertions in tools/frontend_resilience_check.js: tokenRace pass. | EV-019 |
+
+## 保持与补证
+
+保留原有视觉背景、球体、七阶段和真实运行/跨轮文件契约。该视图运行、键盘焦点、布局和异常恢复均以列出的浏览器 SCN 继续补证；只改可复现问题，不能以其它页面或共享函数单测替代本视图验收。

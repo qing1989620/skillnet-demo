@@ -1,0 +1,5921 @@
+{
+  "version": "capability-probe-lab-v1",
+  "protocol_sha256": "2680c5dfe8723f0ad9b6a7a2dfc1edc464fe36d60a1ba42de25b545618f2a260",
+  "protocol": {
+    "version": "capability-probe-lab-v1",
+    "seed": 20261012,
+    "contract_version": "skill-state-contract-v1",
+    "preregistered_at_us": 1791780365178463,
+    "purpose": "gate intervention on reviewed implementations; no causal attribution to learned skills",
+    "environment": {
+      "python": "3.12.10",
+      "implementation": "CPython",
+      "platform": "Windows",
+      "machine": "AMD64",
+      "sandbox": "process",
+      "model": null,
+      "model_calls": 0,
+      "network_used": false
+    },
+    "implementations": {
+      "csv-threshold-ge": "import csv, json\nfrom pathlib import Path\nrows = list(csv.DictReader(Path('predictions.csv').open(encoding='utf-8-sig', newline='')))\ntest = [r for r in rows if r['split'] == 'test']\ncounts = dict(n=len(test), tp=0, fp=0, tn=0, fn=0)\nfor r in test:\n    positive = float(r['score']) >= 0.5\n    actual = int(r['label']) == 1\n    key = 'tp' if positive and actual else 'fp' if positive else 'fn' if actual else 'tn'\n    counts[key] += 1\nPath('heldout_metrics.json').write_text(json.dumps(counts, sort_keys=True), encoding='utf-8')\n",
+      "decimal-sum-ge": "from decimal import Decimal\nimport csv\nimport json\nfrom pathlib import Path\nwith Path('predictions.csv').open(encoding='utf-8-sig', newline='') as stream:\n    reader = csv.reader(stream)\n    columns = next(reader)\n    values = [dict(zip(columns, row)) for row in reader]\npairs = [(r['label'] == '1', Decimal(r['score']) >= Decimal('0.5'))\n         for r in values if r['split'] == 'test']\nresult = {'n': len(pairs),\n          'tp': sum(a and p for a, p in pairs),\n          'fp': sum(not a and p for a, p in pairs),\n          'tn': sum(not a and not p for a, p in pairs),\n          'fn': sum(a and not p for a, p in pairs)}\nPath('heldout_metrics.json').write_text(json.dumps(result, sort_keys=True), encoding='utf-8')\n",
+      "csv-threshold-gt-bug": "import csv, json\nfrom pathlib import Path\nrows = list(csv.DictReader(Path('predictions.csv').open(encoding='utf-8-sig', newline='')))\ntest = [r for r in rows if r['split'] == 'test']\ncounts = dict(n=len(test), tp=0, fp=0, tn=0, fn=0)\nfor r in test:\n    positive = float(r['score']) > 0.5\n    actual = int(r['label']) == 1\n    key = 'tp' if positive and actual else 'fp' if positive else 'fn' if actual else 'tn'\n    counts[key] += 1\nPath('heldout_metrics.json').write_text(json.dumps(counts, sort_keys=True), encoding='utf-8')\n"
+    },
+    "probes": [
+      {
+        "id": "clean",
+        "input_utf8": "sample_id,subject_id,split,label,score\ns01,p01,train,0,0.1\ns02,p02,train,1,0.9\ns03,p03,test,1,0.9\ns04,p04,test,0,0.2\ns05,p05,test,1,0.4\ns06,p06,test,0,0.8\n",
+        "input_sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+        "requires": [
+          {
+            "kind": "csv_schema",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          {
+            "kind": "csv_nonempty",
+            "file": "predictions.csv"
+          },
+          {
+            "kind": "csv_no_missing",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ]
+          },
+          {
+            "kind": "csv_unique",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id"
+            ]
+          },
+          {
+            "kind": "csv_numeric_range",
+            "file": "predictions.csv",
+            "column": "score",
+            "min": 0,
+            "max": 1
+          },
+          {
+            "kind": "csv_values_in",
+            "file": "predictions.csv",
+            "column": "label",
+            "values": [
+              0,
+              1
+            ]
+          },
+          {
+            "kind": "csv_disjoint_groups",
+            "file": "predictions.csv",
+            "entity": "subject_id",
+            "group": "split"
+          }
+        ],
+        "ensures": [
+          {
+            "kind": "file_exists",
+            "file": "heldout_metrics.json"
+          }
+        ],
+        "expected_admission": "passed",
+        "in_scope": true,
+        "independent_reason": null,
+        "oracle": {
+          "n": 4,
+          "tp": 1,
+          "fn": 1,
+          "fp": 1,
+          "tn": 1
+        }
+      },
+      {
+        "id": "threshold_boundary",
+        "input_utf8": "sample_id,subject_id,split,label,score\ns01,p01,train,0,0.1\ns02,p02,train,1,0.9\ns03,p03,test,1,0.5\ns04,p04,test,0,0.5\ns05,p05,test,1,0.4\ns06,p06,test,0,0.8\n",
+        "input_sha256": "dc7302fa2ec41c036453f4b5e8cf123bb6fc7fefee9cc0305a570ab3f573a04e",
+        "requires": [
+          {
+            "kind": "csv_schema",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          {
+            "kind": "csv_nonempty",
+            "file": "predictions.csv"
+          },
+          {
+            "kind": "csv_no_missing",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ]
+          },
+          {
+            "kind": "csv_unique",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id"
+            ]
+          },
+          {
+            "kind": "csv_numeric_range",
+            "file": "predictions.csv",
+            "column": "score",
+            "min": 0,
+            "max": 1
+          },
+          {
+            "kind": "csv_values_in",
+            "file": "predictions.csv",
+            "column": "label",
+            "values": [
+              0,
+              1
+            ]
+          },
+          {
+            "kind": "csv_disjoint_groups",
+            "file": "predictions.csv",
+            "entity": "subject_id",
+            "group": "split"
+          }
+        ],
+        "ensures": [
+          {
+            "kind": "file_exists",
+            "file": "heldout_metrics.json"
+          }
+        ],
+        "expected_admission": "passed",
+        "in_scope": true,
+        "independent_reason": null,
+        "oracle": {
+          "n": 4,
+          "tp": 1,
+          "fn": 1,
+          "fp": 2,
+          "tn": 0
+        }
+      },
+      {
+        "id": "missing_score",
+        "input_utf8": "sample_id,subject_id,split,label,score\ns01,p01,train,0,0.1\ns02,p02,train,1,0.9\ns03,p03,test,1,\ns04,p04,test,0,0.2\ns05,p05,test,1,0.4\ns06,p06,test,0,0.8\n",
+        "input_sha256": "efc9566aeee3f624774913320cf3ad82ddc1c492cc5a91b05b03fcc9a08d6066",
+        "requires": [
+          {
+            "kind": "csv_schema",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          {
+            "kind": "csv_nonempty",
+            "file": "predictions.csv"
+          },
+          {
+            "kind": "csv_no_missing",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ]
+          },
+          {
+            "kind": "csv_unique",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id"
+            ]
+          },
+          {
+            "kind": "csv_numeric_range",
+            "file": "predictions.csv",
+            "column": "score",
+            "min": 0,
+            "max": 1
+          },
+          {
+            "kind": "csv_values_in",
+            "file": "predictions.csv",
+            "column": "label",
+            "values": [
+              0,
+              1
+            ]
+          },
+          {
+            "kind": "csv_disjoint_groups",
+            "file": "predictions.csv",
+            "entity": "subject_id",
+            "group": "split"
+          }
+        ],
+        "ensures": [
+          {
+            "kind": "file_exists",
+            "file": "heldout_metrics.json"
+          }
+        ],
+        "expected_admission": "failed",
+        "in_scope": false,
+        "independent_reason": "missing score",
+        "oracle": null
+      },
+      {
+        "id": "duplicate_sample",
+        "input_utf8": "sample_id,subject_id,split,label,score\ns01,p01,train,0,0.1\ns02,p02,train,1,0.9\ns03,p03,test,1,0.9\ns04,p04,test,0,0.2\ns05,p05,test,1,0.4\ns06,p06,test,0,0.8\ns03,p03,test,1,0.9\n",
+        "input_sha256": "307f4cf847cfa7c8b41c1bd4756b2ec6e63a315b34f7ac6d4f1b6a111804d697",
+        "requires": [
+          {
+            "kind": "csv_schema",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          {
+            "kind": "csv_nonempty",
+            "file": "predictions.csv"
+          },
+          {
+            "kind": "csv_no_missing",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ]
+          },
+          {
+            "kind": "csv_unique",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id"
+            ]
+          },
+          {
+            "kind": "csv_numeric_range",
+            "file": "predictions.csv",
+            "column": "score",
+            "min": 0,
+            "max": 1
+          },
+          {
+            "kind": "csv_values_in",
+            "file": "predictions.csv",
+            "column": "label",
+            "values": [
+              0,
+              1
+            ]
+          },
+          {
+            "kind": "csv_disjoint_groups",
+            "file": "predictions.csv",
+            "entity": "subject_id",
+            "group": "split"
+          }
+        ],
+        "ensures": [
+          {
+            "kind": "file_exists",
+            "file": "heldout_metrics.json"
+          }
+        ],
+        "expected_admission": "failed",
+        "in_scope": false,
+        "independent_reason": "duplicate sample_id",
+        "oracle": null
+      },
+      {
+        "id": "score_out_of_range",
+        "input_utf8": "sample_id,subject_id,split,label,score\ns01,p01,train,0,0.1\ns02,p02,train,1,0.9\ns03,p03,test,1,1.4\ns04,p04,test,0,0.2\ns05,p05,test,1,0.4\ns06,p06,test,0,0.8\n",
+        "input_sha256": "35933f4677f635b387428bab4b46785072bd528d6a42e640c26e3e7e7231ac7b",
+        "requires": [
+          {
+            "kind": "csv_schema",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          {
+            "kind": "csv_nonempty",
+            "file": "predictions.csv"
+          },
+          {
+            "kind": "csv_no_missing",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ]
+          },
+          {
+            "kind": "csv_unique",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id"
+            ]
+          },
+          {
+            "kind": "csv_numeric_range",
+            "file": "predictions.csv",
+            "column": "score",
+            "min": 0,
+            "max": 1
+          },
+          {
+            "kind": "csv_values_in",
+            "file": "predictions.csv",
+            "column": "label",
+            "values": [
+              0,
+              1
+            ]
+          },
+          {
+            "kind": "csv_disjoint_groups",
+            "file": "predictions.csv",
+            "entity": "subject_id",
+            "group": "split"
+          }
+        ],
+        "ensures": [
+          {
+            "kind": "file_exists",
+            "file": "heldout_metrics.json"
+          }
+        ],
+        "expected_admission": "failed",
+        "in_scope": false,
+        "independent_reason": "score outside [0,1]",
+        "oracle": null
+      },
+      {
+        "id": "schema_drift",
+        "input_utf8": "sample_id,subject_id,split,label,prediction\ns01,p01,train,0,0.1\ns02,p02,train,1,0.9\ns03,p03,test,1,0.9\ns04,p04,test,0,0.2\ns05,p05,test,1,0.4\ns06,p06,test,0,0.8\n",
+        "input_sha256": "a5b3cdf4f74f911378729a08fe3d4028ef0a25d8d3852cf5483bd9a1e00fc180",
+        "requires": [
+          {
+            "kind": "csv_schema",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          {
+            "kind": "csv_nonempty",
+            "file": "predictions.csv"
+          },
+          {
+            "kind": "csv_no_missing",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ]
+          },
+          {
+            "kind": "csv_unique",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id"
+            ]
+          },
+          {
+            "kind": "csv_numeric_range",
+            "file": "predictions.csv",
+            "column": "score",
+            "min": 0,
+            "max": 1
+          },
+          {
+            "kind": "csv_values_in",
+            "file": "predictions.csv",
+            "column": "label",
+            "values": [
+              0,
+              1
+            ]
+          },
+          {
+            "kind": "csv_disjoint_groups",
+            "file": "predictions.csv",
+            "entity": "subject_id",
+            "group": "split"
+          }
+        ],
+        "ensures": [
+          {
+            "kind": "file_exists",
+            "file": "heldout_metrics.json"
+          }
+        ],
+        "expected_admission": "failed",
+        "in_scope": false,
+        "independent_reason": "score column renamed",
+        "oracle": null
+      },
+      {
+        "id": "subject_leakage",
+        "input_utf8": "sample_id,subject_id,split,label,score\ns01,p01,train,0,0.1\ns02,p02,train,1,0.9\ns03,p01,test,1,0.9\ns04,p04,test,0,0.2\ns05,p05,test,1,0.4\ns06,p06,test,0,0.8\n",
+        "input_sha256": "4c67b5526ebc4478a4002507df07284431151f4ea825272febd5b8953ae98367",
+        "requires": [
+          {
+            "kind": "csv_schema",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          {
+            "kind": "csv_nonempty",
+            "file": "predictions.csv"
+          },
+          {
+            "kind": "csv_no_missing",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ]
+          },
+          {
+            "kind": "csv_unique",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id"
+            ]
+          },
+          {
+            "kind": "csv_numeric_range",
+            "file": "predictions.csv",
+            "column": "score",
+            "min": 0,
+            "max": 1
+          },
+          {
+            "kind": "csv_values_in",
+            "file": "predictions.csv",
+            "column": "label",
+            "values": [
+              0,
+              1
+            ]
+          },
+          {
+            "kind": "csv_disjoint_groups",
+            "file": "predictions.csv",
+            "entity": "subject_id",
+            "group": "split"
+          }
+        ],
+        "ensures": [
+          {
+            "kind": "file_exists",
+            "file": "heldout_metrics.json"
+          }
+        ],
+        "expected_admission": "failed",
+        "in_scope": false,
+        "independent_reason": "subject crosses train/test",
+        "oracle": null
+      },
+      {
+        "id": "nonfinite_score",
+        "input_utf8": "sample_id,subject_id,split,label,score\ns01,p01,train,0,0.1\ns02,p02,train,1,0.9\ns03,p03,test,1,NaN\ns04,p04,test,0,0.2\ns05,p05,test,1,0.4\ns06,p06,test,0,0.8\n",
+        "input_sha256": "f6839996221e9759d3acb65d56d85d6b7d1972547cbf79f43a23420a5aba857c",
+        "requires": [
+          {
+            "kind": "csv_schema",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          {
+            "kind": "csv_nonempty",
+            "file": "predictions.csv"
+          },
+          {
+            "kind": "csv_no_missing",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ]
+          },
+          {
+            "kind": "csv_unique",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id"
+            ]
+          },
+          {
+            "kind": "csv_numeric_range",
+            "file": "predictions.csv",
+            "column": "score",
+            "min": 0,
+            "max": 1
+          },
+          {
+            "kind": "csv_values_in",
+            "file": "predictions.csv",
+            "column": "label",
+            "values": [
+              0,
+              1
+            ]
+          },
+          {
+            "kind": "csv_disjoint_groups",
+            "file": "predictions.csv",
+            "entity": "subject_id",
+            "group": "split"
+          }
+        ],
+        "ensures": [
+          {
+            "kind": "file_exists",
+            "file": "heldout_metrics.json"
+          }
+        ],
+        "expected_admission": "failed",
+        "in_scope": false,
+        "independent_reason": "nonfinite score",
+        "oracle": null
+      },
+      {
+        "id": "fractional_label",
+        "input_utf8": "sample_id,subject_id,split,label,score\ns01,p01,train,0,0.1\ns02,p02,train,1,0.9\ns03,p03,test,0.5,0.9\ns04,p04,test,0,0.2\ns05,p05,test,1,0.4\ns06,p06,test,0,0.8\n",
+        "input_sha256": "68e9f30171ca7159a259eb6d6d450649e631887e1f29082f405845c916127ef6",
+        "requires": [
+          {
+            "kind": "csv_schema",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          {
+            "kind": "csv_nonempty",
+            "file": "predictions.csv"
+          },
+          {
+            "kind": "csv_no_missing",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ]
+          },
+          {
+            "kind": "csv_unique",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id"
+            ]
+          },
+          {
+            "kind": "csv_numeric_range",
+            "file": "predictions.csv",
+            "column": "score",
+            "min": 0,
+            "max": 1
+          },
+          {
+            "kind": "csv_values_in",
+            "file": "predictions.csv",
+            "column": "label",
+            "values": [
+              0,
+              1
+            ]
+          },
+          {
+            "kind": "csv_disjoint_groups",
+            "file": "predictions.csv",
+            "entity": "subject_id",
+            "group": "split"
+          }
+        ],
+        "ensures": [
+          {
+            "kind": "file_exists",
+            "file": "heldout_metrics.json"
+          }
+        ],
+        "expected_admission": "failed",
+        "in_scope": false,
+        "independent_reason": "binary label is neither 0 nor 1",
+        "oracle": null
+      },
+      {
+        "id": "empty_table",
+        "input_utf8": "sample_id,subject_id,split,label,score\n",
+        "input_sha256": "d3f9ae1a82ec7edd9227297c4bada24f02b194bf6a779be3ec9d3567b84f4018",
+        "requires": [
+          {
+            "kind": "csv_schema",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          {
+            "kind": "csv_nonempty",
+            "file": "predictions.csv"
+          },
+          {
+            "kind": "csv_no_missing",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ]
+          },
+          {
+            "kind": "csv_unique",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id"
+            ]
+          },
+          {
+            "kind": "csv_numeric_range",
+            "file": "predictions.csv",
+            "column": "score",
+            "min": 0,
+            "max": 1
+          },
+          {
+            "kind": "csv_values_in",
+            "file": "predictions.csv",
+            "column": "label",
+            "values": [
+              0,
+              1
+            ]
+          },
+          {
+            "kind": "csv_disjoint_groups",
+            "file": "predictions.csv",
+            "entity": "subject_id",
+            "group": "split"
+          }
+        ],
+        "ensures": [
+          {
+            "kind": "file_exists",
+            "file": "heldout_metrics.json"
+          }
+        ],
+        "expected_admission": "failed",
+        "in_scope": false,
+        "independent_reason": "no observations",
+        "oracle": null
+      },
+      {
+        "id": "unsupported_unit_constraint",
+        "input_utf8": "sample_id,subject_id,split,label,score\ns01,p01,train,0,0.1\ns02,p02,train,1,0.9\ns03,p03,test,1,0.9\ns04,p04,test,0,0.2\ns05,p05,test,1,0.4\ns06,p06,test,0,0.8\n",
+        "input_sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+        "requires": [
+          {
+            "kind": "csv_schema",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          {
+            "kind": "csv_nonempty",
+            "file": "predictions.csv"
+          },
+          {
+            "kind": "csv_no_missing",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ]
+          },
+          {
+            "kind": "csv_unique",
+            "file": "predictions.csv",
+            "columns": [
+              "sample_id"
+            ]
+          },
+          {
+            "kind": "csv_numeric_range",
+            "file": "predictions.csv",
+            "column": "score",
+            "min": 0,
+            "max": 1
+          },
+          {
+            "kind": "csv_values_in",
+            "file": "predictions.csv",
+            "column": "label",
+            "values": [
+              0,
+              1
+            ]
+          },
+          {
+            "kind": "csv_disjoint_groups",
+            "file": "predictions.csv",
+            "entity": "subject_id",
+            "group": "split"
+          },
+          {
+            "kind": "scientific_unit_consistency",
+            "file": "predictions.csv",
+            "column": "score"
+          }
+        ],
+        "ensures": [
+          {
+            "kind": "file_exists",
+            "file": "heldout_metrics.json"
+          }
+        ],
+        "expected_admission": "unknown",
+        "in_scope": null,
+        "independent_reason": "required unit semantics have no verifier",
+        "oracle": null
+      }
+    ],
+    "executed_code_sha256": {
+      "csv-threshold-ge": "62b301015ef15b38b5321d8aafd01dc5eb0db92dba4de8c6dabe6334669983ae",
+      "decimal-sum-ge": "642b0c4f5a85b8b395a669ae24116410ec9f427707dd28e3b209145dff5ae3f3",
+      "csv-threshold-gt-bug": "4607d25dc5017f28c10e70a00e7ba427119c9b62c2929ed9ea4cf1dde3030c9b"
+    },
+    "pair_order": [
+      {
+        "probe": "score_out_of_range",
+        "implementation": "csv-threshold-gt-bug",
+        "arms": [
+          "unconditional",
+          "contract_gate"
+        ]
+      },
+      {
+        "probe": "subject_leakage",
+        "implementation": "csv-threshold-gt-bug",
+        "arms": [
+          "contract_gate",
+          "unconditional"
+        ]
+      },
+      {
+        "probe": "threshold_boundary",
+        "implementation": "decimal-sum-ge",
+        "arms": [
+          "unconditional",
+          "contract_gate"
+        ]
+      },
+      {
+        "probe": "threshold_boundary",
+        "implementation": "csv-threshold-ge",
+        "arms": [
+          "contract_gate",
+          "unconditional"
+        ]
+      },
+      {
+        "probe": "duplicate_sample",
+        "implementation": "csv-threshold-gt-bug",
+        "arms": [
+          "unconditional",
+          "contract_gate"
+        ]
+      },
+      {
+        "probe": "unsupported_unit_constraint",
+        "implementation": "csv-threshold-ge",
+        "arms": [
+          "contract_gate",
+          "unconditional"
+        ]
+      },
+      {
+        "probe": "empty_table",
+        "implementation": "decimal-sum-ge",
+        "arms": [
+          "unconditional",
+          "contract_gate"
+        ]
+      },
+      {
+        "probe": "schema_drift",
+        "implementation": "csv-threshold-ge",
+        "arms": [
+          "contract_gate",
+          "unconditional"
+        ]
+      },
+      {
+        "probe": "score_out_of_range",
+        "implementation": "decimal-sum-ge",
+        "arms": [
+          "unconditional",
+          "contract_gate"
+        ]
+      },
+      {
+        "probe": "subject_leakage",
+        "implementation": "decimal-sum-ge",
+        "arms": [
+          "contract_gate",
+          "unconditional"
+        ]
+      },
+      {
+        "probe": "missing_score",
+        "implementation": "csv-threshold-ge",
+        "arms": [
+          "unconditional",
+          "contract_gate"
+        ]
+      },
+      {
+        "probe": "subject_leakage",
+        "implementation": "csv-threshold-ge",
+        "arms": [
+          "contract_gate",
+          "unconditional"
+        ]
+      },
+      {
+        "probe": "duplicate_sample",
+        "implementation": "decimal-sum-ge",
+        "arms": [
+          "unconditional",
+          "contract_gate"
+        ]
+      },
+      {
+        "probe": "missing_score",
+        "implementation": "csv-threshold-gt-bug",
+        "arms": [
+          "contract_gate",
+          "unconditional"
+        ]
+      },
+      {
+        "probe": "duplicate_sample",
+        "implementation": "csv-threshold-ge",
+        "arms": [
+          "unconditional",
+          "contract_gate"
+        ]
+      },
+      {
+        "probe": "nonfinite_score",
+        "implementation": "decimal-sum-ge",
+        "arms": [
+          "contract_gate",
+          "unconditional"
+        ]
+      },
+      {
+        "probe": "unsupported_unit_constraint",
+        "implementation": "csv-threshold-gt-bug",
+        "arms": [
+          "unconditional",
+          "contract_gate"
+        ]
+      },
+      {
+        "probe": "nonfinite_score",
+        "implementation": "csv-threshold-gt-bug",
+        "arms": [
+          "contract_gate",
+          "unconditional"
+        ]
+      },
+      {
+        "probe": "threshold_boundary",
+        "implementation": "csv-threshold-gt-bug",
+        "arms": [
+          "unconditional",
+          "contract_gate"
+        ]
+      },
+      {
+        "probe": "empty_table",
+        "implementation": "csv-threshold-ge",
+        "arms": [
+          "contract_gate",
+          "unconditional"
+        ]
+      },
+      {
+        "probe": "score_out_of_range",
+        "implementation": "csv-threshold-ge",
+        "arms": [
+          "unconditional",
+          "contract_gate"
+        ]
+      },
+      {
+        "probe": "missing_score",
+        "implementation": "decimal-sum-ge",
+        "arms": [
+          "contract_gate",
+          "unconditional"
+        ]
+      },
+      {
+        "probe": "clean",
+        "implementation": "csv-threshold-gt-bug",
+        "arms": [
+          "unconditional",
+          "contract_gate"
+        ]
+      },
+      {
+        "probe": "nonfinite_score",
+        "implementation": "csv-threshold-ge",
+        "arms": [
+          "contract_gate",
+          "unconditional"
+        ]
+      },
+      {
+        "probe": "schema_drift",
+        "implementation": "decimal-sum-ge",
+        "arms": [
+          "unconditional",
+          "contract_gate"
+        ]
+      },
+      {
+        "probe": "fractional_label",
+        "implementation": "csv-threshold-ge",
+        "arms": [
+          "contract_gate",
+          "unconditional"
+        ]
+      },
+      {
+        "probe": "schema_drift",
+        "implementation": "csv-threshold-gt-bug",
+        "arms": [
+          "unconditional",
+          "contract_gate"
+        ]
+      },
+      {
+        "probe": "empty_table",
+        "implementation": "csv-threshold-gt-bug",
+        "arms": [
+          "contract_gate",
+          "unconditional"
+        ]
+      },
+      {
+        "probe": "unsupported_unit_constraint",
+        "implementation": "decimal-sum-ge",
+        "arms": [
+          "unconditional",
+          "contract_gate"
+        ]
+      },
+      {
+        "probe": "clean",
+        "implementation": "decimal-sum-ge",
+        "arms": [
+          "contract_gate",
+          "unconditional"
+        ]
+      },
+      {
+        "probe": "fractional_label",
+        "implementation": "decimal-sum-ge",
+        "arms": [
+          "unconditional",
+          "contract_gate"
+        ]
+      },
+      {
+        "probe": "clean",
+        "implementation": "csv-threshold-ge",
+        "arms": [
+          "contract_gate",
+          "unconditional"
+        ]
+      },
+      {
+        "probe": "fractional_label",
+        "implementation": "csv-threshold-gt-bug",
+        "arms": [
+          "unconditional",
+          "contract_gate"
+        ]
+      }
+    ],
+    "oracle_sha256": "ef7eca371ab5b747e3eb06f0f7ce1b16034fb3c8470cad69d9caeaa17f52528f",
+    "contract_code_sha256": "c4368c16f8669b06490c31e25cf22031dc164be95d01773c587f9242c4faf774",
+    "script_sha256": "6ec25e4031ea28493e071d28541a01c0c28524f2670a5b4a6abbd4be30c3a77e",
+    "claims_excluded": [
+      "general causal model",
+      "universal behavioral equivalence",
+      "minimal complete skill basis",
+      "LLM or skill-selection performance improvement",
+      "production reward eligibility"
+    ]
+  },
+  "admissions": [
+    {
+      "probe": "score_out_of_range",
+      "expected": "failed",
+      "matched": true,
+      "result": {
+        "version": "skill-state-contract-v1",
+        "state": "failed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "csv_schema",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "exact": true
+            },
+            "state": "passed",
+            "detail": "CSV column set satisfies schema",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "35933f4677f635b387428bab4b46785072bd528d6a42e640c26e3e7e7231ac7b",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_nonempty",
+              "file": "predictions.csv"
+            },
+            "state": "passed",
+            "detail": "CSV has data records",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "35933f4677f635b387428bab4b46785072bd528d6a42e640c26e3e7e7231ac7b",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_no_missing",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "35933f4677f635b387428bab4b46785072bd528d6a42e640c26e3e7e7231ac7b",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_unique",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id"
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "35933f4677f635b387428bab4b46785072bd528d6a42e640c26e3e7e7231ac7b",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_numeric_range",
+              "file": "predictions.csv",
+              "column": "score",
+              "min": 0,
+              "max": 1
+            },
+            "state": "failed",
+            "detail": "predicate has observed counterexamples",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "35933f4677f635b387428bab4b46785072bd528d6a42e640c26e3e7e7231ac7b",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 1,
+              "violating_records": [
+                4
+              ]
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_values_in",
+              "file": "predictions.csv",
+              "column": "label",
+              "values": [
+                0,
+                1
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "35933f4677f635b387428bab4b46785072bd528d6a42e640c26e3e7e7231ac7b",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_disjoint_groups",
+              "file": "predictions.csv",
+              "entity": "subject_id",
+              "group": "split"
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "35933f4677f635b387428bab4b46785072bd528d6a42e640c26e3e7e7231ac7b",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "probe": "subject_leakage",
+      "expected": "failed",
+      "matched": true,
+      "result": {
+        "version": "skill-state-contract-v1",
+        "state": "failed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "csv_schema",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "exact": true
+            },
+            "state": "passed",
+            "detail": "CSV column set satisfies schema",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "4c67b5526ebc4478a4002507df07284431151f4ea825272febd5b8953ae98367",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_nonempty",
+              "file": "predictions.csv"
+            },
+            "state": "passed",
+            "detail": "CSV has data records",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "4c67b5526ebc4478a4002507df07284431151f4ea825272febd5b8953ae98367",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_no_missing",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "4c67b5526ebc4478a4002507df07284431151f4ea825272febd5b8953ae98367",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_unique",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id"
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "4c67b5526ebc4478a4002507df07284431151f4ea825272febd5b8953ae98367",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_numeric_range",
+              "file": "predictions.csv",
+              "column": "score",
+              "min": 0,
+              "max": 1
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "4c67b5526ebc4478a4002507df07284431151f4ea825272febd5b8953ae98367",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_values_in",
+              "file": "predictions.csv",
+              "column": "label",
+              "values": [
+                0,
+                1
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "4c67b5526ebc4478a4002507df07284431151f4ea825272febd5b8953ae98367",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_disjoint_groups",
+              "file": "predictions.csv",
+              "entity": "subject_id",
+              "group": "split"
+            },
+            "state": "failed",
+            "detail": "predicate has observed counterexamples",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "4c67b5526ebc4478a4002507df07284431151f4ea825272febd5b8953ae98367",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 1,
+              "violating_records": [
+                4
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "probe": "threshold_boundary",
+      "expected": "passed",
+      "matched": true,
+      "result": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "csv_schema",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "exact": true
+            },
+            "state": "passed",
+            "detail": "CSV column set satisfies schema",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "dc7302fa2ec41c036453f4b5e8cf123bb6fc7fefee9cc0305a570ab3f573a04e",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_nonempty",
+              "file": "predictions.csv"
+            },
+            "state": "passed",
+            "detail": "CSV has data records",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "dc7302fa2ec41c036453f4b5e8cf123bb6fc7fefee9cc0305a570ab3f573a04e",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_no_missing",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "dc7302fa2ec41c036453f4b5e8cf123bb6fc7fefee9cc0305a570ab3f573a04e",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_unique",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id"
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "dc7302fa2ec41c036453f4b5e8cf123bb6fc7fefee9cc0305a570ab3f573a04e",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_numeric_range",
+              "file": "predictions.csv",
+              "column": "score",
+              "min": 0,
+              "max": 1
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "dc7302fa2ec41c036453f4b5e8cf123bb6fc7fefee9cc0305a570ab3f573a04e",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_values_in",
+              "file": "predictions.csv",
+              "column": "label",
+              "values": [
+                0,
+                1
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "dc7302fa2ec41c036453f4b5e8cf123bb6fc7fefee9cc0305a570ab3f573a04e",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_disjoint_groups",
+              "file": "predictions.csv",
+              "entity": "subject_id",
+              "group": "split"
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "dc7302fa2ec41c036453f4b5e8cf123bb6fc7fefee9cc0305a570ab3f573a04e",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "probe": "duplicate_sample",
+      "expected": "failed",
+      "matched": true,
+      "result": {
+        "version": "skill-state-contract-v1",
+        "state": "failed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "csv_schema",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "exact": true
+            },
+            "state": "passed",
+            "detail": "CSV column set satisfies schema",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "307f4cf847cfa7c8b41c1bd4756b2ec6e63a315b34f7ac6d4f1b6a111804d697",
+              "bytes": 174,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 7
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_nonempty",
+              "file": "predictions.csv"
+            },
+            "state": "passed",
+            "detail": "CSV has data records",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "307f4cf847cfa7c8b41c1bd4756b2ec6e63a315b34f7ac6d4f1b6a111804d697",
+              "bytes": 174,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 7
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_no_missing",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "307f4cf847cfa7c8b41c1bd4756b2ec6e63a315b34f7ac6d4f1b6a111804d697",
+              "bytes": 174,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 7,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_unique",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id"
+              ]
+            },
+            "state": "failed",
+            "detail": "predicate has observed counterexamples",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "307f4cf847cfa7c8b41c1bd4756b2ec6e63a315b34f7ac6d4f1b6a111804d697",
+              "bytes": 174,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 7,
+              "violation_count": 1,
+              "violating_records": [
+                8
+              ]
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_numeric_range",
+              "file": "predictions.csv",
+              "column": "score",
+              "min": 0,
+              "max": 1
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "307f4cf847cfa7c8b41c1bd4756b2ec6e63a315b34f7ac6d4f1b6a111804d697",
+              "bytes": 174,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 7,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_values_in",
+              "file": "predictions.csv",
+              "column": "label",
+              "values": [
+                0,
+                1
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "307f4cf847cfa7c8b41c1bd4756b2ec6e63a315b34f7ac6d4f1b6a111804d697",
+              "bytes": 174,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 7,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_disjoint_groups",
+              "file": "predictions.csv",
+              "entity": "subject_id",
+              "group": "split"
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "307f4cf847cfa7c8b41c1bd4756b2ec6e63a315b34f7ac6d4f1b6a111804d697",
+              "bytes": 174,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 7,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "probe": "unsupported_unit_constraint",
+      "expected": "unknown",
+      "matched": true,
+      "result": {
+        "version": "skill-state-contract-v1",
+        "state": "unknown",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "csv_schema",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "exact": true
+            },
+            "state": "passed",
+            "detail": "CSV column set satisfies schema",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_nonempty",
+              "file": "predictions.csv"
+            },
+            "state": "passed",
+            "detail": "CSV has data records",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_no_missing",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_unique",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id"
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_numeric_range",
+              "file": "predictions.csv",
+              "column": "score",
+              "min": 0,
+              "max": 1
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_values_in",
+              "file": "predictions.csv",
+              "column": "label",
+              "values": [
+                0,
+                1
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_disjoint_groups",
+              "file": "predictions.csv",
+              "entity": "subject_id",
+              "group": "split"
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "scientific_unit_consistency",
+              "file": "predictions.csv",
+              "column": "score"
+            },
+            "state": "unknown",
+            "detail": "unsupported predicate kind",
+            "evidence": {}
+          }
+        ]
+      }
+    },
+    {
+      "probe": "empty_table",
+      "expected": "failed",
+      "matched": true,
+      "result": {
+        "version": "skill-state-contract-v1",
+        "state": "failed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "csv_schema",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "exact": true
+            },
+            "state": "passed",
+            "detail": "CSV column set satisfies schema",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "d3f9ae1a82ec7edd9227297c4bada24f02b194bf6a779be3ec9d3567b84f4018",
+              "bytes": 39,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 0
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_nonempty",
+              "file": "predictions.csv"
+            },
+            "state": "failed",
+            "detail": "CSV has no data records",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "d3f9ae1a82ec7edd9227297c4bada24f02b194bf6a779be3ec9d3567b84f4018",
+              "bytes": 39,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 0
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_no_missing",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "d3f9ae1a82ec7edd9227297c4bada24f02b194bf6a779be3ec9d3567b84f4018",
+              "bytes": 39,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 0,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_unique",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id"
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "d3f9ae1a82ec7edd9227297c4bada24f02b194bf6a779be3ec9d3567b84f4018",
+              "bytes": 39,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 0,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_numeric_range",
+              "file": "predictions.csv",
+              "column": "score",
+              "min": 0,
+              "max": 1
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "d3f9ae1a82ec7edd9227297c4bada24f02b194bf6a779be3ec9d3567b84f4018",
+              "bytes": 39,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 0,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_values_in",
+              "file": "predictions.csv",
+              "column": "label",
+              "values": [
+                0,
+                1
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "d3f9ae1a82ec7edd9227297c4bada24f02b194bf6a779be3ec9d3567b84f4018",
+              "bytes": 39,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 0,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_disjoint_groups",
+              "file": "predictions.csv",
+              "entity": "subject_id",
+              "group": "split"
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "d3f9ae1a82ec7edd9227297c4bada24f02b194bf6a779be3ec9d3567b84f4018",
+              "bytes": 39,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 0,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "probe": "schema_drift",
+      "expected": "failed",
+      "matched": true,
+      "result": {
+        "version": "skill-state-contract-v1",
+        "state": "failed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "csv_schema",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "exact": true
+            },
+            "state": "failed",
+            "detail": "required CSV columns are absent",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "a5b3cdf4f74f911378729a08fe3d4028ef0a25d8d3852cf5483bd9a1e00fc180",
+              "bytes": 160,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "prediction"
+              ],
+              "rows": 6,
+              "missing_columns": [
+                "score"
+              ]
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_nonempty",
+              "file": "predictions.csv"
+            },
+            "state": "passed",
+            "detail": "CSV has data records",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "a5b3cdf4f74f911378729a08fe3d4028ef0a25d8d3852cf5483bd9a1e00fc180",
+              "bytes": 160,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "prediction"
+              ],
+              "rows": 6
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_no_missing",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ]
+            },
+            "state": "failed",
+            "detail": "required CSV columns are absent",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "a5b3cdf4f74f911378729a08fe3d4028ef0a25d8d3852cf5483bd9a1e00fc180",
+              "bytes": 160,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "prediction"
+              ],
+              "rows": 6,
+              "missing_columns": [
+                "score"
+              ]
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_unique",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id"
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "a5b3cdf4f74f911378729a08fe3d4028ef0a25d8d3852cf5483bd9a1e00fc180",
+              "bytes": 160,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "prediction"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_numeric_range",
+              "file": "predictions.csv",
+              "column": "score",
+              "min": 0,
+              "max": 1
+            },
+            "state": "failed",
+            "detail": "required CSV columns are absent",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "a5b3cdf4f74f911378729a08fe3d4028ef0a25d8d3852cf5483bd9a1e00fc180",
+              "bytes": 160,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "prediction"
+              ],
+              "rows": 6,
+              "missing_columns": [
+                "score"
+              ]
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_values_in",
+              "file": "predictions.csv",
+              "column": "label",
+              "values": [
+                0,
+                1
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "a5b3cdf4f74f911378729a08fe3d4028ef0a25d8d3852cf5483bd9a1e00fc180",
+              "bytes": 160,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "prediction"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_disjoint_groups",
+              "file": "predictions.csv",
+              "entity": "subject_id",
+              "group": "split"
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "a5b3cdf4f74f911378729a08fe3d4028ef0a25d8d3852cf5483bd9a1e00fc180",
+              "bytes": 160,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "prediction"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "probe": "missing_score",
+      "expected": "failed",
+      "matched": true,
+      "result": {
+        "version": "skill-state-contract-v1",
+        "state": "failed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "csv_schema",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "exact": true
+            },
+            "state": "passed",
+            "detail": "CSV column set satisfies schema",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "efc9566aeee3f624774913320cf3ad82ddc1c492cc5a91b05b03fcc9a08d6066",
+              "bytes": 152,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_nonempty",
+              "file": "predictions.csv"
+            },
+            "state": "passed",
+            "detail": "CSV has data records",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "efc9566aeee3f624774913320cf3ad82ddc1c492cc5a91b05b03fcc9a08d6066",
+              "bytes": 152,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_no_missing",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ]
+            },
+            "state": "failed",
+            "detail": "predicate has observed counterexamples",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "efc9566aeee3f624774913320cf3ad82ddc1c492cc5a91b05b03fcc9a08d6066",
+              "bytes": 152,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 1,
+              "violating_records": [
+                4
+              ]
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_unique",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id"
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "efc9566aeee3f624774913320cf3ad82ddc1c492cc5a91b05b03fcc9a08d6066",
+              "bytes": 152,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_numeric_range",
+              "file": "predictions.csv",
+              "column": "score",
+              "min": 0,
+              "max": 1
+            },
+            "state": "failed",
+            "detail": "predicate has observed counterexamples",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "efc9566aeee3f624774913320cf3ad82ddc1c492cc5a91b05b03fcc9a08d6066",
+              "bytes": 152,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 1,
+              "violating_records": [
+                4
+              ]
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_values_in",
+              "file": "predictions.csv",
+              "column": "label",
+              "values": [
+                0,
+                1
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "efc9566aeee3f624774913320cf3ad82ddc1c492cc5a91b05b03fcc9a08d6066",
+              "bytes": 152,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_disjoint_groups",
+              "file": "predictions.csv",
+              "entity": "subject_id",
+              "group": "split"
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "efc9566aeee3f624774913320cf3ad82ddc1c492cc5a91b05b03fcc9a08d6066",
+              "bytes": 152,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "probe": "nonfinite_score",
+      "expected": "failed",
+      "matched": true,
+      "result": {
+        "version": "skill-state-contract-v1",
+        "state": "failed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "csv_schema",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "exact": true
+            },
+            "state": "passed",
+            "detail": "CSV column set satisfies schema",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "f6839996221e9759d3acb65d56d85d6b7d1972547cbf79f43a23420a5aba857c",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_nonempty",
+              "file": "predictions.csv"
+            },
+            "state": "passed",
+            "detail": "CSV has data records",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "f6839996221e9759d3acb65d56d85d6b7d1972547cbf79f43a23420a5aba857c",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_no_missing",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "f6839996221e9759d3acb65d56d85d6b7d1972547cbf79f43a23420a5aba857c",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_unique",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id"
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "f6839996221e9759d3acb65d56d85d6b7d1972547cbf79f43a23420a5aba857c",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_numeric_range",
+              "file": "predictions.csv",
+              "column": "score",
+              "min": 0,
+              "max": 1
+            },
+            "state": "failed",
+            "detail": "predicate has observed counterexamples",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "f6839996221e9759d3acb65d56d85d6b7d1972547cbf79f43a23420a5aba857c",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 1,
+              "violating_records": [
+                4
+              ]
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_values_in",
+              "file": "predictions.csv",
+              "column": "label",
+              "values": [
+                0,
+                1
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "f6839996221e9759d3acb65d56d85d6b7d1972547cbf79f43a23420a5aba857c",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_disjoint_groups",
+              "file": "predictions.csv",
+              "entity": "subject_id",
+              "group": "split"
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "f6839996221e9759d3acb65d56d85d6b7d1972547cbf79f43a23420a5aba857c",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "probe": "clean",
+      "expected": "passed",
+      "matched": true,
+      "result": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "csv_schema",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "exact": true
+            },
+            "state": "passed",
+            "detail": "CSV column set satisfies schema",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_nonempty",
+              "file": "predictions.csv"
+            },
+            "state": "passed",
+            "detail": "CSV has data records",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_no_missing",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_unique",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id"
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_numeric_range",
+              "file": "predictions.csv",
+              "column": "score",
+              "min": 0,
+              "max": 1
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_values_in",
+              "file": "predictions.csv",
+              "column": "label",
+              "values": [
+                0,
+                1
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_disjoint_groups",
+              "file": "predictions.csv",
+              "entity": "subject_id",
+              "group": "split"
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+              "bytes": 155,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "probe": "fractional_label",
+      "expected": "failed",
+      "matched": true,
+      "result": {
+        "version": "skill-state-contract-v1",
+        "state": "failed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "csv_schema",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "exact": true
+            },
+            "state": "passed",
+            "detail": "CSV column set satisfies schema",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "68e9f30171ca7159a259eb6d6d450649e631887e1f29082f405845c916127ef6",
+              "bytes": 157,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_nonempty",
+              "file": "predictions.csv"
+            },
+            "state": "passed",
+            "detail": "CSV has data records",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "68e9f30171ca7159a259eb6d6d450649e631887e1f29082f405845c916127ef6",
+              "bytes": 157,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_no_missing",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "68e9f30171ca7159a259eb6d6d450649e631887e1f29082f405845c916127ef6",
+              "bytes": 157,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_unique",
+              "file": "predictions.csv",
+              "columns": [
+                "sample_id"
+              ]
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "68e9f30171ca7159a259eb6d6d450649e631887e1f29082f405845c916127ef6",
+              "bytes": 157,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_numeric_range",
+              "file": "predictions.csv",
+              "column": "score",
+              "min": 0,
+              "max": 1
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "68e9f30171ca7159a259eb6d6d450649e631887e1f29082f405845c916127ef6",
+              "bytes": 157,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_values_in",
+              "file": "predictions.csv",
+              "column": "label",
+              "values": [
+                0,
+                1
+              ]
+            },
+            "state": "failed",
+            "detail": "predicate has observed counterexamples",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "68e9f30171ca7159a259eb6d6d450649e631887e1f29082f405845c916127ef6",
+              "bytes": 157,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 1,
+              "violating_records": [
+                4
+              ]
+            }
+          },
+          {
+            "predicate": {
+              "kind": "csv_disjoint_groups",
+              "file": "predictions.csv",
+              "entity": "subject_id",
+              "group": "split"
+            },
+            "state": "passed",
+            "detail": "predicate holds for every inspected record",
+            "evidence": {
+              "file": "predictions.csv",
+              "sha256": "68e9f30171ca7159a259eb6d6d450649e631887e1f29082f405845c916127ef6",
+              "bytes": 157,
+              "columns": [
+                "sample_id",
+                "subject_id",
+                "split",
+                "label",
+                "score"
+              ],
+              "rows": 6,
+              "violation_count": 0,
+              "violating_records": []
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "records": [
+    {
+      "probe": "score_out_of_range",
+      "implementation": "csv-threshold-gt-bug",
+      "arm": "unconditional",
+      "input_sha256": "35933f4677f635b387428bab4b46785072bd528d6a42e640c26e3e7e7231ac7b",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "ba476d0c70cbe8d7c173c9a3d6df1e28ca4747b56da53995f6209b629b474a38",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 1,
+        "fp": 1,
+        "n": 4,
+        "tn": 1,
+        "tp": 1
+      },
+      "output_sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.08,
+      "started_at_us": 1791780365249831,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780365336455,
+      "executed_code_sha256": "4607d25dc5017f28c10e70a00e7ba427119c9b62c2929ed9ea4cf1dde3030c9b"
+    },
+    {
+      "probe": "score_out_of_range",
+      "implementation": "csv-threshold-gt-bug",
+      "arm": "contract_gate",
+      "input_sha256": "35933f4677f635b387428bab4b46785072bd528d6a42e640c26e3e7e7231ac7b",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "ba476d0c70cbe8d7c173c9a3d6df1e28ca4747b56da53995f6209b629b474a38",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "subject_leakage",
+      "implementation": "csv-threshold-gt-bug",
+      "arm": "contract_gate",
+      "input_sha256": "4c67b5526ebc4478a4002507df07284431151f4ea825272febd5b8953ae98367",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "ba476d0c70cbe8d7c173c9a3d6df1e28ca4747b56da53995f6209b629b474a38",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "subject_leakage",
+      "implementation": "csv-threshold-gt-bug",
+      "arm": "unconditional",
+      "input_sha256": "4c67b5526ebc4478a4002507df07284431151f4ea825272febd5b8953ae98367",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "ba476d0c70cbe8d7c173c9a3d6df1e28ca4747b56da53995f6209b629b474a38",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 1,
+        "fp": 1,
+        "n": 4,
+        "tn": 1,
+        "tp": 1
+      },
+      "output_sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.09,
+      "started_at_us": 1791780365345324,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780365436672,
+      "executed_code_sha256": "4607d25dc5017f28c10e70a00e7ba427119c9b62c2929ed9ea4cf1dde3030c9b"
+    },
+    {
+      "probe": "threshold_boundary",
+      "implementation": "decimal-sum-ge",
+      "arm": "unconditional",
+      "input_sha256": "dc7302fa2ec41c036453f4b5e8cf123bb6fc7fefee9cc0305a570ab3f573a04e",
+      "admission": "passed",
+      "allowed": true,
+      "code_sha256": "d234d145111ae7184045af096e0138d63b35cdc0f1161fdcc8cc40c1fefb82d9",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 1,
+        "fp": 2,
+        "n": 4,
+        "tn": 0,
+        "tp": 1
+      },
+      "output_sha256": "8fc5dcb66d82b1b52cbc2c5d893ac3b013d68a07925e84531dcd6eb957da2266",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "8fc5dcb66d82b1b52cbc2c5d893ac3b013d68a07925e84531dcd6eb957da2266",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "passed",
+        "reason": "independent fixed-threshold integer confusion matrix",
+        "expected": {
+          "n": 4,
+          "tp": 1,
+          "fn": 1,
+          "fp": 2,
+          "tn": 0
+        }
+      },
+      "duration_seconds": 0.09,
+      "started_at_us": 1791780365443607,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780365536830,
+      "executed_code_sha256": "642b0c4f5a85b8b395a669ae24116410ec9f427707dd28e3b209145dff5ae3f3"
+    },
+    {
+      "probe": "threshold_boundary",
+      "implementation": "decimal-sum-ge",
+      "arm": "contract_gate",
+      "input_sha256": "dc7302fa2ec41c036453f4b5e8cf123bb6fc7fefee9cc0305a570ab3f573a04e",
+      "admission": "passed",
+      "allowed": true,
+      "code_sha256": "d234d145111ae7184045af096e0138d63b35cdc0f1161fdcc8cc40c1fefb82d9",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 1,
+        "fp": 2,
+        "n": 4,
+        "tn": 0,
+        "tp": 1
+      },
+      "output_sha256": "8fc5dcb66d82b1b52cbc2c5d893ac3b013d68a07925e84531dcd6eb957da2266",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "8fc5dcb66d82b1b52cbc2c5d893ac3b013d68a07925e84531dcd6eb957da2266",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "passed",
+        "reason": "independent fixed-threshold integer confusion matrix",
+        "expected": {
+          "n": 4,
+          "tp": 1,
+          "fn": 1,
+          "fp": 2,
+          "tn": 0
+        }
+      },
+      "duration_seconds": 0.08,
+      "started_at_us": 1791780365540658,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780365628668,
+      "executed_code_sha256": "642b0c4f5a85b8b395a669ae24116410ec9f427707dd28e3b209145dff5ae3f3"
+    },
+    {
+      "probe": "threshold_boundary",
+      "implementation": "csv-threshold-ge",
+      "arm": "contract_gate",
+      "input_sha256": "dc7302fa2ec41c036453f4b5e8cf123bb6fc7fefee9cc0305a570ab3f573a04e",
+      "admission": "passed",
+      "allowed": true,
+      "code_sha256": "cf03a19177c3440dc2312ecbac7ef73ee6e25ac5a6c9e14328caa4bc094b7a63",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 1,
+        "fp": 2,
+        "n": 4,
+        "tn": 0,
+        "tp": 1
+      },
+      "output_sha256": "8fc5dcb66d82b1b52cbc2c5d893ac3b013d68a07925e84531dcd6eb957da2266",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "8fc5dcb66d82b1b52cbc2c5d893ac3b013d68a07925e84531dcd6eb957da2266",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "passed",
+        "reason": "independent fixed-threshold integer confusion matrix",
+        "expected": {
+          "n": 4,
+          "tp": 1,
+          "fn": 1,
+          "fp": 2,
+          "tn": 0
+        }
+      },
+      "duration_seconds": 0.08,
+      "started_at_us": 1791780365636081,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780365725223,
+      "executed_code_sha256": "62b301015ef15b38b5321d8aafd01dc5eb0db92dba4de8c6dabe6334669983ae"
+    },
+    {
+      "probe": "threshold_boundary",
+      "implementation": "csv-threshold-ge",
+      "arm": "unconditional",
+      "input_sha256": "dc7302fa2ec41c036453f4b5e8cf123bb6fc7fefee9cc0305a570ab3f573a04e",
+      "admission": "passed",
+      "allowed": true,
+      "code_sha256": "cf03a19177c3440dc2312ecbac7ef73ee6e25ac5a6c9e14328caa4bc094b7a63",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 1,
+        "fp": 2,
+        "n": 4,
+        "tn": 0,
+        "tp": 1
+      },
+      "output_sha256": "8fc5dcb66d82b1b52cbc2c5d893ac3b013d68a07925e84531dcd6eb957da2266",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "8fc5dcb66d82b1b52cbc2c5d893ac3b013d68a07925e84531dcd6eb957da2266",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "passed",
+        "reason": "independent fixed-threshold integer confusion matrix",
+        "expected": {
+          "n": 4,
+          "tp": 1,
+          "fn": 1,
+          "fp": 2,
+          "tn": 0
+        }
+      },
+      "duration_seconds": 0.08,
+      "started_at_us": 1791780365727803,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780365814854,
+      "executed_code_sha256": "62b301015ef15b38b5321d8aafd01dc5eb0db92dba4de8c6dabe6334669983ae"
+    },
+    {
+      "probe": "duplicate_sample",
+      "implementation": "csv-threshold-gt-bug",
+      "arm": "unconditional",
+      "input_sha256": "307f4cf847cfa7c8b41c1bd4756b2ec6e63a315b34f7ac6d4f1b6a111804d697",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "ba476d0c70cbe8d7c173c9a3d6df1e28ca4747b56da53995f6209b629b474a38",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 1,
+        "fp": 1,
+        "n": 5,
+        "tn": 1,
+        "tp": 2
+      },
+      "output_sha256": "187b09464b7b9cadbbb05f882163e37cb1c11163cf60f75b6c5a5b13c121ee78",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "187b09464b7b9cadbbb05f882163e37cb1c11163cf60f75b6c5a5b13c121ee78",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.08,
+      "started_at_us": 1791780365821837,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780365909820,
+      "executed_code_sha256": "4607d25dc5017f28c10e70a00e7ba427119c9b62c2929ed9ea4cf1dde3030c9b"
+    },
+    {
+      "probe": "duplicate_sample",
+      "implementation": "csv-threshold-gt-bug",
+      "arm": "contract_gate",
+      "input_sha256": "307f4cf847cfa7c8b41c1bd4756b2ec6e63a315b34f7ac6d4f1b6a111804d697",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "ba476d0c70cbe8d7c173c9a3d6df1e28ca4747b56da53995f6209b629b474a38",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "unsupported_unit_constraint",
+      "implementation": "csv-threshold-ge",
+      "arm": "contract_gate",
+      "input_sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+      "admission": "unknown",
+      "allowed": false,
+      "code_sha256": "cf03a19177c3440dc2312ecbac7ef73ee6e25ac5a6c9e14328caa4bc094b7a63",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "unsupported_unit_constraint",
+      "implementation": "csv-threshold-ge",
+      "arm": "unconditional",
+      "input_sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+      "admission": "unknown",
+      "allowed": true,
+      "code_sha256": "cf03a19177c3440dc2312ecbac7ef73ee6e25ac5a6c9e14328caa4bc094b7a63",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 1,
+        "fp": 1,
+        "n": 4,
+        "tn": 1,
+        "tp": 1
+      },
+      "output_sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "unknown",
+        "reason": "required unit semantics have no verifier"
+      },
+      "duration_seconds": 0.08,
+      "started_at_us": 1791780365917800,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780366004428,
+      "executed_code_sha256": "62b301015ef15b38b5321d8aafd01dc5eb0db92dba4de8c6dabe6334669983ae"
+    },
+    {
+      "probe": "empty_table",
+      "implementation": "decimal-sum-ge",
+      "arm": "unconditional",
+      "input_sha256": "d3f9ae1a82ec7edd9227297c4bada24f02b194bf6a779be3ec9d3567b84f4018",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "d234d145111ae7184045af096e0138d63b35cdc0f1161fdcc8cc40c1fefb82d9",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 0,
+        "fp": 0,
+        "n": 0,
+        "tn": 0,
+        "tp": 0
+      },
+      "output_sha256": "d8c9e6ccfa4fdf5a0a65ff1494c7d712503df5446aa9775d007d23ab82f0c32e",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "d8c9e6ccfa4fdf5a0a65ff1494c7d712503df5446aa9775d007d23ab82f0c32e",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.08,
+      "started_at_us": 1791780366010443,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780366099023,
+      "executed_code_sha256": "642b0c4f5a85b8b395a669ae24116410ec9f427707dd28e3b209145dff5ae3f3"
+    },
+    {
+      "probe": "empty_table",
+      "implementation": "decimal-sum-ge",
+      "arm": "contract_gate",
+      "input_sha256": "d3f9ae1a82ec7edd9227297c4bada24f02b194bf6a779be3ec9d3567b84f4018",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "d234d145111ae7184045af096e0138d63b35cdc0f1161fdcc8cc40c1fefb82d9",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "schema_drift",
+      "implementation": "csv-threshold-ge",
+      "arm": "contract_gate",
+      "input_sha256": "a5b3cdf4f74f911378729a08fe3d4028ef0a25d8d3852cf5483bd9a1e00fc180",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "cf03a19177c3440dc2312ecbac7ef73ee6e25ac5a6c9e14328caa4bc094b7a63",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "schema_drift",
+      "implementation": "csv-threshold-ge",
+      "arm": "unconditional",
+      "input_sha256": "a5b3cdf4f74f911378729a08fe3d4028ef0a25d8d3852cf5483bd9a1e00fc180",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "cf03a19177c3440dc2312ecbac7ef73ee6e25ac5a6c9e14328caa4bc094b7a63",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": false,
+      "output": null,
+      "output_sha256": null,
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "unknown",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "unknown",
+            "detail": "artifact is absent or cannot be safely read",
+            "evidence": {
+              "file": "heldout_metrics.json"
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.09,
+      "started_at_us": 1791780366106427,
+      "returncode": 1,
+      "error_kind": "exception",
+      "stderr": "Traceback (most recent call last):\n  File \"D:\\qing_zhuomian_\\开发区\\skillnet\\skillnet-demo\\.audit-tmp-upgrade\\capability-probes-1791780365177443600\\schema_drift\\csv-threshold-ge\\unconditional\\main.py\", line 7, in <module>\n    positive = float(r['score']) >= 0.5\n                     ~^^^^^^^^^\nKeyError: 'score'\n",
+      "finished_at_us": 1791780366194644,
+      "executed_code_sha256": "62b301015ef15b38b5321d8aafd01dc5eb0db92dba4de8c6dabe6334669983ae"
+    },
+    {
+      "probe": "score_out_of_range",
+      "implementation": "decimal-sum-ge",
+      "arm": "unconditional",
+      "input_sha256": "35933f4677f635b387428bab4b46785072bd528d6a42e640c26e3e7e7231ac7b",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "d234d145111ae7184045af096e0138d63b35cdc0f1161fdcc8cc40c1fefb82d9",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 1,
+        "fp": 1,
+        "n": 4,
+        "tn": 1,
+        "tp": 1
+      },
+      "output_sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.09,
+      "started_at_us": 1791780366198655,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780366291808,
+      "executed_code_sha256": "642b0c4f5a85b8b395a669ae24116410ec9f427707dd28e3b209145dff5ae3f3"
+    },
+    {
+      "probe": "score_out_of_range",
+      "implementation": "decimal-sum-ge",
+      "arm": "contract_gate",
+      "input_sha256": "35933f4677f635b387428bab4b46785072bd528d6a42e640c26e3e7e7231ac7b",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "d234d145111ae7184045af096e0138d63b35cdc0f1161fdcc8cc40c1fefb82d9",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "subject_leakage",
+      "implementation": "decimal-sum-ge",
+      "arm": "contract_gate",
+      "input_sha256": "4c67b5526ebc4478a4002507df07284431151f4ea825272febd5b8953ae98367",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "d234d145111ae7184045af096e0138d63b35cdc0f1161fdcc8cc40c1fefb82d9",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "subject_leakage",
+      "implementation": "decimal-sum-ge",
+      "arm": "unconditional",
+      "input_sha256": "4c67b5526ebc4478a4002507df07284431151f4ea825272febd5b8953ae98367",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "d234d145111ae7184045af096e0138d63b35cdc0f1161fdcc8cc40c1fefb82d9",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 1,
+        "fp": 1,
+        "n": 4,
+        "tn": 1,
+        "tp": 1
+      },
+      "output_sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.09,
+      "started_at_us": 1791780366300003,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780366393916,
+      "executed_code_sha256": "642b0c4f5a85b8b395a669ae24116410ec9f427707dd28e3b209145dff5ae3f3"
+    },
+    {
+      "probe": "missing_score",
+      "implementation": "csv-threshold-ge",
+      "arm": "unconditional",
+      "input_sha256": "efc9566aeee3f624774913320cf3ad82ddc1c492cc5a91b05b03fcc9a08d6066",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "cf03a19177c3440dc2312ecbac7ef73ee6e25ac5a6c9e14328caa4bc094b7a63",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": false,
+      "output": null,
+      "output_sha256": null,
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "unknown",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "unknown",
+            "detail": "artifact is absent or cannot be safely read",
+            "evidence": {
+              "file": "heldout_metrics.json"
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.09,
+      "started_at_us": 1791780366401485,
+      "returncode": 1,
+      "error_kind": "exception",
+      "stderr": "Traceback (most recent call last):\n  File \"D:\\qing_zhuomian_\\开发区\\skillnet\\skillnet-demo\\.audit-tmp-upgrade\\capability-probes-1791780365177443600\\missing_score\\csv-threshold-ge\\unconditional\\main.py\", line 7, in <module>\n    positive = float(r['score']) >= 0.5\n               ^^^^^^^^^^^^^^^^^\nValueError: could not convert string to float: ''\n",
+      "finished_at_us": 1791780366493976,
+      "executed_code_sha256": "62b301015ef15b38b5321d8aafd01dc5eb0db92dba4de8c6dabe6334669983ae"
+    },
+    {
+      "probe": "missing_score",
+      "implementation": "csv-threshold-ge",
+      "arm": "contract_gate",
+      "input_sha256": "efc9566aeee3f624774913320cf3ad82ddc1c492cc5a91b05b03fcc9a08d6066",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "cf03a19177c3440dc2312ecbac7ef73ee6e25ac5a6c9e14328caa4bc094b7a63",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "subject_leakage",
+      "implementation": "csv-threshold-ge",
+      "arm": "contract_gate",
+      "input_sha256": "4c67b5526ebc4478a4002507df07284431151f4ea825272febd5b8953ae98367",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "cf03a19177c3440dc2312ecbac7ef73ee6e25ac5a6c9e14328caa4bc094b7a63",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "subject_leakage",
+      "implementation": "csv-threshold-ge",
+      "arm": "unconditional",
+      "input_sha256": "4c67b5526ebc4478a4002507df07284431151f4ea825272febd5b8953ae98367",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "cf03a19177c3440dc2312ecbac7ef73ee6e25ac5a6c9e14328caa4bc094b7a63",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 1,
+        "fp": 1,
+        "n": 4,
+        "tn": 1,
+        "tp": 1
+      },
+      "output_sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.08,
+      "started_at_us": 1791780366499354,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780366587952,
+      "executed_code_sha256": "62b301015ef15b38b5321d8aafd01dc5eb0db92dba4de8c6dabe6334669983ae"
+    },
+    {
+      "probe": "duplicate_sample",
+      "implementation": "decimal-sum-ge",
+      "arm": "unconditional",
+      "input_sha256": "307f4cf847cfa7c8b41c1bd4756b2ec6e63a315b34f7ac6d4f1b6a111804d697",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "d234d145111ae7184045af096e0138d63b35cdc0f1161fdcc8cc40c1fefb82d9",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 1,
+        "fp": 1,
+        "n": 5,
+        "tn": 1,
+        "tp": 2
+      },
+      "output_sha256": "187b09464b7b9cadbbb05f882163e37cb1c11163cf60f75b6c5a5b13c121ee78",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "187b09464b7b9cadbbb05f882163e37cb1c11163cf60f75b6c5a5b13c121ee78",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.09,
+      "started_at_us": 1791780366593479,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780366687894,
+      "executed_code_sha256": "642b0c4f5a85b8b395a669ae24116410ec9f427707dd28e3b209145dff5ae3f3"
+    },
+    {
+      "probe": "duplicate_sample",
+      "implementation": "decimal-sum-ge",
+      "arm": "contract_gate",
+      "input_sha256": "307f4cf847cfa7c8b41c1bd4756b2ec6e63a315b34f7ac6d4f1b6a111804d697",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "d234d145111ae7184045af096e0138d63b35cdc0f1161fdcc8cc40c1fefb82d9",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "missing_score",
+      "implementation": "csv-threshold-gt-bug",
+      "arm": "contract_gate",
+      "input_sha256": "efc9566aeee3f624774913320cf3ad82ddc1c492cc5a91b05b03fcc9a08d6066",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "ba476d0c70cbe8d7c173c9a3d6df1e28ca4747b56da53995f6209b629b474a38",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "missing_score",
+      "implementation": "csv-threshold-gt-bug",
+      "arm": "unconditional",
+      "input_sha256": "efc9566aeee3f624774913320cf3ad82ddc1c492cc5a91b05b03fcc9a08d6066",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "ba476d0c70cbe8d7c173c9a3d6df1e28ca4747b56da53995f6209b629b474a38",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": false,
+      "output": null,
+      "output_sha256": null,
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "unknown",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "unknown",
+            "detail": "artifact is absent or cannot be safely read",
+            "evidence": {
+              "file": "heldout_metrics.json"
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.09,
+      "started_at_us": 1791780366696210,
+      "returncode": 1,
+      "error_kind": "exception",
+      "stderr": "Traceback (most recent call last):\n  File \"D:\\qing_zhuomian_\\开发区\\skillnet\\skillnet-demo\\.audit-tmp-upgrade\\capability-probes-1791780365177443600\\missing_score\\csv-threshold-gt-bug\\unconditional\\main.py\", line 7, in <module>\n    positive = float(r['score']) > 0.5\n               ^^^^^^^^^^^^^^^^^\nValueError: could not convert string to float: ''\n",
+      "finished_at_us": 1791780366786343,
+      "executed_code_sha256": "4607d25dc5017f28c10e70a00e7ba427119c9b62c2929ed9ea4cf1dde3030c9b"
+    },
+    {
+      "probe": "duplicate_sample",
+      "implementation": "csv-threshold-ge",
+      "arm": "unconditional",
+      "input_sha256": "307f4cf847cfa7c8b41c1bd4756b2ec6e63a315b34f7ac6d4f1b6a111804d697",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "cf03a19177c3440dc2312ecbac7ef73ee6e25ac5a6c9e14328caa4bc094b7a63",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 1,
+        "fp": 1,
+        "n": 5,
+        "tn": 1,
+        "tp": 2
+      },
+      "output_sha256": "187b09464b7b9cadbbb05f882163e37cb1c11163cf60f75b6c5a5b13c121ee78",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "187b09464b7b9cadbbb05f882163e37cb1c11163cf60f75b6c5a5b13c121ee78",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.09,
+      "started_at_us": 1791780366789479,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780366879782,
+      "executed_code_sha256": "62b301015ef15b38b5321d8aafd01dc5eb0db92dba4de8c6dabe6334669983ae"
+    },
+    {
+      "probe": "duplicate_sample",
+      "implementation": "csv-threshold-ge",
+      "arm": "contract_gate",
+      "input_sha256": "307f4cf847cfa7c8b41c1bd4756b2ec6e63a315b34f7ac6d4f1b6a111804d697",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "cf03a19177c3440dc2312ecbac7ef73ee6e25ac5a6c9e14328caa4bc094b7a63",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "nonfinite_score",
+      "implementation": "decimal-sum-ge",
+      "arm": "contract_gate",
+      "input_sha256": "f6839996221e9759d3acb65d56d85d6b7d1972547cbf79f43a23420a5aba857c",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "d234d145111ae7184045af096e0138d63b35cdc0f1161fdcc8cc40c1fefb82d9",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "nonfinite_score",
+      "implementation": "decimal-sum-ge",
+      "arm": "unconditional",
+      "input_sha256": "f6839996221e9759d3acb65d56d85d6b7d1972547cbf79f43a23420a5aba857c",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "d234d145111ae7184045af096e0138d63b35cdc0f1161fdcc8cc40c1fefb82d9",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": false,
+      "output": null,
+      "output_sha256": null,
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "unknown",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "unknown",
+            "detail": "artifact is absent or cannot be safely read",
+            "evidence": {
+              "file": "heldout_metrics.json"
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.09,
+      "started_at_us": 1791780366889808,
+      "returncode": 1,
+      "error_kind": "exception",
+      "stderr": "Traceback (most recent call last):\n  File \"D:\\qing_zhuomian_\\开发区\\skillnet\\skillnet-demo\\.audit-tmp-upgrade\\capability-probes-1791780365177443600\\nonfinite_score\\decimal-sum-ge\\unconditional\\main.py\", line 9, in <module>\n    pairs = [(r['label'] == '1', Decimal(r['score']) >= Decimal('0.5'))\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ndecimal.InvalidOperation: [<class 'decimal.InvalidOperation'>]\n",
+      "finished_at_us": 1791780366986742,
+      "executed_code_sha256": "642b0c4f5a85b8b395a669ae24116410ec9f427707dd28e3b209145dff5ae3f3"
+    },
+    {
+      "probe": "unsupported_unit_constraint",
+      "implementation": "csv-threshold-gt-bug",
+      "arm": "unconditional",
+      "input_sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+      "admission": "unknown",
+      "allowed": true,
+      "code_sha256": "ba476d0c70cbe8d7c173c9a3d6df1e28ca4747b56da53995f6209b629b474a38",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 1,
+        "fp": 1,
+        "n": 4,
+        "tn": 1,
+        "tp": 1
+      },
+      "output_sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "unknown",
+        "reason": "required unit semantics have no verifier"
+      },
+      "duration_seconds": 0.08,
+      "started_at_us": 1791780366991754,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780367080517,
+      "executed_code_sha256": "4607d25dc5017f28c10e70a00e7ba427119c9b62c2929ed9ea4cf1dde3030c9b"
+    },
+    {
+      "probe": "unsupported_unit_constraint",
+      "implementation": "csv-threshold-gt-bug",
+      "arm": "contract_gate",
+      "input_sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+      "admission": "unknown",
+      "allowed": false,
+      "code_sha256": "ba476d0c70cbe8d7c173c9a3d6df1e28ca4747b56da53995f6209b629b474a38",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "nonfinite_score",
+      "implementation": "csv-threshold-gt-bug",
+      "arm": "contract_gate",
+      "input_sha256": "f6839996221e9759d3acb65d56d85d6b7d1972547cbf79f43a23420a5aba857c",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "ba476d0c70cbe8d7c173c9a3d6df1e28ca4747b56da53995f6209b629b474a38",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "nonfinite_score",
+      "implementation": "csv-threshold-gt-bug",
+      "arm": "unconditional",
+      "input_sha256": "f6839996221e9759d3acb65d56d85d6b7d1972547cbf79f43a23420a5aba857c",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "ba476d0c70cbe8d7c173c9a3d6df1e28ca4747b56da53995f6209b629b474a38",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 2,
+        "fp": 1,
+        "n": 4,
+        "tn": 1,
+        "tp": 0
+      },
+      "output_sha256": "af5058aed3855ed38759667e071efa13abde73be9d2e8c3803ce1989de6fab8b",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "af5058aed3855ed38759667e071efa13abde73be9d2e8c3803ce1989de6fab8b",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.09,
+      "started_at_us": 1791780367088632,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780367179343,
+      "executed_code_sha256": "4607d25dc5017f28c10e70a00e7ba427119c9b62c2929ed9ea4cf1dde3030c9b"
+    },
+    {
+      "probe": "threshold_boundary",
+      "implementation": "csv-threshold-gt-bug",
+      "arm": "unconditional",
+      "input_sha256": "dc7302fa2ec41c036453f4b5e8cf123bb6fc7fefee9cc0305a570ab3f573a04e",
+      "admission": "passed",
+      "allowed": true,
+      "code_sha256": "ba476d0c70cbe8d7c173c9a3d6df1e28ca4747b56da53995f6209b629b474a38",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 2,
+        "fp": 1,
+        "n": 4,
+        "tn": 1,
+        "tp": 0
+      },
+      "output_sha256": "af5058aed3855ed38759667e071efa13abde73be9d2e8c3803ce1989de6fab8b",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "af5058aed3855ed38759667e071efa13abde73be9d2e8c3803ce1989de6fab8b",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "independent fixed-threshold integer confusion matrix",
+        "expected": {
+          "n": 4,
+          "tp": 1,
+          "fn": 1,
+          "fp": 2,
+          "tn": 0
+        }
+      },
+      "duration_seconds": 0.08,
+      "started_at_us": 1791780367186473,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780367274844,
+      "executed_code_sha256": "4607d25dc5017f28c10e70a00e7ba427119c9b62c2929ed9ea4cf1dde3030c9b"
+    },
+    {
+      "probe": "threshold_boundary",
+      "implementation": "csv-threshold-gt-bug",
+      "arm": "contract_gate",
+      "input_sha256": "dc7302fa2ec41c036453f4b5e8cf123bb6fc7fefee9cc0305a570ab3f573a04e",
+      "admission": "passed",
+      "allowed": true,
+      "code_sha256": "ba476d0c70cbe8d7c173c9a3d6df1e28ca4747b56da53995f6209b629b474a38",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 2,
+        "fp": 1,
+        "n": 4,
+        "tn": 1,
+        "tp": 0
+      },
+      "output_sha256": "af5058aed3855ed38759667e071efa13abde73be9d2e8c3803ce1989de6fab8b",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "af5058aed3855ed38759667e071efa13abde73be9d2e8c3803ce1989de6fab8b",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "independent fixed-threshold integer confusion matrix",
+        "expected": {
+          "n": 4,
+          "tp": 1,
+          "fn": 1,
+          "fp": 2,
+          "tn": 0
+        }
+      },
+      "duration_seconds": 0.08,
+      "started_at_us": 1791780367278778,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780367367279,
+      "executed_code_sha256": "4607d25dc5017f28c10e70a00e7ba427119c9b62c2929ed9ea4cf1dde3030c9b"
+    },
+    {
+      "probe": "empty_table",
+      "implementation": "csv-threshold-ge",
+      "arm": "contract_gate",
+      "input_sha256": "d3f9ae1a82ec7edd9227297c4bada24f02b194bf6a779be3ec9d3567b84f4018",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "cf03a19177c3440dc2312ecbac7ef73ee6e25ac5a6c9e14328caa4bc094b7a63",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "empty_table",
+      "implementation": "csv-threshold-ge",
+      "arm": "unconditional",
+      "input_sha256": "d3f9ae1a82ec7edd9227297c4bada24f02b194bf6a779be3ec9d3567b84f4018",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "cf03a19177c3440dc2312ecbac7ef73ee6e25ac5a6c9e14328caa4bc094b7a63",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 0,
+        "fp": 0,
+        "n": 0,
+        "tn": 0,
+        "tp": 0
+      },
+      "output_sha256": "d8c9e6ccfa4fdf5a0a65ff1494c7d712503df5446aa9775d007d23ab82f0c32e",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "d8c9e6ccfa4fdf5a0a65ff1494c7d712503df5446aa9775d007d23ab82f0c32e",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.08,
+      "started_at_us": 1791780367374390,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780367461566,
+      "executed_code_sha256": "62b301015ef15b38b5321d8aafd01dc5eb0db92dba4de8c6dabe6334669983ae"
+    },
+    {
+      "probe": "score_out_of_range",
+      "implementation": "csv-threshold-ge",
+      "arm": "unconditional",
+      "input_sha256": "35933f4677f635b387428bab4b46785072bd528d6a42e640c26e3e7e7231ac7b",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "cf03a19177c3440dc2312ecbac7ef73ee6e25ac5a6c9e14328caa4bc094b7a63",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 1,
+        "fp": 1,
+        "n": 4,
+        "tn": 1,
+        "tp": 1
+      },
+      "output_sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.09,
+      "started_at_us": 1791780367469455,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780367561055,
+      "executed_code_sha256": "62b301015ef15b38b5321d8aafd01dc5eb0db92dba4de8c6dabe6334669983ae"
+    },
+    {
+      "probe": "score_out_of_range",
+      "implementation": "csv-threshold-ge",
+      "arm": "contract_gate",
+      "input_sha256": "35933f4677f635b387428bab4b46785072bd528d6a42e640c26e3e7e7231ac7b",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "cf03a19177c3440dc2312ecbac7ef73ee6e25ac5a6c9e14328caa4bc094b7a63",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "missing_score",
+      "implementation": "decimal-sum-ge",
+      "arm": "contract_gate",
+      "input_sha256": "efc9566aeee3f624774913320cf3ad82ddc1c492cc5a91b05b03fcc9a08d6066",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "d234d145111ae7184045af096e0138d63b35cdc0f1161fdcc8cc40c1fefb82d9",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "missing_score",
+      "implementation": "decimal-sum-ge",
+      "arm": "unconditional",
+      "input_sha256": "efc9566aeee3f624774913320cf3ad82ddc1c492cc5a91b05b03fcc9a08d6066",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "d234d145111ae7184045af096e0138d63b35cdc0f1161fdcc8cc40c1fefb82d9",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": false,
+      "output": null,
+      "output_sha256": null,
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "unknown",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "unknown",
+            "detail": "artifact is absent or cannot be safely read",
+            "evidence": {
+              "file": "heldout_metrics.json"
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.09,
+      "started_at_us": 1791780367569149,
+      "returncode": 1,
+      "error_kind": "exception",
+      "stderr": "Traceback (most recent call last):\n  File \"D:\\qing_zhuomian_\\开发区\\skillnet\\skillnet-demo\\.audit-tmp-upgrade\\capability-probes-1791780365177443600\\missing_score\\decimal-sum-ge\\unconditional\\main.py\", line 9, in <module>\n    pairs = [(r['label'] == '1', Decimal(r['score']) >= Decimal('0.5'))\n                                 ^^^^^^^^^^^^^^^^^^^\ndecimal.InvalidOperation: [<class 'decimal.ConversionSyntax'>]\n",
+      "finished_at_us": 1791780367662111,
+      "executed_code_sha256": "642b0c4f5a85b8b395a669ae24116410ec9f427707dd28e3b209145dff5ae3f3"
+    },
+    {
+      "probe": "clean",
+      "implementation": "csv-threshold-gt-bug",
+      "arm": "unconditional",
+      "input_sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+      "admission": "passed",
+      "allowed": true,
+      "code_sha256": "ba476d0c70cbe8d7c173c9a3d6df1e28ca4747b56da53995f6209b629b474a38",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 1,
+        "fp": 1,
+        "n": 4,
+        "tn": 1,
+        "tp": 1
+      },
+      "output_sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "passed",
+        "reason": "independent fixed-threshold integer confusion matrix",
+        "expected": {
+          "n": 4,
+          "tp": 1,
+          "fn": 1,
+          "fp": 1,
+          "tn": 1
+        }
+      },
+      "duration_seconds": 0.08,
+      "started_at_us": 1791780367666201,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780367753488,
+      "executed_code_sha256": "4607d25dc5017f28c10e70a00e7ba427119c9b62c2929ed9ea4cf1dde3030c9b"
+    },
+    {
+      "probe": "clean",
+      "implementation": "csv-threshold-gt-bug",
+      "arm": "contract_gate",
+      "input_sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+      "admission": "passed",
+      "allowed": true,
+      "code_sha256": "ba476d0c70cbe8d7c173c9a3d6df1e28ca4747b56da53995f6209b629b474a38",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 1,
+        "fp": 1,
+        "n": 4,
+        "tn": 1,
+        "tp": 1
+      },
+      "output_sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "passed",
+        "reason": "independent fixed-threshold integer confusion matrix",
+        "expected": {
+          "n": 4,
+          "tp": 1,
+          "fn": 1,
+          "fp": 1,
+          "tn": 1
+        }
+      },
+      "duration_seconds": 0.09,
+      "started_at_us": 1791780367756506,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780367847563,
+      "executed_code_sha256": "4607d25dc5017f28c10e70a00e7ba427119c9b62c2929ed9ea4cf1dde3030c9b"
+    },
+    {
+      "probe": "nonfinite_score",
+      "implementation": "csv-threshold-ge",
+      "arm": "contract_gate",
+      "input_sha256": "f6839996221e9759d3acb65d56d85d6b7d1972547cbf79f43a23420a5aba857c",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "cf03a19177c3440dc2312ecbac7ef73ee6e25ac5a6c9e14328caa4bc094b7a63",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "nonfinite_score",
+      "implementation": "csv-threshold-ge",
+      "arm": "unconditional",
+      "input_sha256": "f6839996221e9759d3acb65d56d85d6b7d1972547cbf79f43a23420a5aba857c",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "cf03a19177c3440dc2312ecbac7ef73ee6e25ac5a6c9e14328caa4bc094b7a63",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 2,
+        "fp": 1,
+        "n": 4,
+        "tn": 1,
+        "tp": 0
+      },
+      "output_sha256": "af5058aed3855ed38759667e071efa13abde73be9d2e8c3803ce1989de6fab8b",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "af5058aed3855ed38759667e071efa13abde73be9d2e8c3803ce1989de6fab8b",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.09,
+      "started_at_us": 1791780367855992,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780367949681,
+      "executed_code_sha256": "62b301015ef15b38b5321d8aafd01dc5eb0db92dba4de8c6dabe6334669983ae"
+    },
+    {
+      "probe": "schema_drift",
+      "implementation": "decimal-sum-ge",
+      "arm": "unconditional",
+      "input_sha256": "a5b3cdf4f74f911378729a08fe3d4028ef0a25d8d3852cf5483bd9a1e00fc180",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "d234d145111ae7184045af096e0138d63b35cdc0f1161fdcc8cc40c1fefb82d9",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": false,
+      "output": null,
+      "output_sha256": null,
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "unknown",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "unknown",
+            "detail": "artifact is absent or cannot be safely read",
+            "evidence": {
+              "file": "heldout_metrics.json"
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.1,
+      "started_at_us": 1791780367956697,
+      "returncode": 1,
+      "error_kind": "exception",
+      "stderr": "Traceback (most recent call last):\n  File \"D:\\qing_zhuomian_\\开发区\\skillnet\\skillnet-demo\\.audit-tmp-upgrade\\capability-probes-1791780365177443600\\schema_drift\\decimal-sum-ge\\unconditional\\main.py\", line 9, in <module>\n    pairs = [(r['label'] == '1', Decimal(r['score']) >= Decimal('0.5'))\n                                         ~^^^^^^^^^\nKeyError: 'score'\n",
+      "finished_at_us": 1791780368055847,
+      "executed_code_sha256": "642b0c4f5a85b8b395a669ae24116410ec9f427707dd28e3b209145dff5ae3f3"
+    },
+    {
+      "probe": "schema_drift",
+      "implementation": "decimal-sum-ge",
+      "arm": "contract_gate",
+      "input_sha256": "a5b3cdf4f74f911378729a08fe3d4028ef0a25d8d3852cf5483bd9a1e00fc180",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "d234d145111ae7184045af096e0138d63b35cdc0f1161fdcc8cc40c1fefb82d9",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "fractional_label",
+      "implementation": "csv-threshold-ge",
+      "arm": "contract_gate",
+      "input_sha256": "68e9f30171ca7159a259eb6d6d450649e631887e1f29082f405845c916127ef6",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "cf03a19177c3440dc2312ecbac7ef73ee6e25ac5a6c9e14328caa4bc094b7a63",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "fractional_label",
+      "implementation": "csv-threshold-ge",
+      "arm": "unconditional",
+      "input_sha256": "68e9f30171ca7159a259eb6d6d450649e631887e1f29082f405845c916127ef6",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "cf03a19177c3440dc2312ecbac7ef73ee6e25ac5a6c9e14328caa4bc094b7a63",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": false,
+      "output": null,
+      "output_sha256": null,
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "unknown",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "unknown",
+            "detail": "artifact is absent or cannot be safely read",
+            "evidence": {
+              "file": "heldout_metrics.json"
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.08,
+      "started_at_us": 1791780368061492,
+      "returncode": 1,
+      "error_kind": "exception",
+      "stderr": "Traceback (most recent call last):\n  File \"D:\\qing_zhuomian_\\开发区\\skillnet\\skillnet-demo\\.audit-tmp-upgrade\\capability-probes-1791780365177443600\\fractional_label\\csv-threshold-ge\\unconditional\\main.py\", line 8, in <module>\n    actual = int(r['label']) == 1\n             ^^^^^^^^^^^^^^^\nValueError: invalid literal for int() with base 10: '0.5'\n",
+      "finished_at_us": 1791780368147645,
+      "executed_code_sha256": "62b301015ef15b38b5321d8aafd01dc5eb0db92dba4de8c6dabe6334669983ae"
+    },
+    {
+      "probe": "schema_drift",
+      "implementation": "csv-threshold-gt-bug",
+      "arm": "unconditional",
+      "input_sha256": "a5b3cdf4f74f911378729a08fe3d4028ef0a25d8d3852cf5483bd9a1e00fc180",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "ba476d0c70cbe8d7c173c9a3d6df1e28ca4747b56da53995f6209b629b474a38",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": false,
+      "output": null,
+      "output_sha256": null,
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "unknown",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "unknown",
+            "detail": "artifact is absent or cannot be safely read",
+            "evidence": {
+              "file": "heldout_metrics.json"
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.08,
+      "started_at_us": 1791780368152071,
+      "returncode": 1,
+      "error_kind": "exception",
+      "stderr": "Traceback (most recent call last):\n  File \"D:\\qing_zhuomian_\\开发区\\skillnet\\skillnet-demo\\.audit-tmp-upgrade\\capability-probes-1791780365177443600\\schema_drift\\csv-threshold-gt-bug\\unconditional\\main.py\", line 7, in <module>\n    positive = float(r['score']) > 0.5\n                     ~^^^^^^^^^\nKeyError: 'score'\n",
+      "finished_at_us": 1791780368238064,
+      "executed_code_sha256": "4607d25dc5017f28c10e70a00e7ba427119c9b62c2929ed9ea4cf1dde3030c9b"
+    },
+    {
+      "probe": "schema_drift",
+      "implementation": "csv-threshold-gt-bug",
+      "arm": "contract_gate",
+      "input_sha256": "a5b3cdf4f74f911378729a08fe3d4028ef0a25d8d3852cf5483bd9a1e00fc180",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "ba476d0c70cbe8d7c173c9a3d6df1e28ca4747b56da53995f6209b629b474a38",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "empty_table",
+      "implementation": "csv-threshold-gt-bug",
+      "arm": "contract_gate",
+      "input_sha256": "d3f9ae1a82ec7edd9227297c4bada24f02b194bf6a779be3ec9d3567b84f4018",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "ba476d0c70cbe8d7c173c9a3d6df1e28ca4747b56da53995f6209b629b474a38",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "empty_table",
+      "implementation": "csv-threshold-gt-bug",
+      "arm": "unconditional",
+      "input_sha256": "d3f9ae1a82ec7edd9227297c4bada24f02b194bf6a779be3ec9d3567b84f4018",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "ba476d0c70cbe8d7c173c9a3d6df1e28ca4747b56da53995f6209b629b474a38",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 0,
+        "fp": 0,
+        "n": 0,
+        "tn": 0,
+        "tp": 0
+      },
+      "output_sha256": "d8c9e6ccfa4fdf5a0a65ff1494c7d712503df5446aa9775d007d23ab82f0c32e",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "d8c9e6ccfa4fdf5a0a65ff1494c7d712503df5446aa9775d007d23ab82f0c32e",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.08,
+      "started_at_us": 1791780368244287,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780368332131,
+      "executed_code_sha256": "4607d25dc5017f28c10e70a00e7ba427119c9b62c2929ed9ea4cf1dde3030c9b"
+    },
+    {
+      "probe": "unsupported_unit_constraint",
+      "implementation": "decimal-sum-ge",
+      "arm": "unconditional",
+      "input_sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+      "admission": "unknown",
+      "allowed": true,
+      "code_sha256": "d234d145111ae7184045af096e0138d63b35cdc0f1161fdcc8cc40c1fefb82d9",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 1,
+        "fp": 1,
+        "n": 4,
+        "tn": 1,
+        "tp": 1
+      },
+      "output_sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "unknown",
+        "reason": "required unit semantics have no verifier"
+      },
+      "duration_seconds": 0.09,
+      "started_at_us": 1791780368339535,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780368436873,
+      "executed_code_sha256": "642b0c4f5a85b8b395a669ae24116410ec9f427707dd28e3b209145dff5ae3f3"
+    },
+    {
+      "probe": "unsupported_unit_constraint",
+      "implementation": "decimal-sum-ge",
+      "arm": "contract_gate",
+      "input_sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+      "admission": "unknown",
+      "allowed": false,
+      "code_sha256": "d234d145111ae7184045af096e0138d63b35cdc0f1161fdcc8cc40c1fefb82d9",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "clean",
+      "implementation": "decimal-sum-ge",
+      "arm": "contract_gate",
+      "input_sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+      "admission": "passed",
+      "allowed": true,
+      "code_sha256": "d234d145111ae7184045af096e0138d63b35cdc0f1161fdcc8cc40c1fefb82d9",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 1,
+        "fp": 1,
+        "n": 4,
+        "tn": 1,
+        "tp": 1
+      },
+      "output_sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "passed",
+        "reason": "independent fixed-threshold integer confusion matrix",
+        "expected": {
+          "n": 4,
+          "tp": 1,
+          "fn": 1,
+          "fp": 1,
+          "tn": 1
+        }
+      },
+      "duration_seconds": 0.09,
+      "started_at_us": 1791780368444326,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780368539463,
+      "executed_code_sha256": "642b0c4f5a85b8b395a669ae24116410ec9f427707dd28e3b209145dff5ae3f3"
+    },
+    {
+      "probe": "clean",
+      "implementation": "decimal-sum-ge",
+      "arm": "unconditional",
+      "input_sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+      "admission": "passed",
+      "allowed": true,
+      "code_sha256": "d234d145111ae7184045af096e0138d63b35cdc0f1161fdcc8cc40c1fefb82d9",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 1,
+        "fp": 1,
+        "n": 4,
+        "tn": 1,
+        "tp": 1
+      },
+      "output_sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "passed",
+        "reason": "independent fixed-threshold integer confusion matrix",
+        "expected": {
+          "n": 4,
+          "tp": 1,
+          "fn": 1,
+          "fp": 1,
+          "tn": 1
+        }
+      },
+      "duration_seconds": 0.09,
+      "started_at_us": 1791780368542800,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780368633764,
+      "executed_code_sha256": "642b0c4f5a85b8b395a669ae24116410ec9f427707dd28e3b209145dff5ae3f3"
+    },
+    {
+      "probe": "fractional_label",
+      "implementation": "decimal-sum-ge",
+      "arm": "unconditional",
+      "input_sha256": "68e9f30171ca7159a259eb6d6d450649e631887e1f29082f405845c916127ef6",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "d234d145111ae7184045af096e0138d63b35cdc0f1161fdcc8cc40c1fefb82d9",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 1,
+        "fp": 2,
+        "n": 4,
+        "tn": 1,
+        "tp": 0
+      },
+      "output_sha256": "1b5e390f204f1f7e58eb00eb0e09e2c9e8b74b33fdc70f6356e88e6e9e6d8a10",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "1b5e390f204f1f7e58eb00eb0e09e2c9e8b74b33fdc70f6356e88e6e9e6d8a10",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.09,
+      "started_at_us": 1791780368640495,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780368733295,
+      "executed_code_sha256": "642b0c4f5a85b8b395a669ae24116410ec9f427707dd28e3b209145dff5ae3f3"
+    },
+    {
+      "probe": "fractional_label",
+      "implementation": "decimal-sum-ge",
+      "arm": "contract_gate",
+      "input_sha256": "68e9f30171ca7159a259eb6d6d450649e631887e1f29082f405845c916127ef6",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "d234d145111ae7184045af096e0138d63b35cdc0f1161fdcc8cc40c1fefb82d9",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    },
+    {
+      "probe": "clean",
+      "implementation": "csv-threshold-ge",
+      "arm": "contract_gate",
+      "input_sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+      "admission": "passed",
+      "allowed": true,
+      "code_sha256": "cf03a19177c3440dc2312ecbac7ef73ee6e25ac5a6c9e14328caa4bc094b7a63",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 1,
+        "fp": 1,
+        "n": 4,
+        "tn": 1,
+        "tp": 1
+      },
+      "output_sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "passed",
+        "reason": "independent fixed-threshold integer confusion matrix",
+        "expected": {
+          "n": 4,
+          "tp": 1,
+          "fn": 1,
+          "fp": 1,
+          "tn": 1
+        }
+      },
+      "duration_seconds": 0.09,
+      "started_at_us": 1791780368740521,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780368831429,
+      "executed_code_sha256": "62b301015ef15b38b5321d8aafd01dc5eb0db92dba4de8c6dabe6334669983ae"
+    },
+    {
+      "probe": "clean",
+      "implementation": "csv-threshold-ge",
+      "arm": "unconditional",
+      "input_sha256": "81a186508545708c8e0b1e8d462af66fb26cc877a6c183fdfe0f62daefb4f240",
+      "admission": "passed",
+      "allowed": true,
+      "code_sha256": "cf03a19177c3440dc2312ecbac7ef73ee6e25ac5a6c9e14328caa4bc094b7a63",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": true,
+      "output": {
+        "fn": 1,
+        "fp": 1,
+        "n": 4,
+        "tn": 1,
+        "tp": 1
+      },
+      "output_sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "passed",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "passed",
+            "detail": "mapped regular file exists and its complete bytes were hashed",
+            "evidence": {
+              "file": "heldout_metrics.json",
+              "sha256": "bf1de4f320a5d0381a0f81dbca6e81e78c3f638045df82addb06fb3189e88c21",
+              "bytes": 44
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "passed",
+        "reason": "independent fixed-threshold integer confusion matrix",
+        "expected": {
+          "n": 4,
+          "tp": 1,
+          "fn": 1,
+          "fp": 1,
+          "tn": 1
+        }
+      },
+      "duration_seconds": 0.08,
+      "started_at_us": 1791780368835091,
+      "returncode": 0,
+      "error_kind": "",
+      "stderr": "",
+      "finished_at_us": 1791780368920562,
+      "executed_code_sha256": "62b301015ef15b38b5321d8aafd01dc5eb0db92dba4de8c6dabe6334669983ae"
+    },
+    {
+      "probe": "fractional_label",
+      "implementation": "csv-threshold-gt-bug",
+      "arm": "unconditional",
+      "input_sha256": "68e9f30171ca7159a259eb6d6d450649e631887e1f29082f405845c916127ef6",
+      "admission": "failed",
+      "allowed": true,
+      "code_sha256": "ba476d0c70cbe8d7c173c9a3d6df1e28ca4747b56da53995f6209b629b474a38",
+      "code_calls": 1,
+      "executed": true,
+      "execution_ok": false,
+      "output": null,
+      "output_sha256": null,
+      "post": {
+        "version": "skill-state-contract-v1",
+        "state": "unknown",
+        "checks": [
+          {
+            "predicate": {
+              "kind": "file_exists",
+              "file": "heldout_metrics.json"
+            },
+            "state": "unknown",
+            "detail": "artifact is absent or cannot be safely read",
+            "evidence": {
+              "file": "heldout_metrics.json"
+            }
+          }
+        ]
+      },
+      "independent": {
+        "state": "failed",
+        "reason": "input violates frozen scientific scope; a metrics file is unsafe to certify"
+      },
+      "duration_seconds": 0.08,
+      "started_at_us": 1791780368928478,
+      "returncode": 1,
+      "error_kind": "exception",
+      "stderr": "Traceback (most recent call last):\n  File \"D:\\qing_zhuomian_\\开发区\\skillnet\\skillnet-demo\\.audit-tmp-upgrade\\capability-probes-1791780365177443600\\fractional_label\\csv-threshold-gt-bug\\unconditional\\main.py\", line 8, in <module>\n    actual = int(r['label']) == 1\n             ^^^^^^^^^^^^^^^\nValueError: invalid literal for int() with base 10: '0.5'\n",
+      "finished_at_us": 1791780369015754,
+      "executed_code_sha256": "4607d25dc5017f28c10e70a00e7ba427119c9b62c2929ed9ea4cf1dde3030c9b"
+    },
+    {
+      "probe": "fractional_label",
+      "implementation": "csv-threshold-gt-bug",
+      "arm": "contract_gate",
+      "input_sha256": "68e9f30171ca7159a259eb6d6d450649e631887e1f29082f405845c916127ef6",
+      "admission": "failed",
+      "allowed": false,
+      "code_sha256": "ba476d0c70cbe8d7c173c9a3d6df1e28ca4747b56da53995f6209b629b474a38",
+      "code_calls": 0,
+      "executed": false,
+      "execution_ok": null,
+      "output": null,
+      "output_sha256": null,
+      "post": null,
+      "independent": {
+        "state": "not_executed",
+        "reason": "preconditions did not all pass; no code call"
+      },
+      "duration_seconds": 0
+    }
+  ],
+  "summary": {
+    "unconditional": {
+      "attempts": 33,
+      "code_calls": 33,
+      "valid_tasks": 6,
+      "invalid_tasks": 24,
+      "scope_unknown_tasks": 3,
+      "blocked": 0,
+      "unknown_blocked": 0,
+      "valid_false_blocks": 0,
+      "invalid_false_admissions": 24,
+      "invalid_inputs_executed": 24,
+      "invalid_input_outputs": 15,
+      "independent_passes": 5,
+      "valid_output_failures": 1,
+      "seconds": 2.83
+    },
+    "contract_gate": {
+      "attempts": 33,
+      "code_calls": 6,
+      "valid_tasks": 6,
+      "invalid_tasks": 24,
+      "scope_unknown_tasks": 3,
+      "blocked": 27,
+      "unknown_blocked": 3,
+      "valid_false_blocks": 0,
+      "invalid_false_admissions": 0,
+      "invalid_inputs_executed": 0,
+      "invalid_input_outputs": 0,
+      "independent_passes": 5,
+      "valid_output_failures": 1,
+      "seconds": 0.51
+    }
+  },
+  "behavioral_comparisons": [
+    {
+      "left": "csv-threshold-ge",
+      "right": "decimal-sum-ge",
+      "planned_probes": [
+        "clean",
+        "threshold_boundary"
+      ],
+      "observed_probes": [
+        "clean",
+        "threshold_boundary"
+      ],
+      "status": "finite_probe_agreement",
+      "counterexamples": [],
+      "signatures": {
+        "csv-threshold-ge": "8ec4b3e9da91f85a00ddbe1f7f5c983cee717d15f8fde4f7795fedff0558d310",
+        "decimal-sum-ge": "8ec4b3e9da91f85a00ddbe1f7f5c983cee717d15f8fde4f7795fedff0558d310"
+      },
+      "boundary": "Only observed valid synthetic probes; not universal equivalence or automatic deduplication"
+    },
+    {
+      "left": "csv-threshold-ge",
+      "right": "csv-threshold-gt-bug",
+      "planned_probes": [
+        "clean",
+        "threshold_boundary"
+      ],
+      "observed_probes": [
+        "clean",
+        "threshold_boundary"
+      ],
+      "status": "distinguished_by_counterexample",
+      "counterexamples": [
+        "threshold_boundary"
+      ],
+      "signatures": {
+        "csv-threshold-ge": "8ec4b3e9da91f85a00ddbe1f7f5c983cee717d15f8fde4f7795fedff0558d310",
+        "csv-threshold-gt-bug": "552a300b8c286b9c21899bee3ada2f79c3ec349da91e6ad411be5d22b95b5e2e"
+      },
+      "boundary": "Only observed valid synthetic probes; not universal equivalence or automatic deduplication"
+    },
+    {
+      "left": "decimal-sum-ge",
+      "right": "csv-threshold-gt-bug",
+      "planned_probes": [
+        "clean",
+        "threshold_boundary"
+      ],
+      "observed_probes": [
+        "clean",
+        "threshold_boundary"
+      ],
+      "status": "distinguished_by_counterexample",
+      "counterexamples": [
+        "threshold_boundary"
+      ],
+      "signatures": {
+        "decimal-sum-ge": "8ec4b3e9da91f85a00ddbe1f7f5c983cee717d15f8fde4f7795fedff0558d310",
+        "csv-threshold-gt-bug": "552a300b8c286b9c21899bee3ada2f79c3ec349da91e6ad411be5d22b95b5e2e"
+      },
+      "boundary": "Only observed valid synthetic probes; not universal equivalence or automatic deduplication"
+    }
+  ],
+  "reward_applied": false,
+  "production_library_modified": false,
+  "boundary": "Synthetic reviewed-code experiment. Structural postconditions do not establish numerical correctness; independent oracle remains necessary.",
+  "report_sha256": "d65cfcb3058f77a0782d7fb5f139127b5f9074338c96ac9e5e29fcd542ee551f"
+}

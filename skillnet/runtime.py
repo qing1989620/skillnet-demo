@@ -158,6 +158,7 @@ class RunStep:
     depends_on: list[int] = field(default_factory=list)
     dependency_reason: str = ""
     contract: dict[str, Any] = field(default_factory=dict)
+    state_evidence: dict[str, Any] = field(default_factory=dict)
     inputs: list[str] = field(default_factory=list)      # 来自前序步骤的产物名
     input_artifacts: list[dict[str, Any]] = field(default_factory=list)
     code: str = ""
@@ -194,7 +195,7 @@ class RunStep:
         return self.status == STEP_FAILED and self.n_attempts > 1
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        data = {
             "idx": self.idx, "action": self.action, "skill": self.skill,
             "status": self.status, "depends_on": self.depends_on, "inputs": self.inputs,
             "input_artifacts": self.input_artifacts,
@@ -216,6 +217,10 @@ class RunStep:
             "ended_at_ms": self.ended_at_ms,
             "stages": {k: (round(v, 1) if isinstance(v, float) else v) for k, v in self.stages.items()},
         }
+        # Preserve archived run/capsule digests when this feature was not used.
+        if self.state_evidence:
+            data['state_evidence'] = self.state_evidence
+        return data
 
 
 @dataclass
@@ -569,6 +574,7 @@ class RunStore:
             st.depends_on = sd.get("depends_on") or []
             st.dependency_reason = sd.get('dependency_reason') or ''
             st.contract = sd.get('contract') or {}
+            st.state_evidence = sd.get('state_evidence') or {}
             st.inputs = sd.get("inputs") or []
             st.input_artifacts = sd.get("input_artifacts") or []
             st.code = sd.get("code") or ""

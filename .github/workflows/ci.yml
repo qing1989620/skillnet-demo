@@ -33,6 +33,8 @@ jobs:
       - run: node tools/showcase_check.js
       - run: node tools/product_check.js
       - run: node tools/sphere_check.js
+      - run: node tools/frontend_resilience_check.js
+      - run: node tools/product_dialog_check.js
   docker-smoke:
     runs-on: ubuntu-latest
     timeout-minutes: 15

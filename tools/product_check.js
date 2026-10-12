@@ -12,6 +12,15 @@ assert.ok(Product.dag(run).nodes.find(s=>s.idx===2).x<Product.dag(run).nodes.fin
 assert.equal(Product.metrics(run).confirmed,0);
 assert.equal(Product.metrics(run).repairs,1);
 assert.equal(Product.metrics(run).gate.reason,'semantic blocked');
+assert.match(Product.valueHTML({...run,artifacts:[{kind:'任务输入'},{kind:'跨轮输入'},{kind:'csv'}]}),/1 个真实文件/,'task inputs are evidence, not new deliverables');
+for(const prefix of ['state-kernel','state-kernel-blocked','state-kernel-overbroad','state-kernel-value-drift']){
+  const records=JSON.parse(fs.readFileSync(path.join(__dirname,'../docs/evidence',prefix+'-files.json'),'utf8'));
+  for(const record of records){
+    const raw=fs.readFileSync(path.join(__dirname,'..',record.path));
+    assert.equal(raw.length,record.bytes,record.path);
+    assert.equal(require('node:crypto').createHash('sha256').update(raw).digest('hex'),record.sha256,record.path);
+  }
+}
 assert.match(Product.evidenceHTML(run),/学习准入已拦截/);
 assert.doesNotMatch(Product.evidenceHTML({...run,skills:['<script>'],steps:[{idx:0,action:'<img src=x onerror=x>',depends_on:[]}]}),/<img src=x/);
 assert.ok(Product.dag({steps:[{idx:9,depends_on:[2]},{idx:2,depends_on:[9]}]}).nodes.length===2);

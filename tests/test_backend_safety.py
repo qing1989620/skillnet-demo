@@ -118,7 +118,9 @@ def test_parallel_completion_order_does_not_select_input_versions(tmp_path, monk
         step.status="done"
     monkeypatch.setattr(pipeline, "run_step", fake_step)
     pipeline._run_steps_graph(run, tmp_path, None, run.budget)
-    assert seen == ["step1_data.csv","step2_data.csv"]
+    # Resolve by producer ancestry before copying; only the latest version enters
+    # the sandbox, irrespective of append/completion order or shortcut edges.
+    assert seen == ["step2_data.csv"]
 
 
 def test_concurrent_persistence_has_no_shared_temporary_file(tmp_path):

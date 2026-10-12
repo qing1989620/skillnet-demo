@@ -156,13 +156,13 @@
   }
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=20261012.1"></script>
+<script src="/static/assets/ui.js?v=20261012.6"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=20261012.1"></script>
-<link rel="stylesheet" href="/static/assets/refinement.css?v=20261012.1">
-<link rel="stylesheet" href="/static/assets/quality.css?v=20261012.1">
-<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261012.1">
-<link rel="stylesheet" href="/static/assets/sphere.css?v=20261012.1">
+<script src="/static/assets/product.js?v=20261012.6"></script>
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261012.6">
+<link rel="stylesheet" href="/static/assets/quality.css?v=20261012.6">
+<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261012.6">
+<link rel="stylesheet" href="/static/assets/sphere.css?v=20261012.6">
 </head>
 <body>
 
@@ -259,9 +259,7 @@ function mdToHtml(md) {
 
 /* ---------- 会话存储 ---------- */
 function loadSessions(){
-  try { SESSIONS = JSON.parse(localStorage.getItem(LS_KEY) || "[]"); } catch { SESSIONS = []; }
-  if (!Array.isArray(SESSIONS)) SESSIONS = [];
-  SESSIONS = SESSIONS.filter(s=>s && typeof s.id === "string" && Array.isArray(s.turns)).slice(0,100).map(s=>({...s,turns:s.turns.filter(t=>t && typeof t.q === "string").slice(-50).map(t=>({...t,_loaded:false,_html:"",body:""}))}));
+  SESSIONS = UI.readSessions(LS_KEY);
 }
 function saveSessions(){ try { localStorage.setItem(LS_KEY, JSON.stringify(SESSIONS.map(s=>({...s,turns:s.turns.map(({body,_loaded,_html,...turn})=>turn)})))); } catch {} }
 function cur(){ return SESSIONS.find(s => s.id === CUR) || null; }
@@ -337,7 +335,7 @@ function stepCardHTML(s, fin, i){
   const L = [];
   L.push(`<div><b>做什么：</b>${esc(s.action || "")}</div>`);
   if (s.skill) L.push(`<div><b>使用技能：</b><code>${esc(s.skill)}</code></div>`);
-  L.push(`<div><b>执行过程：</b>共 ${s.n_attempts || 1} 次尝试 · 耗时 ${fmtMs(s.duration_ms)}${fixed ? "（前几次失败，已自动修复）" : ""}</div>`);
+  L.push(`<div><b>执行过程：</b>共 ${s.n_attempts ?? s.attempts?.length ?? "未记录"} 次尝试 · 耗时 ${fmtMs(s.duration_ms)}${fixed ? "（前几次失败，已自动修复）" : ""}</div>`);
   const fails = (s.attempts || []).filter(a => !a.ok);
   if (fails.length) L.push(`<div style="margin-left:14px;color:#8a6d3b">失败详情：${fails.map(a => `第 ${a.n} 次 ${esc(a.error_kind || "错误")}（${esc((a.stderr || "").slice(-120))}）`).join("；")}</div>`);
   if ((s.checks || []).length){
@@ -391,7 +389,7 @@ function taskSummaryHTML(fin){
       <div class="ts-step"><b>② 选择</b><span>LinUCB 按任务条件化排序，最终采用 ${s.used_n || 0} 个技能：${esc((imp.used || []).slice(0,8).join("、") || "通用执行")}</span></div>
       <div class="ts-step"><b>③ 编排</b><span>按技能依赖边生成执行 DAG，${steps.length} 步真实执行（含修复后的 ${nFix} 步）</span></div>
       <div class="ts-step"><b>④ 验收</b><span>程序化验收 ${chkOk}/${chkAll} 通过</span></div>
-      <div class="ts-step"><b>⑤ 沉淀</b><span>${(imp.new_skills || []).length ? `蒸馏并准入 ${(imp.new_skills || []).length} 个新技能` : esc(fin.staged?.learning_gate?.skip_reason || fin.staged?.learning_gate?.reason || "本次未记录新技能准入")}</span></div>
+      <div class="ts-step"><b>⑤ 沉淀</b><span>${(imp.new_skills || []).length ? `记录 ${(imp.new_skills || []).length} 个历史经验资产；资产数量变化不代表质量提升` : esc(fin.staged?.learning_gate?.skip_reason || fin.staged?.learning_gate?.reason || "本次未记录新技能准入；候选奖励仍需冻结对照与十二道门")}</span></div>
     </div>
     <div class="ts-metrics">
       <div><b>${imp.library_before} → ${imp.library_after}</b>技能库规模${delta ? `（+${delta}）` : ""}</div>
@@ -400,7 +398,7 @@ function taskSummaryHTML(fin){
     </div>
     ${rows ? `<div class="ts-sec">── 技能资产更新（真实统计变化）──</div>
       <table><tr><th style="width:40%">技能</th><th>变化</th></tr>${rows}</table>` : ""}
-    ${news ? `<div class="ts-sec">── 能力沉淀（本次为 Agent 长出的新能力）──</div>${news}` : ""}
+    ${news ? `<div class="ts-sec">── 历史经验资产（适用条件与实际增益需分别验证）──</div>${news}` : ""}
   </div>`;
 }
 
@@ -541,6 +539,7 @@ async function submitQ(){
 }
 
 async function stream(i, runId){
+  LIVE_MODELS[i]={steps:[],log:[]};
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), 480000);
   try {
@@ -600,7 +599,7 @@ function onEvent(i, ev){
 const sessionsButton = document.getElementById("sessions-toggle"), sessionSide = document.querySelector(".side");
 function closeSessions(){ sessionSide.classList.remove("mobile-open"); sessionsButton.setAttribute("aria-expanded","false"); }
 sessionsButton.addEventListener("click",()=>{const open = sessionSide.classList.toggle("mobile-open");sessionsButton.setAttribute("aria-expanded",String(open));if(open)document.querySelector(".newbtn").focus();});
-document.addEventListener("keydown",event=>{if(event.key === "Escape")closeSessions();});
+document.addEventListener("keydown",event=>{if(event.key === "Escape"&&sessionSide.classList.contains("mobile-open")){closeSessions();sessionsButton.focus();}});
 document.addEventListener("click",event=>{if(sessionSide.classList.contains("mobile-open")&&!sessionSide.contains(event.target)&&!sessionsButton.contains(event.target))closeSessions();});
 document.querySelector(".newbtn").addEventListener("click",closeSessions);
 document.getElementById("cancel-active").addEventListener("click",async event=>{

@@ -45,11 +45,20 @@
     const measured=observations.filter(o=>(o.independent_checks||[]).length),generic=steps.filter(s=>!s.skill||s.skill==='manual'),unmeasured=steps.length-measured.length;
     return `<section class="transition-overview" aria-label="能力的实际状态变化"><header><div><small>INPUT STATE → OBSERVED EFFECT → EVIDENCE</small><h3>能力有没有发挥作用，沿实际产物检查</h3></div><button type="button" data-capability-report data-run="${esc(run.run_id)}">重新核对文件与证据 ↗</button></header><div class="transition-overview-grid">${steps.map(s=>{const o=observations.find(o=>o.idx===s.idx),checks=o?.independent_checks||[];return `<article><small>STEP ${Number(s.idx)+1} · ${esc(s.skill&&s.skill!=='manual'?s.skill:'通用执行')}</small><h4>${esc(s.action)}</h4><p><b>实际输入</b> ${esc((s.input_artifacts||[]).map(f=>f.logical_name||f.name).join(' / ')||'本次任务输入')}</p><i>↓</i><p><b>登记产物</b> ${esc((s.artifacts||[]).map(f=>f.logical_name||f.name).join(' / ')||'尚无登记产物')}</p><strong>${checks.length?'执行时独立结果检查 '+checks.filter(c=>c.passed===true).length+'/'+checks.length:'独立结果判据待补齐'}</strong></article>`;}).join('')}</div><p>${generic.length} 个通用步骤尚未绑定技能 · ${unmeasured} 个步骤缺少独立结果判据。以上是执行时记录；点击核对可重新检查物理文件。单次变化仍不证明技能因果贡献。</p></section>`;
   }
+  function stateKernelHTML(run){
+    const kernel=run.state_kernel||{},policy=run.staged?.state_policy||kernel.policy;
+    if(!policy)return '';
+    const composition=run.staged?.state_composition||kernel.declared_composition||{},steps=run.steps||[];
+    const labels={passed:'已核实',failed:'条件不满足',unknown:'无法核实',not_declared:'未声明条件'};
+    const meanings={file_exists:'文件存在',csv_schema:'列结构',csv_nonempty:'非空数据',csv_no_missing:'必填字段',csv_unique:'唯一键',csv_numeric_range:'数值范围',csv_values_in:'允许值',csv_disjoint_groups:'组间无实体泄漏',input_integrity:'输入版本完整性',frozen_contract:'冻结契约'};
+    const checks=report=>(report?.checks||[]).map(c=>`<li><b>${esc(labels[c.state]||'未知')}</b> · ${esc(meanings[c.predicate?.kind]||c.predicate?.kind)} / <code>${esc(c.predicate?.file||'契约')}</code><br>${esc(c.detail)}${c.evidence?.sha256?`<small> · SHA ${esc(c.evidence.sha256.slice(0,12))}</small>`:''}</li>`).join('');
+    return `<section class="transition-overview state-kernel" aria-label="可执行状态契约"><header><div><small>DECLARE → ADMIT → EXECUTE → VERIFY</small><h3>先证明能接着做，再执行；做完核实真实效果</h3></div></header><p>在代码生成之前读取真实输入，核对冻结条件与版本。条件失败或未知时阻断自动执行；不把阻断算成技能负贡献。${policy.host_reference?'本场景还叠加服务端独立定义的条件，模型不能删掉。':'模型提出的条件是待验证声明，不是完整质量标准。'}</p><div class="transition-overview-grid">${steps.map(s=>{const pre=s.state_evidence?.pre,post=s.state_evidence?.post;return `<article><small>STEP ${Number(s.idx)+1} · ${esc(s.skill||'通用执行')}</small><h4>${esc(s.action)}</h4><p><b>执行准入</b> ${esc(labels[pre?.state]||'尚未检查')} ${pre?.admitted===false?'· 已阻断代码生成':''}</p><p><b>产物效果</b> ${esc(labels[post?.state]||'尚未检查')}</p><details><summary>逐项核对条件、字节与判定</summary><h5>执行前</h5><ul>${checks(pre)||'<li>尚无检查记录</li>'}</ul><h5>执行后</h5><ul>${checks(post)||'<li>尚无检查记录</li>'}</ul><p>冻结指纹 <code>${esc(policy.frozen?.[String(s.idx)]?.sha256||'未记录')}</code></p></details></article>`;}).join('')}</div><details><summary>声明组合与当前缺口 · ${(composition.frontier||[]).length} 项待满足条件</summary><p>组合判定：${esc(({declared_compatible:'上游效果声明覆盖下游要求',contradicted:'存在相互矛盾的声明',unknown:'声明不足或有歧义'}[composition.state])||'未记录')}。声明可以用于规划，实际执行仍重新读取文件；这只是本次有限执行图的条件缺口，不代表系统全局不会。</p><ul>${(composition.frontier||[]).map(g=>`<li>STEP ${Number(g.step_idx)+1} · ${esc(g.file)} · ${esc(g.detail)}</li>`).join('')||'<li>未发现此类声明缺口；仍需运行时核验。</li>'}</ul></details><p>结构门禁不保证算法正确；数值结果继续接受独立复算。通过这些条件不会自动给任何技能加分。</p></section>`;
+  }
   function outcomeHTML(run){
     const m=metrics(run);if(!m.terminal)return '';
     const verdict=run.staged?.acceptance,state=verdict?.state,scope=run.staged?.execution_scope;
     const learning=m.gate.mode==='shadow'?'正式网络未更新；保留影子观察。'+(run.evolution?.candidate?'新经验已隔离为候选，待独立验证。':''):m.gate.eligible===false?'学习被拦截：'+esc(m.gate.reason):run.evolution?.candidate?'新经验已生成候选，等待冻结任务验证':run.evolution?.accepted?'已产生准入记录':'本次没有新增技能';
-    return `<div class="kernel-outcome"><div><h4>${esc(labels[run.status]||run.status)} · <strong>${state?({passed:'验收通过',failed:'验收未通过',unknown:'有待确认'}[state]||state):'逐项核对验收'}</strong></h4><p>${m.done}/${m.total} 步执行完成 · ${(run.artifacts||[]).filter(a=>a.kind!=='跨轮输入').length} 个交付文件 · ${m.repairs} 步经过修复。${learning}</p></div><a href="/run?id=${encodeURIComponent(run.run_id)}">检查结果与证据 ↗</a></div>${filesHTML(run)}${scope?`<div class="kernel-scope">规划 ${scope.planned} 步，预算允许 ${scope.max_steps} 步，实际执行 ${scope.executed} 步。${(scope.omitted||[]).length?'尚未执行：'+esc(scope.omitted.map(s=>s.action).join('；')):'已覆盖本次全部规划。'}</div>`:''}`;
+    return `<div class="kernel-outcome"><div><h4>${esc(labels[run.status]||run.status)} · <strong>${state?({passed:'验收通过',failed:'验收未通过',unknown:'有待确认'}[state]||state):'逐项核对验收'}</strong></h4><p>${m.done}/${m.total} 步执行完成 · ${(run.artifacts||[]).filter(a=>!['跨轮输入','任务输入'].includes(a.kind)).length} 个交付文件 · ${m.repairs} 步经过修复。${learning}</p></div><a href="/run?id=${encodeURIComponent(run.run_id)}">检查结果与证据 ↗</a></div>${filesHTML(run)}${scope?`<div class="kernel-scope">规划 ${scope.planned} 步，预算允许 ${scope.max_steps} 步，实际执行 ${scope.executed} 步。${(scope.omitted||[]).length?'尚未执行：'+esc(scope.omitted.map(s=>s.action).join('；')):'已覆盖本次全部规划。'}</div>`:''}`;
   }
   function rewardReceiptHTML(skill){
     const receipt=skill.stats?.verified_improvement_receipt;
@@ -58,7 +67,7 @@
   }
   function valueHTML(run){
     if(!terminal.includes(run.status))return '';
-    const a=run.staged?.quality_assessment||{},g=run.staged?.reward_gates||{},outputs=(run.artifacts||[]).filter(f=>f.kind!=='跨轮输入');
+    const a=run.staged?.quality_assessment||{},g=run.staged?.reward_gates||{},outputs=(run.artifacts||[]).filter(f=>!['跨轮输入','任务输入'].includes(f.kind));
     const measured=(a.independent_reference?.checks||[]),passed=measured.filter(c=>c.passed===true).length;
     const scoped=a.scope_verdict==='passed',done=(run.steps||[]).filter(s=>s.status==='done').length;
     return `<section class="value-capsule" aria-label="任务交付与 S1 复用"><div class="value-heading"><div><small>DELIVERY → EVIDENCE → REUSE</small><h3>这次运行，留下了什么</h3></div><span>${esc(labels[run.status]||run.status)}</span></div><div class="value-cells"><div><small>01 / 交付</small><b>${outputs.length} 个真实文件</b><p>${done}/${(run.steps||[]).length} 步完成 · 模型费用 ¥${Number(run.cost_yuan||0).toFixed(4)}</p></div><div><small>02 / 核验</small><b>${scoped?'已测范围得到支持':a.scope_verdict==='failed'?'已测范围发现问题':'结果判据有待补齐'}</b><p>${measured.length?`${passed}/${measured.length} 项独立参考检查`:'没有独立参考分数'} · 可追查检查与原始文件</p></div><div><small>03 / 积累</small><b>${run.evolution?.candidate?'已形成隔离候选':'保留可复盘的轨迹'}</b><p>${Number(g.passed||0)}/${Number(g.total||12)} 道奖励门通过 · 正式排序未自动更新</p></div></div><div class="value-scope"><b>当前可以支持的结论</b><p>${esc(a.scope||'保留执行事实；此历史记录没有独立结果评价。')}</p></div><div class="value-handoff"><div><b>接入 S1 的落点</b><p>项目会话接收执行时间线，项目附件接收产物，能力库接收待验证经验。</p><small>服务契约可用 · S1 线上联调待验证</small></div><button type="button" data-evidence-export data-run="${esc(run.run_id)}">核对并导出证据包 ↗</button></div></section>`;
@@ -99,10 +108,10 @@
       ['验收','核对交付证据',`${m.passed}/${m.checks} 程序检查 · ${m.confirmed}/${m.semantic} 语义确认`,m.checks>0&&m.passed===m.checks&&m.unconfirmed.length===0],
       ['反馈','记录成功与失败',`${impact.summary?.updated_n||0} 个技能执行账本更新`,!!impact.summary],
       ['沉淀','有证据才学习',m.gate.mode==='shadow'?'影子观察 · 正式网络未更新':m.gate.eligible===false?'学习准入已拦截':run.evolution?.candidate?'候选待冻结任务验证':run.evolution?.accepted?'新技能已准入':m.gate.eligible===true?'已满足学习条件':'未记录准入结论',m.gate.eligible===true]];
-    return `<section class="kernel-evidence ${compact?'compact':''}" aria-label="本次任务内核证据"><div class="kernel-heading"><div><span class="product-eyebrow">ENGINE / EVIDENCE</span><h3>这个问题，框架实际做了什么</h3></div><a href="/run?id=${encodeURIComponent(run.run_id||'')}">打开完整轨迹 ↗</a><a href="/graph?run=${encodeURIComponent(run.run_id||'')}">本次技能子图 ↗</a></div>${selectionHTML(run)}${transitionsHTML(run)}${valueHTML(run)}${outcomeHTML(run)}<div class="kernel-phases">${phases.map(([name,value,fact,done],i)=>`<div class="kernel-phase ${done?'done':i===4&&m.terminal?'attention':'pending'} ${!m.terminal&&i===phases.findIndex(p=>!p[3])?'current':''}"><small>0${i+1} / ${name}</small><b>${value}</b><span>${esc(fact)}</span></div>`).join('')}</div>${!compact?dagHTML(run):''}<div class="kernel-verdict ${m.unconfirmed.length||m.gate.eligible===false?'attention':''}"><b>${m.checks?m.passed===m.checks?'程序检查全部通过':'存在未通过的程序检查':'尚无程序验收证据'}</b><span>${m.unconfirmed.length?`${m.unconfirmed.length} 项语义要求尚未确认：${esc(m.unconfirmed.slice(0,3).map(v=>v.item).join('；'))}`:m.semantic?'产物语义复核已完成':'尚无产物语义复核记录'}${m.gate.reason?' · '+esc(m.gate.reason):''}</span></div>${assessmentDetailsHTML(run)}</section>`;
+    return `<section class="kernel-evidence ${compact?'compact':''}" aria-label="本次任务内核证据"><div class="kernel-heading"><div><span class="product-eyebrow">ENGINE / EVIDENCE</span><h3>这个问题，框架实际做了什么</h3></div><a href="/run?id=${encodeURIComponent(run.run_id||'')}">打开完整轨迹 ↗</a><a href="/graph?run=${encodeURIComponent(run.run_id||'')}">本次技能子图 ↗</a></div>${selectionHTML(run)}${transitionsHTML(run)}${stateKernelHTML(run)}${valueHTML(run)}${outcomeHTML(run)}<div class="kernel-phases">${phases.map(([name,value,fact,done],i)=>`<div class="kernel-phase ${done?'done':i===4&&m.terminal?'attention':'pending'} ${!m.terminal&&i===phases.findIndex(p=>!p[3])?'current':''}"><small>0${i+1} / ${name}</small><b>${value}</b><span>${esc(fact)}</span></div>`).join('')}</div>${!compact?dagHTML(run):''}<div class="kernel-verdict ${m.unconfirmed.length||m.gate.eligible===false?'attention':''}"><b>${m.checks?m.passed===m.checks?'程序检查全部通过':'存在未通过的程序检查':'尚无程序验收证据'}</b><span>${m.unconfirmed.length?`${m.unconfirmed.length} 项语义要求尚未确认：${esc(m.unconfirmed.slice(0,3).map(v=>v.item).join('；'))}`:m.semantic?'产物语义复核已完成':'尚无产物语义复核记录'}${m.gate.reason?' · '+esc(m.gate.reason):''}</span></div>${assessmentDetailsHTML(run)}</section>`;
   }
   function filesHTML(run) {
-    return `<div class="product-files">${(run.artifacts||[]).map(a=>`<button type="button" data-artifact-preview data-run="${esc(run.run_id)}" data-file="${esc(a.name)}" data-sha="${esc(a.sha256||'')}"><span class="file-glyph">${esc((a.name.split('.').pop()||'FILE').toUpperCase())}</span><span><b>${esc(a.name)}</b><small>${a.kind==='跨轮输入'?'历史输入版本 · ':'本次交付 · '}${(Number(a.bytes||0)/1024).toFixed(1)} KB · 点击核对</small></span><span>↗</span></button>`).join('')}</div>`;
+    return `<div class="product-files">${(run.artifacts||[]).map(a=>`<button type="button" data-artifact-preview data-run="${esc(run.run_id)}" data-file="${esc(a.name)}" data-sha="${esc(a.sha256||'')}"><span class="file-glyph">${esc((a.name.split('.').pop()||'FILE').toUpperCase())}</span><span><b>${esc(a.name)}</b><small>${a.kind==='跨轮输入'?'历史输入版本 · ':a.kind==='任务输入'?'冻结任务输入 · ':'本次交付 · '}${(Number(a.bytes||0)/1024).toFixed(1)} KB · 点击核对</small></span><span>↗</span></button>`).join('')}</div>`;
   }
   function parseCSV(text) {
     const rows=[];let row=[],cell='',quoted=false;
@@ -118,6 +127,16 @@
     const table=(heads,rows)=>`<div class="experiment-table"><table><thead><tr>${heads.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map(cell=>`<td>${esc(cell)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
     const meter=(value,label)=>{const n=Math.max(0,Math.min(100,Number(value)*100||0));return `<div class="experiment-meter"><span>${esc(label)}</span><div role="meter" aria-label="${esc(label)}" aria-valuenow="${n.toFixed(1)}" aria-valuemin="0" aria-valuemax="100"><i style="width:${n}%"></i></div><b>${percent(value)}</b></div>`;};
     let html=`<div class="product-block experiment-note"><span class="product-eyebrow">BENCHMARK / FROZEN RECORDS</span><h3>先核对实验口径，再判断能力增益</h3><p>${stats.total!=null?`当前资产 ${esc(stats.total)} 个技能 / ${esc(stats.edges)} 条关系。`:''}历史方案实验与本轮真实执行分别展示；记录对应各自运行时的技能版本。方案盲评、程序验收和科研效果分别核对。</p><a href="/api/results" target="_blank">核对全部原始实验 JSON ↗</a></div>`;
+    for(const data of Object.values(results||{}).filter(r=>r?.version==='capability-probe-lab-v1')){
+      const strategies=data.summary||{},baseline=strategies.unconditional||{},gate=strategies.contract_gate||{};
+      html+=`<section class="product-block experiment-card"><span class="product-eyebrow">CAPABILITY LAB / REAL PYTHON PROBES</span><h3>用反例测量能力边界，而不是只看技能说明</h3><p>${esc((data.admissions||[]).length)} 类公开模拟输入 × 3 个固定实现。两个正确实现采用不同代码；第三个只把 ≥ 写成 >。两种策略使用相同代码，输入、代码指纹与独立算术参考先冻结，实际启动 ${esc(Number(baseline.code_calls||0)+Number(gate.code_calls||0))} 次 Python 子进程，无模型评分参与判定。</p>${table(['实测指标','不设准入','真实条件准入'],[
+        ['实际代码调用',baseline.code_calls,gate.code_calls],['违规输入仍执行',baseline.invalid_inputs_executed,gate.invalid_inputs_executed],
+        ['违规输入仍生成指标',baseline.invalid_input_outputs,gate.invalid_input_outputs],['有效任务误阻断',baseline.valid_false_blocks,gate.valid_false_blocks],
+        ['有效输出独立正确',`${baseline.independent_passes}/${baseline.valid_tasks}`,`${gate.independent_passes}/${gate.valid_tasks}`]])}
+        <div class="experiment-warning"><b>保留失败：结构条件通过，算法仍可能错误</b><p>≥ 写成 > 的实现通过结构检查，却在阈值恰为 0.5 时被独立复算拒绝。门禁避免不适用输入的执行，不能把算法 bug 修好。unknown 也阻断，本实验没有修改正式技能库或发奖。</p></div>
+        ${table(['公开探针','预注册准入','实际准入'],(data.admissions||[]).map(a=>[a.probe,a.expected,a.result?.state]))}
+        <details><summary>行为签名与反例 · 有限观测，不自动合并技能</summary>${table(['实现对','共同观测探针','结论与反例'],(data.behavioral_comparisons||[]).map(c=>[c.left+' / '+c.right,(c.observed_probes||[]).join(', '),c.status==='finite_probe_agreement'?'仅本组探针一致':'反例区分：'+(c.counterexamples||[]).join(', ')]))}<p>两个实现未执行同一探针，不能据此认为行为一致。有限探针一致不证明普遍行为等价。</p></details><p>冻结协议 <code>${esc(data.protocol_sha256)}</code><br>报告 <code>${esc(data.report_sha256)}</code>。本页是留存实验记录；完整逐次输入、输出和代码见原始 JSON。</p></section>`;
+    }
     const executed=Object.entries(results||{}).filter(([,data])=>data?.evaluation_kind==='paired-real-execution');
     for(const [name,data] of executed){
       const paired=Boolean(data.candidate_sha256),pairs=data.pairs||[];
@@ -152,17 +171,28 @@
     }
     return `<div class="product-experiments">${html}</div>`;
   }
-  const core={esc,terminal,labels,metrics,dag,dagHTML,evidenceHTML,outcomeHTML,valueHTML,resourcesHTML,resourcesButtonHTML,assessmentDetailsHTML,assessmentHTML,rewardGatesHTML,rewardReceiptHTML,selectionHTML,transitionsHTML,capabilityReportHTML,filesHTML,parseCSV,experimentsHTML};
+  function requestEpoch(){let epoch=0;return {begin(){const mine=++epoch;return ()=>epoch===mine;},invalidate(){epoch++;}};}
+  const core={esc,terminal,labels,metrics,dag,dagHTML,evidenceHTML,outcomeHTML,valueHTML,resourcesHTML,resourcesButtonHTML,assessmentDetailsHTML,assessmentHTML,rewardGatesHTML,rewardReceiptHTML,selectionHTML,transitionsHTML,stateKernelHTML,capabilityReportHTML,filesHTML,parseCSV,experimentsHTML,requestEpoch};
   if(typeof module!=='undefined'&&module.exports)module.exports=core;
   if(!root?.document)return;
   root.Product=core;
+  function beginPanel(id,title){
+    let dialog=document.getElementById(id);
+    if(!dialog){dialog=document.createElement('dialog');dialog.id=id;dialog.className='product-preview';document.body.append(dialog);}
+    if(!dialog._requests){dialog._requests=requestEpoch();dialog.addEventListener('close',()=>dialog._requests.invalidate());dialog.addEventListener('cancel',()=>dialog._requests.invalidate());root.addEventListener('pagehide',()=>dialog._requests.invalidate());}
+    const latest=dialog._requests.begin(),current=()=>latest()&&dialog.open;
+    dialog.innerHTML=`<header><h3>${esc(title)}</h3><form method="dialog"><button>关闭</button></form></header><div class="preview-content" role="status">正在读取与核对…</div>`;
+    if(!dialog.open)dialog.showModal();
+    return {dialog,current,fail(error){if(current())dialog.querySelector('.preview-content').innerHTML=root.UI.errorHTML(error);}};
+  }
   async function inspectResources(button){
+    const panel=beginPanel('resources-dialog','完整技能资源'),dialog=panel.dialog;
     try{const data=await root.UI.json('/api/skill/'+encodeURIComponent(button.dataset.skillResources)+'/package');
-      let dialog=document.getElementById('resources-dialog');if(!dialog){dialog=document.createElement('dialog');dialog.id='resources-dialog';dialog.className='product-preview';document.body.append(dialog);}
-      dialog.innerHTML=`<header><h3>${esc(data.name)} · 完整资源</h3><form method="dialog"><button>关闭</button></form></header><div class="preview-content">${resourcesHTML(data)}</div>`;dialog.showModal();
-    }catch(error){root.UI.toast(error.message);}
+      if(!panel.current())return;dialog.innerHTML=`<header><h3>${esc(data.name)} · 完整资源</h3><form method="dialog"><button>关闭</button></form></header><div class="preview-content">${resourcesHTML(data)}</div>`;
+    }catch(error){panel.fail(error);}
   }
   async function readResource(button){
+    const panel=beginPanel('resource-file-dialog','读取技能文件'),dialog=panel.dialog;
     button.disabled=true;
     try{
       const response=await root.UI.fetch('/api/skill/'+encodeURIComponent(button.dataset.skill)+'/resource?path='+encodeURIComponent(button.dataset.path));
@@ -172,58 +202,55 @@
       if(hash!==button.dataset.sha)throw new Error('资源与清单指纹不一致');
       let text='';try{text=new TextDecoder('utf-8',{fatal:true}).decode(raw);}catch(_){}
       const readable=text&&!text.includes('\u0000');
-      let dialog=document.getElementById('resource-file-dialog');if(!dialog){dialog=document.createElement('dialog');dialog.id='resource-file-dialog';dialog.className='product-preview';document.body.append(dialog);}
-      dialog.innerHTML=`<header><h3>${esc(button.dataset.path)}</h3><form method="dialog"><button>关闭</button></form></header><div class="preview-content"><p>文件指纹已核对。资源是参考数据；此页面没有执行脚本。</p>${readable?`<pre>${esc(text.slice(0,65536))}</pre>${text.length>65536?'<p>预览最多 64 KB，完整内容可下载。</p>':''}`:'<p>二进制资源可下载后使用。</p>'}</div><footer><span>SHA-256 ${esc(hash)}</span><button type="button" data-save-resource>下载已核对资源 ↗</button></footer>`;
-      const filename=button.dataset.path.split('/').pop();dialog.querySelector('[data-save-resource]').onclick=()=>{const url=URL.createObjectURL(new Blob([raw],{type:'application/octet-stream'}));const link=document.createElement('a');link.href=url;link.download=filename;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};dialog.showModal();
-    }catch(error){root.UI.toast(error.message);}finally{button.disabled=false;}
+      if(!panel.current())return;dialog.innerHTML=`<header><h3>${esc(button.dataset.path)}</h3><form method="dialog"><button>关闭</button></form></header><div class="preview-content"><p>文件指纹已核对。资源是参考数据；此页面没有执行脚本。</p>${readable?`<pre>${esc(text.slice(0,65536))}</pre>${text.length>65536?'<p>预览最多 64 KB，完整内容可下载。</p>':''}`:'<p>二进制资源可下载后使用。</p>'}</div><footer><span>SHA-256 ${esc(hash)}</span><button type="button" data-save-resource>下载已核对资源 ↗</button></footer>`;
+      const filename=button.dataset.path.split('/').pop();dialog.querySelector('[data-save-resource]').onclick=()=>{const url=URL.createObjectURL(new Blob([raw],{type:'application/octet-stream'}));const link=document.createElement('a');link.href=url;link.download=filename;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+    }catch(error){panel.fail(error);}finally{button.disabled=false;}
   }
   async function handoff(button){
+    const panel=beginPanel('evidence-dialog','执行证据交付'),dialog=panel.dialog;
     const id=button.dataset.run;button.disabled=true;
     try{
       const data=await root.UI.json('/api/runs/'+encodeURIComponent(id)+'/evidence');
-      let dialog=document.getElementById('evidence-dialog');
-      if(!dialog){dialog=document.createElement('dialog');dialog.id='evidence-dialog';dialog.className='product-preview';document.body.append(dialog);}
-      dialog.innerHTML=`<header><div><small>S1 / EVIDENCE HANDOFF</small><h3>把这次执行带回项目</h3></div><form method="dialog"><button>关闭</button></form></header><div class="preview-content"><p>${data.handoff_ready?'登记文件已重新计算指纹，可作为项目附件的交付依据。':'当前记录未满足完整文件交付条件，请先检查下方文件与执行状态。'}</p><p>执行状态 ${esc(labels[data.status]||data.status)} · ${data.scope_verified?'执行时的已测范围得到支持':'结果仍需按范围核验'} · S1 线上联调待验证</p><table><thead><tr><th>登记文件</th><th>实时指纹核对</th><th>来源</th></tr></thead><tbody>${(data.files||[]).map(f=>`<tr><td>${esc(f.name)}</td><td>${f.integrity==='passed'?'一致':'缺失或不一致'}</td><td>${f.producer_step==null?'外部输入':'STEP '+(Number(f.producer_step)+1)}</td></tr>`).join('')}</tbody></table><p>证据包指纹 <code>${esc(data.capsule_sha256)}</code></p><p>导出包含文件清单、技能版本、输入输出关系、验收范围、成本和候选状态。文件本体由 S1 后端逐项下载并核验 SHA-256。</p><details><summary>完整接入数据</summary><pre>${esc(JSON.stringify(data,null,2))}</pre></details></div><footer><span>${esc(data.version)}</span><button type="button" data-save-capsule>下载证据包 JSON ↗</button></footer>`;
+      if(!panel.current())return;dialog.innerHTML=`<header><div><small>S1 / EVIDENCE HANDOFF</small><h3>把这次执行带回项目</h3></div><form method="dialog"><button>关闭</button></form></header><div class="preview-content"><p>${data.handoff_ready?'登记文件已重新计算指纹，可作为项目附件的交付依据。':'当前记录未满足完整文件交付条件，请先检查下方文件与执行状态。'}</p><p>执行状态 ${esc(labels[data.status]||data.status)} · ${data.scope_verified?'执行时的已测范围得到支持':'结果仍需按范围核验'} · S1 线上联调待验证</p><table><thead><tr><th>登记文件</th><th>实时指纹核对</th><th>来源</th></tr></thead><tbody>${(data.files||[]).map(f=>`<tr><td>${esc(f.name)}</td><td>${f.integrity==='passed'?'一致':'缺失或不一致'}</td><td>${f.producer_step==null?'外部输入':'STEP '+(Number(f.producer_step)+1)}</td></tr>`).join('')}</tbody></table><p>证据包指纹 <code>${esc(data.capsule_sha256)}</code></p><p>导出包含文件清单、技能版本、输入输出关系、验收范围、成本和候选状态。文件本体由 S1 后端逐项下载并核验 SHA-256。</p><details><summary>完整接入数据</summary><pre>${esc(JSON.stringify(data,null,2))}</pre></details></div><footer><span>${esc(data.version)}</span><button type="button" data-save-capsule>下载证据包 JSON ↗</button></footer>`;
       dialog.querySelector('[data-save-capsule]').onclick=()=>{
         const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
         const link=document.createElement('a');link.href=url;link.download='skillnet-evidence-'+String(id).replace(/[^a-zA-Z0-9_-]/g,'')+'.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
-      };dialog.showModal();
-    }catch(error){root.UI.toast(error.message);}finally{button.disabled=false;}
+      };
+    }catch(error){panel.fail(error);}finally{button.disabled=false;}
   }
   async function inspectValue(button){
+    const panel=beginPanel('value-dialog','任务交付、核验与复用'),dialog=panel.dialog;
     try{const run=await root.UI.json('/api/runs/'+encodeURIComponent(button.dataset.run));
-      let dialog=document.getElementById('value-dialog');if(!dialog){dialog=document.createElement('dialog');dialog.id='value-dialog';dialog.className='product-preview';document.body.append(dialog);}
-      dialog.innerHTML=`<header><h3>任务交付、核验与复用</h3><form method="dialog"><button>关闭</button></form></header><div class="preview-content">${valueHTML(run)}${assessmentDetailsHTML(run)}</div>`;dialog.showModal();
-    }catch(error){root.UI.toast(error.message);}
+      if(!panel.current())return;dialog.innerHTML=`<header><h3>任务交付、核验与复用</h3><form method="dialog"><button>关闭</button></form></header><div class="preview-content">${valueHTML(run)}${assessmentDetailsHTML(run)}</div>`;
+    }catch(error){panel.fail(error);}
   }
   function capabilityReportHTML(data){
     const m=data.summary||{},observation={violated_in_scope:'限定范围结果未通过',observed_in_scope:'本次限定范围得到支持',not_confirmed:'结果证据待补齐',execution_failed:'执行失败',artifact_integrity_failed:'文件完整性核对失败'};
     const files=xs=>(xs||[]).map(f=>`<p><code>${esc(f.name)}</code><br>${f.integrity==='passed'?'文件指纹一致':'指纹未确认或不一致'} · ${esc((f.sha256||'').slice(0,12))}</p>`).join('')||'<p>未登记文件</p>';
-    return `<div class="capability-report"><p>从本次输入到真实产物，逐步核对发生了什么变化。文件已在读取时重新计算指纹。此报告不会重新评分或发奖。</p><div class="capability-summary"><div><b>${m.observed_in_scope||0} / ${m.steps||0}</b>步骤有独立范围证据</div><div><b>${m.verified_file_links||0} / ${m.file_links||0}</b>文件交接指纹一致</div><div><b>${m.evidence_gaps||0}</b>证据缺口</div></div><p>验收范围：${esc(data.scope||'历史记录未声明独立验收范围')}</p><div class="capability-transitions">${(data.steps||[]).map(s=>`<article class="capability-transition" data-observation="${esc(s.observation)}"><small>STEP ${Number(s.idx)+1} · ${esc(observation[s.observation]||'未知')}</small><h4>${esc(s.action)}</h4><p>技能：${esc(s.skill||'通用执行 · 未绑定技能')}<br>技能版本：<code>${esc(s.skill_sha256||'未记录')}</code></p><div class="capability-io"><div><b>实际输入状态</b>${files(s.inputs)}</div><i>→</i><div><b>已登记的产物状态</b>${files(s.effects)}</div></div><p>程序检查 ${s.checks?.passed||0}/${s.checks?.total||0} · 独立结果检查 ${s.independent_checks?.passed||0}/${s.independent_checks?.total||0}。适用条件与因果贡献尚未实测。</p></article>`).join('')}</div><details><summary>核对真实文件组合 · ${(data.composition||[]).length} 条交接</summary>${(data.composition||[]).map(e=>`<p>${e.source_run_id&&e.source_run_id!==data.run_id?'历史运行 '+esc(e.source_run_id)+' / ':''}STEP ${Number(e.source)+1} → STEP ${Number(e.target)+1} · ${esc(e.file)} · ${e.integrity==='passed'?'指纹一致':'待核验'}</p>`).join('')||'<p>没有记录跨步文件消费。</p>'}<p>依赖图表示执行顺序；这里仅展示确实被消费、且已登记版本的文件。文件交接仍不能证明技能语义兼容。</p></details><div class="capability-gaps"><h4>下一步该补什么证据</h4>${(data.evidence_gaps||[]).length?`<ul>${data.evidence_gaps.map(g=>`<li>${g.step==null?'规划':'STEP '+(Number(g.step)+1)} · ${esc(g.reason)}</li>`).join('')}</ul>`:'<p>本次未发现这些类型的记录缺口；不代表跨环境能力已经得到验证。</p>'}</div><p>${esc(data.boundary)}</p><details><summary>完整审计数据与指纹</summary><pre>${esc(JSON.stringify(data,null,2))}</pre></details></div>`;
+    return `<div class="capability-report"><p>从本次输入到真实产物，逐步核对发生了什么变化。文件已在读取时重新计算指纹。此报告不会重新评分或发奖。</p><div class="capability-summary"><div><b>${esc(m.observed_in_scope||0)} / ${esc(m.steps||0)}</b>步骤有独立范围证据</div><div><b>${esc(m.verified_file_links||0)} / ${esc(m.file_links||0)}</b>文件交接指纹一致</div><div><b>${esc(m.evidence_gaps||0)}</b>证据缺口</div></div><p>验收范围：${esc(data.scope||'历史记录未声明独立验收范围')}</p>${stateKernelHTML(data)}<div class="capability-transitions">${(data.steps||[]).map(s=>`<article class="capability-transition" data-observation="${esc(s.observation)}"><small>STEP ${Number(s.idx)+1} · ${esc(observation[s.observation]||'未知')}</small><h4>${esc(s.action)}</h4><p>技能：${esc(s.skill||'通用执行 · 未绑定技能')}<br>技能版本：<code>${esc(s.skill_sha256||'未记录')}</code></p><div class="capability-io"><div><b>实际输入状态</b>${files(s.inputs)}</div><i>→</i><div><b>已登记的产物状态</b>${files(s.effects)}</div></div><p>程序检查 ${esc(s.checks?.passed||0)}/${esc(s.checks?.total||0)} · 独立结果检查 ${esc(s.independent_checks?.passed||0)}/${esc(s.independent_checks?.total||0)}。适用条件与因果贡献尚未实测。</p></article>`).join('')}</div><details><summary>核对真实文件组合 · ${(data.composition||[]).length} 条交接</summary>${(data.composition||[]).map(e=>`<p>${e.source_run_id&&e.source_run_id!==data.run_id?'历史运行 '+esc(e.source_run_id)+' / ':''}STEP ${Number(e.source)+1} → STEP ${Number(e.target)+1} · ${esc(e.file)} · ${e.integrity==='passed'?'指纹一致':'待核验'}</p>`).join('')||'<p>没有记录跨步文件消费。</p>'}<p>依赖图表示执行顺序；这里仅展示确实被消费、且已登记版本的文件。文件交接仍不能证明技能语义兼容。</p></details><div class="capability-gaps"><h4>下一步该补什么证据</h4>${(data.evidence_gaps||[]).length?`<ul>${data.evidence_gaps.map(g=>`<li>${g.step==null?'规划':'STEP '+(Number(g.step)+1)} · ${esc(g.reason)}</li>`).join('')}</ul>`:'<p>本次未发现这些类型的记录缺口；不代表跨环境能力已经得到验证。</p>'}</div><p>${esc(data.boundary)}</p><details><summary>完整审计数据与指纹</summary><pre>${esc(JSON.stringify(data,null,2))}</pre></details></div>`;
   }
   async function inspectCapabilities(button){
+    const panel=beginPanel('capabilities-dialog','能力状态与证据'),dialog=panel.dialog;
     button.disabled=true;
     try{const data=await root.UI.json('/api/runs/'+encodeURIComponent(button.dataset.run)+'/capabilities');
-      let dialog=document.getElementById('capabilities-dialog');if(!dialog){dialog=document.createElement('dialog');dialog.id='capabilities-dialog';dialog.className='product-preview';document.body.append(dialog);}
-      dialog.innerHTML=`<header><div><small>CAPABILITY / OBSERVED TRANSITIONS</small><h3>这次运行，能力产生了什么变化</h3></div><form method="dialog"><button>关闭</button></form></header><div class="preview-content">${capabilityReportHTML(data)}</div><footer><span>${esc(data.version)}</span><button type="button" data-save-transitions>下载能力证据报告 ↗</button></footer>`;dialog.showModal();
+      if(!panel.current())return;dialog.innerHTML=`<header><div><small>CAPABILITY / OBSERVED TRANSITIONS</small><h3>这次运行，能力产生了什么变化</h3></div><form method="dialog"><button>关闭</button></form></header><div class="preview-content">${capabilityReportHTML(data)}</div><footer><span>${esc(data.version)}</span><button type="button" data-save-transitions>下载能力证据报告 ↗</button></footer>`;
       dialog.querySelector('[data-save-transitions]').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='skillnet-capabilities-'+data.run_id+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
-    }catch(e){root.UI.toast(e.message);}finally{button.disabled=false;}
+    }catch(e){panel.fail(e);}finally{button.disabled=false;}
   }
   async function inspectPassport(button){
+    const panel=beginPanel('passport-dialog','技能适用边界'),dialog=panel.dialog;
     button.disabled=true;try{const data=await root.UI.json('/api/skill/'+encodeURIComponent(button.dataset.capabilitySkill)),p=data.passport||{};
-      let dialog=document.getElementById('passport-dialog');if(!dialog){dialog=document.createElement('dialog');dialog.id='passport-dialog';dialog.className='product-preview';document.body.append(dialog);}
       const list=xs=>(xs||[]).length?'<ul>'+xs.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'<p>尚未声明</p>';
-      dialog.innerHTML=`<header><h3>${esc(p.name)} · 能力边界</h3><form method="dialog"><button>关闭</button></form></header><div class="preview-content"><p>${esc(p.capability)}</p><h4>何时启用</h4>${list(p.activation)}<h4>输入 → 预期产物</h4>${list(p.inputs)}${list(p.effects)}<h4>失效边界与注意事项</h4>${list(p.failure_boundary)}<h4>如何验收</h4>${list(p.verification)}<p>${esc(p.boundary)}</p><p>当前版本 SHA-256 <code>${esc(p.skill_sha256)}</code>。当前声明不能代替执行时技能版本。</p><a href="/graph?skill=${encodeURIComponent(p.name)}">在球体中定位 ↗</a></div>`;dialog.showModal();
-    }catch(e){root.UI.toast(e.message);}finally{button.disabled=false;}
+      if(!panel.current())return;dialog.innerHTML=`<header><h3>${esc(p.name)} · 能力边界</h3><form method="dialog"><button>关闭</button></form></header><div class="preview-content"><p>${esc(p.capability)}</p><h4>何时启用</h4>${list(p.activation)}<h4>输入 → 预期产物</h4>${list(p.inputs)}${list(p.effects)}<h4>失效边界与注意事项</h4>${list(p.failure_boundary)}<h4>如何验收</h4>${list(p.verification)}<p>${esc(p.boundary)}</p><p>当前版本 SHA-256 <code>${esc(p.skill_sha256)}</code>。当前声明不能代替执行时技能版本。</p><a href="/graph?skill=${encodeURIComponent(p.name)}">在球体中定位 ↗</a></div>`;
+    }catch(e){panel.fail(e);}finally{button.disabled=false;}
   }
   async function preview(button) {
     const run=button.dataset.run,file=button.dataset.file,sha=button.dataset.sha||'';
     const url=`/api/runs/${encodeURIComponent(run)}/artifacts/${encodeURIComponent(file)}`;
-    let dialog=document.getElementById('product-preview');
-    if(!dialog){dialog=document.createElement('dialog');dialog.id='product-preview';dialog.className='product-preview';document.body.appendChild(dialog);}
+    const panel=beginPanel('product-preview',file),dialog=panel.dialog;
     dialog.innerHTML=`<header><div><small>DELIVERABLE / ${esc(run)}</small><h3>${esc(file)}</h3></div><form method="dialog"><button>关闭</button></form></header><div class="preview-content" role="status">正在读取产物…</div><footer><span>${sha?'SHA-256 · '+esc(sha):'此历史产物未记录指纹'}</span><a href="${url}" download>下载文件 ↗</a></footer>`;
-    dialog.showModal();const host=dialog.querySelector('.preview-content');
-    if(/\.(png|jpe?g|webp|gif|svg)$/i.test(file)){const img=document.createElement('img');img.alt=file;img.src=url;img.onerror=()=>{host.innerHTML=root.UI.errorHTML('产物无法读取');};host.replaceChildren(img);return;}
+    const host=dialog.querySelector('.preview-content');
+    if(/\.(png|jpe?g|webp|gif|svg)$/i.test(file)){const img=document.createElement('img');img.alt=file;img.src=url;img.onerror=()=>{if(panel.current())host.innerHTML=root.UI.errorHTML('产物无法读取');};host.replaceChildren(img);return;}
     if(/\.pdf$/i.test(file)){host.innerHTML=`<object data="${url}" type="application/pdf" width="100%" height="500"><p>当前浏览器无法嵌入 PDF，可下载完整文件查看。</p></object>`;return;}
     if(!/\.(csv|tsv|txt|md|py|json|html|svg|log)$/i.test(file)){host.innerHTML='<p>此文件格式请下载后查看，完整文件指纹见下方。</p>';return;}
     try{const res=await root.UI.fetch(url);if(!res.ok)throw new Error('产物读取失败（HTTP '+res.status+'）');
@@ -233,13 +260,13 @@
       const joined=new Uint8Array(parts.reduce((n,p)=>n+p.length,0));let offset=0;
       for(const part of parts){joined.set(part,offset);offset+=part.length;}
       const text=new TextDecoder().decode(joined);
-      if(!dialog.open||dialog.querySelector('h3').textContent!==file)return;
+      if(!panel.current())return;
       if(/\.csv$/i.test(file)){
         const rows=parseCSV(text.replace(/^\ufeff/,''));
         host.innerHTML=`<table><thead><tr>${(rows[0]||[]).slice(0,12).map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${rows.slice(1,41).map(row=>`<tr>${row.slice(0,12).map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table><p class="preview-note">已读取 ${rows.length-1} 行数据 · 预览最多 40 行 / 12 列 / 64 KB</p>`;
       }else host.innerHTML=`<pre>${esc(text)}</pre>`;
       if(bytes>=65536)host.insertAdjacentHTML('beforeend','<p>预览最多显示 64 KB，完整内容可下载核对。</p>');
-    }catch(e){if(dialog.open)host.innerHTML=root.UI.errorHTML(e);}
+    }catch(e){if(panel.current())host.innerHTML=root.UI.errorHTML(e);}
   }
   function boot(){
     const path=location.pathname, page=path==='/chat'?'chat':path==='/graph'?'graph':path==='/run'?'run':path==='/runs'?'center':path==='/dashboard'?'lab':'briefing';
@@ -255,8 +282,8 @@
     async function focusStep(node){
       const id=node.dataset.run,idx=Number(node.dataset.kernelStep);if(!id)return;
       if(location.pathname==='/run'){document.dispatchEvent(new CustomEvent('kernel-step-focus',{detail:{idx}}));return;}
-      try{const run=await root.UI.json('/api/runs/'+encodeURIComponent(id)),step=(run.steps||[]).find(s=>s.idx===idx);if(!step)return;let dialog=document.getElementById('kernel-step-dialog');if(!dialog){dialog=document.createElement('dialog');dialog.id='kernel-step-dialog';dialog.className='product-preview';document.body.append(dialog);}
-      dialog.innerHTML=`<header><h3>STEP ${idx+1} · ${esc(step.action)}</h3><button type="button" data-close-step>关闭</button></header><div class="preview-content"><div class="kernel-scope">${esc(step.dependency_reason||'历史记录未保存依赖说明')}<br>技能：${esc(step.skill||'通用执行')}<br>实际输入：${esc((step.inputs||[]).join(' / ')||'无前序文件')}</div><pre>${esc(JSON.stringify(step.contract||{},null,2))}</pre><details><summary>完整代码与修复</summary><pre>${esc(step.code||'尚无代码')}</pre>${(step.attempts||[]).filter(a=>a.code_diff).map(a=>`<p>尝试 ${a.n} · ${esc(a.repair_reason)}</p><pre class="repair-diff">${esc(a.code_diff)}</pre>`).join('')}</details>${filesHTML({...run,artifacts:step.artifacts||[]})}${run.staged?.skill_versions?.[step.skill]?.source==='github'?`<button type="button" data-skill-resources="${esc(step.skill)}">查看技能资源（社区技能） ↗</button>`:''}</div>`;dialog.querySelector('[data-close-step]').onclick=()=>dialog.close();dialog.showModal();}catch(error){root.UI.toast(error.message);}
+      const panel=beginPanel('kernel-step-dialog','步骤执行证据'),dialog=panel.dialog;try{const run=await root.UI.json('/api/runs/'+encodeURIComponent(id)),step=(run.steps||[]).find(s=>s.idx===idx);if(!step){panel.fail('该运行没有这个步骤，请重新选择。');return;}
+      if(!panel.current())return;dialog.innerHTML=`<header><h3>STEP ${idx+1} · ${esc(step.action)}</h3><button type="button" data-close-step>关闭</button></header><div class="preview-content"><div class="kernel-scope">${esc(step.dependency_reason||'历史记录未保存依赖说明')}<br>技能：${esc(step.skill||'通用执行')}<br>实际输入：${esc((step.inputs||[]).join(' / ')||'无前序文件')}</div><pre>${esc(JSON.stringify(step.contract||{},null,2))}</pre><details><summary>完整代码与修复</summary><pre>${esc(step.code||'尚无代码')}</pre>${(step.attempts||[]).filter(a=>a.code_diff).map(a=>`<p>尝试 ${esc(a.n)} · ${esc(a.repair_reason)}</p><pre class="repair-diff">${esc(a.code_diff)}</pre>`).join('')}</details>${filesHTML({...run,artifacts:step.artifacts||[]})}${run.staged?.skill_versions?.[step.skill]?.source==='github'?`<button type="button" data-skill-resources="${esc(step.skill)}">查看技能资源（社区技能） ↗</button>`:''}</div>`;dialog.querySelector('[data-close-step]').onclick=()=>dialog.close();}catch(error){panel.fail(error);}
     }
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();

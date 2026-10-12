@@ -68,9 +68,16 @@ def oracle():
 
 
 def evaluate_artifacts(run, workspace: Path):
-    expected = oracle()
     files = {a.logical_name or Path(a.name).name.removeprefix(f'step{(a.from_step or 0)+1}_'):
-             workspace/'artifacts'/a.name for a in run.artifacts if a.kind != '跨轮输入'}
+             workspace/'artifacts'/a.name for a in run.artifacts if a.kind not in ('跨轮输入','任务输入')}
+    result = evaluate_files(files)
+    result['artifact_hashes'] = {a.name:a.sha256 for a in run.artifacts}
+    return result
+
+
+def evaluate_files(files):
+    """Same independent reference for attempt files and the final delivery."""
+    expected = oracle()
     checks = []
     for name, key in [('cohort_audit', 'check'), ('heldout_metrics', 'metric')]:
         actual, rows, columns = {}, [], []
@@ -113,5 +120,4 @@ def evaluate_artifacts(run, workspace: Path):
         target = files.get(check.get('output'))
         check['artifact_name'] = target.name if target else None
     return dict(score=sum(c['passed'] for c in checks)/len(checks), checks=checks,
-        evaluator='independent synthetic cohort/threshold arithmetic; figure presence and scope labels only; no clinical validity',
-        artifact_hashes={a.name: a.sha256 for a in run.artifacts})
+        evaluator='independent synthetic cohort/threshold arithmetic; figure presence and scope labels only; no clinical validity')

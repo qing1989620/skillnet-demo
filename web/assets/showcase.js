@@ -5,8 +5,8 @@
     {name:'检索能力',tag:'BM25 · HYBRID · FABRIC',title:'先找到适合这道题的能力',doing:'关键词、语义与关系图围绕同一问题检索。候选技能和实际启用的检索组件会在这里出现。',benefit:'把能力定位变成可追溯的选择过程，便于发现漏选和误选。'},
     {name:'策略选择',tag:'SHARED LINUCB / SHADOW',title:'先提出可检验的选择假设',doing:'共享 LinUCB 分解收益预测与探索项；当前正式权重从零开始，收益预测可能为零，它们不是成功概率。新增经验只做影子预演，尚未部署学习后的排序参数。',benefit:'保留可追溯的选择依据，避免一次偶然结果污染整个网络。'},
     {name:'关系编排',tag:'WIKI · DEPENDENCIES',title:'把单项能力组织成协作',doing:'路由器读取技能关系与依赖，确定采用的技能和编排边。降级路径也会明确展示。',benefit:'先明确谁依赖谁，减少任务顺序与输入输出脱节。'},
-    {name:'方案与 DAG',tag:'PLAN → EXECUTION GRAPH',title:'把研究方案变成执行路径',doing:'规划器生成动作，执行引擎再解析真实步骤依赖。图中的每个节点都对应一个可查证的运行步骤。',benefit:'计划可以被逐步执行和追踪，前序文件能进入后序步骤。'},
-    {name:'执行与修复',tag:'PYTHON · RETRY · ARTIFACTS',title:'让能力真正产出结果',doing:'生成代码、语法预检、运行 Python；失败后携带错误信息与技能陷阱进行修复，每步最多尝试三次。',benefit:'交付可下载的真实文件，保留失败原因与修复轨迹。'},
+    {name:'方案与 DAG',tag:'PLAN → STATE CONTRACT → DAG',title:'把研究方案变成执行路径',doing:'规划器生成动作，执行引擎解析步骤依赖，并核对声明的前后置条件能否衔接。不能满足的条件会形成可追踪的能力缺口。',benefit:'先核对组合条件，避免把看起来相关的技能直接拼接。'},
+    {name:'执行与修复',tag:'ADMISSION · PYTHON · EFFECT CHECK',title:'让能力真正产出结果',doing:'生成代码前先重新读取真实输入，核验前置条件；失败或未知会阻断执行。产出后再核验后置条件，必要条件失败进入修复或阻断下游。',benefit:'在真实文件上确认条件与效果，失败原因和修复轨迹可以复核。'},
     {name:'分层验收',tag:'FROZEN REFERENCE / ARTIFACT HASH',title:'先展示判据，再判断结果',doing:'服务端重新读取文件并验证指纹；有独立参考的结果逐项重算。模型评分仅供参考，没有结果判据就保留未知。',benefit:'区分技术执行成功、目标结果正确和用户认可，判断边界可以核对。'},
     {name:'反馈与进化',tag:'OBSERVATION → SHADOW → HOLD-OUT',title:'一条经验，先成为待验证的假设',doing:'单次经验只进入影子观察。合格轨迹可隔离为候选；至少五道留出任务、每题两组同预算对照，并满足无回退与统计门槛后才有资格晋级。',benefit:'不把参数变化当成网络提升；只在已测范围内陈述增益，保留未知和失败。'}
   ];
@@ -15,9 +15,9 @@
   const number = (x, fallback=0) => Number.isFinite(Number(x)) ? Number(x) : fallback;
   const statusName = s => ({COMPLETED:'已完成',PARTIAL:'部分完成',FAILED:'失败',CANCELLED:'已取消',BUDGET_EXCEEDED:'预算已达上限',INTERRUPTED:'运行中断'}[s] || s || '待启动');
   const stepName = s => ({pending:'待执行',running:'执行中',done:'已完成',failed:'失败',skipped:'已跳过'}[s] || '待执行');
-  const PUBLIC_REPLAY_ID='f11ad204-20261010-110841-6d42';
+  const PUBLIC_REPLAY_ID='f11ad204-20261012-144805-b9e1';
   function createState(task='',mode='idle') {
-    return {task,mode,id:null,seq:0,phase:0,view:null,phases:PHASES.map(()=> 'pending'),nodes:[],selected:[],ranking:[],retrieval:{},orchestration:{},checks:[],artifacts:[],feedback:[],judge:null,evolution:null,logs:[],started:0,elapsed:0,finished:false,error:'',snapshot:null};
+    return {task,mode,id:null,seq:0,phase:0,view:null,phases:PHASES.map(()=> 'pending'),nodes:[],selected:[],ranking:[],retrieval:{},orchestration:{},checks:[],artifacts:[],feedback:[],judge:null,evolution:null,statePlan:null,logs:[],started:0,elapsed:0,finished:false,error:'',snapshot:null};
   }
   function reduceEvent(s,ev) {
     if (!ev || typeof ev.type !== 'string') return false;
@@ -37,6 +37,9 @@
     else if(t==='orchestration.completed') {s.orchestration=d;s.selected=arr(d.order || d.skills);complete(2);log=`编排采用 ${s.selected.length} 项技能 · ${arr(d.edges).length} 条关系`;}
     else if(t==='plan.created') {s.approach=d.approach || '';s.planSteps=number(d.steps);complete(3);log=`方案已生成 · ${s.planSteps} 个规划动作`;}
     else if(t==='dag.ready') {s.nodes=arr(d.nodes).filter(n=>Number.isInteger(n.idx)).map(n=>({...n,status:'pending'}));log=`执行 DAG 就绪 · ${s.nodes.length} 步 · 依赖来自 ${d.workflow_source || '执行引擎'}`;}
+    else if(t==='state.planned') {s.statePlan=d;log=`组合条件 ${stateLabel(d.composition?.state)} · ${arr(d.composition?.frontier).length} 项能力缺口待处理`;}
+    else if(t==='state.admission') {if(node())node().admission=d;log=`Step ${number(idx)+1} 前置条件 ${stateLabel(d.state)} · ${d.admitted?'允许进入执行':'执行已阻断'}${arr(d.checks).find(c=>c.state!=='passed')?.detail?'：'+arr(d.checks).find(c=>c.state!=='passed').detail:''}`;}
+    else if(t==='state.effects') {if(node())node().effects=d;log=`Step ${number(idx)+1} 后置效果 ${stateLabel(d.state)} · 第 ${number(d.attempt)} 次尝试${arr(d.checks).find(c=>c.state!=='passed')?.detail?'：'+arr(d.checks).find(c=>c.state!=='passed').detail:''}`;}
     else if(t==='step.inputs') {if(node())node().inputs=arr(d.files);log=`Step ${number(idx)+1} 收到 ${arr(d.files).length} 个前序文件`;}
     else if(t==='step.started') {if(node())node().status='running';log=`Step ${number(idx)+1} 开始 · ${d.skill || '通用动作'}`;}
     else if(t==='code.generating') {if(node()){node().attempt=number(d.attempt);node().stage='generating';}log=`Step ${number(idx)+1} · ${number(d.attempt)>1?'根据错误修复代码':'模型生成可运行代码'}`;}
@@ -62,6 +65,17 @@
     if(log) s.logs.push({time:s.elapsed,text:log});
     s.logs=s.logs.slice(-80);
     return true;
+  }
+  function stateLabel(state){return {passed:'通过',failed:'未通过',unknown:'未知',not_declared:'未声明',declared_compatible:'声明可衔接',contradicted:'声明冲突'}[state]||'未知';}
+  function stateEvidenceHTML(value,label='状态核验'){
+    if(!value)return '';
+    return `<div class="show-fact show-state-contract" data-state="${esc(value.state||'unknown')}"><b>${esc(label)} · ${stateLabel(value.state)}</b><small>${arr(value.checks).slice(0,3).map(c=>`${stateLabel(c.state)} · ${esc(c.predicate?.file||c.predicate?.kind||'条件')}：${esc(c.detail||'未记录说明')}`).join('<br>')||'没有登记可复核的条件。'}${value.admitted===false?'<br>已阻断代码生成与执行，缺证据不放行。':''}</small></div>`;
+  }
+  function stateFactsHTML(s,phase){
+    const plan=s.statePlan,composition=plan?.composition||{};
+    if(phase===3&&plan)return `<div class="show-fact"><b>条件组合 · ${stateLabel(composition.state)}</b><small>${arr(composition.edges).length} 条声明衔接 · ${arr(composition.frontier).length} 项能力缺口。这里只检查声明是否衔接，实际效果在执行后核验。</small></div>`+arr(composition.frontier).slice(0,3).map(g=>`<div class="show-fact"><b>STEP ${number(g.step_idx)+1} · 待补齐</b><small>${esc(g.file||'')} · ${esc(g.reason||g.detail||'条件尚未得到支持')}</small></div>`).join('');
+    if(phase===4)return s.nodes.filter(n=>n.admission||n.effects).slice(-3).map(n=>stateEvidenceHTML(n.admission,`STEP ${n.idx+1} 前置条件`)+stateEvidenceHTML(n.effects,`STEP ${n.idx+1} 后置效果`)).join('');
+    return '';
   }
   function dagLayout(nodes,narrow=false) {
     const by=new Map(nodes.map(n=>[n.idx,n]));const depths=new Map();
@@ -89,7 +103,7 @@
     const semantics=sem.map(v=>`<li class="${v.passed?'pass':v.state==='unknown'?'unknown':'fail'}"><b>${v.passed?'通过':v.state==='unknown'?'未确认':'未通过'} · ${esc(v.item)}</b><p>${esc(v.evidence)}</p></li>`).join('');
     return `<article class="show-step-evidence"><p>${esc(n.action||'')}</p><div class="show-step-summary"><span>${esc(stepName(n.status))}</span><span>必要检查 ${required.filter(c=>c.passed).length}/${required.length}</span><span>语义复核 ${sem.filter(v=>v.passed).length}/${sem.length}</span><span>${number(n.n_attempts)} 次尝试</span></div><section><h3>实际输入与文件版本</h3>${inputs?`<ul>${inputs}</ul>`:`<p>${esc(arr(n.inputs).join(' / ')||'本步骤未携带前序文件')}</p>`}</section><section><h3>服务端检查 · 直接核对产物</h3>${rows?`<ul>${rows}</ul>`:'<p>尚无检查结果。</p>'}</section>${semantics?`<details><summary>模型语义复核 · 逐条证据</summary><ul>${semantics}</ul></details>`:''}${n.error?`<section><h3>执行错误</h3><pre>${esc(n.error)}</pre></section>`:''}${n.code?`<details><summary>查看实际执行代码</summary><pre>${esc(n.code)}</pre></details>`:''}${arr(n.attempts).map(a=>`<details><summary>第 ${number(a.n)} 次尝试 · ${a.ok?'代码运行成功':'代码运行失败'}</summary>${a.repair_reason?`<p>修复原因：${esc(a.repair_reason)}</p>`:''}<pre>${esc(a.stdout||'')}${a.stderr?'\n'+esc(a.stderr):''}</pre>${a.code_diff?`<h3>修复差异</h3><pre>${esc(a.code_diff)}</pre>`:''}</details>`).join('')}${!n.attempts&&n.stdout?`<details><summary>运行输出</summary><pre>${esc(n.stdout)}</pre></details>`:''}</article>`;
   }
-  const Core={PHASES,createState,reduceEvent,dagLayout,parseCSV,stepEvidenceHTML,esc};
+  const Core={PHASES,createState,reduceEvent,dagLayout,parseCSV,stepEvidenceHTML,stateLabel,stateEvidenceHTML,stateFactsHTML,esc};
   if(typeof module!=='undefined'&&module.exports)module.exports=Core;
   if(!root.document)return;
   const $=id=>document.getElementById(id);
@@ -121,7 +135,8 @@
     $('show-graph-note').textContent=network.nodes.length?`${network.nodes.length} 项能力 / ${state.selected.length} 项本轮推荐`:'读取中';
   }
 
-  function phaseFacts(i) {
+  function phaseFacts(i){return basePhaseFacts(i)+stateFactsHTML(state,i);}
+  function basePhaseFacts(i) {
     const snap=state.snapshot||{},staged=snap.staged||{};
     if(!done(i)&&!(i===4&&state.nodes.length)&&!(i===5&&state.checks.length))return fact('等待本阶段的真实结果','运行后展示实际值，未执行阶段不填充演示数字。');
     if(i===0){const modes=state.retrieval.modes||snap.retrieval||{};const f=modes.fabric||state.retrieval;const components=Object.entries(f.components||{}).filter(([,v])=>v).map(([k])=>({bm25:'关键词',vector:'向量',structural:'结构',graph_expansion:'关系扩展',llm_rerank:'必要性筛选'}[k]||k));return fact(`推荐 ${arr(f.selected).length} 项 · ${f.selection?.library_size==null?'库规模未记录':f.selection.library_size+' 项技能中检索'}`,f.selection?.rule||'历史记录未保存必要性筛选规则。')+arr(f.selected).slice(0,4).map(n=>{const c=arr(f.candidates).find(c=>c.name===n)||{};return fact(n,c.note||c.capability||'具体采用理由在编排阶段核对。');}).join('')+['bm25','hybrid','fabric'].map(m=>fact(m.toUpperCase()+` · ${arr(modes[m]?.selected).length} 项`,arr(modes[m]?.selected).slice(0,3).join(' / ')||'没有推荐项或未记录')).join('')+fact('实际组件 · '+(components.join(' / ')||'见原始记录'),f.degraded?'降级：'+(f.degraded_reason||'存在组件未启用'):(f.decision_reason||'相关度为启发式指标，不代表成功概率'));}
@@ -190,11 +205,12 @@
   function renderOutput(fin) {
     $('show-results').hidden=false;$('show-output').hidden=false;
     const stats=fin.step_stats||{},checks=arr(fin.steps).flatMap(n=>arr(n.checks)).filter(c=>c.required!==false);
-    $('show-results').innerHTML=[factMetric(`${number(stats.done)}/${number(stats.total)}`,'实际完成步骤'),factMetric(`${checks.filter(c=>c.passed).length}/${checks.length}`,'程序检查通过 · 不等于步骤完成'),factMetric(String(arr(fin.artifacts).length),'可下载的真实文件'),factMetric(fin.evolution?.accepted?'+1':'0','本次新增技能 · 准入结果')].join('');
+    const outputs=arr(fin.artifacts).filter(a=>!['跨轮输入','任务输入'].includes(a.kind));
+    $('show-results').innerHTML=[factMetric(`${number(stats.done)}/${number(stats.total)}`,'实际完成步骤'),factMetric(`${checks.filter(c=>c.passed).length}/${checks.length}`,'程序检查通过 · 不等于步骤完成'),factMetric(String(outputs.length),'本次交付文件 · 输入单独留存'),factMetric(fin.evolution?.accepted?'+1':'0','本次新增技能 · 准入结果')].join('');
     const answer=fin.staged?.final_reply || fin.error || '本次没有生成最终文本，请查看步骤和文件证据。';
     const verdict=fin.staged?.acceptance;
     const value=fin.evolution?.candidate?'新经验已进入候选区，等待冻结任务的真实执行验证；当前技能库尚未新增。':fin.evolution?.accepted?`本次经验已沉淀为 ${fin.evolution.name}，可进入后续任务复用。`:fin.staged?.learning_gate?.eligible===false?`本次经验暂不写入技能库：${fin.staged.learning_gate.skip_reason}。结果与证据保留供核对，避免学习未经确认的经验。`:fin.evolution?.skip_reason||'本次未新增技能；已有运行、验收和反馈记录保留供后续复盘。';
-    $('show-routing').innerHTML=(root.Product?.selectionHTML(fin)||'')+(root.Product?.transitionsHTML?.(fin)||'');
+    $('show-routing').innerHTML=(root.Product?.selectionHTML(fin)||'')+(root.Product?.transitionsHTML?.(fin)||'')+(root.Product?.stateKernelHTML?.(fin)||'');
     $('show-answer-body').innerHTML=`${root.Product?.valueHTML(fin)||''}${root.Product?.assessmentDetailsHTML(fin)||''}<div class="show-value">${esc(statusName(fin.status))} · 验收${verdict?({passed:'通过',failed:'未通过',unknown:'有待确认'}[verdict.state]||verdict.state):'见逐项证据'} · ${esc(value)}</div><div class="rp-body">${typeof root.mdToHtml==='function'?root.mdToHtml(answer):esc(answer).replace(/\n/g,'<br>')}</div>`;
     $('show-files-body').innerHTML=arr(fin.artifacts).slice().sort((a,b)=>number(b.from_step)-number(a.from_step)).map(a=>{const url='/api/runs/'+encodeURIComponent(fin.run_id)+'/artifacts/'+encodeURIComponent(a.name);return `<div class="show-file"><b>${esc(a.name)}</b><p>${esc(a.kind||'真实运行产物')}${a.from_step!=null?' · Step '+(number(a.from_step)+1)+' 产出':''} · ${(number(a.bytes)/1024).toFixed(1)} KB · SHA-256 ${esc(String(a.sha256||'未记录').slice(0,16))}${a.sha256?'…':''}</p><button type="button" data-show-artifact="${esc(a.name)}">查看文件</button><a href="${url}" download="${esc(a.name)}">下载</a>${/\.(png|jpg|jpeg|webp|svg)$/i.test(a.name)?`<img src="${url}" alt="本次实际运行生成的 ${esc(a.name)}" loading="lazy">`:''}</div>`;}).join('')||'<p style="font-size:12px;color:#7a909e">本次没有登记可下载文件。</p>';
     $('show-evidence-link').href='/run?id='+encodeURIComponent(fin.run_id);
@@ -204,7 +220,7 @@
       ['经验参与选择',arr(fin.ranking).length+' 项实际排序','收益与探索项分别可见'],
       ['能力协作',arr(fin.skills).length+' 项技能 / '+arr(orchestration.workflow).length+' 条编排边','依赖继续解析为执行步骤'],
       ['可执行方案',number(stats.total)+' 步 / '+(fin.staged?.scheduler||'见执行记录'),'DAG 对应真实运行路径'],
-      ['执行与修复',number(stats.retried)+' 步重试 / '+arr(fin.artifacts).length+' 个文件','保留实际输出与尝试记录'],
+      ['执行与修复',number(stats.retried)+' 步重试 / '+outputs.length+' 个交付文件','保留实际输出与尝试记录'],
       ['独立验收',checks.filter(c=>c.passed).length+'/'+checks.length+' 程序检查通过','失败结果保留，完成与合格分开'],
       ['经验观察',fin.staged?.quality_assessment?'影子观察 / 正式更新 0 次':feedback.filter(f=>f.nudged).length+' 项历史反馈','任务结果、技能贡献与网络增益分开核验']
     ];
@@ -225,7 +241,7 @@
       state=createState(fin.task,'replay');state.id=id;state.snapshot=fin;
       replay={events,fin,cursor:0,paused:false,speed:number($('show-speed').value,4)};
       $('show-results').hidden=true;$('show-output').hidden=true;render();$('s3').scrollIntoView({behavior:'smooth',block:'start'});nextReplay();
-    }catch(e){fail('无法读取真实记录：'+(e.message||e));}finally{$('show-replay').disabled=false;}
+    }catch(e){if(generation===requestGeneration)fail('无法读取真实记录：'+(e.message||e));}finally{if(generation===requestGeneration)$('show-replay').disabled=false;}
   }
   function nextReplay(){if(!replay||replay.paused)return;const playback=replay;
     if(playback.cursor>=playback.events.length){finish(playback.fin);return;}
@@ -249,7 +265,7 @@
   async function inspectStep(idx){let n=state.nodes.find(s=>s.idx===idx);if(!n)return;const id=state.id;const dialog=$('show-preview');$('show-preview-title').textContent=`Step ${idx+1} · ${n.skill||'通用动作'}`;$('show-preview-body').innerHTML='<pre>'+esc(n.action)+'</pre>';dialog.showModal();const generation=++previewGeneration;
     try{if(id&&state.mode!=='replay'){const snap=await safeGet('/api/runs/'+encodeURIComponent(id));if(generation!==previewGeneration||!dialog.open)return;n=arr(snap.steps).find(s=>s.idx===idx)||n;}else if(state.mode==='replay'){const stored=arr(state.snapshot?.steps).find(s=>s.idx===idx);if(n.status==='done'||n.status==='failed')n=stored||n;}
       $('show-preview-body').innerHTML=stepEvidenceHTML(n);
-    }catch(e){$('show-preview-body').textContent='步骤记录读取失败：'+(e.message||e);}
+    }catch(e){if(generation===previewGeneration&&dialog.open)$('show-preview-body').textContent='步骤记录读取失败：'+(e.message||e);}
   }
   function present(){const entering=!document.body.classList.contains('showcase-presenting');if(entering)presentationFocus=document.activeElement;document.body.classList.toggle('showcase-presenting',entering);$('show-present').textContent=entering?'退出汇报模式':'汇报模式';if(!entering&&presentationFocus)presentationFocus.focus();renderNetwork();}
   function reset(){if(state.mode==='live'&&!state.finished)return;stopPlayback();stopPolling();state=createState();$('show-output').hidden=true;$('show-results').hidden=true;render();}
@@ -264,7 +280,7 @@
     $('show-pause').addEventListener('click',()=>{if(!replay)return;replay.paused=!replay.paused;clearTimeout(timer);timer=null;render();if(!replay.paused)nextReplay();});
     $('show-speed').addEventListener('change',()=>{if(replay)replay.speed=number($('show-speed').value,4);});$('show-seek').addEventListener('input',e=>seek(e.target.value));
     document.addEventListener('click',e=>{const phase=e.target.closest('[data-show-phase]');if(phase){state.view=number(phase.dataset.showPhase);render();return;}const step=e.target.closest('[data-show-step]');if(step){inspectStep(number(step.dataset.showStep));return;}const artifact=e.target.closest('[data-show-artifact]');if(artifact){preview(artifact.dataset.showArtifact);return;}const record=e.target.closest('[data-show-run]');if(record){loadRecord(record.dataset.showRun);return;}const prompt=e.target.closest('[data-show-prompt]');if(prompt){$('task').value=prompts[prompt.dataset.showPrompt]||'';$('task').focus();}});
-    document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('showcase-presenting')&&!$('show-preview').open){present();}const step=e.target.closest?.('[data-show-step]');if(step&&(e.key==='Enter'||e.key===' ')){e.preventDefault();inspectStep(number(step.dataset.showStep));}});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('showcase-presenting')&&!$('show-preview').open){present();}const step=e.target.closest?.('[data-show-step]');if(step&&!step.matches('button,a,input,select,textarea')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();inspectStep(number(step.dataset.showStep));}});
     $('show-preview-close').addEventListener('click',()=>{previewGeneration++;$('show-preview').close();});$('show-preview').addEventListener('close',()=>{previewGeneration++;});
     new ResizeObserver(()=>renderNetwork()).observe($('show-network'));
     safeGet('/api/graph').then(g=>{network={nodes:arr(g.nodes),edges:arr(g.edges)};if(stageSphere)stageSphere.setData(network);renderNetwork();}).catch(()=>{$('show-graph-note').textContent='技能网络读取失败，可在连接设置中检查服务';});

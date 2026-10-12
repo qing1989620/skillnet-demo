@@ -61,13 +61,20 @@ def transitions(capsule):
         if any(i['integrity']!='passed' for i in inputs):gaps.append(dict(kind='unverified_input',step=idx,reason='输入文件的名称、版本或生产步骤未能与登记记录一致绑定'))
         if not intact:gaps.append(dict(kind='unverified_effect',step=idx,reason='尚无完整且指纹一致的登记产物，不能确认状态变化'))
         if not step.get('skill_sha256') and not generic:gaps.append(dict(kind='unrecorded_version',step=idx,reason='历史技能版本未记录，不能认证当前版本'))
+        state_evidence = step.get('state_evidence') or {}
+        pre = state_evidence.get('pre') or {}
+        if pre.get('admitted') is False:
+            gaps.append(dict(kind='state_admission_blocked',step=idx,
+                reason='实际输入未满足或无法核实冻结的前置条件；本步未调用代码生成，不将其记为技能负贡献'))
         rows.append(dict(idx=idx,action=step.get('action'),skill=None if generic else step.get('skill'),
             skill_sha256=step.get('skill_sha256'), version_capture=step.get('version_capture'),
             status=step['status'], observation=status, inputs=inputs, effects=outputs,
             checks=dict(passed=sum(c.get('passed') is True for c in required),total=len(required)),
             independent_checks=dict(passed=sum(c.get('passed') is True for c in independent),total=len(independent)),
-            applicability='not_measured', causal_contribution='not_measured',
+            applicability=pre.get('state', 'not_measured'), causal_contribution='not_measured',
             boundary='只陈述本次文件与限定范围检查，不外推跨任务成功率'))
+        if state_evidence:
+            rows[-1]['state_evidence'] = state_evidence
     for item in capsule.get('delivery',{}).get('omitted_steps',[]):
         gaps.append(dict(kind='unexecuted_plan',step=item.get('idx'),reason=item.get('action') or '有规划动作未执行'))
     report=dict(version='skillnet-transitions-v1',run_id=capsule['run_id'],
@@ -78,5 +85,7 @@ def transitions(capsule):
             verified_file_links=sum(e['integrity']=='passed' for e in links),file_links=len(links),evidence_gaps=len(gaps)),
         research_status=dict(learned_causal_model=False,behavioral_equivalence=False,minimal_basis=False,reachable_space_proven=False),
         boundary='证据缺口不等于缺少真实能力；文件组合不等于因果技能代数；报告不会发奖或修改技能库')
+    if capsule.get('state_kernel'):
+        report['state_kernel'] = capsule['state_kernel']
     report['report_sha256']=digest(report)
     return report

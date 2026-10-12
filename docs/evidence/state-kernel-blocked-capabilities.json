@@ -1,0 +1,1026 @@
+{
+  "version": "skillnet-transitions-v1",
+  "run_id": "f11ad204-20261012-125616-b21e",
+  "source_capsule_sha256": "1d1964229324e7372e96b263161042c4b431401513a18763d6b3b441caa338ec",
+  "source": "recorded_execution_and_rehashed_files",
+  "scope_verified": false,
+  "scope": "模拟预测数据的样本去重、跨集合受试者排除、固定阈值测试集混淆矩阵与派生指标；不评价模型或临床有效性",
+  "steps": [
+    {
+      "idx": 0,
+      "action": "读取原始 CSV（14 行 5 列，含 1 个完全重复行 s06 与 1 个 score 缺失行 s13）。先按 sample_id 去重保留首次出现记录；再统计同时出现在多个 split 的 subject_id（p01 同时出现在 train 与 test），删除这些受试者的全部记录；最后在剩余记录中删除 score 缺失行。产出 clean_predictions.csv（保留原列 sample_id,subject_id,split,label,score 与原值，不新增列、不改数值）和 cohort_audit.csv（列名 check,count，仅六行：raw_rows,duplicate_rows,cross_split_subjects,cross_split_rows,missing_score_rows,eligible_test_rows）。",
+      "skill": "data-cleaning",
+      "skill_sha256": "3b234cb8dc2c52709178f6013330acc0797350c7c4a005ae06d467eb416edca1",
+      "version_capture": "before_execution",
+      "status": "failed",
+      "observation": "execution_failed",
+      "inputs": [
+        {
+          "name": "input_raw_predictions.csv",
+          "sha256": "d489a2ede799f0f0f1e84c9b689879a4b654510fa160b61216f942587c3b208b",
+          "producer_step": null,
+          "integrity": "passed"
+        }
+      ],
+      "effects": [],
+      "checks": {
+        "passed": 2,
+        "total": 3
+      },
+      "independent_checks": {
+        "passed": 0,
+        "total": 0
+      },
+      "applicability": "unknown",
+      "causal_contribution": "not_measured",
+      "boundary": "只陈述本次文件与限定范围检查，不外推跨任务成功率",
+      "state_evidence": {
+        "pre": {
+          "version": "skill-state-contract-v1",
+          "state": "unknown",
+          "checks": [
+            {
+              "predicate": {
+                "kind": "csv_schema",
+                "file": "输入原始 CSV",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "exact": true
+              },
+              "state": "unknown",
+              "detail": "artifact is absent or cannot be safely read",
+              "evidence": {
+                "file": "输入原始 CSV"
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_schema",
+                "file": "raw_predictions.csv",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "exact": true
+              },
+              "state": "passed",
+              "detail": "CSV column set satisfies schema",
+              "evidence": {
+                "file": "raw_predictions.csv",
+                "sha256": "d489a2ede799f0f0f1e84c9b689879a4b654510fa160b61216f942587c3b208b",
+                "bytes": 330,
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "rows": 14
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_nonempty",
+                "file": "raw_predictions.csv"
+              },
+              "state": "passed",
+              "detail": "CSV has data records",
+              "evidence": {
+                "file": "raw_predictions.csv",
+                "sha256": "d489a2ede799f0f0f1e84c9b689879a4b654510fa160b61216f942587c3b208b",
+                "bytes": 330,
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "rows": 14
+              }
+            }
+          ],
+          "admitted": false,
+          "contract_sha256": "4ce548b589e6fa038542aae871d89025d3699a849d1d45a5739775673465567b",
+          "source": "host_reference_and_plan"
+        }
+      }
+    },
+    {
+      "idx": 1,
+      "action": "读取 clean_predictions.csv 与 cohort_audit.csv，仅取清洗后 split=='test' 的行，用固定阈值 score >= 0.5 判阳性（pred=1），与 label 比较统计 tp/fp/tn/fn，计算 n、accuracy、precision、recall、f1，写入 heldout_metrics.csv（列名 metric,value，仅九行：n,tp,fp,tn,fn,accuracy,precision,recall,f1）。阈值固定不调优，不计算 AUROC。",
+      "skill": null,
+      "skill_sha256": null,
+      "version_capture": "unrecorded",
+      "status": "skipped",
+      "observation": "not_confirmed",
+      "inputs": [],
+      "effects": [],
+      "checks": {
+        "passed": 0,
+        "total": 0
+      },
+      "independent_checks": {
+        "passed": 0,
+        "total": 0
+      },
+      "applicability": "not_measured",
+      "causal_contribution": "not_measured",
+      "boundary": "只陈述本次文件与限定范围检查，不外推跨任务成功率"
+    },
+    {
+      "idx": 2,
+      "action": "读取 cohort_audit.csv 与 heldout_metrics.csv，绘制审计计数与混淆矩阵/指标的矢量图 figure.svg，并撰写 report.md。报告必须写明“模拟数据”“固定阈值”“不代表临床有效性”，解释数据泄漏风险（跨 split 受试者导致训练与测试信息重叠）与复用边界（仅限本模拟数据与固定阈值流程，不得外推为真实模型性能或临床结论）。",
+      "skill": "scientific-visualization",
+      "skill_sha256": "2d2d8637f4064d52bbdbad35734def7138f2e8d118b8bf91108d8f84726b5efa",
+      "version_capture": "before_execution",
+      "status": "skipped",
+      "observation": "not_confirmed",
+      "inputs": [],
+      "effects": [],
+      "checks": {
+        "passed": 0,
+        "total": 0
+      },
+      "independent_checks": {
+        "passed": 0,
+        "total": 0
+      },
+      "applicability": "not_measured",
+      "causal_contribution": "not_measured",
+      "boundary": "只陈述本次文件与限定范围检查，不外推跨任务成功率"
+    }
+  ],
+  "composition": [],
+  "evidence_gaps": [
+    {
+      "kind": "missing_independent_verifier",
+      "step": 0,
+      "reason": "本步骤没有独立结果判据，不能从运行成功推断能力已验证"
+    },
+    {
+      "kind": "unverified_effect",
+      "step": 0,
+      "reason": "尚无完整且指纹一致的登记产物，不能确认状态变化"
+    },
+    {
+      "kind": "state_admission_blocked",
+      "step": 0,
+      "reason": "实际输入未满足或无法核实冻结的前置条件；本步未调用代码生成，不将其记为技能负贡献"
+    },
+    {
+      "kind": "unbound_skill",
+      "step": 1,
+      "reason": "该动作由通用执行完成，尚未绑定可复用技能；不是任务无法完成"
+    },
+    {
+      "kind": "missing_independent_verifier",
+      "step": 1,
+      "reason": "本步骤没有独立结果判据，不能从运行成功推断能力已验证"
+    },
+    {
+      "kind": "unverified_effect",
+      "step": 1,
+      "reason": "尚无完整且指纹一致的登记产物，不能确认状态变化"
+    },
+    {
+      "kind": "missing_independent_verifier",
+      "step": 2,
+      "reason": "本步骤没有独立结果判据，不能从运行成功推断能力已验证"
+    },
+    {
+      "kind": "unverified_effect",
+      "step": 2,
+      "reason": "尚无完整且指纹一致的登记产物，不能确认状态变化"
+    }
+  ],
+  "summary": {
+    "steps": 3,
+    "observed_in_scope": 0,
+    "verified_file_links": 0,
+    "file_links": 0,
+    "evidence_gaps": 8
+  },
+  "research_status": {
+    "learned_causal_model": false,
+    "behavioral_equivalence": false,
+    "minimal_basis": false,
+    "reachable_space_proven": false
+  },
+  "boundary": "证据缺口不等于缺少真实能力；文件组合不等于因果技能代数；报告不会发奖或修改技能库",
+  "state_kernel": {
+    "policy": {
+      "version": "state-admission-v1",
+      "task_sha256": "f11ad2049bdf8bdfd9876d3000d635e1235eb10782b165b2248456baad7b3798",
+      "captured_at_ms": 1791780997538,
+      "frozen": {
+        "0": {
+          "declaration": {
+            "requires": [
+              {
+                "kind": "csv_schema",
+                "file": "输入原始 CSV",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "csv_schema",
+                "file": "raw_predictions.csv",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "csv_nonempty",
+                "file": "raw_predictions.csv"
+              }
+            ],
+            "ensures": [
+              {
+                "kind": "csv_schema",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "csv_unique",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id"
+                ]
+              },
+              {
+                "kind": "csv_no_missing",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "score"
+                ]
+              },
+              {
+                "kind": "csv_schema",
+                "file": "cohort_audit.csv",
+                "columns": [
+                  "check",
+                  "count"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "csv_nonempty",
+                "file": "cohort_audit.csv"
+              },
+              {
+                "kind": "file_exists",
+                "file": "clean_predictions.csv"
+              },
+              {
+                "kind": "file_exists",
+                "file": "cohort_audit.csv"
+              },
+              {
+                "kind": "csv_nonempty",
+                "file": "clean_predictions.csv"
+              },
+              {
+                "kind": "csv_no_missing",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ]
+              },
+              {
+                "kind": "csv_numeric_range",
+                "file": "clean_predictions.csv",
+                "column": "score",
+                "min": 0,
+                "max": 1
+              },
+              {
+                "kind": "csv_values_in",
+                "file": "clean_predictions.csv",
+                "column": "label",
+                "values": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "kind": "csv_disjoint_groups",
+                "file": "clean_predictions.csv",
+                "entity": "subject_id",
+                "group": "split"
+              }
+            ],
+            "input_files": [
+              "raw_predictions.csv"
+            ],
+            "output_files": [
+              "clean_predictions.csv",
+              "cohort_audit.csv"
+            ]
+          },
+          "sha256": "4ce548b589e6fa038542aae871d89025d3699a849d1d45a5739775673465567b",
+          "source": "host_reference_and_plan"
+        },
+        "1": {
+          "declaration": {
+            "requires": [
+              {
+                "kind": "csv_schema",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "csv_no_missing",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "score"
+                ]
+              },
+              {
+                "kind": "csv_schema",
+                "file": "cohort_audit.csv",
+                "columns": [
+                  "check",
+                  "count"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "file_exists",
+                "file": "clean_predictions.csv"
+              },
+              {
+                "kind": "file_exists",
+                "file": "cohort_audit.csv"
+              },
+              {
+                "kind": "csv_nonempty",
+                "file": "clean_predictions.csv"
+              },
+              {
+                "kind": "csv_unique",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id"
+                ]
+              },
+              {
+                "kind": "csv_no_missing",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ]
+              },
+              {
+                "kind": "csv_numeric_range",
+                "file": "clean_predictions.csv",
+                "column": "score",
+                "min": 0,
+                "max": 1
+              },
+              {
+                "kind": "csv_values_in",
+                "file": "clean_predictions.csv",
+                "column": "label",
+                "values": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "kind": "csv_disjoint_groups",
+                "file": "clean_predictions.csv",
+                "entity": "subject_id",
+                "group": "split"
+              }
+            ],
+            "ensures": [
+              {
+                "kind": "csv_schema",
+                "file": "heldout_metrics.csv",
+                "columns": [
+                  "metric",
+                  "value"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "csv_nonempty",
+                "file": "heldout_metrics.csv"
+              },
+              {
+                "kind": "file_exists",
+                "file": "heldout_metrics.csv"
+              }
+            ],
+            "input_files": [
+              "clean_predictions.csv",
+              "cohort_audit.csv"
+            ],
+            "output_files": [
+              "heldout_metrics.csv"
+            ]
+          },
+          "sha256": "9daed405bb06c7b147e8e33756a45575db32e9b922195d0a296546e15e4e547d",
+          "source": "host_reference_and_plan"
+        },
+        "2": {
+          "declaration": {
+            "requires": [
+              {
+                "kind": "csv_schema",
+                "file": "cohort_audit.csv",
+                "columns": [
+                  "check",
+                  "count"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "csv_schema",
+                "file": "heldout_metrics.csv",
+                "columns": [
+                  "metric",
+                  "value"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "file_exists",
+                "file": "cohort_audit.csv"
+              },
+              {
+                "kind": "file_exists",
+                "file": "heldout_metrics.csv"
+              }
+            ],
+            "ensures": [
+              {
+                "kind": "file_exists",
+                "file": "figure.svg"
+              },
+              {
+                "kind": "file_exists",
+                "file": "report.md"
+              }
+            ],
+            "input_files": [
+              "cohort_audit.csv",
+              "heldout_metrics.csv"
+            ],
+            "output_files": [
+              "figure.svg",
+              "report.md"
+            ]
+          },
+          "sha256": "61d656fcf566a003834d69e573f56a290f6cb22789c1cd035eb382cc2a2c3d67",
+          "source": "host_reference_and_plan"
+        }
+      },
+      "host_reference": "research-reproducibility-v1",
+      "boundary": "状态声明经真实文件判定后才成为本次观测；不代表跨环境成功率、因果贡献或全库能力边界"
+    },
+    "declared_composition": {
+      "version": "skill-state-contract-v1",
+      "state": "unknown",
+      "edges": [
+        {
+          "source": null,
+          "target": 0,
+          "file": "输入原始 CSV",
+          "predicate": {
+            "kind": "csv_schema",
+            "file": "输入原始 CSV",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          "state": "unknown",
+          "detail": "no ancestor declares this required artifact",
+          "candidate_sources": []
+        },
+        {
+          "source": null,
+          "target": 0,
+          "file": "raw_predictions.csv",
+          "predicate": {
+            "kind": "csv_schema",
+            "file": "raw_predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          "state": "unknown",
+          "detail": "no ancestor declares this required artifact",
+          "candidate_sources": []
+        },
+        {
+          "source": null,
+          "target": 0,
+          "file": "raw_predictions.csv",
+          "predicate": {
+            "kind": "csv_nonempty",
+            "file": "raw_predictions.csv"
+          },
+          "state": "unknown",
+          "detail": "no ancestor declares this required artifact",
+          "candidate_sources": []
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_schema",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          "state": "declared_compatible",
+          "detail": "output schema entails required columns",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_no_missing",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "score"
+            ]
+          },
+          "state": "declared_compatible",
+          "detail": "output predicate conservatively entails the precondition",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_no_missing",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "score"
+            ]
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "cohort_audit.csv",
+          "predicate": {
+            "kind": "csv_schema",
+            "file": "cohort_audit.csv",
+            "columns": [
+              "check",
+              "count"
+            ],
+            "exact": true
+          },
+          "state": "declared_compatible",
+          "detail": "output schema entails required columns",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "cohort_audit.csv",
+            "columns": [
+              "check",
+              "count"
+            ],
+            "exact": true
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "file_exists",
+            "file": "clean_predictions.csv"
+          },
+          "state": "declared_compatible",
+          "detail": "a valid artifact ensure implies file existence",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "cohort_audit.csv",
+          "predicate": {
+            "kind": "file_exists",
+            "file": "cohort_audit.csv"
+          },
+          "state": "declared_compatible",
+          "detail": "a valid artifact ensure implies file existence",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "cohort_audit.csv",
+            "columns": [
+              "check",
+              "count"
+            ],
+            "exact": true
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_nonempty",
+            "file": "clean_predictions.csv"
+          },
+          "state": "declared_compatible",
+          "detail": "output predicate conservatively entails the precondition",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_nonempty",
+            "file": "clean_predictions.csv"
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_unique",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "sample_id"
+            ]
+          },
+          "state": "declared_compatible",
+          "detail": "output predicate conservatively entails the precondition",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_unique",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "sample_id"
+            ]
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_no_missing",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ]
+          },
+          "state": "declared_compatible",
+          "detail": "output predicate conservatively entails the precondition",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_no_missing",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ]
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_numeric_range",
+            "file": "clean_predictions.csv",
+            "column": "score",
+            "min": 0,
+            "max": 1
+          },
+          "state": "declared_compatible",
+          "detail": "output predicate conservatively entails the precondition",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_numeric_range",
+            "file": "clean_predictions.csv",
+            "column": "score",
+            "min": 0,
+            "max": 1
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_values_in",
+            "file": "clean_predictions.csv",
+            "column": "label",
+            "values": [
+              0,
+              1
+            ]
+          },
+          "state": "declared_compatible",
+          "detail": "output predicate conservatively entails the precondition",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_values_in",
+            "file": "clean_predictions.csv",
+            "column": "label",
+            "values": [
+              0,
+              1
+            ]
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_disjoint_groups",
+            "file": "clean_predictions.csv",
+            "entity": "subject_id",
+            "group": "split"
+          },
+          "state": "declared_compatible",
+          "detail": "output predicate conservatively entails the precondition",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_disjoint_groups",
+            "file": "clean_predictions.csv",
+            "entity": "subject_id",
+            "group": "split"
+          }
+        },
+        {
+          "source": 0,
+          "target": 2,
+          "file": "cohort_audit.csv",
+          "predicate": {
+            "kind": "csv_schema",
+            "file": "cohort_audit.csv",
+            "columns": [
+              "check",
+              "count"
+            ],
+            "exact": true
+          },
+          "state": "declared_compatible",
+          "detail": "output schema entails required columns",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "cohort_audit.csv",
+            "columns": [
+              "check",
+              "count"
+            ],
+            "exact": true
+          }
+        },
+        {
+          "source": 1,
+          "target": 2,
+          "file": "heldout_metrics.csv",
+          "predicate": {
+            "kind": "csv_schema",
+            "file": "heldout_metrics.csv",
+            "columns": [
+              "metric",
+              "value"
+            ],
+            "exact": true
+          },
+          "state": "declared_compatible",
+          "detail": "output schema entails required columns",
+          "candidate_sources": [
+            1
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "heldout_metrics.csv",
+            "columns": [
+              "metric",
+              "value"
+            ],
+            "exact": true
+          }
+        },
+        {
+          "source": 0,
+          "target": 2,
+          "file": "cohort_audit.csv",
+          "predicate": {
+            "kind": "file_exists",
+            "file": "cohort_audit.csv"
+          },
+          "state": "declared_compatible",
+          "detail": "a valid artifact ensure implies file existence",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "cohort_audit.csv",
+            "columns": [
+              "check",
+              "count"
+            ],
+            "exact": true
+          }
+        },
+        {
+          "source": 1,
+          "target": 2,
+          "file": "heldout_metrics.csv",
+          "predicate": {
+            "kind": "file_exists",
+            "file": "heldout_metrics.csv"
+          },
+          "state": "declared_compatible",
+          "detail": "a valid artifact ensure implies file existence",
+          "candidate_sources": [
+            1
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "heldout_metrics.csv",
+            "columns": [
+              "metric",
+              "value"
+            ],
+            "exact": true
+          }
+        }
+      ],
+      "frontier": [
+        {
+          "step_idx": 0,
+          "file": "输入原始 CSV",
+          "predicate": {
+            "kind": "csv_schema",
+            "file": "输入原始 CSV",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          "state": "unknown",
+          "reason": "unsatisfied_declared_precondition",
+          "detail": "no ancestor declares this required artifact",
+          "candidate_sources": []
+        },
+        {
+          "step_idx": 0,
+          "file": "raw_predictions.csv",
+          "predicate": {
+            "kind": "csv_schema",
+            "file": "raw_predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          "state": "unknown",
+          "reason": "unsatisfied_declared_precondition",
+          "detail": "no ancestor declares this required artifact",
+          "candidate_sources": []
+        },
+        {
+          "step_idx": 0,
+          "file": "raw_predictions.csv",
+          "predicate": {
+            "kind": "csv_nonempty",
+            "file": "raw_predictions.csv"
+          },
+          "state": "unknown",
+          "reason": "unsatisfied_declared_precondition",
+          "detail": "no ancestor declares this required artifact",
+          "candidate_sources": []
+        }
+      ],
+      "boundary": "declared compatibility only; runtime evidence is required"
+    },
+    "boundary": "声明兼容性与实际条件检查分别记录；不代表因果贡献或跨任务能力已验证"
+  },
+  "report_sha256": "9724134fd71db7853f075d793ff82d26709ac4f15cea777fa1d36cdd1f56929a"
+}

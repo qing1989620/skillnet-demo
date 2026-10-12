@@ -156,13 +156,13 @@
   .tabs{display:none}
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=20261012.1"></script>
+<script src="/static/assets/ui.js?v=20261012.6"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=20261012.1"></script>
-<link rel="stylesheet" href="/static/assets/refinement.css?v=20261012.1">
-<link rel="stylesheet" href="/static/assets/quality.css?v=20261012.1">
-<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261012.1">
-<link rel="stylesheet" href="/static/assets/sphere.css?v=20261012.1">
+<script src="/static/assets/product.js?v=20261012.6"></script>
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261012.6">
+<link rel="stylesheet" href="/static/assets/quality.css?v=20261012.6">
+<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261012.6">
+<link rel="stylesheet" href="/static/assets/sphere.css?v=20261012.6">
 </head>
 <body>
 <header>
@@ -220,7 +220,7 @@
    ============================================================================ */
 const API = location.origin;
 const QS = new URLSearchParams(location.search);
-const RUN_ID = QS.get("id") || localStorage.getItem("last_run") || "";
+const RUN_ID = QS.get("id") || (()=>{try{return localStorage.getItem("last_run")||"";}catch(_){return "";}})();
 // 截图/审计模式：不建立 SSE 长连接（否则无头浏览器的虚拟时钟无法结束，
 // 与 graph.html 的 ?frames=N 是同一类问题），只回放已落盘事件。
 const STATIC_MODE = QS.get("static") === "1";
@@ -290,7 +290,7 @@ async function refresh(){
   $("budget").textContent = "¥" + (RUN.budget?.max_cost_yuan ?? 0.2).toFixed(2);
   if(!SELECTED && RUN.steps?.length)SELECTED={kind:"step",idx:RUN.steps[0].idx};
   renderGraph(); renderTimelineMeta();
-  const m=Product.metrics(RUN);let proof=document.getElementById("run-proof");if(!proof){proof=document.createElement("div");proof.id="run-proof";proof.className="run-proof";$("task").parentNode.appendChild(proof);}proof.innerHTML=`程序验收 ${m.passed}/${m.checks} · 语义确认 ${m.confirmed}/${m.semantic} · ${m.gate.eligible===false?"学习未准入："+m.gate.reason:m.gate.eligible===true?"具备学习准入证据":"尚未记录学习结论"} <button type="button" data-run-value data-run="${esc(RUN.run_id)}">交付与证据 ↗</button>`;
+  const m=Product.metrics(RUN);let proof=document.getElementById("run-proof");if(!proof){proof=document.createElement("div");proof.id="run-proof";proof.className="run-proof";$("task").parentNode.appendChild(proof);}proof.innerHTML=`程序验收 ${m.passed}/${m.checks} · 语义确认 ${m.confirmed}/${m.semantic} · ${esc(m.gate.eligible===false?"学习未准入："+m.gate.reason:m.gate.eligible===true?"具备学习准入证据":"尚未记录学习结论")} <button type="button" data-run-value data-run="${esc(RUN.run_id)}">交付与证据 ↗</button>`;
   if (SELECTED) renderInspector();
   const done = TERMINAL.includes(RUN.status);
   $("cancel").disabled = done;
@@ -341,7 +341,7 @@ function renderGraph(){
     const dependencies=s.depends_on||[];
     parts.push(`<div class="gedge"><span>${dependencies.length?'依赖 '+dependencies.map(d=>'S'+(d+1)).join(' / '):'根节点 · 可独立启动'}</span></div>`);
     const inputs=s.input_artifacts||[];
-    if(inputs.length)parts.push(`<div class="gedge">${inputs.map(a=>`<span class="art" data-art="${esc(a.name)}" data-from="${a.from_step??''}">${esc(a.logical_name)} ← S${a.from_step==null?'?':a.from_step+1}</span>`).join('')}</div>`);
+    if(inputs.length)parts.push(`<div class="gedge">${inputs.map(a=>`<span class="art" data-art="${esc(a.name)}" data-from="${a.from_step??''}">${esc(a.logical_name)} ← ${a.from_step==null?'外部/任务输入':'S'+(a.from_step+1)}</span>`).join('')}</div>`);
     else if((s.inputs||[]).length)parts.push(`<div class="gedge"><span>输入：${esc(s.inputs.join('、'))}（旧记录未登记版本）</span></div>`);
   });
   host.innerHTML = Product.dagHTML(RUN)+parts.join("");
@@ -518,11 +518,12 @@ function stepHtml(s){
     <details><summary>展开完整代码（${(s.code||"").length} 字符）</summary><pre style="max-height:400px">${esc(s.code||"（无）")}</pre></details></div>`;
 }
 function artifactHtml(sel){
-  const a = (RUN.steps||[]).flatMap(s=>s.artifacts||[]).find(x=>x.name===sel.name) || {};
+  const a = (RUN.artifacts||[]).find(x=>x.name===sel.name) || {};
+  const origin = a.from_step==null ? (a.kind==='任务输入'?'服务端冻结的公开任务输入':a.kind==='跨轮输入'?'历史输入版本':'来源未记录') : 'Step '+(a.from_step+1);
   const consumers = (RUN.steps||[]).filter(s => (s.input_artifacts||[]).some(a=>a.name===sel.name)).map(s=>s.idx+1);
   return `<div class="ins-sec"><div class="ins-k">产物血缘（从哪来、被谁用）</div>
     <div class="row"><span>文件名</span><b>${esc(sel.name)}</b></div>
-    <div class="row"><span>来源步骤</span><b>Step ${(sel.from??a.from_step??0)+1}</b></div>
+    <div class="row"><span>来源</span><b>${esc(origin)}</b></div>
     <div class="row"><span>被用于</span><b>${consumers.length?consumers.map(i=>"Step "+i).join(", "):"（未登记消费版本）"}</b></div>
     <div class="row"><span>大小</span><b>${a.bytes?((a.bytes/1024).toFixed(1)+" KB"):"—"}</b></div>
     <div class="row"><span>SHA-256（完整指纹）</span><b>${esc(a.sha256||"—")}</b></div>
@@ -530,7 +531,7 @@ function artifactHtml(sel){
     　<a href="${API}/api/runs/${RUN.run_id}/artifacts/${encodeURIComponent(sel.name)}?download=1">下载</a></div>
   </div>
   <div class="ins-sec"><div class="ins-k">说明</div>
-    <div class="note">产物来自 <b>Step ${(sel.from??a.from_step??0)+1}</b>。${consumers.length?`已记录下游消费步骤：${consumers.join("、")}。`:"此记录未登记下游消费版本，不能推断传递关系。"}</div>
+    <div class="note">文件来自 <b>${esc(origin)}</b>。${consumers.length?`已记录下游消费步骤：${consumers.join("、")}。`:"此记录未登记下游消费版本，不能推断传递关系。"}</div>
   </div>`;
 }
 

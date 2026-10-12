@@ -70,30 +70,57 @@
         <div class="ui-dialog-status" id="ui-token-status" role="status"></div>
         <div class="ui-dialog-actions"><button type="button" class="ui-btn ui-btn-secondary" id="ui-token-clear">清除</button><button class="ui-btn ui-btn-secondary" value="cancel">关闭</button><button type="button" class="ui-btn ui-btn-primary" id="ui-token-save">保存并验证</button></div></form>`;
       document.body.appendChild(dialog);
+      let validation = 0, controller = null;
+      const stopValidation = () => { validation++; controller?.abort(); controller = null; dialog.querySelector("#ui-token-save").disabled = false; };
+      dialog.addEventListener("close", stopValidation);
       dialog.addEventListener("click", event => { if (event.target === dialog) { const r = dialog.getBoundingClientRect(); if (event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom) dialog.close(); } });
       dialog.querySelector("#ui-token-clear").addEventListener("click", () => {
+        stopValidation();
         storage.set(""); dialog.querySelector("#ui-token").value = "";
         dialog.querySelector("#ui-token-status").textContent = "已清除当前标签页的访问令牌。";
+        window.dispatchEvent(new Event("skillnet:connection-changed"));
       });
       dialog.querySelector("#ui-token-save").addEventListener("click", async event => {
         const button = event.currentTarget, status = dialog.querySelector("#ui-token-status");
-        const previous = storage.get(); storage.set(dialog.querySelector("#ui-token").value.trim());
+        stopValidation();
+        const current = validation, candidate = dialog.querySelector("#ui-token").value.trim();
+        controller = new AbortController();
+        // Validate the submitted token without changing the active connection.
+        // Closing/clearing invalidates this attempt, including late failures.
+        const options = {signal: controller.signal, headers: {"X-SkillNet-Token": candidate}};
         button.disabled = true; status.textContent = "正在验证连接…"; status.style.color = "";
         try {
-          const health = await json("/api/health");
+          const health = await json("/api/health", options);
           // Dedicated read-only check; public health cannot verify a token.
-          if (health.token_required) await json("/api/auth/check");
+          if (health.token_required) await json("/api/auth/check", options);
+          if (current !== validation || !dialog.open) return;
+          storage.set(candidate);
           status.textContent = health.token_required ? "访问令牌已验证并保存。" : "服务连接正常。当前服务未启用令牌保护。";
           window.dispatchEvent(new Event("skillnet:connection-changed"));
         } catch (error) {
-          storage.set(previous); status.textContent = error.message; status.style.color = "var(--bad)";
-        } finally { button.disabled = false; }
+          if (current !== validation || error.name === "AbortError" || !dialog.open) return;
+          status.textContent = error.message; status.style.color = "var(--bad)";
+        } finally { if (current === validation) { controller = null; button.disabled = false; } }
       });
     }
     dialog.querySelector("#ui-token").value = storage.get();
     dialog.querySelector("#ui-token-status").textContent = "";
     dialog.querySelector("#ui-token-status").style.color = "";
     dialog.showModal();
+  }
+  function readSessions(key) {
+    let items; try { items = JSON.parse(localStorage.getItem(key) || "[]"); } catch (_) { return []; }
+    if (!Array.isArray(items)) return [];
+    // Only restore data fields. Cached HTML and execution snapshots belong to
+    // the active page and are rebuilt from the server, never trusted storage.
+    return items.filter(s => s && typeof s.id === "string" && Array.isArray(s.turns)).slice(0,100).map(s => ({
+      id:s.id, title:typeof s.title === "string" ? s.title : "", created:Number.isFinite(Number(s.created)) ? Number(s.created) : 0,
+      turns:s.turns.filter(t => t && typeof t.q === "string").slice(-50).map(t => ({
+        q:t.q, run_id:typeof t.run_id === "string" ? t.run_id : null, ts:Number.isFinite(Number(t.ts)) ? Number(t.ts) : 0,
+        status:typeof t.status === "string" ? t.status : "unknown", reply_digest:typeof t.reply_digest === "string" ? t.reply_digest.slice(0,400) : "",
+        _loaded:false, _loading:false, body:""
+      }))
+    }));
   }
   const mark = `<svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M7 9 16 4l9 5v13l-9 6-9-6V9Z" stroke="currentColor" stroke-width="1.6"/><path d="m7 9 9 6 9-6M16 15v13M7 22l9-7 9 7" stroke="currentColor" stroke-width="1.4"/><circle cx="16" cy="15" r="2.8" fill="currentColor"/></svg>`;
   async function consumeSSE(url, onEvent, signal) {
@@ -197,7 +224,7 @@
     const url=String(m.source_url||'');const safe=url.startsWith('https://github.com/')?url:'#';
     return `<section class="skill-provenance"><b>GitHub 社区技能 · 原始资料已收录</b><div><a href="${esc(safe)}" target="_blank" rel="noopener">${esc(m.repository)} / ${esc(m.original_path)} ↗</a></div><div>来源仓库 ${Number(m.stars||0).toLocaleString()} Stars · ${esc(skill.license)} · ${esc(m.resource_count)} 个包内文件</div><small>提交 ${esc(m.commit)}<br>正文 SHA-256 ${esc(m.content_sha256)}<br>导入状态：${esc(m.import_status)}。收录不代表该技能已在当前环境执行成功；依赖与兼容性以原文为准。</small></section>`;
   }
-  window.UI = { provenanceHTML, fetch: apiFetch, json, esc, qualityLabel, toast, errorHTML, consumeSSE, connectionSettings, getToken: storage.get,
+  window.UI = { provenanceHTML, fetch: apiFetch, json, esc, qualityLabel, toast, errorHTML, consumeSSE, connectionSettings, readSessions, getToken: storage.get,
     setToken: value => storage.set(String(value || "").trim()), productNav, mark,
     reveal: initReveal, progress: initProgress, glow: initGlow };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();

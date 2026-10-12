@@ -1,0 +1,62 @@
+Observed: 2026-10-12 (Asia/Shanghai), Windows PowerShell, repository worktree.
+Scope: Node logic, source compilation and fixture checks; no browser or visual acceptance.
+
+$ node tools/frontend_resilience_check.js
+exit_code=0
+Frontend resilience: token clear/close races, untrusted stored history, chained search ordering, metadata failure, storage-disabled runs, unavailable judge scores, blocked zero-attempt steps and centre request ownership passed.
+
+$ node tools/check_web.js
+exit_code=0
+Web syntax and static resource integrity: 18 scripts passed
+
+$ node tools/briefing_check.js
+exit_code=0
+Homepage flow: replay cursor, auth, phase order, graph events, score validity, artifact URLs and all seven stages passed.
+
+$ node tools/sphere_check.js
+exit_code=0
+Sphere: 1881 real-node capacity, unit geometry, depth picking, drag/click separation, reduced motion, offscreen/hidden cleanup and safe capability evidence passed.
+
+$ node tools/front_check.js
+exit_code=0
+  PASS  渲染函数全套执行（注入真实数据） SVG 节点 51 / 连线 62；概览各区块均已生成
+  PASS  recallOf 计算正确 命中 2/4 = 0.5
+  PASS  recallOf 处理空 gold 返回 null（不误报 0）
+  PASS  pct / num 格式化与 null 安全 百分比/数值格式化正确
+  PASS  esc 防 XSS 转义 危险字符已转义
+
+前端渲染自检：5/5 通过
+
+$ node tools/showcase_check.js
+exit_code=0
+Executive stage: actual record replay, event deduplication, phase order, partial/cancelled runs, repair, DAG layouts and safe CSV preview passed.
+
+$ node tools/product_check.js
+exit_code=0
+Product: true dependencies, noncontiguous steps, learning gate, partial verification, repairs, safe text and all six page scripts passed.
+
+$ node tools/product_dialog_check.js
+exit_code=0
+Product dialog controller: 7 dialog classes, stale success/catch, close/cancel/pagehide, same-file cross-run streams/images, resource/step/state XSS, unknown vs failed, missing step and keyboard activation passed (controlled DOM; no browser rendering claim).
+
+After replacing the stale homepage test-count label with a CI-record link:
+$ node tools/check_web.js
+exit_code=0
+Web syntax and static resource integrity: 18 scripts passed
+$ node tools/briefing_check.js
+exit_code=0
+Homepage flow: replay cursor, auth, phase order, graph events, score validity, artifact URLs and all seven stages passed.
+
+
+Final local input/deliverable correction (source v20261012.5 / contract.5):
+$ node tools/product_check.js
+exit_code=0
+Product: true dependencies, noncontiguous steps, learning gate, partial verification, repairs, safe text and all six page scripts passed.
+
+Final v6 direct homepage state-kernel presentation source check:
+$ node tools/check_web.js
+exit_code=0
+Web syntax and static resource integrity: 18 scripts passed
+$ node tools/showcase_check.js
+exit_code=0
+Executive stage: actual record replay, event deduplication, phase order, partial/cancelled runs, repair, DAG layouts and safe CSV preview passed.
