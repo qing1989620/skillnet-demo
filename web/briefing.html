@@ -595,6 +595,7 @@
 <script src="/static/assets/sphere.js?v=20261013.13"></script>
 <link rel="stylesheet" href="/static/assets/hero-explorer.css?v=20261013.13">
 <script src="/static/assets/hero-explorer.js?v=20261013.13"></script>
+<link rel="stylesheet" href="/static/assets/delivery.css?v=20261013.14">
 </head>
 <body>
 
@@ -797,23 +798,22 @@
 <!-- ==================== PRODUCT · 真实界面（对标 Vercel/Stripe 的产品截图段） ==================== -->
 <section class="wrap" id="sproduct">
   <div class="kicker">PRODUCT · 真实界面</div>
-  <h2>不是概念图，是你现在就能打开的界面</h2>
-  <div class="sub">下面是界面示例截图（不作为当前规模的实时读数）——
-    可点击进入对应页面亲自操作。当前技能库 <span data-live="skills">—</span> 项、
-    <span data-live="edges">—</span> 条类型化关系边，上述数字实时读取；示例截图保留其拍摄时的状态。</div>
+  <h2>探索能力，也看见它如何工作</h2>
+  <div class="sub">从技能发现到执行复核，每个入口都连接真实能力与任务证据。选择一个界面，继续探索。</div>
 
   <div class="shots">
-    <a class="shot" href="/dashboard" target="_blank">
-      <div class="shot-chrome"><i></i><i></i><i></i><span>127.0.0.1:8848/dashboard</span></div>
-      <img src="/static/assets/dash.png" alt="完整面板：KPI、技能关系图、领域分布">
-      <div class="shot-cap"><b>完整面板</b>——技能库总览、关系图、领域分布与实验数据；KPI 全部为实时读数</div>
+    <a class="shot" href="/dashboard" target="_blank" rel="noopener" aria-label="打开内核实验室，查看技能、检索与验证">
+      <div class="shot-chrome"><i aria-hidden="true"></i><i aria-hidden="true"></i><i aria-hidden="true"></i><span>/dashboard</span><small>内核实验室</small></div>
+      <img src="/static/assets/lab-preview-v14.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="当前内核实验室：能力总览、领域分布、技能检索与实验入口">
+      <div class="shot-cap"><div><b>内核实验室</b><p>技能目录、方法检索与验证记录，在一个工作空间中展开。</p></div><span aria-hidden="true">↗</span></div>
     </a>
-    <a class="shot" href="/graph" target="_blank">
-      <div class="shot-chrome"><i></i><i></i><i></i><span>127.0.0.1:8848/graph</span></div>
-      <img src="/static/assets/graph.png" alt="技能星图：深色沉浸模式">
-      <div class="shot-cap"><b>技能星图</b>——深色沉浸模式，红点为系统自主演化出的技能；可拖拽、悬停查看详情</div>
+    <a class="shot" href="/graph" target="_blank" rel="noopener" aria-label="打开球体能力网络，搜索技能并沿关系探索">
+      <div class="shot-chrome"><i aria-hidden="true"></i><i aria-hidden="true"></i><i aria-hidden="true"></i><span>/graph</span><small>球体能力网络</small></div>
+      <img src="/static/assets/sphere-preview-v14.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="当前球体能力网络：三维技能球体、领域关系、键盘搜索与旋转控制">
+      <div class="shot-cap"><div><b>球体能力网络</b><p>旋转、聚焦、搜索，从一个技能走向它的协作关系与任务证据。</p></div><span aria-hidden="true">↗</span></div>
     </a>
   </div>
+  <p class="product-preview-note">界面实拍 · 2026.10.13 <span>当前服务：<span data-live="skills">—</span> 个技能 / <span data-live="edges">—</span> 条关系。截图保留拍摄时状态。</span></p>
 </section>
 
 <!-- ==================== 幕 4 · 对比论文 ==================== -->
@@ -936,51 +936,50 @@
   </div>
 </section>
 
-<!-- ==================== 幕 6 · 工作量 ==================== -->
+<!-- ==================== 交付 · 能力资产与验证依据 ==================== -->
 <section class="wrap" id="s6">
-  <div class="kicker">EVIDENCE OF WORK · 工作量与工程可信度</div>
-  <h2>每项能力，都有来处与证据</h2>
-  <div class="kpi">
-    <div class="kp"><div class="n"><span data-live="skills">—</span></div><div class="t">技能 · <span data-live="domains">—</span> 个领域（社区导入 + 原有种子 + 演化）</div></div>
-    <div class="kp"><div class="n"><span data-live="edges">—</span></div><div class="t">类型化关系边 · 图驱动编排</div></div>
-    <div class="kp"><div class="n">160</div><div class="t">维任务-技能联合上下文（当前 LinUCB 实现）</div></div>
-    <div class="kp"><div class="n">31</div><div class="t">项交付自检（verify.py）</div></div>
-    <div class="kp"><div class="n">CI</div><div class="t"><a href="https://github.com/qing1989620/skillnet-demo/actions" target="_blank" rel="noopener">自动化回归 · 查看交付记录 ↗</a></div></div>
-    <div class="kp"><div class="n">7</div><div class="t">项真实运行内核证据</div></div>
-    <div class="kp"><div class="n">8</div><div class="t">个框架 / 目录导出落点</div></div>
-    <div class="kp"><div class="n">2</div><div class="t">套任务集（历史划分元数据待复核）</div></div>
+  <div class="kicker">CAPABILITY &amp; EVIDENCE · 能力资产与验证依据</div>
+  <h2>能力有来处，交付有依据</h2>
+  <div class="sub">从可追溯的技能资产，到可复核的执行结果。每一类证据，回答一个具体问题。</div>
+  <div class="proof-grid">
+    <article class="proof-card proof-assets">
+      <div class="proof-label"><span>01 / 能力资产</span><span class="proof-live">实时目录</span></div>
+      <h3>为问题找到可用的方法</h3>
+      <div class="proof-number"><span data-live="skills">—</span><small>个技能</small></div>
+      <p>种子方法、社区资源与已有经验，连接为可检索、可组合的能力网络。</p>
+      <dl class="proof-asset-stats"><div><dt>覆盖领域</dt><dd data-live="domains">—</dd></div><div><dt>类型化关系</dt><dd data-live="edges">—</dd></div></dl>
+      <div class="proof-provenance">来源版本 <span>·</span> 资源许可 <span>·</span> 内容指纹</div>
+      <a href="/graph">探索能力网络 <span aria-hidden="true">↗</span></a>
+    </article>
+    <article class="proof-card proof-execution">
+      <div class="proof-label"><span>02 / 真实交付</span><span class="proof-case">公开案例</span></div>
+      <div class="proof-number">20<small>/ 20</small></div>
+      <h3>独立参考检查通过</h3>
+      <p>科研复核：3 个步骤、5 个交付文件。结果支持本次冻结输入与检查范围。</p>
+      <a href="/run?id=f11ad204-20261012-155354-d478">检查文件与执行证据 <span aria-hidden="true">↗</span></a>
+    </article>
+    <article class="proof-card proof-admission">
+      <div class="proof-label"><span>03 / 经验准入</span><span class="proof-case">逐项核验</span></div>
+      <div class="proof-number">12<small>道约束</small></div>
+      <h3>验证提升，才记录奖励</h3>
+      <p>独立对照、真实产物、无退步与可靠增益共同约束；失败或未知均不放行。</p>
+      <a href="/run?id=f11ad204-20261012-155354-d478">查看本次准入结果 <span aria-hidden="true">↗</span></a>
+    </article>
+    <article class="proof-card proof-engineering">
+      <div class="proof-engineering-main"><div class="proof-label"><span>04 / 工程验证</span><span class="proof-case">版本记录 · 2026.10.13</span></div><h3><b>1,086</b> 项 Python 回归</h3><p>Windows / Linux · Python 3.11 / 3.12 · Linux Docker 执行隔离</p></div>
+      <a href="https://github.com/qing1989620/skillnet-demo/actions" target="_blank" rel="noopener">查看自动化验证 <span aria-hidden="true">↗</span></a>
+    </article>
   </div>
-  <div class="next" style="border-left:3px solid var(--ok)">
-    <b>技能库已完成一次跨项目扩容：</b>吸收开发组成员项目（Nexus）的 24 个技能——
-    含 Anthropic 官方的 docx / pdf / pptx / xlsx / skill-creator / mcp-builder 等工具技能，
-    以及面试教练、算法可视化等中文自制技能。转换脚本自动提取契约字段并建立跨领域关系边
-    （Word ↔ 科研写作、PDF ↔ 文献综述、Excel ↔ EDA 分析），使技能库从「只会科研方法」
-    变为「科研方法 + 交付物产出」的完整体系。脚本可幂等重跑（tools/import_member_skills.py）。
+  <div class="proof-integration">
+    <div><div class="proof-label">S1 / RESEARCH ECOSYSTEM</div><h3>接入已有科研工作流，保留可复用的能力资产</h3><p>技能发现 → 有预算的执行 → 项目附件与证据包 → 经验证的经验候选</p></div>
+    <div class="proof-integration-action"><span>服务契约已具备 · 生产联调待验证</span><a href="/docs" target="_blank" rel="noopener">查看接入接口 <span aria-hidden="true">↗</span></a></div>
   </div>
-  <div class="next">
-    <b>接入公司产品的路径已备好：</b>先接入检索与技能正文工具，再接入有预算的执行、项目附件和证据包。
-    业务反馈作为评价线索；候选通过独立对照与十二门核验后，才进入版本准入流程。
-    S1 保留身份、项目权限和现有 Agent 主流程；线上连接需实际联调。
-  </div>
-
-  <details class="script">
-    <summary>汇报脚本（3 分钟讲法，内部参考）</summary>
-    <div class="in">
-      <ol>
-        <li><b>30 秒 · 定位：</b>这是 S1 的科研能力生态层：从任务找到可用方法，让执行结果留下可核对、可复用的资产。</li>
-        <li><b>30 秒 · 生态：</b>复用成熟技能标准与研究思路；演示重点是它们如何一起服务真实科研流程。</li>
-        <li><b>90 秒 · 现场：</b>回放模拟科研复核任务，沿七阶段查看技能选择、样本泄漏排查、真实文件传递与指标重算，再打开“这次运行，留下了什么”。</li>
-        <li><b>30 秒 · 积累：</b>说明样本检查通过的范围；候选经验必须通过十二道门才能奖励，单次任务没有证明网络变强。</li>
-        <li><b>收尾：</b>导出证据包，展示 S1 的三个落点：项目会话、项目附件与候选能力资产。当前服务契约可用，S1 生产联调待验证。</li>
-      </ol>
-    </div>
-  </details>
-
-  <footer>SkillNet-S1 · 实时执行使用真实 API · 历史回放明确标注 · 冻结实验保留原始口径与溯源</footer>
+  <div class="proof-resources"><span>继续了解产品与实现</span><a href="https://github.com/qing1989620/skillnet-demo/blob/main/docs/product-guide.md" target="_blank" rel="noopener">产品说明 ↗</a><a href="https://github.com/qing1989620/skillnet-demo/blob/main/docs/frontier-results.md" target="_blank" rel="noopener">研究与验证资料 ↗</a></div>
+  <footer>SkillNet-S1 · 方法可追溯 · 过程可观察 · 结果可复核</footer>
 </section>
 
 <script>
-const PAGE_VER = "2026-10-13.web.13";
+const PAGE_VER = "2026-10-13.delivery.14";
 const API = location.origin;
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
