@@ -18,3 +18,7 @@ Root license: MIT; package overrides are recorded in catalog.json.
 
 Source: https://github.com/sickn33/agentic-awesome-skills / commit `ec0254763ac8d61a810899fe8d961c1ac01215e8` / 47,347 repository stars checked 2026-10-08T07:26:05Z.
 Root license: MIT; package overrides are recorded in catalog.json.
+
+## Multilingual E5 offline encoder
+
+The full delivery includes the unchanged Xenova/multilingual-e5-small ONNX conversion at revision 761b726dd34fb83930e26aab4e9ac3899aa1fa78, based on Microsoft intfloat/multilingual-e5-small (MIT). Model provenance, pinned file hashes and the retained license are in [assets/semantic](assets/semantic/README.md).

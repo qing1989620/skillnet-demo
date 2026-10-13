@@ -25,6 +25,7 @@ jobs:
         with:
           node-version: "22"
       - run: python -m pip install -r requirements-dev.txt
+      - run: python tools/verify_delivery.py --strict-runtime
       - run: python -m pytest tests -q
       - run: python verify.py
       - run: node tools/front_check.js

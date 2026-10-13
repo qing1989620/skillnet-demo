@@ -110,6 +110,8 @@ def job_queue() -> JobQueue:
 
 
 def _startup() -> None:
+    from skillnet.distribution import build_identity
+    STATE['distribution'] = build_identity()
     # 技能库 = 种子技能（代码提供）+ 演化技能（落盘）+ 学习到的统计，三层叠加。
     # 不直接用 build_seed_skills()，否则每次重启都会丢掉已有的进化成果。
     lib = SkillLibrary.load()
@@ -305,6 +307,7 @@ def health() -> dict[str, Any]:
         "api_key_configured": bool(config.API_KEY),
         "token_required": bool(ACCESS_TOKEN),
         "ui_version": _ui_version(),
+        "distribution": STATE.get('distribution', {}),
         "library_path": "data/library.json",
         "runtime": {"active_runs": _active_run_count(),
                     "max_active_runs": MAX_ACTIVE_RUNS, "deployment": WORKER_MODE,

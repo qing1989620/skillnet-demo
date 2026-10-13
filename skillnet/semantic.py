@@ -97,6 +97,11 @@ class DenseIndex:
 def make_index():
     mode = os.environ.get('SKILLNET_ENCODER', 'auto')
     path = Path(os.environ.get('SKILLNET_ENCODER_DIR', str(ROOT / '.models/multilingual-e5-small')))
+    if (mode != 'lexical' and not os.environ.get('SKILLNET_ENCODER_DIR')
+            and not (path / 'manifest.json').exists()
+            and (ROOT / 'assets/semantic/multilingual-e5-small.zip').exists()):
+        from .model_assets import restore_bundled_model
+        restore_bundled_model(path)
     if mode != 'lexical' and (path / 'manifest.json').exists():
         try:
             return DenseIndex(path)

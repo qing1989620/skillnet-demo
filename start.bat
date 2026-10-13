@@ -1,6 +1,7 @@
 @echo off
 chcp 65001 >nul
 setlocal EnableDelayedExpansion
+cd /d "%~dp0"
 title SkillNet-S1 Demo
 
 echo ============================================
@@ -23,7 +24,7 @@ if not defined PY_EXE (
 echo       使用解释器: !PY_EXE!
 
 echo [2/4] 检查并安装依赖（首次运行约 1-2 分钟）...
-!PY_EXE! -c "import fastapi, uvicorn, httpx, pydantic, numpy, pandas, matplotlib, openpyxl" >nul 2>&1
+!PY_EXE! -c "import fastapi, uvicorn, httpx, pydantic, numpy, pandas, matplotlib, openpyxl, yaml, onnxruntime, tokenizers" >nul 2>&1
 if not !errorlevel! equ 0 (
     !PY_EXE! -m pip install -r requirements.txt
     if not !errorlevel! equ 0 (
@@ -47,6 +48,5 @@ if exist .env (
 )
 
 echo [4/4] 启动服务并打开浏览器（Ctrl+C 退出）...
-start "" http://127.0.0.1:8848/
-!PY_EXE! run.py --no-browser
+!PY_EXE! run.py
 pause

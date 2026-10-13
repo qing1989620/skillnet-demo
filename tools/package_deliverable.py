@@ -1,75 +1,31 @@
-# -*- coding: utf-8 -*-
-"""SkillNet-S1 交付打包：源码 + 文档 + 证据数据 → 单个 zip。
-
-黑名单过滤（.env/密钥/中间产物），顶层套语义目录，只带证据不带调试垃圾。
-"""
+"""Package the verified file manifest, including backend, assets and evidence."""
 from __future__ import annotations
-
-import zipfile
+import argparse
+import json
 from pathlib import Path
-
-ROOT = Path(__file__).resolve().parent.parent          # skillnet-demo/
-DEST = ROOT.parent / "SkillNet-S1-Demo.zip"
-TOP = "SkillNet-S1-Demo"
-
-EXCLUDE_DIRS = {".git", "__pycache__", ".pytest_cache", ".venv", "node_modules",
-                ".workbuddy", "out", ".e_b0", ".e_b1", ".idea", ".vscode"}
-EXCLUDE_FILES = {".env", "desktop.ini", "Thumbs.db"}
-EXCLUDE_SUFFIX = {".pyc", ".pyo", ".log", ".tmp"}
-
-# out/ 下只带证据：bench JSON + final_shots 截图 + 两个展示 run（json + artifacts）
-OUT_INCLUDE = [
-    ("out/bench", ["*.json"]),
-    ("out/final_shots", ["*.png"]),
-    ("out/runs/53e9d927-20261002-140122-0176", ["run.json", "artifacts/*"]),
-    ("out/runs/b5bf6a46-20261002-130540-f1e3", ["run.json", "artifacts/*"]),
-]
+import zipfile
+from verify_delivery import ROOT, MANIFEST, RELEASE, safe_path, verify
 
 
-def excluded(p: Path, respect_dir_exclude: bool = True) -> bool:
-    if p.name in EXCLUDE_FILES or p.suffix in EXCLUDE_SUFFIX:
-        return True
-    if not respect_dir_exclude:
-        return False
-    return any(part in EXCLUDE_DIRS for part in p.parts)
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--output', type=Path, default=ROOT.parent / 'SkillNet-S1-Demo.zip')
+    args = parser.parse_args()
+    result = verify(strict_runtime=True)
+    if not result['ok']:
+        raise SystemExit('Delivery changed; inspect verify_delivery.py before packaging')
+    manifest = json.loads((ROOT / MANIFEST).read_text(encoding='utf-8'))
+    names = [row['path'] for row in manifest['files']] + [MANIFEST, RELEASE]
+    destination = args.output.resolve()
+    if destination == ROOT or destination in [safe_path(ROOT, n) for n in names]:
+        raise SystemExit('Output must not overwrite a delivery file')
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(destination, 'w', zipfile.ZIP_DEFLATED, compresslevel=6) as archive:
+        for name in names:
+            archive.write(safe_path(ROOT, name), 'skillnet-demo/' + name)
+    print(json.dumps({'output': str(destination), 'files': len(names), 'bytes': destination.stat().st_size,
+                      'release': result['release'], 'source_tree_sha256': result['source_tree_sha256']},
+                     ensure_ascii=False, indent=2))
 
 
-def main() -> None:
-    assert (ROOT / "server.py").exists(), "请在 skillnet-demo 目录下运行"
-    n = 0
-    with zipfile.ZipFile(DEST, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
-        # 顶层直接放的关键文件
-        # 注意：不包含 QUICKSTART.txt —— 那是 v0.4 时代的旧版快速开始（口径已过时），
-        # 与新版 快速开始.txt 并存会误导使用者；如需历史版本见 git 历史。
-        for name in ("快速开始.txt", "README.md", "requirements.txt",
-                     "start.bat", "start.sh", "run.py", "server.py", "verify.py",
-                     ".env.example", ".gitignore"):
-            src = ROOT / name
-            if src.exists():
-                z.write(src, f"{TOP}/{name}"); n += 1
-        # 目录树
-        for d in ("skillnet", "seed", "tasks", "tests", "tools", "web", "docs", "data", "bench",
-              "_refs", "config", "report", "scripts"):
-            base = ROOT / d
-            for p in sorted(base.rglob("*")):
-                if p.is_dir() or excluded(p):
-                    continue
-                z.write(p, f"{TOP}/{p.relative_to(ROOT).as_posix()}"); n += 1
-        # out/ 证据（白名单式：绕过目录级排除，仅做文件级过滤）
-        for rel, pats in OUT_INCLUDE:
-            base = ROOT / rel
-            if not base.exists():
-                continue
-            for p in sorted(base.rglob("*")):
-                if not p.is_file() or excluded(p, respect_dir_exclude=False):
-                    continue
-                ok = any(p.match(pat) for pat in pats)
-                if ok:
-                    z.write(p, f"{TOP}/{p.relative_to(ROOT).as_posix()}"); n += 1
-    mb = DEST.stat().st_size / 1024 / 1024
-    print(f"打包完成：{DEST}")
-    print(f"  文件数 {n} · 大小 {mb:.1f} MB")
-
-
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__': main()

@@ -1,0 +1,52 @@
+# 完整交付与一致性核验
+
+交付版：`2026.10.13-complete.15`。日期：2026-10-13。
+
+## 本次纠正的问题
+
+此前前后端源码已经进入 main，但新 PDF 尚未入库，交付技能快照为 1,876，与本机的 1,881 不同。旧快速开始仍写着 98 个技能，三个 PDF 入口和打包白名单也停留在早期内容。因而“源码已推送”不能代表整个交付与本机产品一致。
+
+本次同步技能库正文及统计快照，补入正式 PDF，统一旧 PDF 路径，更新快速开始和完整打包方式，并增加逐文件 SHA-256 清单。历史提交中的浏览器临时目录退出版本控制，本机文件保留。启动脚本固定进入自己的项目目录，在端口绑定成功后才等待本进程健康状态并打开浏览器，避免新服务启动失败后误看旧服务。
+
+## 交付范围
+
+| 内容 | GitHub main 与交付包 |
+|---|---|
+| 前端 | 所有页面、JavaScript、CSS、球体组件、图片与当前界面预览 |
+| 后端 | 服务入口、完整 skillnet 库、检索、执行、联网、候选门控及 S1 SDK |
+| 技能资产 | 76 个种子、1,769 个社区 Skill、36 个已有演化，共 1,881 个；10,898 个社区资源文件 |
+| 文档 | 正式产品 PDF / Markdown、技术部署、接入契约与研究证据 |
+| 语义模型 | 与本机相同的固定 ONNX 模型包，首次启动离线展开，逐文件校验；默认 CPU 稠密语义检索 |
+| 工程 | 测试、验证工具、依赖声明、Docker、worker 与 GitHub Actions |
+| 公开回放 | 已登记公开案例及补入的公开模拟、Crossref 核验记录与产物，保留失败/部分完成状态 |
+
+`config/delivery-manifest.json` 记录交付文件的路径、长度和 SHA-256，`config/delivery.json` 记录发布标识与清单摘要。默认核验跳过允许持续变化的 `data/library.json`；`--strict-runtime` 同时检查其初始字节。运行日志、自检输出与进程环境属于可变状态。
+
+公开仓库不包括 `.env`、服务令牌、模型缓存、私有任务原始问答、临时数据库和进程锁。它们不是缺失的前后端组件。新电脑使用自己的模型密钥；S1 生产账号、权限和附件系统仍需实际联调。完整产品一致性与个人运行历史一致性分别核对，不能将后者自动当作公开资料。
+
+## 全新克隆验收
+
+```bash
+git clone --branch main https://github.com/qing1989620/skillnet-demo.git skillnet-demo-complete
+cd skillnet-demo-complete
+python tools/verify_delivery.py --strict-runtime
+python -m pip install -r requirements.txt
+python run.py --version
+python run.py --no-browser
+```
+
+校验应显示 `ok: true`、`differences: []` 和本页的发布标识。`/api/health` 应显示首页版本 `2026-10-13.complete.15`、1,881 个初始技能，`encoder.kind=dense-onnx`，以及 `distribution.release / git_commit / source_tree_sha256`。Git 克隆的提交还应与 `git ls-remote origin refs/heads/main` 相同。
+
+若 8848 已被旧服务占用，新启动会明确退出；先关闭旧服务，或运行 `python run.py --port 9000 --no-browser`，然后打开 9000。浏览器“连接设置”若曾指定其他服务器，也需核对连接目标。
+
+已有目录先检查 `git status` 与当前分支；不要使用 `reset --hard` 覆盖自己的任务或密钥。需要核验完整初始产品时，优先使用上面的新目录安装。
+
+## 完整交付包与 PDF
+
+```bash
+python tools/package_deliverable.py --output ../SkillNet-S1-Demo.zip
+```
+
+打包工具只读取已经核验的同一份清单，不再用手写目录白名单遗漏组件，也不递归带入本机秘密和缓存。解压后可运行相同校验命令；GitHub 下载 ZIP 没有 `.git`，此时 `git_commit` 为 null，仍能用清单摘要确定产品版本。
+
+正式文档为 [产品说明 PDF](SkillNet-S1-产品说明.pdf)。`docs/SkillNet-S1-guide.pdf`、`docs/SkillNet-S1-交付报告.pdf`、`report/SkillNet-S1-report.pdf` 与 `output/pdf/SkillNet-S1-产品说明.pdf` 是同版 PDF 的兼容路径，内容哈希一致。
