@@ -1,0 +1,84 @@
+{
+  "recorded_at": "2026-10-12T07:09:48.287815+00:00",
+  "tool": "Codex IAB",
+  "provenance": "Actual root browser observations relayed to frontend audit; desktop screenshot contents independently inspected by auditor. This is a bounded final UI record, not full release acceptance.",
+  "asset_version": "20261012.6",
+  "page_version": "2026-10-12.contract.6",
+  "run_id": "f11ad204-20261012-144805-b9e1",
+  "observations": [
+    {
+      "page": "/",
+      "action": "Load the new default real-run replay from the homepage button",
+      "displayed_result": {
+        "completed_steps": "3/3",
+        "program_checks": "73/73",
+        "new_deliverables": 5,
+        "new_skills": 0,
+        "state_kernel_panels": 1,
+        "step_admission_and_effect_labels": "each displayed as verified"
+      },
+      "scope": "Only the stated rendered run/count/kernel-panel result; labels are not a fresh independent execution of backend or a proof of causal skill improvement."
+    },
+    {
+      "page": "/",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "scrollWidth": 1430,
+      "horizontalOverflow": false,
+      "screenshot": "docs/frontend-audit/screenshots/state-kernel-home-v6.jpg",
+      "scope": "Observed homepage kernel panel and width only; not all long-content/error/zoom branches."
+    },
+    {
+      "page": "/",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "scrollWidth": 380,
+      "horizontalOverflow": false,
+      "screenshot": "docs/frontend-audit/screenshots/state-kernel-mobile-v6.jpg",
+      "scope": "Observed mobile homepage kernel panel and width only."
+    },
+    {
+      "page": "/runs#/eval",
+      "screenshot": "docs/frontend-audit/screenshots/capability-lab-v6.jpg",
+      "displayed_probe_report": {
+        "python_processes": 39,
+        "actual_code_calls": {
+          "without_admission": 33,
+          "with_admission": 6
+        },
+        "invalid_inputs_executed": {
+          "without_admission": 24,
+          "with_admission": 0
+        },
+        "independently_correct_valid_outputs": {
+          "without_admission": "5/6",
+          "with_admission": "5/6"
+        }
+      },
+      "scope": "The experiment page visibly distinguishes measured execution/admission constraints from algorithm correctness; this observation checks presentation, not a new benchmark run or general capability claim."
+    }
+  ],
+  "versions": {
+    "historical_broad_browser_record": "browser-observations.json is v20261012.2 and remains historical.",
+    "historical_delivery_panel": "state-kernel-delivery-v4.jpg remains the v4 capture.",
+    "final_source": "source-manifest.json records final v20261012.6 / contract.6 source bytes; SHA-256 alone does not certify deployment identity."
+  },
+  "not_checked": [
+    "all sixteen full views and error/re-entry branches",
+    "browser network fault injection",
+    "200% zoom",
+    "screen reader",
+    "actual OS reduced-motion change",
+    "S1 production integration",
+    "measured performance budget"
+  ],
+  "screenshots_sha256": {
+    "docs/frontend-audit/screenshots/state-kernel-home-v6.jpg": "2fbb1c640f8c2ea0a6f6d4c32a05c806d4aa2c70376de4f9afd6a7a04c8d8035",
+    "docs/frontend-audit/screenshots/state-kernel-mobile-v6.jpg": "e6686ebafc36e57aec5c884e6d1eb448c2908fe9e178bff16d7075e8bed3a5b3",
+    "docs/frontend-audit/screenshots/capability-lab-v6.jpg": "4b2125c1fed71a2925259d0d3044b251345c57a02b8739863474b48c5c5f3e4e"
+  }
+}

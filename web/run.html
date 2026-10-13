@@ -156,9 +156,15 @@
   .tabs{display:none}
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=0.9.0-product"></script>
+<script src="/static/assets/ui.js?v=20261013.13"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=0.9.0-product"></script>
+<script src="/static/assets/product.js?v=20261013.13"></script>
+<link rel="stylesheet" href="/static/assets/frontier.css?v=20261013.13">
+<script src="/static/assets/frontier.js?v=20261013.13"></script>
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261013.13">
+<link rel="stylesheet" href="/static/assets/quality.css?v=20261013.13">
+<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261013.13">
+<link rel="stylesheet" href="/static/assets/sphere.css?v=20261013.13">
 </head>
 <body>
 <header>
@@ -177,6 +183,7 @@
     <span class="kv">步骤 <b id="stepstat">0/0</b></span>
     <span class="stream-state" id="stream-state" role="status">正在读取记录</span>
     <button class="ui-settings-btn" data-connection-settings>连接设置</button>
+    <button id="focus-view" type="button" aria-pressed="false">集中查看</button>
     <button id="cancel" class="danger">取消运行</button>
   </div>
 </header>
@@ -215,7 +222,7 @@
    ============================================================================ */
 const API = location.origin;
 const QS = new URLSearchParams(location.search);
-const RUN_ID = QS.get("id") || localStorage.getItem("last_run") || "";
+const RUN_ID = QS.get("id") || (()=>{try{return localStorage.getItem("last_run")||"";}catch(_){return "";}})();
 // 截图/审计模式：不建立 SSE 长连接（否则无头浏览器的虚拟时钟无法结束，
 // 与 graph.html 的 ?frames=N 是同一类问题），只回放已落盘事件。
 const STATIC_MODE = QS.get("static") === "1";
@@ -230,6 +237,7 @@ const fmtMs = ms => ms >= 1000 ? (ms/1000).toFixed(1) + "s" : Math.max(0, Math.r
 const fmtTs = ms => { const d = new Date(ms); return d.toTimeString().slice(0,8) + "." + String(d.getMilliseconds()).padStart(3,"0"); };
 
 let RUN = null;          // 最近一次 /api/runs/{id}
+let LIVE_WEB_REPORT = null;
 let EVENTS = [];         // 收到的全部事件
 let SELECTED = null;     // {kind:"step"|"artifact"|"attempt", idx?, name?}
 const T0 = Date.now();
@@ -272,7 +280,7 @@ window.addEventListener("pagehide",()=>streamController?.abort());
 async function refresh(){
   if(refreshPending)return refreshPending;
   refreshPending = UI.json(`${API}/api/runs/${encodeURIComponent(RUN_ID)}`);
-  try { RUN = await refreshPending; }
+  try { RUN = await refreshPending;if(!RUN.staged?.web_research&&LIVE_WEB_REPORT)RUN.staged={...(RUN.staged||{}),web_research:LIVE_WEB_REPORT}; }
   catch(error) { $("stream-state").textContent="同步失败";if(!RUN){$("timeline").innerHTML=UI.errorHTML(error);$("task").textContent="无法读取执行记录";$("cancel").disabled=true;}return; }
   finally { refreshPending=null; }
   $("status").textContent = ({"COMPLETED":"已完成","PARTIAL":"部分完成","FAILED":"失败","RUNNING":"运行中",
@@ -283,9 +291,14 @@ async function refresh(){
   $("rid").textContent = RUN.run_id || "";
   $("stepstat").textContent = `${(RUN.step_stats||{}).done||0}/${(RUN.step_stats||{}).total||0}`;
   $("budget").textContent = "¥" + (RUN.budget?.max_cost_yuan ?? 0.2).toFixed(2);
-  if(!SELECTED && RUN.steps?.length)SELECTED={kind:"step",idx:RUN.steps[0].idx};
+  if(!SELECTED && RUN.steps?.length){
+    const rawStep=QS.get('step'),requested=rawStep!==null&&/^\d+$/.test(rawStep)?Number(rawStep):null;
+    const target=Number.isSafeInteger(requested)?RUN.steps.find(s=>s.idx===requested):null;
+    SELECTED={kind:'step',idx:(target||RUN.steps[0]).idx};
+    if(rawStep!==null&&!target)UI.toast('该步骤不在本次记录中，已展示首个实际步骤。');
+  }
   renderGraph(); renderTimelineMeta();
-  const m=Product.metrics(RUN);let proof=document.getElementById("run-proof");if(!proof){proof=document.createElement("div");proof.id="run-proof";proof.className="run-proof";$("task").parentNode.appendChild(proof);}proof.textContent=`程序验收 ${m.passed}/${m.checks} · 语义确认 ${m.confirmed}/${m.semantic} · ${m.gate.eligible===false?"学习未准入："+m.gate.reason:m.gate.eligible===true?"具备学习准入证据":"尚未记录学习结论"}`;
+  const m=Product.metrics(RUN);let proof=document.getElementById("run-proof");if(!proof){proof=document.createElement("div");proof.id="run-proof";proof.className="run-proof";$("task").parentNode.appendChild(proof);}proof.innerHTML=`程序验收 ${m.passed}/${m.checks} · 语义确认 ${m.confirmed}/${m.semantic} · ${esc(m.gate.eligible===false?"学习未准入："+m.gate.reason:m.gate.eligible===true?"具备学习准入证据":"尚未记录学习结论")} <button type="button" data-run-value data-run="${esc(RUN.run_id)}">交付与证据 ↗</button>${RUN.staged?.web_research?` <button type="button" data-web-evidence data-run="${esc(RUN.run_id)}">网络来源与台账 ↗</button>`:''}`;
   if (SELECTED) renderInspector();
   const done = TERMINAL.includes(RUN.status);
   $("cancel").disabled = done;
@@ -336,10 +349,10 @@ function renderGraph(){
     const dependencies=s.depends_on||[];
     parts.push(`<div class="gedge"><span>${dependencies.length?'依赖 '+dependencies.map(d=>'S'+(d+1)).join(' / '):'根节点 · 可独立启动'}</span></div>`);
     const inputs=s.input_artifacts||[];
-    if(inputs.length)parts.push(`<div class="gedge">${inputs.map(a=>`<span class="art" data-art="${esc(a.name)}" data-from="${a.from_step??''}">${esc(a.logical_name)} ← S${a.from_step==null?'?':a.from_step+1}</span>`).join('')}</div>`);
+    if(inputs.length)parts.push(`<div class="gedge">${inputs.map(a=>`<span class="art" data-art="${esc(a.name)}" data-from="${a.from_step??''}">${esc(a.logical_name)} ← ${a.from_step==null?'外部/任务输入':'S'+(a.from_step+1)}</span>`).join('')}</div>`);
     else if((s.inputs||[]).length)parts.push(`<div class="gedge"><span>输入：${esc(s.inputs.join('、'))}（旧记录未登记版本）</span></div>`);
   });
-  host.innerHTML = Product.dagHTML(RUN)+parts.join("");
+  host.innerHTML = Product.dagHTML(RUN)+parts.join("")+Product.webResearchHTML(RUN,{compact:true});
   if (!STATIC_MODE && !TERMINAL.includes(RUN.status) && PERF.ttfv == null && RUN.steps.length) {
     PERF.ttfv = Date.now() - PERF.t0;
     // 上报（落盘到 Run，供审计）：一次 per page load
@@ -370,6 +383,7 @@ const EV_STYLE = t => t.startsWith("run.completed") || t === "execution.finished
 const EV_TEXT = (ev) => {
   const d = ev.data || {};
   switch (ev.type) {
+    case 'web.search.started':case 'web.search.completed':case 'web.source.checked':case 'web.skills.discovered':case 'web.citations.checked':return esc(Product.webEventText(ev.type,d));
     case "run.started": return `任务已创建 · <b>${esc((d.task||"").slice(0,90))}</b>`;
     case "retrieval.completed": return `检索完成 · <b>${(d.selected||[]).length}</b> 个候选 · 分流 <b>${esc(d.decision||"")}</b> · ${fmtMs(d.duration_ms||0)}`;
     case "ranking.completed": return `任务条件化排序 · 首选： <b>${esc(d.top||"—")}</b>`;
@@ -392,6 +406,7 @@ const EV_TEXT = (ev) => {
     case "run.reply": renderReply(d.text || ""); return `Agent 最终回复已生成（${(d.text||"").length} 字）`;
     case "run.finished": return `<b>运行结束 ${esc(Product.labels[d.status]||d.status)}</b> · ${fmtMs(d.duration_ms||0)} · ¥${Number(d.cost||0).toFixed(3)}`;
     case 'dag.ready':return `执行图就绪 · ${(d.nodes||[]).length} 个节点 · 依赖来自 ${esc(d.workflow_source||'编排')}`;
+    case 'capability.frontier':return `真实输入已观测 · ${(d.frontier?.diagnosis?.gaps||[]).length} 项条件缺口 · 只读有限模型投影，点击核对依据`;
     case 'code.generated':return `步骤 ${ev.step+1} 代码已生成 · 点击查看实际代码与输入`;
     case 'step.verifying':return `步骤 ${ev.step+1} 进入验收 · ${esc(d.layer||'程序与语义')}`;
     case 'verification.result':return `步骤 ${ev.step+1} 语义确认 ${d.passed?'通过':'未通过'} · ${esc(d.item||'')}`;
@@ -451,6 +466,7 @@ function reactTo(ev){
     clearTimeout(refreshTimer);refreshTimer=setTimeout(refresh,120);
   }
   if (ev.type === "run.finished") refresh();
+  if(ev.type.startsWith('web.')){LIVE_WEB_REPORT=Product.reduceWebEvent(LIVE_WEB_REPORT||RUN?.staged?.web_research,ev.type,ev.data||{});if(RUN){RUN.staged={...(RUN.staged||{}),web_research:LIVE_WEB_REPORT};renderGraph();}clearTimeout(refreshTimer);refreshTimer=setTimeout(refresh,120);}
 }
 
 /* ---------- Inspector ---------- */
@@ -462,14 +478,15 @@ function renderInspector(){
   else if(SELECTED.kind==='event'){ $('inswhat').textContent='原始事件';host.innerHTML=`<div class="ins-sec"><div class="ins-k">${esc(SELECTED.event.type)}</div><pre>${esc(JSON.stringify(SELECTED.event,null,2))}</pre></div>`;}
   else host.innerHTML = '<div class="empty">—</div>';
 }
+document.addEventListener('kernel-step-focus',event=>{SELECTED={kind:'step',idx:event.detail.idx};renderInspector();document.querySelector('[data-t="inspect"]')?.click();});
 function stepHtml(s){
   const st = STEP_STATE(s);
   const q = RUN.retrieval && RUN.retrieval.selected ? RUN.retrieval.selected.indexOf(s.skill) : -1;
   const rk = (RUN.ranking||[]).find(r => r.name === s.skill);
   const attempts = (s.attempts||[]).map(a => `
     <div class="layer ${a.ok?"l1":"l3"}">
-      <div class="lh"><span>Attempt #${a.n} ${a.ok?"PASSED":"FAILED"}</span><span>${fmtMs(a.duration_ms||0)}${a.error_kind?` · ${esc(a.error_kind)}`:""}</span></div>
-      ${a.stderr?`<pre style="max-height:130px">${esc(a.stderr.slice(-700))}</pre>`:""}
+      <div class="lh"><span>Attempt #${a.n} ${a.ok?"执行成功":"执行失败"} · 验收 ${esc(a.acceptance?.state||"见检查记录")}</span><span>${fmtMs(a.duration_ms||0)}${a.error_kind?` · ${esc(a.error_kind)}`:""}</span></div>
+      ${a.code_diff?`<details><summary>为什么修复 · 查看代码差异</summary><p>${esc(a.repair_reason||"")}</p><pre class="repair-diff">${esc(a.code_diff)}</pre></details>`:""}${a.stderr?`<pre style="max-height:130px">${esc(a.stderr.slice(-700))}</pre>`:""}
       ${a.stdout?`<pre style="max-height:130px">${esc(a.stdout.slice(0,700))}</pre>`:""}
     </div>`).join("") || '<div class="empty">尚无尝试</div>';
   const l1 = (s.checks||[]).filter(c => !String(c.name).startsWith("[技能断言]"));
@@ -479,7 +496,7 @@ function stepHtml(s){
       <span>${esc(c.name||c.item)}${c.detail?` <span style="color:var(--ink3)">— ${esc(c.detail)}</span>`:""}
       ${c.evidence?` <span style="color:var(--ink3)">— ${esc(c.evidence)}</span>`:""}</span></div>`).join("") || '<div class="empty">（无）</div>';
   const stageRows = Object.entries(s.stages||{}).sort((a,b)=>b[1]-a[1]).map(([k,v]) =>
-      `<div class="row"><span>${esc(k)}</span><b>${k.endsWith("_ms")?fmtMs(v):v}</b></div>`).join("") || '<div class="empty">（无细分数据）</div>';
+      `<div class="row"><span>${esc(({code_gen_ms:'代码生成',verify_sem_ms:'语义复核',verify_det_ms:'文件与断言检查',syntax_check_ms:'语法预检',llm_calls:'模型调用次数',llm_cost_yuan:'已记录模型费用（元）'})[k]||k.replace(/^sandbox_try(\d+)_ms$/,'第 $1 次执行'))}</span><b>${k.endsWith("_ms")?fmtMs(v):v}</b></div>`).join("") || '<div class="empty">（无细分数据）</div>';
   const arts = (s.artifacts||[]).map(a => `<div class="row"><a href="${API}/api/runs/${RUN.run_id}/artifacts/${encodeURIComponent(a.name)}" target="_blank">${esc(a.name)}</a><b>${(a.bytes/1024).toFixed(1)} KB</b></div>`).join("") || '<div class="empty">（无）</div>';
   return `
   <div class="ins-sec">
@@ -505,18 +522,19 @@ function stepHtml(s){
     <div class="layer l2"><div class="lh"><span>L2 · 技能断言 — ASSERTIONS</span><span>${l2.filter(c=>c.passed).length}/${l2.length}</span></div>${chk(l2)}</div>
     <div class="layer l3"><div class="lh"><span>L3 · 语义评审 — SEMANTIC REVIEW</span><span>${l3.filter(c=>c.passed).length}/${l3.length}</span></div>
       <div class="note" style="border-style:solid;margin:0 0 6px">由模型判定，且<b>与被评者是同一模型</b>——只作参考，不构成独立证据。</div>${chk(l3)}</div>
-    ${s.verify_skip_reason?`<div class="note">${esc(s.verify_skip_reason)}</div>`:""}
+    ${s.verify_skip_reason&&!l3.length?`<div class="note">${esc(s.verify_skip_reason)}</div>`:""}
   </div>
   <div class="ins-sec"><div class="ins-k">产物文件</div>${arts}</div>
   <div class="ins-sec"><div class="ins-k">生成的代码</div>
     <details><summary>展开完整代码（${(s.code||"").length} 字符）</summary><pre style="max-height:400px">${esc(s.code||"（无）")}</pre></details></div>`;
 }
 function artifactHtml(sel){
-  const a = (RUN.steps||[]).flatMap(s=>s.artifacts||[]).find(x=>x.name===sel.name) || {};
+  const a = (RUN.artifacts||[]).find(x=>x.name===sel.name) || {};
+  const origin = a.from_step==null ? (a.kind==='任务输入'?'服务端冻结的公开任务输入':a.kind==='跨轮输入'?'历史输入版本':'来源未记录') : 'Step '+(a.from_step+1);
   const consumers = (RUN.steps||[]).filter(s => (s.input_artifacts||[]).some(a=>a.name===sel.name)).map(s=>s.idx+1);
   return `<div class="ins-sec"><div class="ins-k">产物血缘（从哪来、被谁用）</div>
     <div class="row"><span>文件名</span><b>${esc(sel.name)}</b></div>
-    <div class="row"><span>来源步骤</span><b>Step ${(sel.from??a.from_step??0)+1}</b></div>
+    <div class="row"><span>来源</span><b>${esc(origin)}</b></div>
     <div class="row"><span>被用于</span><b>${consumers.length?consumers.map(i=>"Step "+i).join(", "):"（未登记消费版本）"}</b></div>
     <div class="row"><span>大小</span><b>${a.bytes?((a.bytes/1024).toFixed(1)+" KB"):"—"}</b></div>
     <div class="row"><span>SHA-256（完整指纹）</span><b>${esc(a.sha256||"—")}</b></div>
@@ -524,7 +542,7 @@ function artifactHtml(sel){
     　<a href="${API}/api/runs/${RUN.run_id}/artifacts/${encodeURIComponent(sel.name)}?download=1">下载</a></div>
   </div>
   <div class="ins-sec"><div class="ins-k">说明</div>
-    <div class="note">产物来自 <b>Step ${(sel.from??a.from_step??0)+1}</b>。${consumers.length?`已记录下游消费步骤：${consumers.join("、")}。`:"此记录未登记下游消费版本，不能推断传递关系。"}</div>
+    <div class="note">文件来自 <b>${esc(origin)}</b>。${consumers.length?`已记录下游消费步骤：${consumers.join("、")}。`:"此记录未登记下游消费版本，不能推断传递关系。"}</div>
   </div>`;
 }
 
@@ -541,6 +559,7 @@ function openRunTab(name){
 }
 function inspectMobile(){if(innerWidth<=860)openRunTab('inspect');}
 document.querySelectorAll('#tabs button').forEach(button=>button.onclick=()=>openRunTab(button.dataset.t));
+document.getElementById('focus-view').onclick=function(){const active=document.body.classList.toggle('run-focus');this.setAttribute('aria-pressed',String(active));this.textContent=active?'恢复全景':'集中查看';if(active)openRunTab('inspect');};
 
 /* ---------- Agent 最终回复（Markdown 轻渲染，先 esc 再处理标记） ---------- */
 const mdToHtml = md => {

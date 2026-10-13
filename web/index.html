@@ -134,9 +134,15 @@
     font-size:11.5px;color:var(--ink-3);line-height:1.9}
 </style>
 <link rel="stylesheet" href="/static/assets/ui.css?v=0.9.0-product">
-<script src="/static/assets/ui.js?v=0.9.0-product"></script>
+<script src="/static/assets/ui.js?v=20261013.13"></script>
 <link rel="stylesheet" href="/static/assets/product.css?v=0.9.0-product">
-<script src="/static/assets/product.js?v=0.9.0-product"></script>
+<script src="/static/assets/product.js?v=20261013.13"></script>
+<link rel="stylesheet" href="/static/assets/frontier.css?v=20261013.13">
+<script src="/static/assets/frontier.js?v=20261013.13"></script>
+<link rel="stylesheet" href="/static/assets/refinement.css?v=20261013.13">
+<link rel="stylesheet" href="/static/assets/quality.css?v=20261013.13">
+<link rel="stylesheet" href="/static/assets/ecosystem.css?v=20261013.13">
+<link rel="stylesheet" href="/static/assets/sphere.css?v=20261013.13">
 </head>
 <body>
 <div class="app">
@@ -270,7 +276,7 @@
   <section class="view" id="v-run">
     <div class="panel">
       <h2>方案对照与真实执行 <span class="en">Plan / Execute</span></h2>
-      <p class="hint">同一任务在四档技能供给条件下的执行方案与独立评审得分。评审看不到方案来自哪一档。</p>
+      <p class="hint">同一任务在四档技能供给条件下的研究方案与模型盲评。评审隐藏供给方式，但仍是模型参考意见；真实结果需要独立产物判据。</p>
       <div class="field" style="margin-bottom:12px">
         <select id="runTask" style="flex:1;min-width:320px"></select>
       </div>
@@ -323,6 +329,8 @@ const $$ = s => Array.from(document.querySelectorAll(s));
 const esc = UI.esc;
 const pct = x => (x == null ? '—' : (x*100).toFixed(1) + '%');
 const num = (x, d=3) => (x == null ? '—' : Number(x).toFixed(d));
+const judgeScore = j => j?.score_valid!==false&&typeof j?.weighted==='number'&&Number.isFinite(j.weighted)?num(j.weighted,2)+'/10':'不可用';
+const judgeDimensions = j => j?.score_valid!==false?Object.entries(j?.scores||{}).filter(([,v])=>typeof v==='number'&&Number.isFinite(v)):[];
 async function api(path, opt){
   const r = await fetch(path, opt);
   if(!r.ok){
@@ -391,7 +399,7 @@ function renderPipeline(){
   const steps = [
     ['L1 元数据', '技能卡：能力 / 输入 / 输出 / 适用时机'],
     ['混合召回', 'BM25 + 语义向量 + 领域标签结构信号'],
-    ['加权融合', 'BM25 0.55 / 语义 0.30 / 结构 0.15 + 一致性加成'],
+    ['加权融合', 'BM25 0.70 / 语义 0.20 / 结构 0.10 + 一致性加成'],
     ['关系扩展', '沿 depend_on / compose_with 补入工作流上下游'],
     ['LLM 重排', '以技能卡为输入的语义重排'],
     ['老虎机选择', 'LinUCB：预测收益 + 探索奖励'],
@@ -422,6 +430,11 @@ function renderRefs(){
 /* ---------- 关系图（手写径向力导向布局） ---------- */
 function renderGraph(){
   const W = 760, H = 560, cx = W/2, cy = H/2;
+  if(GRAPH.nodes.length>500){
+    const groups={};GRAPH.nodes.forEach(n=>(groups[n.domain]=groups[n.domain]||[]).push(n));
+    const top=Object.entries(groups).sort((a,b)=>b[1].length-a[1].length);
+    $('#graph').innerHTML=`<div class="product-kpis" style="grid-template-columns:repeat(3,minmax(0,1fr))">${top.slice(0,9).map(([d,arr])=>`<div><small>${esc(d)}</small><b>${arr.length}</b><a href="/graph?domain=${encodeURIComponent(d)}">展开能力群 ↗</a></div>`).join('')}</div><p class="note">${GRAPH.nodes.length} 个独立技能 / ${GRAPH.edges.length} 条关系。相似边表示关联候选，不表示执行先后；在星图中可缩放、搜索和查看真实任务路径。</p><a href="/graph">进入完整交互星图 ↗</a>`;return;
+  }
   const nodes = GRAPH.nodes, edges = GRAPH.edges;
   const domains = [...new Set(nodes.map(n=>n.domain))];
   const pos = {};
@@ -488,7 +501,7 @@ function renderGraph(){
   nodes.forEach(n => {
     const [x,y] = pos[n.id];
     const r = 4 + (n.mean_reward||0)/maxR*5;
-    const isEvo = n.source !== 'seed';
+    const isEvo = (n.generation || 0) > 0;
     svg.push(`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}"
       fill="${isEvo ? '#9c3d2e' : '#3d5a52'}" opacity="${isEvo?0.95:0.72}">
       <title>${esc(n.id)}\n领域：${esc(n.domain)}\n来源：${n.source} · G${n.generation}\n实测奖励：${num(n.mean_reward,3)}（${n.pulls} 次）</title></circle>`);
@@ -557,7 +570,7 @@ async function doLegacyDemo(){
         </div>
       </div>
 
-      ${stageHead('03','技能驱动执行与盲评','执行者与评审者相互独立')}
+      ${stageHead('03','技能驱动方案与模型盲评','隐藏供给方式的模型参考意见，不是独立结果证据')}
       <div class="grid g2">
         <div class="panel tight">
           <h2>方案规模 <span class="en">Plan</span></h2>
@@ -571,14 +584,14 @@ async function doLegacyDemo(){
         <div class="panel tight">
           <h2>盲评得分 <span class="en">Rubric</span></h2>
           <div style="font-size:30px;font-weight:600;font-variant-numeric:tabular-nums;margin:6px 0 10px">
-            ${num(st3.judge.weighted,2)}<span style="font-size:13px;color:var(--ink-3)">/10</span></div>
-          ${Object.entries(st3.judge.scores).map(([k,v])=>`
+            ${judgeScore(st3.judge)}</div>
+          ${judgeDimensions(st3.judge).map(([k,v])=>`
             <div style="display:grid;grid-template-columns:110px 1fr 34px;gap:10px;align-items:center;padding:3px 0">
-              <div style="font-size:12px;color:var(--ink-3)">${k}</div>
+              <div style="font-size:12px;color:var(--ink-3)">${esc(k)}</div>
               <div class="bar"><i class="${v>=8?'hi':v>=6?'mid':''}" style="width:${v*10}%"></i></div>
               <div class="num" style="text-align:right;font-size:12px">${num(v,1)}</div>
             </div>`).join('')}
-          ${st3.judge.coverage!=null?`<p class="note">领域要点覆盖：<strong>${pct(st3.judge.coverage)}</strong>（${(st3.judge.covered||[]).length}/${st3.judge.n_points} 条）</p>`:''}
+          ${st3.judge.coverage_valid!==false&&st3.judge.coverage!=null?`<p class="note">领域要点覆盖：<strong>${pct(st3.judge.coverage)}</strong>（${(st3.judge.covered||[]).length}/${st3.judge.n_points} 条）</p>`:''}
           <p class="note">${esc(st3.judge.comment||'')}</p>
         </div>
       </div>
@@ -617,7 +630,7 @@ async function doLegacyDemo(){
 }
 
 /* ---------- 技能库 ---------- */
-let SKILLS = [], TASKS = [];
+let SKILLS = [], TASKS = [],skillPage=0;
 const PUBLIC_DEMO_TASK='只使用公开演示数据，不联网：A组[1,2,3,4,5]，B组[2,3,4,5,6]。完成3步真实执行：计算各组n、均值与样本标准差(ddof=1)，保留4位小数输出summary.csv；用绝对容差0.0001逐值回读校验表头group,n,mean,std_sample与2组数据；直接读取同一CSV生成figure.png，误差条表示样本标准差，纵轴从0开始。只做描述统计，注明演示数据不可用于科学结论。';
 function renderSkillList(){
   const q = ($('#skillQ').value || '').toLowerCase().trim();
@@ -628,11 +641,14 @@ function renderSkillList(){
     s.name.toLowerCase().includes(q) || (s.description||'').toLowerCase().includes(q) || (s.capability||'').toLowerCase().includes(q) ||
     (s.tags||[]).some(t => t.toLowerCase().includes(q)));
   $('#skillCount').textContent = `${items.length} / ${SKILLS.length}`;
-  $('#skillList').innerHTML = items.map(s => `
+  const total=items.length;skillPage=Math.min(skillPage,Math.max(0,Math.ceil(total/50)-1));
+  $('#skillCount').innerHTML=`${total} / ${SKILLS.length} · <button type="button" id="catalog-prev" ${skillPage===0?'disabled':''}>上一页</button> ${skillPage+1} / ${Math.max(1,Math.ceil(total/50))} <button type="button" id="catalog-next" ${(skillPage+1)*50>=total?'disabled':''}>下一页</button>`;
+  $('#skillList').innerHTML = items.slice(skillPage*50,(skillPage+1)*50).map(s => `
     <div class="row" data-n="${esc(s.name)}">
       <div class="n">${esc(s.name)}${s.generation>0?` <span class="chip accent">G${s.generation}</span>`:''}</div>
       <div class="d">${esc(s.domain)} · ${esc(s.description)}</div>
     </div>`).join('') || '<div class="row"><div class="d">无匹配技能</div></div>';
+  $('#catalog-prev').onclick=()=>{skillPage--;renderSkillList();};$('#catalog-next').onclick=()=>{skillPage++;renderSkillList();};
   $$('#skillList .row[data-n]').forEach(r => r.onclick = () => showSkill(r.dataset.n, r));
 }
 let skillGeneration=0;
@@ -645,7 +661,7 @@ async function showSkill(name,row){
     const s=d.skill,stats=s.stats||{};
     history.replaceState(null,'','#skills?skill='+encodeURIComponent(name));
     const list=(title,items)=>items?.length?`<div class="contract-section"><h3>${title}</h3><ol>${items.map(v=>`<li>${esc(typeof v==='string'?v:JSON.stringify(v))}</li>`).join('')}</ol></div>`:'';
-    $('#skillDetail').innerHTML=`<div class="contract-head"><div><span class="product-eyebrow">SKILL / EXECUTION CONTRACT</span><h2>${esc(s.name)}</h2></div><a href="/graph">星图 ↗</a></div><div class="contract-tags"><span>${esc(s.domain)}</span><span>${s.source==='seed'?'种子技能':'演化技能'} · G${s.generation||0}</span><span>执行 ${stats.exec_ok||0}/${stats.exec_total||0} 成功</span>${Object.entries(s.quality||{}).map(([k,v])=>`<span>${esc(k)} · ${esc(UI.qualityLabel(v))}</span>`).join('')}</div><p class="hint">${esc(s.capability||s.description||'')}</p>${list('何时使用',s.use_when)}${list('输入契约',s.inputs)}${list('交付输出',s.outputs)}${list('执行步骤',s.steps)}${list('已知陷阱与修复依据',s.pitfalls)}${list('验收要求',s.verification)}<details class="contract-section"><summary>查看完整 SKILL.md 与元数据</summary><pre class="md">${esc(d.markdown)}</pre></details>`;
+    $('#skillDetail').innerHTML=`<div class="contract-head"><div><span class="product-eyebrow">SKILL / EXECUTION CONTRACT</span><h2>${esc(s.name)}</h2></div><a href="/graph">星图 ↗</a></div><div class="contract-tags"><span>${esc(s.domain)}</span><span>${s.source==='github'?'社区收录 · 未经执行验证':s.source==='seed'?'种子技能':'演化技能'} · G${s.generation||0}</span><span>执行 ${stats.exec_ok||0}/${stats.exec_total||0} 成功</span>${Object.entries(s.quality||{}).map(([k,v])=>`<span>${esc(k)} · ${esc(UI.qualityLabel(v))}</span>`).join('')}</div>${UI.provenanceHTML(s)}<p class="hint">${esc(s.capability||s.description||'')}</p>${list('何时使用',s.use_when)}${list('输入契约',s.inputs)}${list('交付输出',s.outputs)}${list('执行步骤',s.steps)}${list('已知陷阱与修复依据',s.pitfalls)}${list('验收要求',s.verification)}<details class="contract-section"><summary>查看完整 SKILL.md 与元数据</summary><pre class="md">${esc(d.markdown)}</pre></details>`;
   }catch(error){if(generation===skillGeneration)$('#skillDetail').innerHTML=UI.errorHTML(error);}
 }
 function initSkills(){
@@ -792,9 +808,9 @@ async function doRun(){
           ${s.expected_output ? `<div style="font-size:11.5px;color:var(--ink-3);margin-top:2px">产出：${esc(s.expected_output)}</div>`:''}
           ${s.check ? `<div style="font-size:11.5px;color:var(--jade);margin-top:2px">校验：${esc(s.check)}</div>`:''}
         </div></div>`).join('');
-    const dims = Object.entries(j.scores || {}).map(([k,v]) => `
+    const dims = judgeDimensions(j).map(([k,v]) => `
       <div style="display:grid;grid-template-columns:110px 1fr 34px;gap:10px;align-items:center;padding:4px 0">
-        <div style="font-size:12px;color:var(--ink-3)">${k}</div>
+        <div style="font-size:12px;color:var(--ink-3)">${esc(k)}</div>
         <div class="bar"><i class="${v>=8?'hi':v>=6?'mid':''}" style="width:${v*10}%"></i></div>
         <div class="num" style="text-align:right;font-size:12px">${num(v,1)}</div>
       </div>`).join('');
@@ -808,12 +824,12 @@ async function doRun(){
         </div>
         <div>
           <div class="panel tight">
-            <h2>独立评审 <span class="en">Blind Rubric</span></h2>
+            <h2>模型盲评 · 仅供参考 <span class="en">Blind Rubric</span></h2>
             <div style="font-size:30px;font-weight:600;font-variant-numeric:tabular-nums;margin:6px 0 2px">
-              ${num(j.weighted,2)}<span style="font-size:13px;color:var(--ink-3)">/10</span></div>
-            <p class="hint" style="margin-bottom:12px">加权得分</p>
+              ${judgeScore(j)}</div>
+            <p class="hint" style="margin-bottom:12px">有效评分仅评价方案，不证明执行结果或技能因果贡献。</p>
             ${dims}
-            ${j.coverage!=null ? `<p class="note">领域要点覆盖：<strong>${pct(j.coverage)}</strong>
+            ${j.coverage_valid!==false&&j.coverage!=null ? `<p class="note">领域要点覆盖：<strong>${pct(j.coverage)}</strong>
               （${(j.covered||[]).length}/${j.n_points} 条）</p>`:''}
             <p class="note">${esc(j.comment || '')}</p>
           </div>
@@ -828,7 +844,7 @@ async function doRun(){
       ${d.first_step && d.first_step.code ? `
       <div class="panel tight" style="margin-top:20px">
         <h2>第一步展开为可运行代码 <span class="en">${esc(d.first_step.skill)}</span></h2>
-        <p class="hint">这一步验证技能不只是被"引用"，而是真的改变了执行产物。</p>
+        <p class="hint">这是本次实际生成的第一步代码。是否改善结果，需要对照执行与独立产物核验，单份代码不能证明因果贡献。</p>
         <pre>${esc(d.first_step.code)}</pre>
       </div>`:''}`;
   }catch(e){ out.innerHTML = `<p class="err">执行失败：${esc(e.message)}</p>`; }
@@ -897,7 +913,7 @@ with SkillNetClient(ClientConfig(base_url="http://skillnet:8848")) as client:
     run = client.create_run("公开演示数据统计", max_steps=3)
     for event in client.iter_run_events(run["run_id"]):
         # 将真实事件转发给 S1 的前端
-        print(event["type"])</pre></details><p>当前执行器为宿主机子进程。生产落地需补齐独立执行隔离、S1 身份映射和跨进程队列。</p>`;}catch(error){host.innerHTML=UI.errorHTML(error);}
+        print(event["type"])</pre></details><p>已实现 SQLite 持久队列、独立 Worker、S1 签名身份范围和 Docker 隔离配置。演示默认仍使用线程 Worker 与宿主机子进程；部署能力不等于已启用。生产接入需要按目标环境启用、验收，并完成 S1 线上联调。</p>`;}catch(error){host.innerHTML=UI.errorHTML(error);}
 }
 async function doDemo(){
   const task=$('#demoTaskText').value.trim();if(!task)return;

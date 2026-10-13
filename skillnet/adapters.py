@@ -31,6 +31,18 @@ from typing import Any
 
 from .catalog import SkillLibrary
 
+
+def _write_package(skill, destination):
+    destination.mkdir(parents=True, exist_ok=True)
+    if skill.source == 'github':
+        import shutil
+        root = Path(__file__).resolve().parents[1]
+        package = (root / skill.metadata.get('package_path', '')).resolve()
+        if not package.is_relative_to((root / 'seed/community/skills').resolve()) or not package.is_dir():
+            raise ValueError('Missing attributed skill package: ' + skill.name)
+        shutil.copytree(package, destination, dirs_exist_ok=True)
+    (destination / 'SKILL.md').write_text(skill.to_skill_md(), encoding='utf-8')
+
 # 技能名白名单。导出时会把技能名当目录名用，而 `SkillLibrary.load()` 读进来的
 # 技能可能来自外部数据（演化技能是模型生成后落盘的），因此必须校验，
 # 否则一个精心构造的技能名就能把文件写到仓库之外。
@@ -146,8 +158,7 @@ def export_agent_skills(lib: SkillLibrary, out: Path, targets: dict[str, str] | 
         n = 0
         for s in lib:
             d = root / _safe_dir_name(s.name)
-            d.mkdir(parents=True, exist_ok=True)
-            (d / "SKILL.md").write_text(s.to_skill_md(), encoding="utf-8")
+            _write_package(s, d)
             n += 1
         exported.append({
             "framework": client,
@@ -192,8 +203,7 @@ def export_google_adk(lib: SkillLibrary, out: Path, *, model: str = "gemini-flas
     skill_root = base / "skills"
     for s in lib:
         d = skill_root / _safe_dir_name(s.name)
-        d.mkdir(parents=True, exist_ok=True)
-        (d / "SKILL.md").write_text(s.to_skill_md(), encoding="utf-8")
+        _write_package(s, d)
     (base / "agent.py").write_text(
         ADK_AGENT_TEMPLATE.format(
             model=model, n_skills=len(lib), n_domains=len(lib.by_domain())

@@ -177,9 +177,19 @@ class SkillEvolver:
             ))
             return None
 
-        self.lib.add(skill)
+        if getattr(self, 'candidate_dir', None):
+            from .governance import quarantine
+            skill.metadata['evidence_context'] = dict(getattr(self, 'evidence_context', {}))
+            try:
+                quarantine(skill, self.candidate_dir, origin_run_id=getattr(self, 'origin_run_id', ''))
+            except (OSError, ValueError) as exc:
+                self.records.append(EvolveRecord(op, name, False, '候选保存失败：' + type(exc).__name__))
+                return None
+            skill.metadata['governance_status'] = 'candidate'
+        else:
+            self.lib.add(skill)
         self.records.append(
-            EvolveRecord(op, name, True, f"G{skill.generation} 新技能入库", parents)
+            EvolveRecord(op, name, not bool(getattr(self, 'candidate_dir', None)), f"G{skill.generation} 候选待验证" if getattr(self, 'candidate_dir', None) else f"G{skill.generation} 新技能入库", parents)
         )
         return skill
 
@@ -187,8 +197,12 @@ class SkillEvolver:
     # 算子 1：从执行轨迹蒸馏（DisCo / Trace2Skill 路线）
     # ------------------------------------------------------------------
     def distill(
-        self, task: str, trajectory: str, *, score: float, parent: list[str] | None = None
+        self, task: str, trajectory: str, *, score: float | None, parent: list[str] | None = None
     ) -> Skill | None:
+        evidence = getattr(self, 'evidence_context', {})
+        score_text = (f'已测范围内的结果 {score:.2f}（1 分制）；范围：{evidence.get("scope", "见实际判据")}'
+                      if score is not None and evidence.get('assessment_version') else
+                      '未提供独立结果证据；轨迹或附带的模型方案评分不能视为成功执行')
         prompt = (
             "你是一个技能蒸馏器。下面是科研 Agent 完成一个任务的执行轨迹。\n"
             "请从轨迹中提炼出**可迁移的操作性知识**（不是复述这道题的答案），"
@@ -198,8 +212,9 @@ class SkillEvolver:
             "2. 步骤必须是可执行的动作，而不是抽象建议；\n"
             "3. 若轨迹中存在失败与修正，把修正后的做法写进步骤，把失败模式写进 pitfalls。\n\n"
             f"【任务】\n{task}\n\n"
-            f"【执行轨迹】\n{trajectory[:6000]}\n\n"
-            f"【该次执行得分】{score:.2f}（1 分制）\n\n"
+            f"【执行轨迹】\n{trajectory[:16000]}\n\n"
+            f"【证据状态】{score_text}。仅允许提炼轨迹中有依据的方法假设，"
+            "不能推断用户满意度、技能因果贡献或网络提升。候选须经独立留出任务验证。\n\n"
             f"严格输出 JSON，字段如下：\n{SKILL_SCHEMA_HINT}"
         )
         raw = chat_json(

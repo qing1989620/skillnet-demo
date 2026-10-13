@@ -1,0 +1,62 @@
+[
+  {
+    "id": "operating-review",
+    "title": "经营月报 · 数据到决策",
+    "data": "order_id,month,revenue,cost\nA01,2026-01,1200,720\nA02,2026-01,800,560\nA03,2026-01,1500,900\nA03,2026-01,1500,900\nB01,2026-02,1800,1200\nB02,2026-02,900,720\nB03,2026-02,,300\nB04,2026-02,1300,780\nC01,2026-03,2200,1430\nC02,2026-03,1400,980\nC03,2026-03,700,770\nD01,2026-04,2600,1690\nD02,2026-04,1700,1020\nD03,2026-04,900,630\nD04,2026-04,500,\n",
+    "rules": "按 order_id 去重保留首条；revenue 或 cost 缺失的订单剔除；不剔除毛利为负的有效订单。",
+    "expected": {
+      "duplicates": 1,
+      "missing": 2,
+      "orders": 12,
+      "revenue": 17000,
+      "cost": 11400
+    },
+    "frozen": true
+  },
+  {
+    "id": "operating-review-holdout",
+    "title": "经营月报 · 冻结复核题",
+    "data": "order_id,month,revenue,cost\nX01,2026-05,250,120\nX02,2026-05,750,600\nX02,2026-05,750,600\nX03,2026-05,,25\nY01,2026-06,1300,950\nY02,2026-06,400,440\nY03,2026-06,300,90\nZ01,2026-07,2000,1200\nZ02,2026-07,1000,700\nZ03,2026-07,500,\n",
+    "rules": "按 order_id 去重保留首条；revenue 或 cost 缺失的订单剔除；不剔除毛利为负的有效订单。",
+    "expected": {
+      "duplicates": 1,
+      "missing": 2,
+      "orders": 7,
+      "revenue": 6000,
+      "cost": 4100
+    },
+    "frozen": true
+  },
+  {
+    "id": "operating-review-zero",
+    "title": "经营月报 · 零收入与零毛利",
+    "data": "order_id,month,revenue,cost\nQ01,2026-08,0,200\nQ02,2026-08,400,100\nQ02,2026-08,999,999\nR01,2026-09,600,600\nR02,2026-09,0,0\nR03,2026-09,,20\n",
+    "rules": "按 order_id 去重保留首条；revenue 或 cost 缺失的订单剔除；不剔除毛利为负的有效订单。",
+    "expected": {"duplicates": 1, "missing": 1, "orders": 4, "revenue": 1000, "cost": 900},
+    "frozen": true
+  },
+  {
+    "id": "operating-review-decimal",
+    "title": "经营月报 · 小数精度",
+    "data": "order_id,month,revenue,cost\nS01,2026-10,100.25,80.10\nS02,2026-10,99.75,70.90\nT01,2026-11,150.5,100.25\nT02,2026-11,49.5,60.75\nT02,2026-11,49.5,60.75\nU01,2026-11,300,\n",
+    "rules": "按 order_id 去重保留首条；revenue 或 cost 缺失的订单剔除；不剔除毛利为负的有效订单。",
+    "expected": {"duplicates": 1, "missing": 1, "orders": 4, "revenue": 400, "cost": 312},
+    "frozen": true
+  },
+  {
+    "id": "operating-review-conflict",
+    "title": "经营月报 · 冲突重复与跨年",
+    "data": "order_id,month,revenue,cost\nV01,2026-12,2000,1200\nV01,2026-12,20,12\nV02,2026-12,1000,900\nW01,2027-01,800,1000\nW02,2027-01,2200,1100\nW03,2027-01,500,\n",
+    "rules": "按 order_id 去重保留首条；revenue 或 cost 缺失的订单剔除；不剔除毛利为负的有效订单。",
+    "expected": {"duplicates": 1, "missing": 1, "orders": 4, "revenue": 6000, "cost": 4200},
+    "frozen": true
+  },
+  {
+    "id": "operating-review-sparse",
+    "title": "经营月报 · 非连续月份",
+    "data": "order_id,month,revenue,cost\nM01,2027-02,300,100\nM02,2027-04,1200,800\nM03,2027-07,500,650\nM04,2027-07,1000,500\nM02,2027-04,1200,800\nM05,2027-07,,50\nM06,2027-07,600,\n",
+    "rules": "按 order_id 去重保留首条；revenue 或 cost 缺失的订单剔除；不剔除毛利为负的有效订单。",
+    "expected": {"duplicates": 1, "missing": 2, "orders": 4, "revenue": 3000, "cost": 2050},
+    "frozen": true
+  }
+]

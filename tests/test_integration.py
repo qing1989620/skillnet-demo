@@ -165,6 +165,20 @@ def test_sse_parses_multiline_events_and_reconnect_cursor():
     ]
 
 
+def test_client_carries_exact_prior_artifact_and_history():
+    prior = dict(run_id='prior-001', name='step2_monthly_summary.csv', sha256='a'*64)
+    history = dict(q='原始任务', a='已有实际汇总文件', run_id='prior-001')
+    def handle(request):
+        body = json.loads(request.content)
+        assert body['artifact_refs'] == [prior]
+        assert body['history'] == [history]
+        return httpx.Response(200, json={'run_id':'followup-001','status':'CREATED'})
+    with client(handle) as api:
+        assert api.create_run('继续读取上一轮文件', history=[history], artifact_refs=[prior])['run_id'] == 'followup-001'
+    with client(lambda r: pytest.fail('Invalid digest reached service')) as api, pytest.raises(ValidationError):
+        api.create_run('继续读取', artifact_refs=[dict(prior, sha256='invalid')])
+
+
 def test_sse_invalid_payload_and_content_type_are_rejected():
     for headers, body in [({"Content-Type": "application/json"}, "{}"),
                           ({"Content-Type": "text/event-stream"}, "data: []\n\n")]:

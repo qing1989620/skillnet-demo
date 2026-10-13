@@ -1,0 +1,48 @@
+{
+  "kind": "evidence-serialization-repair",
+  "initial_report_sha256": "a0e48b889fca5d6be8500bf504c8a552d793fe7cdad5710ffc37b9f114eb38e0",
+  "initial_raw_sha256": "332ce02ce0c912ee8f0000ea3d0558edb7a04d9e24ce06340475c39347ec0689",
+  "archive_sha256": "6dce40a039cb7d4510625a646167d6813a664e9824ace58e0f61d3117db56010",
+  "initial_protocol_sha256": "ac5fd69c44d10bc5c8ff16c405f3fc481f3260cb275b095e7f786a92b67538a6",
+  "summary": {
+    "task_count": 23,
+    "valid_tasks": 16,
+    "invalid_tasks": 7,
+    "strategies": {
+      "flat": {
+        "verified": 2,
+        "valid_verified": 2,
+        "invalid_verified": 0,
+        "code_calls": 23,
+        "false_accepts": 0,
+        "unverified_metric_outputs": 7,
+        "development_verified": 1,
+        "heldout_verified": 1
+      },
+      "plan_only": {
+        "verified": 2,
+        "valid_verified": 2,
+        "invalid_verified": 0,
+        "code_calls": 3,
+        "false_accepts": 0,
+        "unverified_metric_outputs": 0,
+        "development_verified": 1,
+        "heldout_verified": 1
+      },
+      "active": {
+        "verified": 16,
+        "valid_verified": 16,
+        "invalid_verified": 0,
+        "code_calls": 42,
+        "false_accepts": 0,
+        "unverified_metric_outputs": 0,
+        "development_verified": 8,
+        "heldout_verified": 8
+      }
+    },
+    "all_obligations_passed": true,
+    "physical_code_calls": 391
+  },
+  "issue": "probe_records.metric_csv used text-mode read, which normalized actual CRLF bytes while execution.metrics_sha256 retained raw SHA. Numeric observations remain reproducible; this preview cannot be claimed raw-byte-identical.",
+  "repair": "Use read_bytes().decode for probe metric CSV; repeat every final experiment under a new protocol. Preserve the first complete report in gzip. These two iterations are not independent samples."
+}

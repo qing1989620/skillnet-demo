@@ -3,6 +3,14 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const Product = require('../web/assets/product.js');
+assert.equal(Product.graphURL({run:'run /?&id=evil',skill:'清洗"<&',domain:'data/science',step:2,origin:'https://evil.invalid'}),'/graph?run=run%20%2F%3F%26id%3Devil&skill=%E6%B8%85%E6%B4%97%22%3C%26&domain=data%2Fscience&step=2');
+assert.equal(Product.graphURL({step:'0'}),'/graph?step=0');
+assert.equal(Product.graphURL(null),'/graph');assert.equal(Product.runURL(null),'/runs');
+assert.equal(Product.graphURL({skill:'\ud800'}),'/graph','malformed Unicode must not break rendering');
+assert.equal(Product.graphURL({run:'',skill:'\u0000bad',step:'1e3'}),'/graph');
+for(const invalid of [-1,1.2,Infinity,Number.MAX_SAFE_INTEGER+1,'02',' 2','+2',null,undefined])assert.equal(Product.stepIndex(invalid),null);
+assert.equal(Product.runURL({run:'历史/1&step=99',step:'2'}),'/run?id=%E5%8E%86%E5%8F%B2%2F1%26step%3D99&step=2');
+assert.equal(Product.runURL({step:2}),'/runs','no run id must not select an unrelated last_run');
 const run = {run_id:'demo',status:'COMPLETED',skills:['csv'],ranking:[{name:'csv'}],retrieval:{selected:['csv']},
   steps:[{idx:0,skill:'csv',action:'read',status:'done',depends_on:[2],checks:[{passed:true}],verifications:[{item:'image',passed:false}]},
     {idx:2,skill:'plot',action:'root',status:'done',depends_on:[],n_attempts:2}],
@@ -12,6 +20,29 @@ assert.ok(Product.dag(run).nodes.find(s=>s.idx===2).x<Product.dag(run).nodes.fin
 assert.equal(Product.metrics(run).confirmed,0);
 assert.equal(Product.metrics(run).repairs,1);
 assert.equal(Product.metrics(run).gate.reason,'semantic blocked');
+const traceRun={...run,steps:[{idx:0,skill:'csv',action:'读取',status:'done',artifacts:[{name:'first.csv'}],checks:[{name:'schema',passed:true}]},{idx:4,skill:'csv',action:'复核',status:'failed',artifacts:[{name:'second.csv'}],checks:[]}],staged:{skill_versions:{csv:{sha256:'historical-version'}},quality_assessment:{observations:[{idx:0,independent_checks:[{name:'reference',passed:false}]}]}}};
+const trace=Product.skillTraceHTML(traceRun,'csv',4);
+assert.match(trace,/historical-version/);assert.match(trace,/独立结果检查 0\/1/);
+assert.ok(trace.indexOf('STEP 5')<trace.indexOf('STEP 1'),'preferred noncontiguous idx must be shown first');
+assert.match(trace,/first.csv/);assert.match(trace,/data-kernel-step="4" data-run="demo"/);
+assert.match(trace,/graph\?run=demo&amp;skill=csv&amp;step=4/);
+assert.match(Product.skillTraceHTML(traceRun,'unused'),/本轮没有该技能的实际执行步骤/);
+assert.doesNotMatch(Product.skillTraceHTML(traceRun,'unused'),/data-kernel-step/,'recommended-only skills cannot acquire executed steps');
+assert.match(Product.skillTraceHTML(null,'csv'),/没有关联的运行上下文/);
+const review=Product.stepReviewHTML(traceRun,traceRun.steps[0]);
+assert.match(review,/程序检查：1\/1/);assert.match(review,/独立结果检查：0\/1/);
+assert.match(review,/data-capability-skill="csv" data-run="demo" data-step="0"/);
+const unsafeTrace=Product.skillTraceHTML({...traceRun,run_id:'<script>run</script>',steps:[{idx:0,skill:'<script>',action:'<img src=x onerror=x>',artifacts:[{name:'<iframe>'}],checks:[]}],staged:{}},'<script>');
+assert.doesNotMatch(unsafeTrace,/<script>|<img|<iframe>/);assert.match(unsafeTrace,/&lt;img/);
+assert.match(Product.valueHTML({...run,artifacts:[{kind:'任务输入'},{kind:'跨轮输入'},{kind:'csv'}]}),/1 个真实文件/,'task inputs are evidence, not new deliverables');
+for(const prefix of ['state-kernel','state-kernel-blocked','state-kernel-overbroad','state-kernel-value-drift']){
+  const records=JSON.parse(fs.readFileSync(path.join(__dirname,'../docs/evidence',prefix+'-files.json'),'utf8'));
+  for(const record of records){
+    const raw=fs.readFileSync(path.join(__dirname,'..',record.path));
+    assert.equal(raw.length,record.bytes,record.path);
+    assert.equal(require('node:crypto').createHash('sha256').update(raw).digest('hex'),record.sha256,record.path);
+  }
+}
 assert.match(Product.evidenceHTML(run),/学习准入已拦截/);
 assert.doesNotMatch(Product.evidenceHTML({...run,skills:['<script>'],steps:[{idx:0,action:'<img src=x onerror=x>',depends_on:[]}]}),/<img src=x/);
 assert.ok(Product.dag({steps:[{idx:9,depends_on:[2]},{idx:2,depends_on:[9]}]}).nodes.length===2);
@@ -26,10 +57,140 @@ assert.match(report,/indistinguishable/);
 assert.match(report,/任务划分须复核/);
 assert.match(report,/逐轮奖励/);
 assert.doesNotMatch(Product.experimentsHTML({exp1_bad:{timestamp:'<script>',summary:{'<img>':{skill_recall:1}}}}),/<script>|<img>/);
+const paired=JSON.parse(fs.readFileSync(path.join(__dirname,'../out/execution-benchmark-1791453374.json'),'utf8'));
+const learningReport=Product.experimentsHTML({paired});
+assert.match(learningReport,/2 道冻结任务 \/ 4 组配对/);
+assert.match(learningReport,/未满足晋级条件 · 保持候选/);
+assert.match(learningReport,/本轮没有测出质量增益/);
+assert.match(learningReport,new RegExp(paired.candidate_sha256));
+assert.doesNotMatch(learningReport,/三组采用相同数据/);
+assert.match(Product.assessmentHTML(run),/历史评价记录/);
+const assessed={...run,staged:{learning_gate:{mode:'shadow',eligible:false},
+  quality_assessment:{version:'outcome-evidence-v1',scope_verdict:'unknown',overall_verdict:'unconfirmed',
+    goal_contract:{source:'user_task_without_independent_reference'},unverified:['用户满意度'],
+    observations:[{idx:0,skill:'<script>',observed_score:null,reason:'没有独立判据',necessary_passed:3,necessary_total:3}],
+    integrity:[],network:{applied:false,reason:'保留观察'},task_sha256:'task',evidence_sha256:'proof'},
+  shadow_feedback:{rows:[{name:'<img>',exploit_before:.5,exploit_after:.5,shadow_delta:null,weight:0}]}}};
+const assessment=Product.assessmentHTML(assessed);
+const gates=Array.from({length:12},(_,i)=>({id:String(i),title:'门'+i,rule:'<script>',reason:'<img>',status:i<4?'passed':'unknown',evidence:{value:'<iframe>'}}));
+const decision={eligible:false,gates,version:'test',policy_sha256:'rules',audit_sha256:'audit'};
+const gateHTML=Product.rewardGatesHTML(decision);
+assert.match(gateHTML,/4<small> \/ 12/);
+assert.match(gateHTML,/AND/);
+assert.match(gateHTML,/奖励暂不发放/);
+assert.match(gateHTML,/8 道待证据/);
+assert.equal((gateHTML.match(/<li class="reward-gate /g)||[]).length,12);
+assert.doesNotMatch(gateHTML,/<script>|<img>|<iframe>/);
+assert.match(Product.rewardGatesHTML({...decision,eligible:true}),/奖励暂不发放/,'eligibility flag cannot hide missing gates');
+assert.match(Product.rewardGatesHTML({...decision,eligible:true,gates:gates.map(g=>({...g,status:'passed'}))}),/全部通过 · 具备领奖资格/);
+assert.match(Product.assessmentHTML({...assessed,staged:{...assessed.staged,reward_gates:decision}}),/十二道奖励门禁/);
+assert.match(Product.rewardReceiptHTML({stats:{}}),/尚无通过十二道门/);
+assert.match(Product.rewardReceiptHTML({stats:{verified_improvement_receipt:{points:12.5,scope:'<script>',candidate_sha256:'version'}}}),/12.50/);
+assert.doesNotMatch(Product.rewardReceiptHTML({stats:{verified_improvement_receipt:{scope:'<script>'}}}),/<script>/);
+assert.match(assessment,/结果判据不足/);
+assert.match(assessment,/整体任务质量与用户满意度：尚未确认/);
+assert.match(assessment,/未确认 · 不分配奖励/);
+assert.match(assessment,/0\.5000 → 0\.5000/);
+assert.match(assessment,/影子策略预演/);
+assert.match(Product.evidenceHTML(assessed),/正式网络未更新/);
+assert.doesNotMatch(assessment,/<script>|<img>/);
+const evidenceManifest=JSON.parse(fs.readFileSync(path.join(__dirname,'../docs/evidence/outcome-evidence-files.json'),'utf8'));
+for(const record of evidenceManifest){
+  const raw=fs.readFileSync(path.join(__dirname,'..',record.path));
+  assert.equal(require('node:crypto').createHash('sha256').update(raw).digest('hex'),record.sha256);
+}
+const measuredRun=JSON.parse(fs.readFileSync(path.join(__dirname,'../out/runs/b5492bb7-20261009-232823-34fe.json'),'utf8'));
+const unmeasuredRun=JSON.parse(fs.readFileSync(path.join(__dirname,'../out/runs/1624c869-20261009-232919-0fe0.json'),'utf8'));
+assert.equal(measuredRun.judge.weighted,unmeasuredRun.judge.weighted);
+assert.match(Product.assessmentHTML(measuredRun),/已测范围通过/);
+assert.match(Product.assessmentHTML(unmeasuredRun),/结果判据不足/);
+assert.equal(measuredRun.staged.shadow_feedback.policy_state_sha256,unmeasuredRun.staged.shadow_feedback.policy_state_sha256);
+const gateManifest=JSON.parse(fs.readFileSync(path.join(__dirname,'../docs/evidence/reward-gates-files.json'),'utf8'));
+for(const record of gateManifest){
+  const raw=fs.readFileSync(path.join(__dirname,'..',record.path));
+  assert.equal(require('node:crypto').createHash('sha256').update(raw).digest('hex'),record.sha256);
+}
+const gateProof=JSON.parse(fs.readFileSync(path.join(__dirname,'../out/reward-gates-smoke.json'),'utf8'));
+for(const [rid,passed] of [[gateProof.business_run_id,4],[gateProof.unmeasured_run_id,3]]){
+  const actual=JSON.parse(fs.readFileSync(path.join(__dirname,'../out/runs',rid+'.json'),'utf8'));
+  assert.equal(actual.staged.reward_gates.passed,passed);
+  assert.equal(actual.staged.reward_gates.eligible,false);
+  assert.match(Product.assessmentHTML(actual),/真正提升，才能领奖/);
+}
+const failedRun=JSON.parse(fs.readFileSync(path.join(__dirname,'../out/runs',gateProof.failed_run_id+'.json'),'utf8'));
+assert.equal(failedRun.status,'PARTIAL');
+assert.equal(failedRun.staged.reward_gates.eligible,false);
+assert.match(Product.assessmentHTML(failedRun),/奖励暂不发放/);
 for(const name of ['briefing','chat','app','run','graph','index']){
   const html=fs.readFileSync(path.join(__dirname,'../web',name+'.html'),'utf8');
   assert.ok(html.includes('/static/assets/product.js'),name+' uses shared evidence');
+  assert.ok(html.includes('/static/assets/ecosystem.css'),name+' uses task value styling');
   const scripts=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
   scripts.forEach(m=>new Function(m[1]));
 }
-console.log('Product: true dependencies, noncontiguous steps, learning gate, partial verification, repairs, safe text and all six page scripts passed.');
+const researchManifest=JSON.parse(fs.readFileSync(path.join(__dirname,'../docs/evidence/research-ecosystem-files.json'),'utf8'));
+for(const record of researchManifest){
+  const raw=fs.readFileSync(path.join(__dirname,'..',record.path));
+  assert.equal(require('node:crypto').createHash('sha256').update(raw).digest('hex'),record.sha256);
+}
+const researchRun=JSON.parse(fs.readFileSync(path.join(__dirname,'../out/runs/f11ad204-20261010-100815-58a8.json'),'utf8'));
+const routing=Product.selectionHTML({run_id:'a',skills:['csv','plot'],steps:[{idx:0,skill:'csv',status:'failed',action:'实际读取'}],
+  retrieval:{fabric:{selected:['csv','unused'],selection:{library_size:1881,rule:'至多 k 项'},candidates:[
+    {name:'csv',capability:'安全 CSV',note:'<script>理由</script>',channels:['bm25']},{name:'unused',note:'候选'},
+    ...Array.from({length:12},(_,i)=>({name:'other'+i,note:'无需报告'}))]}},
+  staged:{orchestration:{decisions:[{name:'csv',reason:'读取原表，不生成替代数据'}]}}});
+assert.match(routing,/1881/);
+assert.match(routing,/14<\/b> 检索候选/);
+assert.match(routing,/读取原表，不生成替代数据/);
+assert.match(routing,/编排采用 · 本轮未执行/);
+assert.match(routing,/检索推荐 · 编排未采用/);
+assert.match(routing,/Step 1 · 实际读取 · 失败/);
+assert.match(routing,/选择 → 执行 → 复核/);assert.match(routing,/data-capability-skill="csv" data-run="a" data-step="0"/);
+assert.match(routing,/other11/,'all rejected candidates remain inspectable');
+assert.doesNotMatch(routing,/<script>/);
+assert.match(Product.selectionHTML({retrieval:{fabric:{selection:{method:'task_utility'},selected:[]}}}),/没有推荐适用技能/);
+const genericRoute=Product.selectionHTML({skills:['csv'],steps:[{idx:0,skill:'manual'}]});
+assert.match(genericRoute,/1 个步骤采用通用执行/);
+assert.match(genericRoute,/0<\/b> 进入执行/);
+assert.doesNotMatch(genericRoute,/<h4>manual/);
+assert.match(Product.selectionHTML(researchRun),/不能事后补写|历史记录/);
+const value=Product.valueHTML(researchRun);
+assert.match(value,/5 个真实文件/);
+assert.match(value,/20\/20 项独立参考检查/);
+assert.match(value,/4\/12 道奖励门通过/);
+assert.match(value,/S1 线上联调待验证/);
+assert.equal(Product.valueHTML({...researchRun,status:'EXECUTING'}),'');
+assert.equal(Product.frontierSnapshotHTML(run),'','old records do not acquire synthetic capability claims');
+assert.equal(Product.frontierSnapshotHTML({...run,staged:{capability_frontier:{}}}),'');
+const frontierSnapshot={version:'frontier-bridge-v1',scope:'固定试验登记集',read_only:true,input_sha256:'c'.repeat(64),
+  observation:{facts:['data.file','data.schema'],checks:{checks:[{state:'passed'},{state:'failed'},{state:'unknown'}]}},
+  diagnosis:{state:'evidence_insufficient',gaps:[{fact:'data.unique',providers:['deduplicate'],kind:'observed_or_provider_needed'},{fact:'data.range',providers:[],kind:'no_registered_provider'}]},
+  boundary:'有限观察，不证明全库不会。'};
+const snapshotHTML=Product.frontierSnapshotHTML({...run,staged:{...run.staged,capability_frontier:frontierSnapshot}});
+assert.match(snapshotHTML,/2 项已观测事实/);assert.match(snapshotHTML,/2 项待补齐/);assert.match(snapshotHTML,/1 个候选程序/);
+assert.match(snapshotHTML,/1\/3 项输入条件通过/);assert.match(snapshotHTML,/data-frontier-open/);assert.match(snapshotHTML,/证据不足/);
+assert.match(snapshotHTML,/不自动执行或写回技能网络/);assert.match(snapshotHTML,/试验登记集没有提供者/);
+assert.match(Product.evidenceHTML({...run,staged:{...run.staged,capability_frontier:frontierSnapshot}}),/本次任务的有限能力边界观察/);
+assert.match(Product.capabilityReportHTML({capability_frontier:frontierSnapshot}),/本次任务的有限能力边界观察/);
+const unsafeSnapshot={...frontierSnapshot,version:'<script>v</script>',scope:'<img src=x onerror=x>',input_sha256:'" onfocus="evil',
+  observation:{facts:['<iframe>'],checks:[]},diagnosis:{state:'<script>',gaps:[{fact:'<svg onload=x>',providers:['<img>'],kind:'<script>'}]},boundary:'<script>evil</script>'};
+const unsafeSnapshotHTML=Product.frontierSnapshotHTML({capability_frontier:unsafeSnapshot});
+assert.doesNotMatch(unsafeSnapshotHTML,/<script>|<img|<iframe|<svg| onfocus="evil/);
+assert.match(unsafeSnapshotHTML,/&lt;script&gt;/,'unsafe evidence remains visible as text');
+assert.doesNotThrow(()=>Product.frontierSnapshotHTML({capability_frontier:{...frontierSnapshot,observation:{checks:{checks:'bad'}},diagnosis:{gaps:[null,'bad']}}}));
+assert.doesNotMatch(Product.valueHTML({...researchRun,staged:{quality_assessment:{scope:'<script>evil</script>'}}}),/<script>/);
+assert.match(Product.assessmentHTML(researchRun),/执行前冻结的科研样本与指标参考/);
+assert.match(Product.resourcesButtonHTML({name:'example',source:'github'}),/data-skill-resources/);
+assert.equal(Product.resourcesButtonHTML({name:'seed',source:'seed'}),'');
+assert.doesNotMatch(Product.resourcesHTML({name:'<script>',repository:'<img>',files:[{path:'<iframe>',sha256:'" onmouseover="evil'}]}),/<script>|<img>|<iframe>| onmouseover="evil/);
+assert.match(Product.resourcesHTML({files:[]}),/脚本作为参考文件读取，不自动运行/);
+const selectionManifest=JSON.parse(fs.readFileSync(path.join(__dirname,'../docs/evidence/skill-selection-files.json'),'utf8'));
+for(const record of selectionManifest){
+  const raw=fs.readFileSync(path.join(__dirname,'..',record.path));
+  assert.equal(require('node:crypto').createHash('sha256').update(raw).digest('hex'),record.sha256);
+}
+const selectedRun=JSON.parse(fs.readFileSync(path.join(__dirname,'../out/runs/f11ad204-20261010-110841-6d42.json'),'utf8'));
+assert.match(Product.selectionHTML(selectedRun),/descriptive-stats-csv-summary/);
+assert.match(Product.selectionHTML(selectedRun),/编排采用 · 本轮未执行/);
+assert.match(Product.selectionHTML(selectedRun),/1 个步骤采用通用执行/);
+console.log('Product: true dependencies, noncontiguous steps, learning gate, partial verification, repairs, safe context URLs, progressive skill evidence, safe text and all six page scripts passed.');

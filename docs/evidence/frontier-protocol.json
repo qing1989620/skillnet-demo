@@ -1,0 +1,381 @@
+{
+  "protocol": {
+    "version": "skillnet-frontier-lab-v1",
+    "created_at_ns": 1791805697294100600,
+    "tasks": [
+      {
+        "id": "development-0",
+        "split": "development",
+        "valid": true,
+        "input_sha256": "03154ac918d9367c181420f86da3f36c2e4e97b37c507eda9fa9fb9985c41ea9",
+        "input_csv": "sample_id,subject_id,split,label,score\nv0-1,v0-A,train,1,0.90\nv0-2,v0-B,test,0,0.10\nv0-3,v0-C,test,1,0.50\nv0-4,v0-D,test,0,0.70\nv0-5,v0-E,test,1,0.80\nv0-6,v0-F,train,0,0.20\n"
+      },
+      {
+        "id": "development-1",
+        "split": "development",
+        "valid": true,
+        "input_sha256": "dbb60039e638f75cf837e8288f114ed37c73294efb641679e6c4169c4c9660cb",
+        "input_csv": "sample_id,subject_id,split,label,score\nv0-1,v0-A,train,1,0.90\nv0-2,v0-B,test,0,0.10\nv0-3,v0-C,test,1,0.50\nv0-4,v0-D,test,0,0.70\nv0-5,v0-E,test,1,0.80\nv0-6,v0-F,train,0,0.20\nv0-2,v0-B,test,0,0.10\n"
+      },
+      {
+        "id": "development-2",
+        "split": "development",
+        "valid": true,
+        "input_sha256": "0c1230163d92611172066807c1ecc355d93677b0bc2cd074e1b8e6f8b1d5bcbe",
+        "input_csv": "sample_id,subject_id,split,label,score\nv0-1,v0-A,train,1,0.90\nv0-2,v0-B,test,0,0.10\nv0-3,v0-C,test,1,0.50\nv0-4,v0-D,test,0,0.70\nv0-5,v0-E,test,1,0.80\nv0-6,v0-F,train,0,0.20\nv0-leak,v0-A,test,1,0.95\n"
+      },
+      {
+        "id": "development-3",
+        "split": "development",
+        "valid": true,
+        "input_sha256": "0c8ec758a0e2bc4915c278d951159b8f9ec068b2dad4f5decac618970b3151f5",
+        "input_csv": "sample_id,subject_id,split,label,score\nv0-1,v0-A,train,1,0.90\nv0-2,v0-B,test,0,0.10\nv0-3,v0-C,test,1,0.50\nv0-4,v0-D,test,0,0.70\nv0-5,v0-E,test,1,0.80\nv0-6,v0-F,train,0,0.20\nv0-2,v0-B,test,0,0.10\nv0-leak,v0-A,test,1,0.95\n"
+      },
+      {
+        "id": "development-4",
+        "split": "development",
+        "valid": true,
+        "input_sha256": "3089033551bf0fa2e220db340e4f907d254b288c6bd191e9e3b330b37bc85db4",
+        "input_csv": "sample_id,subject_id,split,label,score\nv0-1,v0-A,train,1,0.90\nv0-2,v0-B,test,0,0.10\nv0-3,v0-C,test,1,0.50\nv0-4,v0-D,test,0,0.70\nv0-5,v0-E,test,1,0.80\nv0-6,v0-F,train,0,0.20\nv0-missing,v0-G,test,1,  \n"
+      },
+      {
+        "id": "development-5",
+        "split": "development",
+        "valid": true,
+        "input_sha256": "70287b2498cedaa9c53f99b4ddf4d35f8482863f2fa63ea62962c55183ff7826",
+        "input_csv": "sample_id,subject_id,split,label,score\nv0-1,v0-A,train,1,0.90\nv0-2,v0-B,test,0,0.10\nv0-3,v0-C,test,1,0.50\nv0-4,v0-D,test,0,0.70\nv0-5,v0-E,test,1,0.80\nv0-6,v0-F,train,0,0.20\nv0-2,v0-B,test,0,0.10\nv0-missing,v0-G,test,1,  \n"
+      },
+      {
+        "id": "development-6",
+        "split": "development",
+        "valid": true,
+        "input_sha256": "2ed86f01f144036f8b71f06f1452dae442d392a59b49d8c21c1ebd2aab568746",
+        "input_csv": "sample_id,subject_id,split,label,score\nv0-1,v0-A,train,1,0.90\nv0-2,v0-B,test,0,0.10\nv0-3,v0-C,test,1,0.50\nv0-4,v0-D,test,0,0.70\nv0-5,v0-E,test,1,0.80\nv0-6,v0-F,train,0,0.20\nv0-leak,v0-A,test,1,0.95\nv0-missing,v0-G,test,1,  \n"
+      },
+      {
+        "id": "development-7",
+        "split": "development",
+        "valid": true,
+        "input_sha256": "71f8c07ab02901201f35a79e6c4f389ad1ca6987bd13eb2f75708e60a83e6c9a",
+        "input_csv": "sample_id,subject_id,split,label,score\nv0-1,v0-A,train,1,0.90\nv0-2,v0-B,test,0,0.10\nv0-3,v0-C,test,1,0.50\nv0-4,v0-D,test,0,0.70\nv0-5,v0-E,test,1,0.80\nv0-6,v0-F,train,0,0.20\nv0-2,v0-B,test,0,0.10\nv0-leak,v0-A,test,1,0.95\nv0-missing,v0-G,test,1,  \n"
+      },
+      {
+        "id": "heldout_input_variants-0",
+        "split": "heldout_input_variants",
+        "valid": true,
+        "input_sha256": "958683ff37747d398e7280a57766509ea41f56a120079e2e7ce3fba854727a7e",
+        "input_csv": "sample_id,subject_id,split,label,score\nv3-6,v3-F,train,0,0.20\nv3-5,v3-E,test,1,0.80\nv3-4,v3-D,test,0,0.70\nv3-3,v3-C,test,1,0.50\nv3-2,v3-B,test,0,0.10\nv3-1,v3-A,train,1,0.90\nv3-7,v3-H,test,0,0.500\n"
+      },
+      {
+        "id": "heldout_input_variants-1",
+        "split": "heldout_input_variants",
+        "valid": true,
+        "input_sha256": "9f6e365367987dd75251c119964d4062ab1d70c67fb728971848019b354ef194",
+        "input_csv": "sample_id,subject_id,split,label,score\nv3-6,v3-F,train,0,0.20\nv3-5,v3-E,test,1,0.80\nv3-4,v3-D,test,0,0.70\nv3-3,v3-C,test,1,0.50\nv3-2,v3-B,test,0,0.10\nv3-1,v3-A,train,1,0.90\nv3-7,v3-H,test,0,0.500\nv3-5,v3-E,test,1,0.80\n"
+      },
+      {
+        "id": "heldout_input_variants-2",
+        "split": "heldout_input_variants",
+        "valid": true,
+        "input_sha256": "550a1fdd6a3f1025d59f37b12a78f545c2171ec1c79bf55c1bf72aa6926d4701",
+        "input_csv": "sample_id,subject_id,split,label,score\nv3-6,v3-F,train,0,0.20\nv3-5,v3-E,test,1,0.80\nv3-4,v3-D,test,0,0.70\nv3-3,v3-C,test,1,0.50\nv3-2,v3-B,test,0,0.10\nv3-1,v3-A,train,1,0.90\nv3-7,v3-H,test,0,0.500\nv3-leak,v3-A,test,1,0.95\n"
+      },
+      {
+        "id": "heldout_input_variants-3",
+        "split": "heldout_input_variants",
+        "valid": true,
+        "input_sha256": "466ff907a8889d6e2d77cd4e7e2174901e162ff0ccf4febcdbd6fe010db7a273",
+        "input_csv": "sample_id,subject_id,split,label,score\nv3-6,v3-F,train,0,0.20\nv3-5,v3-E,test,1,0.80\nv3-4,v3-D,test,0,0.70\nv3-3,v3-C,test,1,0.50\nv3-2,v3-B,test,0,0.10\nv3-1,v3-A,train,1,0.90\nv3-7,v3-H,test,0,0.500\nv3-5,v3-E,test,1,0.80\nv3-leak,v3-A,test,1,0.95\n"
+      },
+      {
+        "id": "heldout_input_variants-4",
+        "split": "heldout_input_variants",
+        "valid": true,
+        "input_sha256": "e8abae929ba12afff175016e77d8182dea978726524001ad2ccd7fea6698c7d2",
+        "input_csv": "sample_id,subject_id,split,label,score\nv3-6,v3-F,train,0,0.20\nv3-5,v3-E,test,1,0.80\nv3-4,v3-D,test,0,0.70\nv3-3,v3-C,test,1,0.50\nv3-2,v3-B,test,0,0.10\nv3-1,v3-A,train,1,0.90\nv3-7,v3-H,test,0,0.500\nv3-missing,v3-G,test,1,  \n"
+      },
+      {
+        "id": "heldout_input_variants-5",
+        "split": "heldout_input_variants",
+        "valid": true,
+        "input_sha256": "76a51af20c0d2bb3d5a7e0c50b22e0226e836f4edea7ff163ff31ea3982e38c7",
+        "input_csv": "sample_id,subject_id,split,label,score\nv3-6,v3-F,train,0,0.20\nv3-5,v3-E,test,1,0.80\nv3-4,v3-D,test,0,0.70\nv3-3,v3-C,test,1,0.50\nv3-2,v3-B,test,0,0.10\nv3-1,v3-A,train,1,0.90\nv3-7,v3-H,test,0,0.500\nv3-5,v3-E,test,1,0.80\nv3-missing,v3-G,test,1,  \n"
+      },
+      {
+        "id": "heldout_input_variants-6",
+        "split": "heldout_input_variants",
+        "valid": true,
+        "input_sha256": "cc2204ca2ed83a856a5484aa51215379740164e0fbd3b8e0dabaff03372feae6",
+        "input_csv": "sample_id,subject_id,split,label,score\nv3-6,v3-F,train,0,0.20\nv3-5,v3-E,test,1,0.80\nv3-4,v3-D,test,0,0.70\nv3-3,v3-C,test,1,0.50\nv3-2,v3-B,test,0,0.10\nv3-1,v3-A,train,1,0.90\nv3-7,v3-H,test,0,0.500\nv3-leak,v3-A,test,1,0.95\nv3-missing,v3-G,test,1,  \n"
+      },
+      {
+        "id": "heldout_input_variants-7",
+        "split": "heldout_input_variants",
+        "valid": true,
+        "input_sha256": "8bcc61b5e8d4e6152ece04747987430917df59af181a1328ca16d6891085a0d9",
+        "input_csv": "sample_id,subject_id,split,label,score\nv3-6,v3-F,train,0,0.20\nv3-5,v3-E,test,1,0.80\nv3-4,v3-D,test,0,0.70\nv3-3,v3-C,test,1,0.50\nv3-2,v3-B,test,0,0.10\nv3-1,v3-A,train,1,0.90\nv3-7,v3-H,test,0,0.500\nv3-5,v3-E,test,1,0.80\nv3-leak,v3-A,test,1,0.95\nv3-missing,v3-G,test,1,  \n"
+      },
+      {
+        "id": "out_of_range",
+        "split": "negative_controls",
+        "valid": false,
+        "input_sha256": "0a96c3508ff6b5491570f76f81777fa2c0ddae98be0c46d468422932822f2dba",
+        "input_csv": "sample_id,subject_id,split,label,score\nv0-1,v0-A,train,1,0.90\nv0-2,v0-B,test,0,0.10\nv0-3,v0-C,test,1,1.2\nv0-4,v0-D,test,0,0.70\nv0-5,v0-E,test,1,0.80\nv0-6,v0-F,train,0,0.20\n"
+      },
+      {
+        "id": "non_binary",
+        "split": "negative_controls",
+        "valid": false,
+        "input_sha256": "3d3f03b95269afe1bd4f56b9f311ac0846ea6a85ce0398f3d146cb7320ad88ef",
+        "input_csv": "sample_id,subject_id,split,label,score\nv0-1,v0-A,train,1,0.90\nv0-2,v0-B,test,0,0.10\nv0-3,v0-C,test,2,0.50\nv0-4,v0-D,test,0,0.70\nv0-5,v0-E,test,1,0.80\nv0-6,v0-F,train,0,0.20\n"
+      },
+      {
+        "id": "nan",
+        "split": "negative_controls",
+        "valid": false,
+        "input_sha256": "07165fff731d11e660510bcbca03470232795382584d7ac940989663c8018a57",
+        "input_csv": "sample_id,subject_id,split,label,score\nv0-1,v0-A,train,1,0.90\nv0-2,v0-B,test,0,0.10\nv0-3,v0-C,test,1,NaN\nv0-4,v0-D,test,0,0.70\nv0-5,v0-E,test,1,0.80\nv0-6,v0-F,train,0,0.20\n"
+      },
+      {
+        "id": "wrong_schema",
+        "split": "negative_controls",
+        "valid": false,
+        "input_sha256": "c15097c46e6dbfe67d8106c18b850ff4312898c146771669ae50324f910ed93c",
+        "input_csv": "id,value\n1,2\n"
+      },
+      {
+        "id": "empty",
+        "split": "negative_controls",
+        "valid": false,
+        "input_sha256": "d3f9ae1a82ec7edd9227297c4bada24f02b194bf6a779be3ec9d3567b84f4018",
+        "input_csv": "sample_id,subject_id,split,label,score\n"
+      },
+      {
+        "id": "no_test",
+        "split": "negative_controls",
+        "valid": false,
+        "input_sha256": "3602171eb695dfe73a906528549a327d2701a6021b3af2f4e6afb15d434cf7a9",
+        "input_csv": "sample_id,subject_id,split,label,score\nv0-1,v0-A,train,1,0.90\nv0-2,v0-B,train,0,0.10\nv0-3,v0-C,train,1,0.50\nv0-4,v0-D,train,0,0.70\nv0-5,v0-E,train,1,0.80\nv0-6,v0-F,train,0,0.20\n"
+      },
+      {
+        "id": "all_leaking",
+        "split": "negative_controls",
+        "valid": false,
+        "input_sha256": "50e2dc215841950f24cc2e50b7d0d2fb9b9f7c40372c9150f513578fb542b567",
+        "input_csv": "sample_id,subject_id,split,label,score\n1,A,train,1,.9\n2,A,test,1,.6\n"
+      }
+    ],
+    "strategies": [
+      "flat",
+      "plan_only",
+      "active"
+    ],
+    "max_calls": 5,
+    "registry": [
+      {
+        "id": "deduplicate",
+        "requires": [
+          "data.schema"
+        ],
+        "adds": [
+          "data.unique"
+        ],
+        "deletes": [
+          "data.nonempty",
+          "data.range",
+          "data.binary",
+          "metrics.file"
+        ],
+        "cost": 1,
+        "metadata": {
+          "label": "按 sample_id 保留首次记录",
+          "version": "frontier-csv-operators-v1",
+          "code_sha256": "db8be9a72ebef398ff4f3766fa90d888836dbb28d69890cf3b32fd06ea6a7841",
+          "experimental": true,
+          "certified": false,
+          "intentional_bug": false,
+          "scope": "fixed five-column CSV; declarations require observed verification"
+        }
+      },
+      {
+        "id": "exclude_cross_split",
+        "requires": [
+          "data.schema"
+        ],
+        "adds": [
+          "data.disjoint"
+        ],
+        "deletes": [
+          "data.nonempty",
+          "data.range",
+          "data.binary",
+          "metrics.file"
+        ],
+        "cost": 1,
+        "metadata": {
+          "label": "删除跨 split 的全部 subject 记录",
+          "version": "frontier-csv-operators-v1",
+          "code_sha256": "7950a3d3d359e56c8bfd6b3294645e0aa9b0aa44d5a10802d77185c96783ae6c",
+          "experimental": true,
+          "certified": false,
+          "intentional_bug": false,
+          "scope": "fixed five-column CSV; declarations require observed verification"
+        }
+      },
+      {
+        "id": "drop_missing_score",
+        "requires": [
+          "data.schema"
+        ],
+        "adds": [
+          "data.complete"
+        ],
+        "deletes": [
+          "data.nonempty",
+          "data.range",
+          "data.binary",
+          "metrics.file"
+        ],
+        "cost": 1,
+        "metadata": {
+          "label": "删除空 score 记录",
+          "version": "frontier-csv-operators-v1",
+          "code_sha256": "c0734058ba6b23921edbfca6ac40a97f723f9a1b37f6b18d1517f3f7b81dd499",
+          "experimental": true,
+          "certified": false,
+          "intentional_bug": false,
+          "scope": "fixed five-column CSV; declarations require observed verification"
+        }
+      },
+      {
+        "id": "metrics_decimal",
+        "requires": [
+          "data.file",
+          "data.schema",
+          "data.nonempty",
+          "data.unique",
+          "data.disjoint",
+          "data.complete",
+          "data.range",
+          "data.binary"
+        ],
+        "adds": [
+          "metrics.file"
+        ],
+        "deletes": [],
+        "cost": 1,
+        "metadata": {
+          "label": "Decimal 二分类指标（score >= 0.5）",
+          "version": "frontier-csv-operators-v1",
+          "code_sha256": "66b29050345c020443c69ebf842d751d35d67a9a89ae8c9116e80a6cd8289bb4",
+          "experimental": true,
+          "certified": false,
+          "intentional_bug": false,
+          "scope": "fixed five-column CSV; declarations require observed verification"
+        }
+      },
+      {
+        "id": "metrics_strict_bug",
+        "requires": [
+          "data.file",
+          "data.schema",
+          "data.nonempty",
+          "data.unique",
+          "data.disjoint",
+          "data.complete",
+          "data.range",
+          "data.binary"
+        ],
+        "adds": [
+          "metrics.file"
+        ],
+        "deletes": [],
+        "cost": 1,
+        "metadata": {
+          "label": "实验反例：错误阈值 score > 0.5",
+          "version": "frontier-csv-operators-v1",
+          "code_sha256": "fd3e696075a94a58435927d1151e318019b64c39b265fd61d3379f939cb33ee6",
+          "experimental": true,
+          "certified": false,
+          "intentional_bug": true,
+          "scope": "fixed five-column CSV; declarations require observed verification"
+        }
+      }
+    ],
+    "hypotheses": {
+      "ge": {
+        "ordinary_positive": "positive",
+        "ordinary_negative": "negative",
+        "threshold": "positive"
+      },
+      "gt": {
+        "ordinary_positive": "positive",
+        "ordinary_negative": "negative",
+        "threshold": "negative"
+      }
+    },
+    "probe_order": [
+      "ordinary_positive",
+      "ordinary_negative",
+      "threshold"
+    ],
+    "random_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "basis_tasks": [
+      "development-0",
+      "development-1",
+      "development-2",
+      "development-3",
+      "development-4",
+      "development-5",
+      "development-6",
+      "development-7"
+    ],
+    "basis_metric_priority": [
+      "metrics_decimal",
+      "metrics_strict_bug"
+    ],
+    "source_sha256": {
+      "tools/frontier_lab.py": "6965a174b834320441f338bcfa03705c68c785ba419dfb933a14f1b87d36f3c0",
+      "skillnet/frontier.py": "6f7dc258eb0a7fa4f5e9b125f97862321f46c17014b7792f0e00a7c34e5bfeb5",
+      "skillnet/frontier_ops.py": "4f0135f36036872499648d72510ff21d717216d768fdd8781815fdf3ac533da2",
+      "skillnet/frontier_oracle.py": "54757941909ff542366a1975bf4c4c2b9daa9e77310ecd2ce8dd3323636857ac",
+      "skillnet/frontier_runtime.py": "89a33813044a53c7dcd3717454b9de1896f9cbc298912c25d541ce18ce7a06be",
+      "skillnet/frontier_scenarios.py": "649d912d21bd4ec06802c2e88fe4c29dff6b08a39dc84012616c985eb771238e"
+    },
+    "claims": [
+      "measured_valid_task_coverage",
+      "counterexample_detection",
+      "same_input_provider_restoration",
+      "minimum_subset_on_frozen_tasks_only"
+    ],
+    "no_claims": [
+      "learned_causal_model",
+      "universal_equivalence",
+      "global_minimum_basis",
+      "production_S1_validation"
+    ],
+    "boundary": "仅固定登记程序与公开模拟 CSV 任务；声明路径不证明真实可达。实测结果仅适用于本次输入、代码版本和独立判据；不修改正式技能、奖励或 S1 生产状态。"
+  },
+  "protocol_sha256": "940244b6a5fe436148d3bd33c0d1c9ae3d866a3d40511d8b0154797f558b77c6"
+}

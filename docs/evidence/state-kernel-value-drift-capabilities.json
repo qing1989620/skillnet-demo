@@ -1,0 +1,1887 @@
+{
+  "version": "skillnet-transitions-v1",
+  "run_id": "f11ad204-20261012-135110-b93b",
+  "source_capsule_sha256": "896fff573306b44d21af943e0af1a03c7c0f8df64192db7fa99b65306ba50802",
+  "source": "recorded_execution_and_rehashed_files",
+  "scope_verified": false,
+  "scope": "模拟预测数据的样本去重、跨集合受试者排除、固定阈值测试集混淆矩阵与派生指标；不评价模型或临床有效性",
+  "steps": [
+    {
+      "idx": 0,
+      "action": "读取 raw_predictions.csv，按 sample_id 去重保留首次出现记录；统计同时出现在多个 split 的 subject_id（跨 split 受试者），删除这些受试者的全部记录；在删除跨 split 受试者之后统计 score 缺失行并删除；输出保留原列原值的 clean_predictions.csv 与六行审计表 cohort_audit.csv。",
+      "skill": "data-cleaning",
+      "skill_sha256": "3b234cb8dc2c52709178f6013330acc0797350c7c4a005ae06d467eb416edca1",
+      "version_capture": "before_execution",
+      "status": "done",
+      "observation": "violated_in_scope",
+      "inputs": [
+        {
+          "name": "input_raw_predictions.csv",
+          "sha256": "d489a2ede799f0f0f1e84c9b689879a4b654510fa160b61216f942587c3b208b",
+          "producer_step": null,
+          "integrity": "passed"
+        }
+      ],
+      "effects": [
+        {
+          "name": "step1_clean_predictions.csv",
+          "sha256": "c1c12ff25b5f3fcebe1d8cf7f024e0a35304f3bb3f7fb217faedc26bfdd66699",
+          "integrity": "passed"
+        },
+        {
+          "name": "step1_cohort_audit.csv",
+          "sha256": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7",
+          "integrity": "passed"
+        }
+      ],
+      "checks": {
+        "passed": 28,
+        "total": 28
+      },
+      "independent_checks": {
+        "passed": 7,
+        "total": 8
+      },
+      "applicability": "passed",
+      "causal_contribution": "not_measured",
+      "boundary": "只陈述本次文件与限定范围检查，不外推跨任务成功率",
+      "state_evidence": {
+        "pre": {
+          "version": "skill-state-contract-v1",
+          "state": "passed",
+          "checks": [
+            {
+              "predicate": {
+                "kind": "csv_schema",
+                "file": "raw_predictions.csv",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "exact": true
+              },
+              "state": "passed",
+              "detail": "CSV column set satisfies schema",
+              "evidence": {
+                "file": "raw_predictions.csv",
+                "sha256": "d489a2ede799f0f0f1e84c9b689879a4b654510fa160b61216f942587c3b208b",
+                "bytes": 330,
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "rows": 14
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_nonempty",
+                "file": "raw_predictions.csv"
+              },
+              "state": "passed",
+              "detail": "CSV has data records",
+              "evidence": {
+                "file": "raw_predictions.csv",
+                "sha256": "d489a2ede799f0f0f1e84c9b689879a4b654510fa160b61216f942587c3b208b",
+                "bytes": 330,
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "rows": 14
+              }
+            },
+            {
+              "predicate": {
+                "kind": "file_exists",
+                "file": "raw_predictions.csv"
+              },
+              "state": "passed",
+              "detail": "mapped regular file exists and its complete bytes were hashed",
+              "evidence": {
+                "file": "raw_predictions.csv",
+                "sha256": "d489a2ede799f0f0f1e84c9b689879a4b654510fa160b61216f942587c3b208b",
+                "bytes": 330
+              }
+            }
+          ],
+          "admitted": true,
+          "contract_sha256": "4d39c33ef6b30df773074090e18fc8be8abf1487e60516ea4ce3a1d7533c4c5f",
+          "source": "host_reference_and_plan"
+        },
+        "post": {
+          "version": "skill-state-contract-v1",
+          "state": "passed",
+          "checks": [
+            {
+              "predicate": {
+                "kind": "csv_schema",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "exact": true
+              },
+              "state": "passed",
+              "detail": "CSV column set satisfies schema",
+              "evidence": {
+                "file": "clean_predictions.csv",
+                "sha256": "c1c12ff25b5f3fcebe1d8cf7f024e0a35304f3bb3f7fb217faedc26bfdd66699",
+                "bytes": 254,
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "rows": 10
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_unique",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id"
+                ]
+              },
+              "state": "passed",
+              "detail": "predicate holds for every inspected record",
+              "evidence": {
+                "file": "clean_predictions.csv",
+                "sha256": "c1c12ff25b5f3fcebe1d8cf7f024e0a35304f3bb3f7fb217faedc26bfdd66699",
+                "bytes": 254,
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "rows": 10,
+                "violation_count": 0,
+                "violating_records": []
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_no_missing",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "score"
+                ]
+              },
+              "state": "passed",
+              "detail": "predicate holds for every inspected record",
+              "evidence": {
+                "file": "clean_predictions.csv",
+                "sha256": "c1c12ff25b5f3fcebe1d8cf7f024e0a35304f3bb3f7fb217faedc26bfdd66699",
+                "bytes": 254,
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "rows": 10,
+                "violation_count": 0,
+                "violating_records": []
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_disjoint_groups",
+                "file": "clean_predictions.csv",
+                "entity": "subject_id",
+                "group": "split"
+              },
+              "state": "passed",
+              "detail": "predicate holds for every inspected record",
+              "evidence": {
+                "file": "clean_predictions.csv",
+                "sha256": "c1c12ff25b5f3fcebe1d8cf7f024e0a35304f3bb3f7fb217faedc26bfdd66699",
+                "bytes": 254,
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "rows": 10,
+                "violation_count": 0,
+                "violating_records": []
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_schema",
+                "file": "cohort_audit.csv",
+                "columns": [
+                  "check",
+                  "count"
+                ],
+                "exact": true
+              },
+              "state": "passed",
+              "detail": "CSV column set satisfies schema",
+              "evidence": {
+                "file": "cohort_audit.csv",
+                "sha256": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7",
+                "bytes": 132,
+                "columns": [
+                  "check",
+                  "count"
+                ],
+                "rows": 6
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_values_in",
+                "file": "cohort_audit.csv",
+                "column": "check",
+                "values": [
+                  "raw_rows",
+                  "duplicate_rows",
+                  "cross_split_subjects",
+                  "cross_split_rows",
+                  "missing_score_rows",
+                  "eligible_test_rows"
+                ]
+              },
+              "state": "passed",
+              "detail": "predicate holds for every inspected record",
+              "evidence": {
+                "file": "cohort_audit.csv",
+                "sha256": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7",
+                "bytes": 132,
+                "columns": [
+                  "check",
+                  "count"
+                ],
+                "rows": 6,
+                "violation_count": 0,
+                "violating_records": []
+              }
+            },
+            {
+              "predicate": {
+                "kind": "file_exists",
+                "file": "clean_predictions.csv"
+              },
+              "state": "passed",
+              "detail": "mapped regular file exists and its complete bytes were hashed",
+              "evidence": {
+                "file": "clean_predictions.csv",
+                "sha256": "c1c12ff25b5f3fcebe1d8cf7f024e0a35304f3bb3f7fb217faedc26bfdd66699",
+                "bytes": 254
+              }
+            },
+            {
+              "predicate": {
+                "kind": "file_exists",
+                "file": "cohort_audit.csv"
+              },
+              "state": "passed",
+              "detail": "mapped regular file exists and its complete bytes were hashed",
+              "evidence": {
+                "file": "cohort_audit.csv",
+                "sha256": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7",
+                "bytes": 132
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_nonempty",
+                "file": "clean_predictions.csv"
+              },
+              "state": "passed",
+              "detail": "CSV has data records",
+              "evidence": {
+                "file": "clean_predictions.csv",
+                "sha256": "c1c12ff25b5f3fcebe1d8cf7f024e0a35304f3bb3f7fb217faedc26bfdd66699",
+                "bytes": 254,
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "rows": 10
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_no_missing",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ]
+              },
+              "state": "passed",
+              "detail": "predicate holds for every inspected record",
+              "evidence": {
+                "file": "clean_predictions.csv",
+                "sha256": "c1c12ff25b5f3fcebe1d8cf7f024e0a35304f3bb3f7fb217faedc26bfdd66699",
+                "bytes": 254,
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "rows": 10,
+                "violation_count": 0,
+                "violating_records": []
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_numeric_range",
+                "file": "clean_predictions.csv",
+                "column": "score",
+                "min": 0,
+                "max": 1
+              },
+              "state": "passed",
+              "detail": "predicate holds for every inspected record",
+              "evidence": {
+                "file": "clean_predictions.csv",
+                "sha256": "c1c12ff25b5f3fcebe1d8cf7f024e0a35304f3bb3f7fb217faedc26bfdd66699",
+                "bytes": 254,
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "rows": 10,
+                "violation_count": 0,
+                "violating_records": []
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_values_in",
+                "file": "clean_predictions.csv",
+                "column": "label",
+                "values": [
+                  0,
+                  1
+                ]
+              },
+              "state": "passed",
+              "detail": "predicate holds for every inspected record",
+              "evidence": {
+                "file": "clean_predictions.csv",
+                "sha256": "c1c12ff25b5f3fcebe1d8cf7f024e0a35304f3bb3f7fb217faedc26bfdd66699",
+                "bytes": 254,
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "rows": 10,
+                "violation_count": 0,
+                "violating_records": []
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "idx": 1,
+      "action": "读取 clean_predictions.csv 与 cohort_audit.csv，仅取清洗后 split=='test' 的行，以固定阈值 score>=0.5 判阳性，计算 n,tp,fp,tn,fn,accuracy,precision,recall,f1，输出 heldout_metrics.csv（metric,value 九行，至少 10 位有效数字）。",
+      "skill": null,
+      "skill_sha256": null,
+      "version_capture": "unrecorded",
+      "status": "done",
+      "observation": "not_confirmed",
+      "inputs": [
+        {
+          "name": "step1_clean_predictions.csv",
+          "sha256": "c1c12ff25b5f3fcebe1d8cf7f024e0a35304f3bb3f7fb217faedc26bfdd66699",
+          "producer_step": 0,
+          "integrity": "passed"
+        },
+        {
+          "name": "step1_cohort_audit.csv",
+          "sha256": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7",
+          "producer_step": 0,
+          "integrity": "passed"
+        },
+        {
+          "name": "input_raw_predictions.csv",
+          "sha256": "d489a2ede799f0f0f1e84c9b689879a4b654510fa160b61216f942587c3b208b",
+          "producer_step": null,
+          "integrity": "passed"
+        }
+      ],
+      "effects": [
+        {
+          "name": "step2_heldout_metrics.csv",
+          "sha256": "bcf2802fa15baa7c3ff2dd8efd90118285779662780db98f95f972c960a914b5",
+          "integrity": "passed"
+        }
+      ],
+      "checks": {
+        "passed": 14,
+        "total": 14
+      },
+      "independent_checks": {
+        "passed": 10,
+        "total": 10
+      },
+      "applicability": "passed",
+      "causal_contribution": "not_measured",
+      "boundary": "只陈述本次文件与限定范围检查，不外推跨任务成功率",
+      "state_evidence": {
+        "pre": {
+          "version": "skill-state-contract-v1",
+          "state": "passed",
+          "checks": [
+            {
+              "predicate": {
+                "kind": "csv_schema",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "exact": true
+              },
+              "state": "passed",
+              "detail": "CSV column set satisfies schema",
+              "evidence": {
+                "file": "clean_predictions.csv",
+                "sha256": "c1c12ff25b5f3fcebe1d8cf7f024e0a35304f3bb3f7fb217faedc26bfdd66699",
+                "bytes": 254,
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "rows": 10
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_no_missing",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "score"
+                ]
+              },
+              "state": "passed",
+              "detail": "predicate holds for every inspected record",
+              "evidence": {
+                "file": "clean_predictions.csv",
+                "sha256": "c1c12ff25b5f3fcebe1d8cf7f024e0a35304f3bb3f7fb217faedc26bfdd66699",
+                "bytes": 254,
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "rows": 10,
+                "violation_count": 0,
+                "violating_records": []
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_schema",
+                "file": "cohort_audit.csv",
+                "columns": [
+                  "check",
+                  "count"
+                ],
+                "exact": true
+              },
+              "state": "passed",
+              "detail": "CSV column set satisfies schema",
+              "evidence": {
+                "file": "cohort_audit.csv",
+                "sha256": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7",
+                "bytes": 132,
+                "columns": [
+                  "check",
+                  "count"
+                ],
+                "rows": 6
+              }
+            },
+            {
+              "predicate": {
+                "kind": "file_exists",
+                "file": "clean_predictions.csv"
+              },
+              "state": "passed",
+              "detail": "mapped regular file exists and its complete bytes were hashed",
+              "evidence": {
+                "file": "clean_predictions.csv",
+                "sha256": "c1c12ff25b5f3fcebe1d8cf7f024e0a35304f3bb3f7fb217faedc26bfdd66699",
+                "bytes": 254
+              }
+            },
+            {
+              "predicate": {
+                "kind": "file_exists",
+                "file": "cohort_audit.csv"
+              },
+              "state": "passed",
+              "detail": "mapped regular file exists and its complete bytes were hashed",
+              "evidence": {
+                "file": "cohort_audit.csv",
+                "sha256": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7",
+                "bytes": 132
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_nonempty",
+                "file": "clean_predictions.csv"
+              },
+              "state": "passed",
+              "detail": "CSV has data records",
+              "evidence": {
+                "file": "clean_predictions.csv",
+                "sha256": "c1c12ff25b5f3fcebe1d8cf7f024e0a35304f3bb3f7fb217faedc26bfdd66699",
+                "bytes": 254,
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "rows": 10
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_unique",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id"
+                ]
+              },
+              "state": "passed",
+              "detail": "predicate holds for every inspected record",
+              "evidence": {
+                "file": "clean_predictions.csv",
+                "sha256": "c1c12ff25b5f3fcebe1d8cf7f024e0a35304f3bb3f7fb217faedc26bfdd66699",
+                "bytes": 254,
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "rows": 10,
+                "violation_count": 0,
+                "violating_records": []
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_no_missing",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ]
+              },
+              "state": "passed",
+              "detail": "predicate holds for every inspected record",
+              "evidence": {
+                "file": "clean_predictions.csv",
+                "sha256": "c1c12ff25b5f3fcebe1d8cf7f024e0a35304f3bb3f7fb217faedc26bfdd66699",
+                "bytes": 254,
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "rows": 10,
+                "violation_count": 0,
+                "violating_records": []
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_numeric_range",
+                "file": "clean_predictions.csv",
+                "column": "score",
+                "min": 0,
+                "max": 1
+              },
+              "state": "passed",
+              "detail": "predicate holds for every inspected record",
+              "evidence": {
+                "file": "clean_predictions.csv",
+                "sha256": "c1c12ff25b5f3fcebe1d8cf7f024e0a35304f3bb3f7fb217faedc26bfdd66699",
+                "bytes": 254,
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "rows": 10,
+                "violation_count": 0,
+                "violating_records": []
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_values_in",
+                "file": "clean_predictions.csv",
+                "column": "label",
+                "values": [
+                  0,
+                  1
+                ]
+              },
+              "state": "passed",
+              "detail": "predicate holds for every inspected record",
+              "evidence": {
+                "file": "clean_predictions.csv",
+                "sha256": "c1c12ff25b5f3fcebe1d8cf7f024e0a35304f3bb3f7fb217faedc26bfdd66699",
+                "bytes": 254,
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "rows": 10,
+                "violation_count": 0,
+                "violating_records": []
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_disjoint_groups",
+                "file": "clean_predictions.csv",
+                "entity": "subject_id",
+                "group": "split"
+              },
+              "state": "passed",
+              "detail": "predicate holds for every inspected record",
+              "evidence": {
+                "file": "clean_predictions.csv",
+                "sha256": "c1c12ff25b5f3fcebe1d8cf7f024e0a35304f3bb3f7fb217faedc26bfdd66699",
+                "bytes": 254,
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "rows": 10,
+                "violation_count": 0,
+                "violating_records": []
+              }
+            }
+          ],
+          "admitted": true,
+          "contract_sha256": "4642483d0e0fd773d54f15d1c11e633f813ee9401028fdb544c6f69e6d4c9ac5",
+          "source": "host_reference_and_plan"
+        },
+        "post": {
+          "version": "skill-state-contract-v1",
+          "state": "passed",
+          "checks": [
+            {
+              "predicate": {
+                "kind": "csv_schema",
+                "file": "heldout_metrics.csv",
+                "columns": [
+                  "metric",
+                  "value"
+                ],
+                "exact": true
+              },
+              "state": "passed",
+              "detail": "CSV column set satisfies schema",
+              "evidence": {
+                "file": "heldout_metrics.csv",
+                "sha256": "bcf2802fa15baa7c3ff2dd8efd90118285779662780db98f95f972c960a914b5",
+                "bytes": 136,
+                "columns": [
+                  "metric",
+                  "value"
+                ],
+                "rows": 9
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_values_in",
+                "file": "heldout_metrics.csv",
+                "column": "metric",
+                "values": [
+                  "n",
+                  "tp",
+                  "fp",
+                  "tn",
+                  "fn",
+                  "accuracy",
+                  "precision",
+                  "recall",
+                  "f1"
+                ]
+              },
+              "state": "passed",
+              "detail": "predicate holds for every inspected record",
+              "evidence": {
+                "file": "heldout_metrics.csv",
+                "sha256": "bcf2802fa15baa7c3ff2dd8efd90118285779662780db98f95f972c960a914b5",
+                "bytes": 136,
+                "columns": [
+                  "metric",
+                  "value"
+                ],
+                "rows": 9,
+                "violation_count": 0,
+                "violating_records": []
+              }
+            },
+            {
+              "predicate": {
+                "kind": "file_exists",
+                "file": "heldout_metrics.csv"
+              },
+              "state": "passed",
+              "detail": "mapped regular file exists and its complete bytes were hashed",
+              "evidence": {
+                "file": "heldout_metrics.csv",
+                "sha256": "bcf2802fa15baa7c3ff2dd8efd90118285779662780db98f95f972c960a914b5",
+                "bytes": 136
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_nonempty",
+                "file": "heldout_metrics.csv"
+              },
+              "state": "passed",
+              "detail": "CSV has data records",
+              "evidence": {
+                "file": "heldout_metrics.csv",
+                "sha256": "bcf2802fa15baa7c3ff2dd8efd90118285779662780db98f95f972c960a914b5",
+                "bytes": 136,
+                "columns": [
+                  "metric",
+                  "value"
+                ],
+                "rows": 9
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "idx": 2,
+      "action": "读取 cohort_audit.csv 与 heldout_metrics.csv，绘制审计计数与混淆矩阵/指标图，导出矢量 figure.svg；同时生成 report.md，写明模拟数据、固定阈值、不代表临床有效性，并解释数据泄漏风险与复用边界。",
+      "skill": "scientific-visualization",
+      "skill_sha256": "2d2d8637f4064d52bbdbad35734def7138f2e8d118b8bf91108d8f84726b5efa",
+      "version_capture": "before_execution",
+      "status": "done",
+      "observation": "not_confirmed",
+      "inputs": [
+        {
+          "name": "step1_clean_predictions.csv",
+          "sha256": "c1c12ff25b5f3fcebe1d8cf7f024e0a35304f3bb3f7fb217faedc26bfdd66699",
+          "producer_step": 0,
+          "integrity": "passed"
+        },
+        {
+          "name": "step1_cohort_audit.csv",
+          "sha256": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7",
+          "producer_step": 0,
+          "integrity": "passed"
+        },
+        {
+          "name": "step2_heldout_metrics.csv",
+          "sha256": "bcf2802fa15baa7c3ff2dd8efd90118285779662780db98f95f972c960a914b5",
+          "producer_step": 1,
+          "integrity": "passed"
+        },
+        {
+          "name": "input_raw_predictions.csv",
+          "sha256": "d489a2ede799f0f0f1e84c9b689879a4b654510fa160b61216f942587c3b208b",
+          "producer_step": null,
+          "integrity": "passed"
+        }
+      ],
+      "effects": [
+        {
+          "name": "step3_figure.svg",
+          "sha256": "b02012a77cc5e7d95e9f58457a107a96806c63da3fb0805f99507a62f3811e0e",
+          "integrity": "passed"
+        },
+        {
+          "name": "step3_report.md",
+          "sha256": "cba4221519abe99aa0a7ba9d591b173577c3b826c74fdd533cdd1bac20310844",
+          "integrity": "passed"
+        }
+      ],
+      "checks": {
+        "passed": 12,
+        "total": 12
+      },
+      "independent_checks": {
+        "passed": 0,
+        "total": 0
+      },
+      "applicability": "passed",
+      "causal_contribution": "not_measured",
+      "boundary": "只陈述本次文件与限定范围检查，不外推跨任务成功率",
+      "state_evidence": {
+        "pre": {
+          "version": "skill-state-contract-v1",
+          "state": "passed",
+          "checks": [
+            {
+              "predicate": {
+                "kind": "csv_schema",
+                "file": "cohort_audit.csv",
+                "columns": [
+                  "check",
+                  "count"
+                ],
+                "exact": true
+              },
+              "state": "passed",
+              "detail": "CSV column set satisfies schema",
+              "evidence": {
+                "file": "cohort_audit.csv",
+                "sha256": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7",
+                "bytes": 132,
+                "columns": [
+                  "check",
+                  "count"
+                ],
+                "rows": 6
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_schema",
+                "file": "heldout_metrics.csv",
+                "columns": [
+                  "metric",
+                  "value"
+                ],
+                "exact": true
+              },
+              "state": "passed",
+              "detail": "CSV column set satisfies schema",
+              "evidence": {
+                "file": "heldout_metrics.csv",
+                "sha256": "bcf2802fa15baa7c3ff2dd8efd90118285779662780db98f95f972c960a914b5",
+                "bytes": 136,
+                "columns": [
+                  "metric",
+                  "value"
+                ],
+                "rows": 9
+              }
+            },
+            {
+              "predicate": {
+                "kind": "file_exists",
+                "file": "cohort_audit.csv"
+              },
+              "state": "passed",
+              "detail": "mapped regular file exists and its complete bytes were hashed",
+              "evidence": {
+                "file": "cohort_audit.csv",
+                "sha256": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7",
+                "bytes": 132
+              }
+            },
+            {
+              "predicate": {
+                "kind": "file_exists",
+                "file": "heldout_metrics.csv"
+              },
+              "state": "passed",
+              "detail": "mapped regular file exists and its complete bytes were hashed",
+              "evidence": {
+                "file": "heldout_metrics.csv",
+                "sha256": "bcf2802fa15baa7c3ff2dd8efd90118285779662780db98f95f972c960a914b5",
+                "bytes": 136
+              }
+            }
+          ],
+          "admitted": true,
+          "contract_sha256": "61d656fcf566a003834d69e573f56a290f6cb22789c1cd035eb382cc2a2c3d67",
+          "source": "host_reference_and_plan"
+        },
+        "post": {
+          "version": "skill-state-contract-v1",
+          "state": "passed",
+          "checks": [
+            {
+              "predicate": {
+                "kind": "file_exists",
+                "file": "figure.svg"
+              },
+              "state": "passed",
+              "detail": "mapped regular file exists and its complete bytes were hashed",
+              "evidence": {
+                "file": "figure.svg",
+                "sha256": "b02012a77cc5e7d95e9f58457a107a96806c63da3fb0805f99507a62f3811e0e",
+                "bytes": 29677
+              }
+            },
+            {
+              "predicate": {
+                "kind": "file_exists",
+                "file": "report.md"
+              },
+              "state": "passed",
+              "detail": "mapped regular file exists and its complete bytes were hashed",
+              "evidence": {
+                "file": "report.md",
+                "sha256": "cba4221519abe99aa0a7ba9d591b173577c3b826c74fdd533cdd1bac20310844",
+                "bytes": 2421
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "composition": [
+    {
+      "source": 0,
+      "target": 1,
+      "file": "step1_clean_predictions.csv",
+      "source_run_id": "f11ad204-20261012-135110-b93b",
+      "sha256": "c1c12ff25b5f3fcebe1d8cf7f024e0a35304f3bb3f7fb217faedc26bfdd66699",
+      "kind": "recorded_file_consumption",
+      "integrity": "passed",
+      "boundary": "文件交接可复核，不证明上下游技能语义兼容或因果贡献"
+    },
+    {
+      "source": 0,
+      "target": 1,
+      "file": "step1_cohort_audit.csv",
+      "source_run_id": "f11ad204-20261012-135110-b93b",
+      "sha256": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7",
+      "kind": "recorded_file_consumption",
+      "integrity": "passed",
+      "boundary": "文件交接可复核，不证明上下游技能语义兼容或因果贡献"
+    },
+    {
+      "source": 0,
+      "target": 2,
+      "file": "step1_clean_predictions.csv",
+      "source_run_id": "f11ad204-20261012-135110-b93b",
+      "sha256": "c1c12ff25b5f3fcebe1d8cf7f024e0a35304f3bb3f7fb217faedc26bfdd66699",
+      "kind": "recorded_file_consumption",
+      "integrity": "passed",
+      "boundary": "文件交接可复核，不证明上下游技能语义兼容或因果贡献"
+    },
+    {
+      "source": 0,
+      "target": 2,
+      "file": "step1_cohort_audit.csv",
+      "source_run_id": "f11ad204-20261012-135110-b93b",
+      "sha256": "d28f39e4588ab9c83b2419556c9e17bf37a967c0b90bbb136dad7463964678b7",
+      "kind": "recorded_file_consumption",
+      "integrity": "passed",
+      "boundary": "文件交接可复核，不证明上下游技能语义兼容或因果贡献"
+    },
+    {
+      "source": 1,
+      "target": 2,
+      "file": "step2_heldout_metrics.csv",
+      "source_run_id": "f11ad204-20261012-135110-b93b",
+      "sha256": "bcf2802fa15baa7c3ff2dd8efd90118285779662780db98f95f972c960a914b5",
+      "kind": "recorded_file_consumption",
+      "integrity": "passed",
+      "boundary": "文件交接可复核，不证明上下游技能语义兼容或因果贡献"
+    }
+  ],
+  "evidence_gaps": [
+    {
+      "kind": "unbound_skill",
+      "step": 1,
+      "reason": "该动作由通用执行完成，尚未绑定可复用技能；不是任务无法完成"
+    },
+    {
+      "kind": "missing_independent_verifier",
+      "step": 2,
+      "reason": "本步骤没有独立结果判据，不能从运行成功推断能力已验证"
+    }
+  ],
+  "summary": {
+    "steps": 3,
+    "observed_in_scope": 0,
+    "verified_file_links": 5,
+    "file_links": 5,
+    "evidence_gaps": 2
+  },
+  "research_status": {
+    "learned_causal_model": false,
+    "behavioral_equivalence": false,
+    "minimal_basis": false,
+    "reachable_space_proven": false
+  },
+  "boundary": "证据缺口不等于缺少真实能力；文件组合不等于因果技能代数；报告不会发奖或修改技能库",
+  "state_kernel": {
+    "policy": {
+      "version": "state-admission-v1",
+      "task_sha256": "f11ad2049bdf8bdfd9876d3000d635e1235eb10782b165b2248456baad7b3798",
+      "captured_at_ms": 1791784294725,
+      "frozen": {
+        "0": {
+          "declaration": {
+            "requires": [
+              {
+                "kind": "csv_schema",
+                "file": "raw_predictions.csv",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "csv_nonempty",
+                "file": "raw_predictions.csv"
+              },
+              {
+                "kind": "file_exists",
+                "file": "raw_predictions.csv"
+              }
+            ],
+            "ensures": [
+              {
+                "kind": "csv_schema",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "csv_unique",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id"
+                ]
+              },
+              {
+                "kind": "csv_no_missing",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "score"
+                ]
+              },
+              {
+                "kind": "csv_disjoint_groups",
+                "file": "clean_predictions.csv",
+                "entity": "subject_id",
+                "group": "split"
+              },
+              {
+                "kind": "csv_schema",
+                "file": "cohort_audit.csv",
+                "columns": [
+                  "check",
+                  "count"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "csv_values_in",
+                "file": "cohort_audit.csv",
+                "column": "check",
+                "values": [
+                  "raw_rows",
+                  "duplicate_rows",
+                  "cross_split_subjects",
+                  "cross_split_rows",
+                  "missing_score_rows",
+                  "eligible_test_rows"
+                ]
+              },
+              {
+                "kind": "file_exists",
+                "file": "clean_predictions.csv"
+              },
+              {
+                "kind": "file_exists",
+                "file": "cohort_audit.csv"
+              },
+              {
+                "kind": "csv_nonempty",
+                "file": "clean_predictions.csv"
+              },
+              {
+                "kind": "csv_no_missing",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ]
+              },
+              {
+                "kind": "csv_numeric_range",
+                "file": "clean_predictions.csv",
+                "column": "score",
+                "min": 0,
+                "max": 1
+              },
+              {
+                "kind": "csv_values_in",
+                "file": "clean_predictions.csv",
+                "column": "label",
+                "values": [
+                  0,
+                  1
+                ]
+              }
+            ],
+            "input_files": [
+              "raw_predictions.csv"
+            ],
+            "output_files": [
+              "clean_predictions.csv",
+              "cohort_audit.csv"
+            ]
+          },
+          "sha256": "4d39c33ef6b30df773074090e18fc8be8abf1487e60516ea4ce3a1d7533c4c5f",
+          "source": "host_reference_and_plan"
+        },
+        "1": {
+          "declaration": {
+            "requires": [
+              {
+                "kind": "csv_schema",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "csv_no_missing",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "score"
+                ]
+              },
+              {
+                "kind": "csv_schema",
+                "file": "cohort_audit.csv",
+                "columns": [
+                  "check",
+                  "count"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "file_exists",
+                "file": "clean_predictions.csv"
+              },
+              {
+                "kind": "file_exists",
+                "file": "cohort_audit.csv"
+              },
+              {
+                "kind": "csv_nonempty",
+                "file": "clean_predictions.csv"
+              },
+              {
+                "kind": "csv_unique",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id"
+                ]
+              },
+              {
+                "kind": "csv_no_missing",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ]
+              },
+              {
+                "kind": "csv_numeric_range",
+                "file": "clean_predictions.csv",
+                "column": "score",
+                "min": 0,
+                "max": 1
+              },
+              {
+                "kind": "csv_values_in",
+                "file": "clean_predictions.csv",
+                "column": "label",
+                "values": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "kind": "csv_disjoint_groups",
+                "file": "clean_predictions.csv",
+                "entity": "subject_id",
+                "group": "split"
+              }
+            ],
+            "ensures": [
+              {
+                "kind": "csv_schema",
+                "file": "heldout_metrics.csv",
+                "columns": [
+                  "metric",
+                  "value"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "csv_values_in",
+                "file": "heldout_metrics.csv",
+                "column": "metric",
+                "values": [
+                  "n",
+                  "tp",
+                  "fp",
+                  "tn",
+                  "fn",
+                  "accuracy",
+                  "precision",
+                  "recall",
+                  "f1"
+                ]
+              },
+              {
+                "kind": "file_exists",
+                "file": "heldout_metrics.csv"
+              },
+              {
+                "kind": "csv_nonempty",
+                "file": "heldout_metrics.csv"
+              }
+            ],
+            "input_files": [
+              "clean_predictions.csv",
+              "cohort_audit.csv"
+            ],
+            "output_files": [
+              "heldout_metrics.csv"
+            ]
+          },
+          "sha256": "4642483d0e0fd773d54f15d1c11e633f813ee9401028fdb544c6f69e6d4c9ac5",
+          "source": "host_reference_and_plan"
+        },
+        "2": {
+          "declaration": {
+            "requires": [
+              {
+                "kind": "csv_schema",
+                "file": "cohort_audit.csv",
+                "columns": [
+                  "check",
+                  "count"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "csv_schema",
+                "file": "heldout_metrics.csv",
+                "columns": [
+                  "metric",
+                  "value"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "file_exists",
+                "file": "cohort_audit.csv"
+              },
+              {
+                "kind": "file_exists",
+                "file": "heldout_metrics.csv"
+              }
+            ],
+            "ensures": [
+              {
+                "kind": "file_exists",
+                "file": "figure.svg"
+              },
+              {
+                "kind": "file_exists",
+                "file": "report.md"
+              }
+            ],
+            "input_files": [
+              "cohort_audit.csv",
+              "heldout_metrics.csv"
+            ],
+            "output_files": [
+              "figure.svg",
+              "report.md"
+            ]
+          },
+          "sha256": "61d656fcf566a003834d69e573f56a290f6cb22789c1cd035eb382cc2a2c3d67",
+          "source": "host_reference_and_plan"
+        }
+      },
+      "host_reference": "research-reproducibility-v1",
+      "boundary": "状态声明经真实文件判定后才成为本次观测；不代表跨环境成功率、因果贡献或全库能力边界"
+    },
+    "declared_composition": {
+      "version": "skill-state-contract-v1",
+      "state": "unknown",
+      "edges": [
+        {
+          "source": null,
+          "target": 0,
+          "file": "raw_predictions.csv",
+          "predicate": {
+            "kind": "csv_schema",
+            "file": "raw_predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          "state": "unknown",
+          "detail": "no ancestor declares this required artifact",
+          "candidate_sources": []
+        },
+        {
+          "source": null,
+          "target": 0,
+          "file": "raw_predictions.csv",
+          "predicate": {
+            "kind": "csv_nonempty",
+            "file": "raw_predictions.csv"
+          },
+          "state": "unknown",
+          "detail": "no ancestor declares this required artifact",
+          "candidate_sources": []
+        },
+        {
+          "source": null,
+          "target": 0,
+          "file": "raw_predictions.csv",
+          "predicate": {
+            "kind": "file_exists",
+            "file": "raw_predictions.csv"
+          },
+          "state": "unknown",
+          "detail": "no ancestor declares this required artifact",
+          "candidate_sources": []
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_schema",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          "state": "declared_compatible",
+          "detail": "output schema entails required columns",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_no_missing",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "score"
+            ]
+          },
+          "state": "declared_compatible",
+          "detail": "output predicate conservatively entails the precondition",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_no_missing",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "score"
+            ]
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "cohort_audit.csv",
+          "predicate": {
+            "kind": "csv_schema",
+            "file": "cohort_audit.csv",
+            "columns": [
+              "check",
+              "count"
+            ],
+            "exact": true
+          },
+          "state": "declared_compatible",
+          "detail": "output schema entails required columns",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "cohort_audit.csv",
+            "columns": [
+              "check",
+              "count"
+            ],
+            "exact": true
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "file_exists",
+            "file": "clean_predictions.csv"
+          },
+          "state": "declared_compatible",
+          "detail": "a valid artifact ensure implies file existence",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "cohort_audit.csv",
+          "predicate": {
+            "kind": "file_exists",
+            "file": "cohort_audit.csv"
+          },
+          "state": "declared_compatible",
+          "detail": "a valid artifact ensure implies file existence",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "cohort_audit.csv",
+            "columns": [
+              "check",
+              "count"
+            ],
+            "exact": true
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_nonempty",
+            "file": "clean_predictions.csv"
+          },
+          "state": "declared_compatible",
+          "detail": "output predicate conservatively entails the precondition",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_nonempty",
+            "file": "clean_predictions.csv"
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_unique",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "sample_id"
+            ]
+          },
+          "state": "declared_compatible",
+          "detail": "output predicate conservatively entails the precondition",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_unique",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "sample_id"
+            ]
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_no_missing",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ]
+          },
+          "state": "declared_compatible",
+          "detail": "output predicate conservatively entails the precondition",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_no_missing",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ]
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_numeric_range",
+            "file": "clean_predictions.csv",
+            "column": "score",
+            "min": 0,
+            "max": 1
+          },
+          "state": "declared_compatible",
+          "detail": "output predicate conservatively entails the precondition",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_numeric_range",
+            "file": "clean_predictions.csv",
+            "column": "score",
+            "min": 0,
+            "max": 1
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_values_in",
+            "file": "clean_predictions.csv",
+            "column": "label",
+            "values": [
+              0,
+              1
+            ]
+          },
+          "state": "declared_compatible",
+          "detail": "output predicate conservatively entails the precondition",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_values_in",
+            "file": "clean_predictions.csv",
+            "column": "label",
+            "values": [
+              0,
+              1
+            ]
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_disjoint_groups",
+            "file": "clean_predictions.csv",
+            "entity": "subject_id",
+            "group": "split"
+          },
+          "state": "declared_compatible",
+          "detail": "output predicate conservatively entails the precondition",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_disjoint_groups",
+            "file": "clean_predictions.csv",
+            "entity": "subject_id",
+            "group": "split"
+          }
+        },
+        {
+          "source": 0,
+          "target": 2,
+          "file": "cohort_audit.csv",
+          "predicate": {
+            "kind": "csv_schema",
+            "file": "cohort_audit.csv",
+            "columns": [
+              "check",
+              "count"
+            ],
+            "exact": true
+          },
+          "state": "declared_compatible",
+          "detail": "output schema entails required columns",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "cohort_audit.csv",
+            "columns": [
+              "check",
+              "count"
+            ],
+            "exact": true
+          }
+        },
+        {
+          "source": 1,
+          "target": 2,
+          "file": "heldout_metrics.csv",
+          "predicate": {
+            "kind": "csv_schema",
+            "file": "heldout_metrics.csv",
+            "columns": [
+              "metric",
+              "value"
+            ],
+            "exact": true
+          },
+          "state": "declared_compatible",
+          "detail": "output schema entails required columns",
+          "candidate_sources": [
+            1
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "heldout_metrics.csv",
+            "columns": [
+              "metric",
+              "value"
+            ],
+            "exact": true
+          }
+        },
+        {
+          "source": 0,
+          "target": 2,
+          "file": "cohort_audit.csv",
+          "predicate": {
+            "kind": "file_exists",
+            "file": "cohort_audit.csv"
+          },
+          "state": "declared_compatible",
+          "detail": "a valid artifact ensure implies file existence",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "cohort_audit.csv",
+            "columns": [
+              "check",
+              "count"
+            ],
+            "exact": true
+          }
+        },
+        {
+          "source": 1,
+          "target": 2,
+          "file": "heldout_metrics.csv",
+          "predicate": {
+            "kind": "file_exists",
+            "file": "heldout_metrics.csv"
+          },
+          "state": "declared_compatible",
+          "detail": "a valid artifact ensure implies file existence",
+          "candidate_sources": [
+            1
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "heldout_metrics.csv",
+            "columns": [
+              "metric",
+              "value"
+            ],
+            "exact": true
+          }
+        }
+      ],
+      "frontier": [
+        {
+          "step_idx": 0,
+          "file": "raw_predictions.csv",
+          "predicate": {
+            "kind": "csv_schema",
+            "file": "raw_predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          "state": "unknown",
+          "reason": "unsatisfied_declared_precondition",
+          "detail": "no ancestor declares this required artifact",
+          "candidate_sources": []
+        },
+        {
+          "step_idx": 0,
+          "file": "raw_predictions.csv",
+          "predicate": {
+            "kind": "csv_nonempty",
+            "file": "raw_predictions.csv"
+          },
+          "state": "unknown",
+          "reason": "unsatisfied_declared_precondition",
+          "detail": "no ancestor declares this required artifact",
+          "candidate_sources": []
+        },
+        {
+          "step_idx": 0,
+          "file": "raw_predictions.csv",
+          "predicate": {
+            "kind": "file_exists",
+            "file": "raw_predictions.csv"
+          },
+          "state": "unknown",
+          "reason": "unsatisfied_declared_precondition",
+          "detail": "no ancestor declares this required artifact",
+          "candidate_sources": []
+        }
+      ],
+      "boundary": "declared compatibility only; runtime evidence is required"
+    },
+    "boundary": "声明兼容性与实际条件检查分别记录；不代表因果贡献或跨任务能力已验证"
+  },
+  "report_sha256": "b0f2a303acab0e74cd4f624f698e12e50741061efa587bc7556f73dc2bfb085b"
+}

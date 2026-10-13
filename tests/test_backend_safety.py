@@ -31,6 +31,11 @@ def api(tmp_path, monkeypatch):
     monkeypatch.setattr(server, "ACCESS_TOKEN", "test-access-token")
     monkeypatch.setattr(server, "_RUN_THREADS", {})
     monkeypatch.setattr(server.config, "OUT_DIR", tmp_path)
+    # These tests cover runtime accounting, not online method acquisition. An
+    # empty fixture catalogue must not start live discovery in the worker.
+    monkeypatch.setattr(server.web_research, "collect", lambda *_a, **_k: dict(
+        needed=False, enabled=False, state='not_needed', sources=[], attempts=[],
+        discovery=dict(state='not_needed', candidates=[], attempts=[])))
     client = TestClient(server.app)
     yield client, store
     client.close()
@@ -49,6 +54,31 @@ def test_history_api_filters_paginates_and_preserves_legacy_runs_key(api):
     assert page["total"] == 2 and page["runs"][0]["run_id"] == "history-1"
     assert page["summary"]["completed"] == 2 and not page["has_more"]
     assert len(client.get("/api/runs").json()["runs"]) == 3
+
+
+def test_policy_proof_is_authenticated_and_does_not_expose_or_mutate_weights(api, monkeypatch):
+    client,_ = api
+    library = SkillLibrary([Skill('proof','test','data')])
+    bandit = SharedLinUCB(library)
+    monkeypatch.setattr(server,'_bandit',lambda:bandit)
+    before = bandit.state_dict()
+    assert client.get('/api/learning/policy').status_code == 401
+    response = client.get('/api/learning/policy',headers={'X-SkillNet-Token':'test-access-token'})
+    assert response.status_code == 200
+    data = response.json()
+    assert data['updates'] == 0 and len(data['state_sha256']) == 64
+    assert data['single_run_updates_serving_policy'] is False
+    assert 'A' not in data and 'b' not in data and bandit.state_dict() == before
+
+
+def test_reward_policy_is_authenticated_versioned_and_uses_and_for_all_twelve_gates(api):
+    from skillnet import reward_gates
+    client,_=api
+    assert client.get('/api/learning/reward-policy').status_code==401
+    data=client.get('/api/learning/reward-policy',headers={'X-SkillNet-Token':'test-access-token'}).json()
+    assert data['sha256']==reward_gates.policy_sha256()
+    assert data['policy']['operator']=='AND' and data['policy']['unknown_blocks'] is True
+    assert len(data['policy']['gates'])==12
 
 
 @pytest.mark.parametrize("query", ["offset=-1", "offset=100001", "status=UNKNOWN", "q="+"x"*201])
@@ -93,7 +123,9 @@ def test_parallel_completion_order_does_not_select_input_versions(tmp_path, monk
         step.status="done"
     monkeypatch.setattr(pipeline, "run_step", fake_step)
     pipeline._run_steps_graph(run, tmp_path, None, run.budget)
-    assert seen == ["step1_data.csv","step2_data.csv"]
+    # Resolve by producer ancestry before copying; only the latest version enters
+    # the sandbox, irrespective of append/completion order or shortcut edges.
+    assert seen == ["step2_data.csv"]
 
 
 def test_concurrent_persistence_has_no_shared_temporary_file(tmp_path):
@@ -261,7 +293,8 @@ def test_final_report_is_included_in_run_cost(api, monkeypatch):
     assert loaded.cost_yuan > 0
     assert loaded.staged["final_reply"] == "报告已生成"
     assert llm.LEDGER.calls == 0
-    assert [e.type for e in loaded.events][-2:] == ["run.reply", "run.finished"]
+    assert [e.type for e in loaded.events][-3:] == ["run.reply", "evaluation.gates_updated", "run.finished"]
+    assert loaded.staged['reward_gates']['gates'][3]['evidence']['cost_yuan']==loaded.cost_yuan
 
 
 def test_sse_reconnect_uses_persisted_cursor_after_event_truncation(api):
@@ -527,8 +560,9 @@ def test_worker_executes_wiki_workflow_and_uses_its_order(routed_workflow, monke
     assert set(map(tuple, event.data["edges"])) == set(map(tuple, wiki["workflow"]))
 
 
-def test_lifespan_runs_existing_startup_and_recovery_in_order(monkeypatch):
+def test_lifespan_runs_existing_startup_and_recovery_in_order(monkeypatch,tmp_path):
     calls = []
+    monkeypatch.setattr(server.config,'OUT_DIR',tmp_path)
     monkeypatch.setattr(server, "_startup", lambda: calls.append("startup"))
     monkeypatch.setattr(server, "_startup_sweep", lambda: calls.append("recovery"))
     with TestClient(server.app):
@@ -553,10 +587,10 @@ def test_report_prompt_distinguishes_pre_report_usage_from_final_metrics(monkeyp
 
 @pytest.mark.parametrize("evaluation, expected_reward, expected_coverage", [
     ({"weighted": 0.0, "score_valid": False, "coverage": 0.0, "coverage_valid": False}, None, None),
-    ({"weighted": 8.0, "score_valid": True, "coverage": 0.0, "coverage_valid": False}, 0.8, None),
-    ({"weighted": 8.0, "coverage": 0.75}, 0.8, 0.75),  # historical evaluation contract
+    ({"weighted": 8.0, "score_valid": True, "coverage": 0.0, "coverage_valid": False}, None, None),
+    ({"weighted": 8.0, "coverage": 0.75}, None, 0.75),
 ])
-def test_worker_abstains_from_invalid_scores_but_keeps_valid_score_feedback(
+def test_worker_keeps_plan_advice_but_never_learns_unmeasured_results(
         routed_workflow, monkeypatch, evaluation, expected_reward, expected_coverage):
     _, store, wiki = routed_workflow
     run = make_run()
@@ -589,12 +623,10 @@ def test_worker_abstains_from_invalid_scores_but_keeps_valid_score_feedback(
         assert updates == admissions == []
         assert all(not row["nudged"] and row["skip_reason"] for row in loaded.feedback)
         assert loaded.evolution["skipped"] and loaded.evolution["skip_reason"]
-        assert event.data["weighted"] is None
-    else:
-        assert updates == [(name, expected_reward) for name in wiki["order"]]
-        assert admissions == [expected_reward]
-        assert all(row["nudged"] for row in loaded.feedback)
-        assert not loaded.evolution["skipped"]
+        assert event.data["weighted"] == (evaluation['weighted'] if evaluation.get('score_valid', True) else None)
+    assert loaded.staged['learning_gate']['mode'] == 'shadow'
+    assert loaded.staged['quality_assessment']['scope_verdict'] == 'unknown'
+    assert loaded.staged['quality_assessment']['overall_verdict'] == 'unconfirmed'
 
 
 @pytest.mark.parametrize("gate", ["execution", "checks", "semantic"])
@@ -651,6 +683,25 @@ def test_explicit_evolution_does_not_admit_unrated_trajectory(api, monkeypatch):
     assert response.json()["accepted"] is False
     assert response.json()["chat_score"] is None
     assert response.json()["skip_reason"]
+
+
+def test_explicit_evolution_labels_a_plan_as_unexecuted_proposal(api, monkeypatch):
+    client,_ = api
+    monkeypatch.setattr(server,'require_llm',lambda:None)
+    server.STATE['agent'] = SimpleNamespace(run=lambda *a,**k:SimpleNamespace(response={},trajectory='plan only'))
+    monkeypatch.setattr(server,'score_plan',lambda *a:{'weighted':9.,'score_valid':True})
+    seen=[]
+    evolver=SimpleNamespace(distill=lambda *a,**k:seen.append(k),summary=lambda:{'records':[]})
+    monkeypatch.setattr(server,'SkillEvolver',lambda *a:evolver)
+    response=client.post('/api/evolve',json={'task':'生成方法提案','op':'distill'},
+        headers={'X-SkillNet-Token':'test-access-token'})
+    assert response.status_code==200
+    data=response.json()
+    assert data['chat_score']==.9 and data['score_role']=='plan_advisory'
+    assert data['evidence_mode']=='unexecuted_proposal' and not data['network_updated']
+    assert seen==[dict(score=None)]
+    assert evolver.evidence_context['mode']=='unexecuted_proposal'
+    assert not data['accepted']
 
 
 def test_report_does_not_present_invalid_evaluation_as_real_low_score(monkeypatch):

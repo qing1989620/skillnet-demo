@@ -1,0 +1,1733 @@
+{
+  "version": "skillnet-evidence-v1",
+  "run_id": "f11ad204-20261012-125616-b21e",
+  "task": "使用下方公开模拟科研预测数据，完成 3 步真实执行，不联网、不训练模型。这是科研复现审计，不是医学诊断或真实模型性能。①按 sample_id 去重保留首次记录；识别同时出现在多个 split 的 subject_id；删除这些受试者的全部记录，再删除 score 缺失记录。生成 clean_predictions.csv（保留原列与原值）和 cohort_audit.csv，后者列名 check,count，且只含 raw_rows,duplicate_rows,cross_split_subjects,cross_split_rows,missing_score_rows,eligible_test_rows 六行；missing_score_rows 在删除跨 split 受试者后统计。②读取两个前序文件，仅用清洗后的 test 行，固定阈值 score >= 0.5 为阳性，生成 heldout_metrics.csv，列名 metric,value，且只含 n,tp,fp,tn,fn,accuracy,precision,recall,f1 九行，保留充分精度（至少 10 位有效数字）；不能用测试集选择阈值，不计算 AUROC。③读取审计表和指标表，生成 figure.svg 与 report.md，报告必须写明“模拟数据”“固定阈值”“不代表临床有效性”，解释数据泄漏风险与复用边界。每步只负责本步交付，使用 depends_on、input_files、output_files 传递真实文件。\nCSV：\nsample_id,subject_id,split,label,score\ns01,p01,train,0,0.10\ns02,p02,train,1,0.90\ns03,p03,train,1,0.80\ns04,p04,validation,0,0.20\ns05,p05,validation,1,0.70\ns06,p06,test,1,0.90\ns07,p07,test,0,0.20\ns08,p08,test,1,0.40\ns09,p09,test,0,0.80\ns10,p10,test,1,0.70\ns11,p11,test,0,0.30\ns12,p01,test,1,0.95\ns13,p12,test,1,\ns06,p06,test,1,0.90",
+  "status": "PARTIAL",
+  "task_sha256": "f11ad2049bdf8bdfd9876d3000d635e1235eb10782b165b2248456baad7b3798",
+  "run_record_sha256": "63202f8c3f4d085639812c0e20bfe4370d8f35b17bc42429c4af9d99ee67e774",
+  "verification": "registered_files_rehashed_on_read",
+  "handoff_ready": true,
+  "scope_verified": false,
+  "delivery": {
+    "completed_steps": 0,
+    "total_steps": 3,
+    "output_files": 0,
+    "cost_yuan": 0.084826,
+    "model": "deepseek-chat",
+    "llm_calls": 5,
+    "duration_ms": 31255,
+    "omitted_steps": []
+  },
+  "files": [
+    {
+      "name": "input_raw_predictions.csv",
+      "logical_name": "raw_predictions.csv",
+      "sha256": "d489a2ede799f0f0f1e84c9b689879a4b654510fa160b61216f942587c3b208b",
+      "bytes": 330,
+      "integrity": "passed",
+      "actual_sha256": "d489a2ede799f0f0f1e84c9b689879a4b654510fa160b61216f942587c3b208b",
+      "role": "input",
+      "producer_step": null,
+      "consumed_by": [
+        0
+      ],
+      "source_run_id": "f11ad204-20261012-125616-b21e",
+      "download_path": "/api/runs/f11ad204-20261012-125616-b21e/artifacts/input_raw_predictions.csv"
+    }
+  ],
+  "chain": [
+    {
+      "idx": 0,
+      "action": "读取原始 CSV（14 行 5 列，含 1 个完全重复行 s06 与 1 个 score 缺失行 s13）。先按 sample_id 去重保留首次出现记录；再统计同时出现在多个 split 的 subject_id（p01 同时出现在 train 与 test），删除这些受试者的全部记录；最后在剩余记录中删除 score 缺失行。产出 clean_predictions.csv（保留原列 sample_id,subject_id,split,label,score 与原值，不新增列、不改数值）和 cohort_audit.csv（列名 check,count，仅六行：raw_rows,duplicate_rows,cross_split_subjects,cross_split_rows,missing_score_rows,eligible_test_rows）。",
+      "skill": "data-cleaning",
+      "status": "failed",
+      "depends_on": [],
+      "skill_sha256": "3b234cb8dc2c52709178f6013330acc0797350c7c4a005ae06d467eb416edca1",
+      "version_capture": "before_execution",
+      "code_sha256": null,
+      "attempts": 0,
+      "inputs": [
+        {
+          "logical_name": "raw_predictions.csv",
+          "name": "input_raw_predictions.csv",
+          "from_step": null,
+          "sha256": "d489a2ede799f0f0f1e84c9b689879a4b654510fa160b61216f942587c3b208b"
+        }
+      ],
+      "outputs": [],
+      "checks": [
+        {
+          "name": "状态准入：csv_schema / 输入原始 CSV",
+          "passed": false,
+          "detail": "unknown · artifact is absent or cannot be safely read",
+          "required": true
+        },
+        {
+          "name": "状态准入：csv_schema / raw_predictions.csv",
+          "passed": true,
+          "detail": "passed · CSV column set satisfies schema",
+          "required": true
+        },
+        {
+          "name": "状态准入：csv_nonempty / raw_predictions.csv",
+          "passed": true,
+          "detail": "passed · CSV has data records",
+          "required": true
+        }
+      ],
+      "independent_checks": [],
+      "semantic_advisory": [],
+      "state_evidence": {
+        "pre": {
+          "version": "skill-state-contract-v1",
+          "state": "unknown",
+          "checks": [
+            {
+              "predicate": {
+                "kind": "csv_schema",
+                "file": "输入原始 CSV",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "exact": true
+              },
+              "state": "unknown",
+              "detail": "artifact is absent or cannot be safely read",
+              "evidence": {
+                "file": "输入原始 CSV"
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_schema",
+                "file": "raw_predictions.csv",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "exact": true
+              },
+              "state": "passed",
+              "detail": "CSV column set satisfies schema",
+              "evidence": {
+                "file": "raw_predictions.csv",
+                "sha256": "d489a2ede799f0f0f1e84c9b689879a4b654510fa160b61216f942587c3b208b",
+                "bytes": 330,
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "rows": 14
+              }
+            },
+            {
+              "predicate": {
+                "kind": "csv_nonempty",
+                "file": "raw_predictions.csv"
+              },
+              "state": "passed",
+              "detail": "CSV has data records",
+              "evidence": {
+                "file": "raw_predictions.csv",
+                "sha256": "d489a2ede799f0f0f1e84c9b689879a4b654510fa160b61216f942587c3b208b",
+                "bytes": 330,
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "rows": 14
+              }
+            }
+          ],
+          "admitted": false,
+          "contract_sha256": "4ce548b589e6fa038542aae871d89025d3699a849d1d45a5739775673465567b",
+          "source": "host_reference_and_plan"
+        }
+      }
+    },
+    {
+      "idx": 1,
+      "action": "读取 clean_predictions.csv 与 cohort_audit.csv，仅取清洗后 split=='test' 的行，用固定阈值 score >= 0.5 判阳性（pred=1），与 label 比较统计 tp/fp/tn/fn，计算 n、accuracy、precision、recall、f1，写入 heldout_metrics.csv（列名 metric,value，仅九行：n,tp,fp,tn,fn,accuracy,precision,recall,f1）。阈值固定不调优，不计算 AUROC。",
+      "skill": "manual",
+      "status": "skipped",
+      "depends_on": [
+        0
+      ],
+      "skill_sha256": null,
+      "version_capture": "unrecorded",
+      "code_sha256": null,
+      "attempts": 0,
+      "inputs": [],
+      "outputs": [],
+      "checks": [],
+      "independent_checks": [],
+      "semantic_advisory": []
+    },
+    {
+      "idx": 2,
+      "action": "读取 cohort_audit.csv 与 heldout_metrics.csv，绘制审计计数与混淆矩阵/指标的矢量图 figure.svg，并撰写 report.md。报告必须写明“模拟数据”“固定阈值”“不代表临床有效性”，解释数据泄漏风险（跨 split 受试者导致训练与测试信息重叠）与复用边界（仅限本模拟数据与固定阈值流程，不得外推为真实模型性能或临床结论）。",
+      "skill": "scientific-visualization",
+      "status": "skipped",
+      "depends_on": [
+        0,
+        1
+      ],
+      "skill_sha256": "2d2d8637f4064d52bbdbad35734def7138f2e8d118b8bf91108d8f84726b5efa",
+      "version_capture": "before_execution",
+      "code_sha256": null,
+      "attempts": 0,
+      "inputs": [],
+      "outputs": [],
+      "checks": [],
+      "independent_checks": [],
+      "semantic_advisory": []
+    }
+  ],
+  "routing": {
+    "source": "recorded_at_execution",
+    "reason_kind": "model_advisory_not_contribution_proof",
+    "library_size": 1881,
+    "method": "task_utility",
+    "recommended": [
+      "data-cleaning",
+      "scientific-visualization"
+    ],
+    "adopted": [
+      "data-cleaning",
+      "descriptive-stats-csv-summary",
+      "scientific-visualization"
+    ],
+    "entered_execution": [
+      "data-cleaning",
+      "scientific-visualization"
+    ],
+    "generic_steps": [
+      1
+    ],
+    "candidates": [
+      {
+        "name": "data-cleaning",
+        "channels": [
+          "structural"
+        ],
+        "score": 0.62039,
+        "rank": 1,
+        "capability": "把原始数据转为可分析数据集，并记录每一步清洗决策",
+        "outputs": [
+          "干净数据集",
+          "清洗审计日志",
+          "数据字典"
+        ],
+        "source": "seed",
+        "note": "第①步需要按 sample_id 去重、识别跨 split 受试者、删除记录并统计缺失，产出清洗数据与审计表，属于核心清洗能力。"
+      },
+      {
+        "name": "scientific-visualization",
+        "channels": [
+          "fused"
+        ],
+        "score": 0.60821,
+        "rank": 2,
+        "capability": "生成可直接用于发表的矢量图表，含统计标注与可复现脚本",
+        "outputs": [
+          "矢量图（PDF/SVG）",
+          "绘图脚本",
+          "图注文本"
+        ],
+        "source": "seed",
+        "note": "第③步需要生成 figure.svg 矢量图，该技能覆盖矢量图与可复现绘图脚本。"
+      },
+      {
+        "name": "missing-data-baseline-modeling",
+        "channels": [
+          "bm25",
+          "vector"
+        ],
+        "score": 0.64516,
+        "rank": 3,
+        "capability": "产出一套带审计轨迹的干净数据集、可复现的基线模型性能表（含子群指标与波动范围）以及误差归因与可解释性报告。",
+        "outputs": [
+          "干净数据集与数据字典",
+          "清洗审计日志",
+          "EDA 报告与分布/相关性图组",
+          "验证协议说明与评估脚本"
+        ],
+        "source": "distill",
+        "note": "任务不训练模型、不做缺失填补或子群归因，仅需按规则清洗与固定阈值指标，故不需要。"
+      },
+      {
+        "name": "dose-response-curve-cleaning-and-ic50-fitting",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.6325,
+        "rank": 4,
+        "capability": "从原始剂量-响应表产出带审计日志的干净数据集、IC50 点估计与置信区间、稳健性审计报告及出版级矢量图。",
+        "outputs": [
+          "带审计日志的干净数据集与数据字典",
+          "EDA 报告与剂量-响应散点图",
+          "IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²、残差标准误）",
+          "bootstrap 不确定性与蒙特卡洛稳健性审计报告"
+        ],
+        "source": "distill",
+        "note": "剂量-响应与 IC50 拟合与本题的预测分数清洗和阈值指标无关。"
+      },
+      {
+        "name": "eda-profiling",
+        "channels": [
+          "structural"
+        ],
+        "score": 0.62039,
+        "rank": 5,
+        "capability": "系统性刻画数据集的分布、关系与质量风险",
+        "outputs": [
+          "EDA 报告",
+          "分布与相关性图组",
+          "候选特征清单"
+        ],
+        "source": "seed",
+        "note": "任务未要求分布刻画或特征初筛，审计表已指定固定检查项，不需要额外 EDA。"
+      },
+      {
+        "name": "competition-reproducible-ml-pipeline",
+        "channels": [
+          "bm25",
+          "vector"
+        ],
+        "score": 0.61882,
+        "rank": 6,
+        "capability": "产出一套对齐官方指标、防泄漏、含统计验证与出版级图表的可复现建模交付包。",
+        "outputs": [
+          "指标对齐检查表",
+          "清洗后数据集与清洗审计日志、数据字典",
+          "EDA报告与候选特征清单、风险项",
+          "基线模型文件与模型对比表、特征重要性、误差分析"
+        ],
+        "source": "distill",
+        "note": "任务明确不训练模型、不追求竞赛指标对齐，超出所需范围。"
+      },
+      {
+        "name": "tabular-ml-baseline",
+        "channels": [
+          "fused"
+        ],
+        "score": 0.60232,
+        "rank": 7,
+        "capability": "在表格数据上产出可信的预测基线并给出误差归因",
+        "outputs": [
+          "基线模型与性能表",
+          "特征重要性",
+          "误差分析报告"
+        ],
+        "source": "seed",
+        "note": "任务不训练预测模型，仅用固定阈值计算混淆矩阵指标。"
+      },
+      {
+        "name": "demo-descriptive-stats-report",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.57533,
+        "rank": 8,
+        "capability": "从内存中的分组数值产出一份可解析的统计对照CSV、一张带样本量标注与误差条的条形图，以及一段仅含可核验数值的描述文本。",
+        "outputs": [
+          "summary.csv（列：group,n,mean,std_sample）",
+          "barplot.png（含误差条与n标注的条形图）",
+          "单文件Python脚本",
+          "终端结果说明文本（含免责声明）"
+        ],
+        "source": "distill",
+        "note": "其输出为分组均值/标准差条形图，与本题的审计表、指标表和报告结构不匹配。"
+      },
+      {
+        "name": "cross-validation-protocol",
+        "channels": [
+          "fused"
+        ],
+        "score": 0.56774,
+        "rank": 9,
+        "capability": "为给定数据结构设计无偏的验证与外部验证协议",
+        "outputs": [
+          "验证协议说明",
+          "评估脚本",
+          "性能不确定性估计"
+        ],
+        "source": "seed",
+        "note": "任务不涉及泛化性能评估或调参，且明确固定阈值、不选阈值。"
+      },
+      {
+        "name": "model-interpretability",
+        "channels": [
+          "fused"
+        ],
+        "score": 0.56774,
+        "rank": 10,
+        "capability": "产出可辩护的模型归因分析并识别其局限",
+        "outputs": [
+          "全局重要性排序",
+          "局部归因图",
+          "部分依赖曲线"
+        ],
+        "source": "seed",
+        "note": "没有训练模型，无需全局或局部归因。"
+      },
+      {
+        "name": "estimator-robustness-audit",
+        "channels": [
+          "fused"
+        ],
+        "score": 0.5566,
+        "rank": 11,
+        "capability": "产出一份含公理化前提表、带收敛模式标注的严格证明、预注册蒙特卡洛验证报告、泄漏审计报告与适用范围表的完整稳健性论证包。",
+        "outputs": [
+          "公理化基础与前提闭合性核验表",
+          "含定理引用与收敛模式标注的严格证明文本",
+          "预注册蒙特卡洛协议与收敛曲线、拟合检验结果表",
+          "泄漏审计报告（种子记录、样本流分配、参数预注册清单）"
+        ],
+        "source": "distill",
+        "note": "任务不要求估计量收敛证明或蒙特卡洛稳健性论证，仅需数据泄漏风险说明。"
+      },
+      {
+        "name": "competition-data-science-pipeline",
+        "channels": [
+          "bm25",
+          "vector",
+          "structural"
+        ],
+        "score": 0.53536,
+        "rank": 12,
+        "capability": "产出一套指标对齐、可复现、含审计轨迹与统计支撑的建模交付物（清洗数据、基线模型、统计结果、矢量图与结论报告）。",
+        "outputs": [
+          "清洗后数据集与清洗审计日志、数据字典",
+          "EDA 报告与候选特征清单、风险项",
+          "基线模型文件与模型对比表、特征重要性、误差分析",
+          "统计检验结果表与方法段落"
+        ],
+        "source": "distill",
+        "note": "包含建模与统计检验等超出任务范围的能力，任务明确不训练模型。"
+      },
+      {
+        "name": "demo-descriptive-stats-summary",
+        "channels": [
+          "bm25"
+        ],
+        "score": 0.50629,
+        "rank": 13,
+        "capability": "产出一份包含每组样本量、均值和样本标准差的 CSV 文件及一段明确声明数据不可用于科学结论的简短说明。",
+        "outputs": [
+          "summary.csv（列：group,n,mean,std_sample）",
+          "终端打印的结果说明文本（含免责声明）",
+          "单文件 Python 脚本"
+        ],
+        "source": "distill",
+        "note": "输出为 group,n,mean,std_sample 的 summary.csv，与本题要求的 cohort_audit.csv 和 heldout_metrics.csv 结构不符。"
+      },
+      {
+        "name": "xlsx",
+        "channels": [
+          "fused"
+        ],
+        "score": 0.46027,
+        "rank": 14,
+        "capability": "依据原文 SKILL.md 提供Excel 表格处理能力（member-import 导入，契约字段由原文提炼）",
+        "outputs": [
+          "生成的表格文件",
+          "公式重算校验结果"
+        ],
+        "source": "seed",
+        "note": "输入为 CSV 文本且交付 CSV/SVG/MD，不需要 Excel 公式或格式化能力。"
+      },
+      {
+        "name": "statistical-testing",
+        "channels": [
+          "structural"
+        ],
+        "score": 0.4574,
+        "rank": 15,
+        "capability": "为研究设计选择正确的检验并给出完整的统计报告",
+        "outputs": [
+          "检验结果表",
+          "效应量与置信区间",
+          "统计方法说明段"
+        ],
+        "source": "seed",
+        "note": "任务不做组间推断检验，指标仅为固定阈值下的计数与派生指标。"
+      },
+      {
+        "name": "descriptive-stats-csv-summary",
+        "channels": [
+          "bm25",
+          "vector"
+        ],
+        "score": 0.43406,
+        "rank": 16,
+        "capability": "产出一个含 group,n,mean,std_sample 列的 summary.csv、对应单文件 Python 脚本，以及带免责声明的结果说明文本。",
+        "outputs": [
+          "summary.csv（列：group,n,mean,std_sample）",
+          "单文件 Python 脚本（无网络/外部依赖）",
+          "终端结果说明文本（含免责声明）"
+        ],
+        "source": "distill",
+        "note": "仅做描述统计汇总，无法覆盖去重、跨 split 删除、缺失统计和固定阈值指标计算。"
+      },
+      {
+        "name": "two-group-statistical-testing-with-effect-size",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.3943,
+        "rank": 17,
+        "capability": "产出一套可复现的组间比较分析包：干净数据集、检验结果表（含效应量与95%CI）、多重比较校正表、矢量图与稳健性复核记录。",
+        "outputs": [
+          "干净数据集与数据字典",
+          "清洗审计日志",
+          "统计检验结果表（统计量、自由度、p值、效应量、95%CI）",
+          "多重比较校正表"
+        ],
+        "source": "distill",
+        "note": ""
+      },
+      {
+        "name": "dose-response-cleaning-ic50-pipeline",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.36133,
+        "rank": 18,
+        "capability": "从原始剂量-响应表产出带审计日志的干净数据、IC50 点估计与置信区间、稳健性审计报告及出版级矢量图。",
+        "outputs": [
+          "干净数据表（含 log10_dose）与数据字典",
+          "清洗审计日志",
+          "EDA 报告与剂量-响应散点图",
+          "IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²、残差标准误）"
+        ],
+        "source": "distill",
+        "note": ""
+      },
+      {
+        "name": "gh-claude-ab-test-setup-6f7533",
+        "channels": [
+          "bm25"
+        ],
+        "score": 0.3605,
+        "rank": 19,
+        "capability": "When the user wants to plan, design, or implement an A/B test or experiment. Also use when the user mentions \"A/B test,\" \"split test,\" \"experiment,\" \"test this change,\" \"variant copy,\" \"multivariate test,\" \"hypothesis,\" \"conversion experiment,\" \"statistical significance,\" or \"test this.\" For tracking implementation, see analytics-tracking.",
+        "outputs": [],
+        "source": "github",
+        "note": ""
+      },
+      {
+        "name": "descriptive-stats-csv-and-plot",
+        "channels": [
+          "bm25",
+          "vector"
+        ],
+        "score": 0.29846,
+        "rank": 20,
+        "capability": "产出一份可精确回读校验的描述统计 CSV、一张与表格同源的均值对比图，以及一段仅含描述性数值的说明文本。",
+        "outputs": [
+          "summary.csv（固定表头，每组一行）",
+          "figure.png（均值条形图 + 误差条 + n 标注）",
+          "单文件 Python 脚本（无网络与外部文件依赖）",
+          "终端说明文本（含免责声明关键词）"
+        ],
+        "source": "distill",
+        "note": ""
+      },
+      {
+        "name": "dose-response-curve-analysis",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.29257,
+        "rank": 21,
+        "capability": "从原始剂量-存活率数据出发，产出带审计日志的干净数据集、IC50 点估计与置信区间、模型选择依据、稳健性审计报告及出版级剂量-反应曲线图。",
+        "outputs": [
+          "带审计日志的干净数据表与数据字典",
+          "EDA 报告与剂量-反应散点图",
+          "IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²、残差标准误）",
+          "bootstrap 不确定性与蒙特卡洛稳健性审计报告"
+        ],
+        "source": "distill",
+        "note": ""
+      },
+      {
+        "name": "dose-response-ic50-robust-estimation",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.24732,
+        "rank": 22,
+        "capability": "产出一份带审计日志的干净数据表、IC50 点估计与 95% CI、模型参数表、稳健性审计报告及出版级剂量-响应矢量图。",
+        "outputs": [
+          "带审计日志的干净数据表与数据字典",
+          "EDA 报告与剂量-响应散点图",
+          "IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²、残差标准误）",
+          "bootstrap 不确定性与蒙特卡洛稳健性审计报告"
+        ],
+        "source": "distill",
+        "note": ""
+      },
+      {
+        "name": "descriptive-stats-acceptance-audit",
+        "channels": [
+          "vector",
+          "structural"
+        ],
+        "score": 0.24384,
+        "rank": 23,
+        "capability": "产出一份验收检查必要性对照表、已支持/未支持结论二分清单、可复现性回放日志与下一步改进清单。",
+        "outputs": [
+          "验收检查→防御错误→后果对照表",
+          "已支持/未支持结论二分清单",
+          "可复现性回放日志（数值比对、表头断言、图像检查）",
+          "下一步改进清单（补证据项+补设计项，含优先级与前置条件）"
+        ],
+        "source": "distill",
+        "note": ""
+      },
+      {
+        "name": "gh-scientific-scikit-survival-e853c1",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.18946,
+        "rank": 24,
+        "capability": "Builds, evaluates, and audits right-censored or competing-risk survival workflows with scikit-survival, including leakage-safe preprocessing, model selection, probability prediction, and censoring-aware metrics.",
+        "outputs": [],
+        "source": "github",
+        "note": ""
+      },
+      {
+        "name": "gh-agentic-codebase-audit-pre-push-30400b",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.17627,
+        "rank": 25,
+        "capability": "Deep audit before GitHub push: removes junk files, dead code, security holes, and optimization issues. Checks every file line-by-line for production readiness.",
+        "outputs": [],
+        "source": "github",
+        "note": ""
+      },
+      {
+        "name": "dose-response-ic50-estimation",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.1626,
+        "rank": 26,
+        "capability": "输入带剂量与响应（含重复）的实验数据，输出 IC50 点估计与 95% 置信区间、HillSlope、Top/Bottom、拟合优度、稳健性审计报告与矢量剂量-响应图。",
+        "outputs": [
+          "带审计日志的干净数据集与数据字典",
+          "EDA 报告与剂量-响应散点图",
+          "IC50 估计表（点估计、95% CI、HillSlope、Top/Bottom、R²、残差标准误）",
+          "bootstrap 不确定性与蒙特卡洛稳健性审计报告"
+        ],
+        "source": "distill",
+        "note": ""
+      },
+      {
+        "name": "leakage-guard",
+        "channels": [
+          "bm25",
+          "structural"
+        ],
+        "score": 0.16131,
+        "rank": 27,
+        "capability": "识别并消除会导致乐观偏差的数据泄漏路径",
+        "outputs": [
+          "泄漏审计报告",
+          "修正后的管线",
+          "修正后性能对比"
+        ],
+        "source": "seed",
+        "note": ""
+      },
+      {
+        "name": "broad-topic-to-evidence-pipeline",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.16102,
+        "rank": 28,
+        "capability": "输入一个宽泛主题与可用数据库/数据源，产出可复现的检索式、PRISMA 台账、结构化证据表、清洗数据集与审计日志、EDA 报告、基线模型性能表及出版级矢量图。",
+        "outputs": [
+          "可复现检索式与各库命中数台账",
+          "PRISMA 筛选流程图与结构化证据抽取表",
+          "BibTeX 文献库",
+          "清洗后数据集、清洗审计日志、数据字典"
+        ],
+        "source": "distill",
+        "note": ""
+      },
+      {
+        "name": "gh-claude-report-d0382e",
+        "channels": [
+          "bm25"
+        ],
+        "score": 0.16044,
+        "rank": 29,
+        "capability": "Generate test report. Use when user says \"test report\", \"results summary\", \"test status\", \"show results\", \"test dashboard\", or \"how did tests go\".",
+        "outputs": [],
+        "source": "github",
+        "note": ""
+      },
+      {
+        "name": "gh-agentic-pre-release-review-7cdcdb",
+        "channels": [
+          "vector"
+        ],
+        "score": 0.13762,
+        "rank": 30,
+        "capability": "Run a read-only pre-release review for deploy readiness, migrations, config, secrets, rollout order, rollback risk, and launch blockers.",
+        "outputs": [],
+        "source": "github",
+        "note": ""
+      }
+    ],
+    "orchestration_candidate_names": [
+      "data-cleaning",
+      "scientific-visualization",
+      "missing-data-baseline-modeling",
+      "dose-response-curve-cleaning-and-ic50-fitting",
+      "eda-profiling",
+      "competition-reproducible-ml-pipeline",
+      "tabular-ml-baseline",
+      "demo-descriptive-stats-report",
+      "cross-validation-protocol",
+      "model-interpretability",
+      "estimator-robustness-audit",
+      "competition-data-science-pipeline",
+      "demo-descriptive-stats-summary",
+      "xlsx",
+      "statistical-testing",
+      "descriptive-stats-csv-summary",
+      "two-group-statistical-testing-with-effect-size",
+      "dose-response-cleaning-ic50-pipeline",
+      "gh-claude-ab-test-setup-6f7533",
+      "descriptive-stats-csv-and-plot"
+    ],
+    "decisions": [
+      {
+        "name": "data-cleaning",
+        "selected": true,
+        "reason": "直接对应第①步：按 sample_id 去重、识别并删除跨 split subject_id、删除 score 缺失记录，并产出 clean_predictions.csv 与 cohort_audit.csv。"
+      },
+      {
+        "name": "descriptive-stats-csv-summary",
+        "selected": true,
+        "reason": "用于第②步生成固定列名 metric,value 的 heldout_metrics.csv，并保证 n/tp/fp/tn/fn/accuracy/precision/recall/f1 九行可回读校验。"
+      },
+      {
+        "name": "scientific-visualization",
+        "selected": true,
+        "reason": "用于第③步生成 figure.svg，并支撑 report.md 中审计表与指标表的可视化呈现。"
+      },
+      {
+        "name": "missing-data-baseline-modeling",
+        "selected": false,
+        "reason": "未采用：任务不训练模型、不做缺失填补或基线建模，仅需删除缺失并计算固定阈值指标。"
+      },
+      {
+        "name": "dose-response-curve-cleaning-and-ic50-fitting",
+        "selected": false,
+        "reason": "未采用：任务数据不是剂量-响应表，也不需要 IC50 拟合。"
+      },
+      {
+        "name": "eda-profiling",
+        "selected": false,
+        "reason": "未采用：任务未要求系统性 EDA 报告或候选特征清单，审计表已覆盖必要数据质量检查。"
+      },
+      {
+        "name": "competition-reproducible-ml-pipeline",
+        "selected": false,
+        "reason": "未采用：任务不是竞赛建模交付，且明确不训练模型、不计算 AUROC。"
+      },
+      {
+        "name": "tabular-ml-baseline",
+        "selected": false,
+        "reason": "未采用：任务只做固定阈值指标计算，不训练表格预测基线。"
+      },
+      {
+        "name": "demo-descriptive-stats-report",
+        "selected": false,
+        "reason": "未采用：其输出为 summary.csv 与 barplot.png，不符合本任务 heldout_metrics.csv 与 figure.svg 的固定交付格式。"
+      },
+      {
+        "name": "cross-validation-protocol",
+        "selected": false,
+        "reason": "未采用：任务使用固定 test split 与固定阈值，不做交叉验证或调参。"
+      },
+      {
+        "name": "model-interpretability",
+        "selected": false,
+        "reason": "未采用：没有训练模型，无需全局重要性、局部归因或部分依赖分析。"
+      },
+      {
+        "name": "estimator-robustness-audit",
+        "selected": false,
+        "reason": "未采用：任务不要求估计量收敛证明或蒙特卡洛稳健性论证。"
+      },
+      {
+        "name": "competition-data-science-pipeline",
+        "selected": false,
+        "reason": "未采用：任务不是竞赛型建模流水线，且禁止训练模型与测试集选阈值。"
+      },
+      {
+        "name": "demo-descriptive-stats-summary",
+        "selected": false,
+        "reason": "未采用：其固定输出为 group,n,mean,std_sample，不能生成 metric,value 九行指标表。"
+      },
+      {
+        "name": "xlsx",
+        "selected": false,
+        "reason": "未采用：任务输入为 CSV 文本，输出为 CSV/SVG/MD，不需要 Excel 公式或表格编辑能力。"
+      },
+      {
+        "name": "statistical-testing",
+        "selected": false,
+        "reason": "未采用：任务不比较组间差异、不报告 p 值或效应量，只计算固定阈值分类指标。"
+      },
+      {
+        "name": "descriptive-stats-csv-summary",
+        "selected": true,
+        "reason": "采用：最贴合第②步固定表头 CSV 交付，可生成 metric,value 九行并保留充分精度。"
+      },
+      {
+        "name": "two-group-statistical-testing-with-effect-size",
+        "selected": false,
+        "reason": "未采用：任务没有两组比较或效应量/置信区间要求。"
+      },
+      {
+        "name": "dose-response-cleaning-ic50-pipeline",
+        "selected": false,
+        "reason": "未采用：数据与交付物均不涉及剂量-响应或 IC50。"
+      },
+      {
+        "name": "gh-claude-ab-test-setup-6f7533",
+        "selected": false,
+        "reason": "未采用：任务不是 A/B 实验设计或转化实验规划。"
+      },
+      {
+        "name": "descriptive-stats-csv-and-plot",
+        "selected": false,
+        "reason": "未采用：其输出 summary.csv 与 figure.png 不符合本任务 heldout_metrics.csv 与 figure.svg 的固定格式。"
+      }
+    ],
+    "reason": "任务本质是三步可审计的清洗-固定阈值指标计算-报告出图流程，data-cleaning 负责去重/跨 split 泄漏剔除/缺失删除与审计表，descriptive-stats-csv-summary 负责生成固定表头的指标 CSV，scientific-visualization 负责生成 figure.svg 与报告配图。",
+    "degraded": false,
+    "degraded_reason": "",
+    "encoder": {
+      "kind": "dense-onnx",
+      "active": true,
+      "model": "Xenova/multilingual-e5-small",
+      "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+      "dimension": 384,
+      "max_tokens": 256
+    },
+    "weights": [
+      0.35,
+      0.55,
+      0.1
+    ],
+    "boundary": "推荐、编排采用和进入执行分别记录；缺失的历史理由保留未知，不证明已找到全库最优组合"
+  },
+  "acceptance": {
+    "source": "recorded_at_execution",
+    "protocol": "outcome-evidence-v4",
+    "verdict": "failed",
+    "scope": "模拟预测数据的样本去重、跨集合受试者排除、固定阈值测试集混淆矩阵与派生指标；不评价模型或临床有效性",
+    "contract": {
+      "version": "outcome-evidence-v4",
+      "reward_policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+      "profile": {
+        "model": "deepseek-chat",
+        "sandbox": "local",
+        "sources": {
+          "pipeline.py": "50fe6e661569e9dfac11ed50b043f3bc11bc28f1d3bdb62729e9953d09a24c9c",
+          "executor.py": "b295e9a9edcbcaf17131cda3c74ca373dee2ab4f88eacac1e444b81c44c7a104",
+          "contracts.py": "c1f2bf934b1f6692690511945cb5dc665170621208857f4d315a59b3b148b2c0",
+          "state_contracts.py": "c4368c16f8669b06490c31e25cf22031dc164be95d01773c587f9242c4faf774",
+          "state_policy.py": "c470fc045e04fe7c6aefe6bd5fa2b501b1ad476dec405221faa8fda6e52536b4",
+          "checks.py": "61cff8b4e254190641394be36ec7f03edef595a190f093c1ab3b7b6fdc3dcc79",
+          "scenarios.py": "a5666675a88d3c1ba24dad6bfe1e4e5283c572853deefd19c549cf7ff81d4151",
+          "research.py": "0b9d260052c1b1e00e71b9356669debe0f6565459f5955448abe317bda64ada4",
+          "llm.py": "ee897a9c1250052c3ed608c21752616e03935409397605f0d33f3316f01df915",
+          "governance.py": "e3456246d6c5a9ed305f2fcdfa2ada79a6d630d2279e7e1726d03c405cbceb86",
+          "promotion.py": "685a78b65268b8169c155615497e63932d4284e1fae88f578e90df1454f2cf03",
+          "reward_gates.py": "6f3812086709054dfaf8e1bba766fbdaf42d6c1d2eb5bc0b91d5d9dd4d1e82db",
+          "assessment.py": "350ad8077281ec87891298d84ad133ba0b2e0187bef26f2b78297ef209b673e7",
+          "runtime.py": "2994d14d9eff5b9eeee08ae459773148bd69389da200d1537cdcf7329b697785",
+          "schema.py": "4ecad1593940833d15f4931229123af84d033b0a92c945cc748e57e7043e5783"
+        }
+      },
+      "task_sha256": "f11ad2049bdf8bdfd9876d3000d635e1235eb10782b165b2248456baad7b3798",
+      "source": "frozen_research_reference",
+      "case_id": "research-reproducibility-v1",
+      "reference_sha256": "5ebd1355e5147ea4617153ffa987289b729dabb19e1db4937336a6eaafbdf214",
+      "scope": "模拟预测数据的样本去重、跨集合受试者排除、固定阈值测试集混淆矩阵与派生指标；不评价模型或临床有效性",
+      "unverified": [
+        "用户满意度",
+        "报告洞察与业务价值",
+        "技能的因果贡献",
+        "网络是否整体提升"
+      ]
+    },
+    "evidence_sha256": "a7804e3e5624532fd5d56bf7b3e614d4398ef4ad9fe14ef7042c0530e47e6fc2",
+    "unverified": [
+      "用户满意度",
+      "报告洞察与业务价值",
+      "技能的因果贡献",
+      "网络是否整体提升"
+    ]
+  },
+  "reuse": {
+    "candidate": false,
+    "skill_name": null,
+    "gates_passed": 2,
+    "gates_total": 12,
+    "improvement_proven": false,
+    "reward_applied": false,
+    "policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+    "ranking_weights_deployed": false
+  },
+  "host_product": {
+    "target": "立理 S1",
+    "production_connection_verified": false,
+    "mapping": {
+      "task": "project conversation",
+      "routing": "capability selection evidence",
+      "chain": "execution timeline",
+      "files": "project attachments",
+      "acceptance": "result evidence",
+      "reuse": "candidate capability asset"
+    },
+    "next_action": "S1 backend verifies capsule digest, downloads files with expected SHA-256, and applies its project permissions"
+  },
+  "limitations": [
+    "文件指纹证明文件一致性，不证明研究结论正确",
+    "独立结果评价沿用执行时已冻结的范围，未对历史任务重新评分",
+    "单次任务不证明技能贡献或网络增益，候选技能不自动准入"
+  ],
+  "state_kernel": {
+    "policy": {
+      "version": "state-admission-v1",
+      "task_sha256": "f11ad2049bdf8bdfd9876d3000d635e1235eb10782b165b2248456baad7b3798",
+      "captured_at_ms": 1791780997538,
+      "frozen": {
+        "0": {
+          "declaration": {
+            "requires": [
+              {
+                "kind": "csv_schema",
+                "file": "输入原始 CSV",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "csv_schema",
+                "file": "raw_predictions.csv",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "csv_nonempty",
+                "file": "raw_predictions.csv"
+              }
+            ],
+            "ensures": [
+              {
+                "kind": "csv_schema",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "csv_unique",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id"
+                ]
+              },
+              {
+                "kind": "csv_no_missing",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "score"
+                ]
+              },
+              {
+                "kind": "csv_schema",
+                "file": "cohort_audit.csv",
+                "columns": [
+                  "check",
+                  "count"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "csv_nonempty",
+                "file": "cohort_audit.csv"
+              },
+              {
+                "kind": "file_exists",
+                "file": "clean_predictions.csv"
+              },
+              {
+                "kind": "file_exists",
+                "file": "cohort_audit.csv"
+              },
+              {
+                "kind": "csv_nonempty",
+                "file": "clean_predictions.csv"
+              },
+              {
+                "kind": "csv_no_missing",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ]
+              },
+              {
+                "kind": "csv_numeric_range",
+                "file": "clean_predictions.csv",
+                "column": "score",
+                "min": 0,
+                "max": 1
+              },
+              {
+                "kind": "csv_values_in",
+                "file": "clean_predictions.csv",
+                "column": "label",
+                "values": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "kind": "csv_disjoint_groups",
+                "file": "clean_predictions.csv",
+                "entity": "subject_id",
+                "group": "split"
+              }
+            ],
+            "input_files": [
+              "raw_predictions.csv"
+            ],
+            "output_files": [
+              "clean_predictions.csv",
+              "cohort_audit.csv"
+            ]
+          },
+          "sha256": "4ce548b589e6fa038542aae871d89025d3699a849d1d45a5739775673465567b",
+          "source": "host_reference_and_plan"
+        },
+        "1": {
+          "declaration": {
+            "requires": [
+              {
+                "kind": "csv_schema",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "csv_no_missing",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "score"
+                ]
+              },
+              {
+                "kind": "csv_schema",
+                "file": "cohort_audit.csv",
+                "columns": [
+                  "check",
+                  "count"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "file_exists",
+                "file": "clean_predictions.csv"
+              },
+              {
+                "kind": "file_exists",
+                "file": "cohort_audit.csv"
+              },
+              {
+                "kind": "csv_nonempty",
+                "file": "clean_predictions.csv"
+              },
+              {
+                "kind": "csv_unique",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id"
+                ]
+              },
+              {
+                "kind": "csv_no_missing",
+                "file": "clean_predictions.csv",
+                "columns": [
+                  "sample_id",
+                  "subject_id",
+                  "split",
+                  "label",
+                  "score"
+                ]
+              },
+              {
+                "kind": "csv_numeric_range",
+                "file": "clean_predictions.csv",
+                "column": "score",
+                "min": 0,
+                "max": 1
+              },
+              {
+                "kind": "csv_values_in",
+                "file": "clean_predictions.csv",
+                "column": "label",
+                "values": [
+                  0,
+                  1
+                ]
+              },
+              {
+                "kind": "csv_disjoint_groups",
+                "file": "clean_predictions.csv",
+                "entity": "subject_id",
+                "group": "split"
+              }
+            ],
+            "ensures": [
+              {
+                "kind": "csv_schema",
+                "file": "heldout_metrics.csv",
+                "columns": [
+                  "metric",
+                  "value"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "csv_nonempty",
+                "file": "heldout_metrics.csv"
+              },
+              {
+                "kind": "file_exists",
+                "file": "heldout_metrics.csv"
+              }
+            ],
+            "input_files": [
+              "clean_predictions.csv",
+              "cohort_audit.csv"
+            ],
+            "output_files": [
+              "heldout_metrics.csv"
+            ]
+          },
+          "sha256": "9daed405bb06c7b147e8e33756a45575db32e9b922195d0a296546e15e4e547d",
+          "source": "host_reference_and_plan"
+        },
+        "2": {
+          "declaration": {
+            "requires": [
+              {
+                "kind": "csv_schema",
+                "file": "cohort_audit.csv",
+                "columns": [
+                  "check",
+                  "count"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "csv_schema",
+                "file": "heldout_metrics.csv",
+                "columns": [
+                  "metric",
+                  "value"
+                ],
+                "exact": true
+              },
+              {
+                "kind": "file_exists",
+                "file": "cohort_audit.csv"
+              },
+              {
+                "kind": "file_exists",
+                "file": "heldout_metrics.csv"
+              }
+            ],
+            "ensures": [
+              {
+                "kind": "file_exists",
+                "file": "figure.svg"
+              },
+              {
+                "kind": "file_exists",
+                "file": "report.md"
+              }
+            ],
+            "input_files": [
+              "cohort_audit.csv",
+              "heldout_metrics.csv"
+            ],
+            "output_files": [
+              "figure.svg",
+              "report.md"
+            ]
+          },
+          "sha256": "61d656fcf566a003834d69e573f56a290f6cb22789c1cd035eb382cc2a2c3d67",
+          "source": "host_reference_and_plan"
+        }
+      },
+      "host_reference": "research-reproducibility-v1",
+      "boundary": "状态声明经真实文件判定后才成为本次观测；不代表跨环境成功率、因果贡献或全库能力边界"
+    },
+    "declared_composition": {
+      "version": "skill-state-contract-v1",
+      "state": "unknown",
+      "edges": [
+        {
+          "source": null,
+          "target": 0,
+          "file": "输入原始 CSV",
+          "predicate": {
+            "kind": "csv_schema",
+            "file": "输入原始 CSV",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          "state": "unknown",
+          "detail": "no ancestor declares this required artifact",
+          "candidate_sources": []
+        },
+        {
+          "source": null,
+          "target": 0,
+          "file": "raw_predictions.csv",
+          "predicate": {
+            "kind": "csv_schema",
+            "file": "raw_predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          "state": "unknown",
+          "detail": "no ancestor declares this required artifact",
+          "candidate_sources": []
+        },
+        {
+          "source": null,
+          "target": 0,
+          "file": "raw_predictions.csv",
+          "predicate": {
+            "kind": "csv_nonempty",
+            "file": "raw_predictions.csv"
+          },
+          "state": "unknown",
+          "detail": "no ancestor declares this required artifact",
+          "candidate_sources": []
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_schema",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          "state": "declared_compatible",
+          "detail": "output schema entails required columns",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_no_missing",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "score"
+            ]
+          },
+          "state": "declared_compatible",
+          "detail": "output predicate conservatively entails the precondition",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_no_missing",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "score"
+            ]
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "cohort_audit.csv",
+          "predicate": {
+            "kind": "csv_schema",
+            "file": "cohort_audit.csv",
+            "columns": [
+              "check",
+              "count"
+            ],
+            "exact": true
+          },
+          "state": "declared_compatible",
+          "detail": "output schema entails required columns",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "cohort_audit.csv",
+            "columns": [
+              "check",
+              "count"
+            ],
+            "exact": true
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "file_exists",
+            "file": "clean_predictions.csv"
+          },
+          "state": "declared_compatible",
+          "detail": "a valid artifact ensure implies file existence",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "cohort_audit.csv",
+          "predicate": {
+            "kind": "file_exists",
+            "file": "cohort_audit.csv"
+          },
+          "state": "declared_compatible",
+          "detail": "a valid artifact ensure implies file existence",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "cohort_audit.csv",
+            "columns": [
+              "check",
+              "count"
+            ],
+            "exact": true
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_nonempty",
+            "file": "clean_predictions.csv"
+          },
+          "state": "declared_compatible",
+          "detail": "output predicate conservatively entails the precondition",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_nonempty",
+            "file": "clean_predictions.csv"
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_unique",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "sample_id"
+            ]
+          },
+          "state": "declared_compatible",
+          "detail": "output predicate conservatively entails the precondition",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_unique",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "sample_id"
+            ]
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_no_missing",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ]
+          },
+          "state": "declared_compatible",
+          "detail": "output predicate conservatively entails the precondition",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_no_missing",
+            "file": "clean_predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ]
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_numeric_range",
+            "file": "clean_predictions.csv",
+            "column": "score",
+            "min": 0,
+            "max": 1
+          },
+          "state": "declared_compatible",
+          "detail": "output predicate conservatively entails the precondition",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_numeric_range",
+            "file": "clean_predictions.csv",
+            "column": "score",
+            "min": 0,
+            "max": 1
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_values_in",
+            "file": "clean_predictions.csv",
+            "column": "label",
+            "values": [
+              0,
+              1
+            ]
+          },
+          "state": "declared_compatible",
+          "detail": "output predicate conservatively entails the precondition",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_values_in",
+            "file": "clean_predictions.csv",
+            "column": "label",
+            "values": [
+              0,
+              1
+            ]
+          }
+        },
+        {
+          "source": 0,
+          "target": 1,
+          "file": "clean_predictions.csv",
+          "predicate": {
+            "kind": "csv_disjoint_groups",
+            "file": "clean_predictions.csv",
+            "entity": "subject_id",
+            "group": "split"
+          },
+          "state": "declared_compatible",
+          "detail": "output predicate conservatively entails the precondition",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_disjoint_groups",
+            "file": "clean_predictions.csv",
+            "entity": "subject_id",
+            "group": "split"
+          }
+        },
+        {
+          "source": 0,
+          "target": 2,
+          "file": "cohort_audit.csv",
+          "predicate": {
+            "kind": "csv_schema",
+            "file": "cohort_audit.csv",
+            "columns": [
+              "check",
+              "count"
+            ],
+            "exact": true
+          },
+          "state": "declared_compatible",
+          "detail": "output schema entails required columns",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "cohort_audit.csv",
+            "columns": [
+              "check",
+              "count"
+            ],
+            "exact": true
+          }
+        },
+        {
+          "source": 1,
+          "target": 2,
+          "file": "heldout_metrics.csv",
+          "predicate": {
+            "kind": "csv_schema",
+            "file": "heldout_metrics.csv",
+            "columns": [
+              "metric",
+              "value"
+            ],
+            "exact": true
+          },
+          "state": "declared_compatible",
+          "detail": "output schema entails required columns",
+          "candidate_sources": [
+            1
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "heldout_metrics.csv",
+            "columns": [
+              "metric",
+              "value"
+            ],
+            "exact": true
+          }
+        },
+        {
+          "source": 0,
+          "target": 2,
+          "file": "cohort_audit.csv",
+          "predicate": {
+            "kind": "file_exists",
+            "file": "cohort_audit.csv"
+          },
+          "state": "declared_compatible",
+          "detail": "a valid artifact ensure implies file existence",
+          "candidate_sources": [
+            0
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "cohort_audit.csv",
+            "columns": [
+              "check",
+              "count"
+            ],
+            "exact": true
+          }
+        },
+        {
+          "source": 1,
+          "target": 2,
+          "file": "heldout_metrics.csv",
+          "predicate": {
+            "kind": "file_exists",
+            "file": "heldout_metrics.csv"
+          },
+          "state": "declared_compatible",
+          "detail": "a valid artifact ensure implies file existence",
+          "candidate_sources": [
+            1
+          ],
+          "ensure": {
+            "kind": "csv_schema",
+            "file": "heldout_metrics.csv",
+            "columns": [
+              "metric",
+              "value"
+            ],
+            "exact": true
+          }
+        }
+      ],
+      "frontier": [
+        {
+          "step_idx": 0,
+          "file": "输入原始 CSV",
+          "predicate": {
+            "kind": "csv_schema",
+            "file": "输入原始 CSV",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          "state": "unknown",
+          "reason": "unsatisfied_declared_precondition",
+          "detail": "no ancestor declares this required artifact",
+          "candidate_sources": []
+        },
+        {
+          "step_idx": 0,
+          "file": "raw_predictions.csv",
+          "predicate": {
+            "kind": "csv_schema",
+            "file": "raw_predictions.csv",
+            "columns": [
+              "sample_id",
+              "subject_id",
+              "split",
+              "label",
+              "score"
+            ],
+            "exact": true
+          },
+          "state": "unknown",
+          "reason": "unsatisfied_declared_precondition",
+          "detail": "no ancestor declares this required artifact",
+          "candidate_sources": []
+        },
+        {
+          "step_idx": 0,
+          "file": "raw_predictions.csv",
+          "predicate": {
+            "kind": "csv_nonempty",
+            "file": "raw_predictions.csv"
+          },
+          "state": "unknown",
+          "reason": "unsatisfied_declared_precondition",
+          "detail": "no ancestor declares this required artifact",
+          "candidate_sources": []
+        }
+      ],
+      "boundary": "declared compatibility only; runtime evidence is required"
+    },
+    "boundary": "声明兼容性与实际条件检查分别记录；不代表因果贡献或跨任务能力已验证"
+  },
+  "capsule_sha256": "1d1964229324e7372e96b263161042c4b431401513a18763d6b3b441caa338ec"
+}

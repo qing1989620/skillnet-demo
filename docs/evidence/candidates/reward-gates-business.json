@@ -1,0 +1,132 @@
+{
+  "skill": {
+    "name": "simulated-data-monthly-report-pipeline",
+    "description": "对公开模拟订单明细执行清洗、按月汇总、并产出矢量趋势图与管理层报告的端到端流水线，全程标注模拟数据与金额单位，禁止推断真实经营结论。",
+    "domain": "数据分析与报告",
+    "tags": [
+      "数据清洗",
+      "月度汇总",
+      "毛利率",
+      "模拟数据",
+      "管理层报告",
+      "SVG 图表",
+      "文件传递"
+    ],
+    "capability": "从原始订单明细 CSV 产出 clean.csv、monthly_summary.csv、figure.svg 与 report.md 四个交付物，并保证行数守恒与数值一致。",
+    "inputs": [
+      "原始订单明细 CSV（含 order_id, month, revenue, cost 列）",
+      "清洗规则（去重保留首条、剔除缺失、保留负毛利）",
+      "汇总列名规范",
+      "报告标注要求（模拟数据、单位元、风险与建议）"
+    ],
+    "outputs": [
+      "clean.csv（order_id, month, revenue, cost）",
+      "monthly_summary.csv（month, revenue, cost, gross_profit, gross_margin, orders）",
+      "figure.svg（月度趋势矢量图）",
+      "report.md（管理层报告）"
+    ],
+    "use_when": [
+      "需要对订单明细做清洗并按月汇总",
+      "需要产出带模拟数据声明的趋势图与管理层报告",
+      "多步骤任务需用 input_files/output_files 表达文件传递"
+    ],
+    "steps": [
+      "步骤1 清洗：读取原始 CSV，先按 order_id 去重保留首条，再剔除 revenue 或 cost 缺失的行，保留毛利为负的有效订单；写出 clean.csv（列 order_id, month, revenue, cost）。",
+      "步骤1 打印：脚本实际计算并打印原始行数、重复删除数、缺失剔除数、清洗后行数，并断言 原始行数 - 重复删除数 - 缺失剔除数 == clean.csv 行数。",
+      "步骤1 回读校验：回读 clean.csv，断言 order_id 无重复、revenue 与 cost 无缺失、负毛利订单仍在。",
+      "步骤2 汇总：仅读取 clean.csv，按 month 分组对 revenue、cost 求和、对行数计数得 orders，计算 gross_profit = revenue - cost、gross_margin = gross_profit / revenue；写出 monthly_summary.csv，列名与顺序严格为 month,revenue,cost,gross_profit,gross_margin,orders。",
+      "步骤2 回读校验：断言列名列表精确匹配；monthly_summary 的 revenue/cost 合计等于 clean.csv 合计（容差 1e-8）；orders 合计等于 clean.csv 行数；逐月校验 gross_profit 与 gross_margin 公式（容差 1e-8）；无缺失值。",
+      "步骤3 绘图：仅读取 monthly_summary.csv，绘制 revenue/cost/gross_profit 月度趋势折线图，x 轴为月份、y 轴标注金额（元），y 轴下限设为 0（min(0, gross_profit.min())），导出矢量 figure.svg。",
+      "步骤3 报告：撰写 report.md，包含数据声明（全部基于公开模拟订单数据、仅用于演示、不代表任何公司真实经营情况）、金额单位为元、月度数值表、毛利风险小节与行动建议小节。",
+      "步骤3 回读校验：断言 figure.svg 为矢量 SVG 且含月份与金额（元）标注、y 轴下限为 0；report.md 含关键词 模拟数据、元、毛利风险、行动建议；报告数值与 monthly_summary.csv 逐值一致；不含将模拟数据推断为公司真实经营的表述。",
+      "每步只负责本步交付，用 depends_on 与 input_files/output_files 显式表达文件传递，下游只读取上游落盘文件而非内存对象。"
+    ],
+    "pitfalls": [
+      "去重与缺失剔除顺序错误：应先按 order_id 去重保留首条，再剔除 revenue/cost 缺失，否则计数与行数守恒等式不成立。",
+      "误删负毛利订单：负毛利是有效业务信号，必须保留在 clean.csv 与汇总中，不能当作异常剔除。",
+      "汇总列名或顺序不符：列名必须严格为 month,revenue,cost,gross_profit,gross_margin,orders，顺序与拼写错误会导致校验失败。",
+      "毛利率展示截断：报告中毛利率若按四位小数展示，需确认是展示精度而非原值截断，回读比对时按容差判断。",
+      "图表非矢量或 y 轴下限非 0：必须导出 SVG 且 y 轴下限为 0，否则趋势图会误导。",
+      "报告缺少模拟数据声明或单位标注：必须显式写明模拟数据、金额单位为元，并避免推断真实经营结论。",
+      "跨步骤直接传内存对象：下游应读取上游落盘文件，保证文件传递真实可追溯。"
+    ],
+    "verification": [
+      "行数守恒：原始行数 - 重复删除行数 - 缺失剔除行数 == clean.csv 行数，且三项计数由脚本实际计算并打印。",
+      "clean.csv 回读：order_id 无重复、revenue 与 cost 无缺失、负毛利订单仍在。",
+      "monthly_summary.csv 列名精确匹配且顺序正确。",
+      "总额一致性：monthly_summary 的 revenue/cost 合计等于 clean.csv 合计，orders 合计等于 clean.csv 行数，容差 1e-8。",
+      "逐月公式校验：gross_profit == revenue - cost 且 gross_margin == gross_profit / revenue，容差 1e-8，无缺失值。",
+      "figure.svg 为矢量 SVG，含月份与金额（元）标注，y 轴下限为 0。",
+      "report.md 含 模拟数据、元、毛利风险、行动建议 关键词，数值与 monthly_summary.csv 逐值一致，且不含真实经营结论表述。"
+    ],
+    "quality": {
+      "safety": {
+        "level": "Good",
+        "reason": "未见危险系统操作或越权指令"
+      },
+      "completeness": {
+        "level": "Good",
+        "reason": "9 个步骤 + 7 条陷阱 + 7 条验证，覆盖完整"
+      },
+      "executability": {
+        "level": "Good",
+        "reason": "9/9 个步骤含具体工具或参数，无模糊表述"
+      },
+      "maintainability": {
+        "level": "Good",
+        "reason": "与 3 个技能建立关联，步骤数适中"
+      },
+      "cost_awareness": {
+        "level": "Good",
+        "reason": "提及资源约束 ['内存']"
+      }
+    },
+    "relations": [
+      [
+        "compose_with",
+        "data-cleaning"
+      ],
+      [
+        "compose_with",
+        "business-metrics-audit"
+      ],
+      [
+        "compose_with",
+        "scientific-visualization"
+      ]
+    ],
+    "source": "distill",
+    "origin_task": null,
+    "parent": [
+      "business-metrics-audit"
+    ],
+    "generation": 1,
+    "version": 1,
+    "license": "MIT",
+    "compatibility": "",
+    "metadata": {
+      "evidence_context": {
+        "assessment_version": "outcome-evidence-v3",
+        "reward_policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+        "origin_task_sha256": "b5492bb7b5a5c2b7dfd234478bc51e6634c6bb129400dfbbbfdc219815096027",
+        "evidence_sha256": "52b26adfaa7f29ee17da65eef09629feec871c9057aaa8c37aea36f3dc7ef7d2",
+        "training_task_sha256": [
+          "b5492bb7b5a5c2b7dfd234478bc51e6634c6bb129400dfbbbfdc219815096027"
+        ],
+        "scope": "月度汇总的独立算术、图表存在和模拟数据标记；不评价报告洞察",
+        "causal_attribution": false
+      }
+    },
+    "allowed_tools": "",
+    "stats": {
+      "pulls": 0.0,
+      "reward_sum": 0.0,
+      "best": 0.0
+    }
+  },
+  "sha256": "d5d29ab4dfd8446e669016fe3091078e15723301720a68f9ad9b125c344592b9",
+  "state": "candidate",
+  "origin_run_id": "b5492bb7-20261010-083955-a445",
+  "created_at": 1791592848.089357,
+  "promotion_policy": "5 held-out tasks x 2 pairs; matched budget; no regression; mean gain >= .02; task-cluster sign test p <= .05; scoped claims only"
+}

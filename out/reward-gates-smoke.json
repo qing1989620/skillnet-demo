@@ -1,0 +1,574 @@
+{
+  "protocol": "improvement-gates-v1",
+  "policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+  "business_run_id": "b5492bb7-20261010-083955-a445",
+  "unmeasured_run_id": "1624c869-20261010-084055-eeaf",
+  "business_gates": {
+    "version": "improvement-gates-v1",
+    "policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+    "operator": "AND",
+    "eligible": false,
+    "reward_applied": false,
+    "points": 0,
+    "passed": 4,
+    "total": 12,
+    "blockers": [
+      "version",
+      "fair",
+      "heldout",
+      "suite",
+      "regression",
+      "gain",
+      "reliable",
+      "novel"
+    ],
+    "gates": [
+      {
+        "id": "frozen",
+        "title": "标准提前冻结",
+        "rule": "执行前锁定判据、阈值、模型与评测代码，禁止事后改规则",
+        "status": "passed",
+        "reason": "本次结果判据与奖励规则在执行前冻结；晋级还需预注册对照计划",
+        "evidence": {
+          "task_sha256": "b5492bb7b5a5c2b7dfd234478bc51e6634c6bb129400dfbbbfdc219815096027",
+          "policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd"
+        }
+      },
+      {
+        "id": "independent",
+        "title": "独立重算结果",
+        "rule": "从真实产物重算冻结的业务参考，模型评分不能替代",
+        "status": "passed",
+        "reason": "仅证明本次已测范围；尚无与旧版本的独立对照",
+        "evidence": {
+          "scope": "月度汇总的独立算术、图表存在和模拟数据标记；不评价报告洞察"
+        }
+      },
+      {
+        "id": "integrity",
+        "title": "物理产物可信",
+        "rule": "实际文件存在、路径合法、SHA-256 与登记一致",
+        "status": "passed",
+        "reason": "重新读取实际文件并核对指纹",
+        "evidence": {
+          "checked": 4
+        }
+      },
+      {
+        "id": "complete",
+        "title": "执行完整合格",
+        "rule": "候选全部步骤完成、必要验收通过、无删步取消或预算超限",
+        "status": "passed",
+        "reason": "本次执行完整，必要验收通过",
+        "evidence": {
+          "steps": 3,
+          "cost_yuan": 0.22665000000000002
+        }
+      },
+      {
+        "id": "version",
+        "title": "绑定技能版本",
+        "rule": "对照组与候选组实际执行冻结的精确技能版本",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "fair",
+        "title": "对照条件公平",
+        "rule": "模型、预算、动作依赖相同，并按预定次序交替执行",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "heldout",
+        "title": "任务未用于生成",
+        "rule": "排除当前任务、记录的祖先训练任务和实际来源运行",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "suite",
+        "title": "完整报告样本",
+        "rule": "至少 5 道留出任务各 2 组配对，禁止漏报、重用或挑选赢家",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "regression",
+        "title": "每组没有退步",
+        "rule": "每一组候选结果均不低于对应基线，提升不能抵消退步",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "gain",
+        "title": "增益达到门槛",
+        "rule": "按不同任务等权计算平均增益，至少 0.02",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "reliable",
+        "title": "多任务一致提升",
+        "rule": "以不同任务为统计单位，单侧符号检验 p ≤ 0.05",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "novel",
+        "title": "同一版本只奖一次",
+        "rule": "积分只给被验证版本；相同版本不能重放或换报告重复领奖",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      }
+    ],
+    "context": {
+      "kind": "single_run",
+      "run_id": "b5492bb7-20261010-083955-a445",
+      "assessment_sha256": "52b26adfaa7f29ee17da65eef09629feec871c9057aaa8c37aea36f3dc7ef7d2"
+    },
+    "reward_scope": "此技能版本在冻结评测范围内的相对提升积分；不代表全网或所有任务提升",
+    "ranking_weights_deployed": false,
+    "audit_sha256": "06cd512599f4b7f0044fb2e2b504307cb68d87b0968dfea0961508d272db40ad"
+  },
+  "failed_run_id": "b5492bb7-20261010-083743-1b37",
+  "failed_gates": {
+    "version": "improvement-gates-v1",
+    "policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+    "operator": "AND",
+    "eligible": false,
+    "reward_applied": false,
+    "points": 0,
+    "passed": 2,
+    "total": 12,
+    "blockers": [
+      "independent",
+      "complete",
+      "version",
+      "fair",
+      "heldout",
+      "suite",
+      "regression",
+      "gain",
+      "reliable",
+      "novel"
+    ],
+    "gates": [
+      {
+        "id": "frozen",
+        "title": "标准提前冻结",
+        "rule": "执行前锁定判据、阈值、模型与评测代码，禁止事后改规则",
+        "status": "passed",
+        "reason": "本次结果判据与奖励规则在执行前冻结；晋级还需预注册对照计划",
+        "evidence": {
+          "task_sha256": "b5492bb7b5a5c2b7dfd234478bc51e6634c6bb129400dfbbbfdc219815096027",
+          "policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd"
+        }
+      },
+      {
+        "id": "independent",
+        "title": "独立重算结果",
+        "rule": "从真实产物重算冻结的业务参考，模型评分不能替代",
+        "status": "failed",
+        "reason": "仅证明本次已测范围；尚无与旧版本的独立对照",
+        "evidence": {
+          "scope": "月度汇总的独立算术、图表存在和模拟数据标记；不评价报告洞察"
+        }
+      },
+      {
+        "id": "integrity",
+        "title": "物理产物可信",
+        "rule": "实际文件存在、路径合法、SHA-256 与登记一致",
+        "status": "passed",
+        "reason": "重新读取实际文件并核对指纹",
+        "evidence": {
+          "checked": 2
+        }
+      },
+      {
+        "id": "complete",
+        "title": "执行完整合格",
+        "rule": "候选全部步骤完成、必要验收通过、无删步取消或预算超限",
+        "status": "failed",
+        "reason": "存在未完成、未通过验收、取消、删步或超预算",
+        "evidence": {
+          "steps": 3,
+          "cost_yuan": 0.159942
+        }
+      },
+      {
+        "id": "version",
+        "title": "绑定技能版本",
+        "rule": "对照组与候选组实际执行冻结的精确技能版本",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "fair",
+        "title": "对照条件公平",
+        "rule": "模型、预算、动作依赖相同，并按预定次序交替执行",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "heldout",
+        "title": "任务未用于生成",
+        "rule": "排除当前任务、记录的祖先训练任务和实际来源运行",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "suite",
+        "title": "完整报告样本",
+        "rule": "至少 5 道留出任务各 2 组配对，禁止漏报、重用或挑选赢家",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "regression",
+        "title": "每组没有退步",
+        "rule": "每一组候选结果均不低于对应基线，提升不能抵消退步",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "gain",
+        "title": "增益达到门槛",
+        "rule": "按不同任务等权计算平均增益，至少 0.02",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "reliable",
+        "title": "多任务一致提升",
+        "rule": "以不同任务为统计单位，单侧符号检验 p ≤ 0.05",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "novel",
+        "title": "同一版本只奖一次",
+        "rule": "积分只给被验证版本；相同版本不能重放或换报告重复领奖",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      }
+    ],
+    "context": {
+      "kind": "single_run",
+      "run_id": "b5492bb7-20261010-083743-1b37",
+      "assessment_sha256": "65b8e4e11f34a8f0c84ec7fee163ae4bcfe9118524bea148c80c52c93073ab75"
+    },
+    "reward_scope": "此技能版本在冻结评测范围内的相对提升积分；不代表全网或所有任务提升",
+    "ranking_weights_deployed": false,
+    "audit_sha256": "81cacdf12c7234b3e962b8fc7382fb4895f224cfcee36a9e9b55f95dba30c3af"
+  },
+  "failed_judge_score": 9.0,
+  "unmeasured_gates": {
+    "version": "improvement-gates-v1",
+    "policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+    "operator": "AND",
+    "eligible": false,
+    "reward_applied": false,
+    "points": 0,
+    "passed": 3,
+    "total": 12,
+    "blockers": [
+      "independent",
+      "version",
+      "fair",
+      "heldout",
+      "suite",
+      "regression",
+      "gain",
+      "reliable",
+      "novel"
+    ],
+    "gates": [
+      {
+        "id": "frozen",
+        "title": "标准提前冻结",
+        "rule": "执行前锁定判据、阈值、模型与评测代码，禁止事后改规则",
+        "status": "passed",
+        "reason": "本次结果判据与奖励规则在执行前冻结；晋级还需预注册对照计划",
+        "evidence": {
+          "task_sha256": "1624c869bc3d737167e5d5cceba252bf64004833e60d5a0e0670363263bdb184",
+          "policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd"
+        }
+      },
+      {
+        "id": "independent",
+        "title": "独立重算结果",
+        "rule": "从真实产物重算冻结的业务参考，模型评分不能替代",
+        "status": "unknown",
+        "reason": "仅证明本次已测范围；尚无与旧版本的独立对照",
+        "evidence": {
+          "scope": "仅核对执行事实和可重算的步骤契约；不能证明用户整体目标已满足"
+        }
+      },
+      {
+        "id": "integrity",
+        "title": "物理产物可信",
+        "rule": "实际文件存在、路径合法、SHA-256 与登记一致",
+        "status": "passed",
+        "reason": "重新读取实际文件并核对指纹",
+        "evidence": {
+          "checked": 1
+        }
+      },
+      {
+        "id": "complete",
+        "title": "执行完整合格",
+        "rule": "候选全部步骤完成、必要验收通过、无删步取消或预算超限",
+        "status": "passed",
+        "reason": "本次执行完整，必要验收通过",
+        "evidence": {
+          "steps": 1,
+          "cost_yuan": 0.09507399999999999
+        }
+      },
+      {
+        "id": "version",
+        "title": "绑定技能版本",
+        "rule": "对照组与候选组实际执行冻结的精确技能版本",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "fair",
+        "title": "对照条件公平",
+        "rule": "模型、预算、动作依赖相同，并按预定次序交替执行",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "heldout",
+        "title": "任务未用于生成",
+        "rule": "排除当前任务、记录的祖先训练任务和实际来源运行",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "suite",
+        "title": "完整报告样本",
+        "rule": "至少 5 道留出任务各 2 组配对，禁止漏报、重用或挑选赢家",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "regression",
+        "title": "每组没有退步",
+        "rule": "每一组候选结果均不低于对应基线，提升不能抵消退步",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "gain",
+        "title": "增益达到门槛",
+        "rule": "按不同任务等权计算平均增益，至少 0.02",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "reliable",
+        "title": "多任务一致提升",
+        "rule": "以不同任务为统计单位，单侧符号检验 p ≤ 0.05",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      },
+      {
+        "id": "novel",
+        "title": "同一版本只奖一次",
+        "rule": "积分只给被验证版本；相同版本不能重放或换报告重复领奖",
+        "status": "unknown",
+        "reason": "缺少对应证据，不能放行",
+        "evidence": {}
+      }
+    ],
+    "context": {
+      "kind": "single_run",
+      "run_id": "1624c869-20261010-084055-eeaf",
+      "assessment_sha256": "36b98977fb3892ea321b03643921a7aa53fdc1b161b1776224dc1eab0fd54217"
+    },
+    "reward_scope": "此技能版本在冻结评测范围内的相对提升积分；不代表全网或所有任务提升",
+    "ranking_weights_deployed": false,
+    "audit_sha256": "dbb7d28dfb862c8a397a536cdb0cadfd00e97876da174e3398789deb1dcca068"
+  },
+  "oracle": {
+    "score": 1.0,
+    "checks": [
+      {
+        "name": "月份完整且无额外月份",
+        "passed": true
+      },
+      {
+        "name": "2026-01.revenue",
+        "passed": true,
+        "expected": 3500.0,
+        "actual": "3500.0"
+      },
+      {
+        "name": "2026-01.cost",
+        "passed": true,
+        "expected": 2180.0,
+        "actual": "2180.0"
+      },
+      {
+        "name": "2026-01.orders",
+        "passed": true,
+        "expected": 3,
+        "actual": "3"
+      },
+      {
+        "name": "2026-01.gross_profit",
+        "passed": true,
+        "expected": 1320.0,
+        "actual": "1320.0"
+      },
+      {
+        "name": "2026-01.gross_margin",
+        "passed": true,
+        "expected": 0.37714285714285717,
+        "actual": "0.37714285714285717"
+      },
+      {
+        "name": "2026-02.revenue",
+        "passed": true,
+        "expected": 4000.0,
+        "actual": "4000.0"
+      },
+      {
+        "name": "2026-02.cost",
+        "passed": true,
+        "expected": 2700.0,
+        "actual": "2700.0"
+      },
+      {
+        "name": "2026-02.orders",
+        "passed": true,
+        "expected": 3,
+        "actual": "3"
+      },
+      {
+        "name": "2026-02.gross_profit",
+        "passed": true,
+        "expected": 1300.0,
+        "actual": "1300.0"
+      },
+      {
+        "name": "2026-02.gross_margin",
+        "passed": true,
+        "expected": 0.325,
+        "actual": "0.325"
+      },
+      {
+        "name": "2026-03.revenue",
+        "passed": true,
+        "expected": 4300.0,
+        "actual": "4300.0"
+      },
+      {
+        "name": "2026-03.cost",
+        "passed": true,
+        "expected": 3180.0,
+        "actual": "3180.0"
+      },
+      {
+        "name": "2026-03.orders",
+        "passed": true,
+        "expected": 3,
+        "actual": "3"
+      },
+      {
+        "name": "2026-03.gross_profit",
+        "passed": true,
+        "expected": 1120.0,
+        "actual": "1120.0"
+      },
+      {
+        "name": "2026-03.gross_margin",
+        "passed": true,
+        "expected": 0.26046511627906976,
+        "actual": "0.26046511627906976"
+      },
+      {
+        "name": "2026-04.revenue",
+        "passed": true,
+        "expected": 5200.0,
+        "actual": "5200.0"
+      },
+      {
+        "name": "2026-04.cost",
+        "passed": true,
+        "expected": 3340.0,
+        "actual": "3340.0"
+      },
+      {
+        "name": "2026-04.orders",
+        "passed": true,
+        "expected": 3,
+        "actual": "3"
+      },
+      {
+        "name": "2026-04.gross_profit",
+        "passed": true,
+        "expected": 1860.0,
+        "actual": "1860.0"
+      },
+      {
+        "name": "2026-04.gross_margin",
+        "passed": true,
+        "expected": 0.3576923076923077,
+        "actual": "0.3576923076923077"
+      },
+      {
+        "name": "矢量图存在",
+        "passed": true
+      },
+      {
+        "name": "报告标注模拟数据",
+        "passed": true
+      }
+    ],
+    "evaluator": "independent arithmetic + artifact presence; report insight not scored",
+    "artifact_hashes": {
+      "step1_clean.csv": "7e6cbc82b564f901f3958e2ec28d58fa5ae2867448efd8e06afd1e4cf51c0026",
+      "step2_monthly_summary.csv": "a2a0524e5ba15ad02d37b77ae6b6fd3ade0c4450dd93d55b1bab18009e1b7027",
+      "step3_figure.svg": "4d16e5f3c75b6152bc5aa5e36f23f47c54dcf74d3ab60e6c8b7fdf2a010b9fc8",
+      "step3_report.md": "3a7da3738afe0c8de8e9878459b8233abc2e27722be125a72e3af0fd65e0660c"
+    }
+  },
+  "judge_scores": [
+    9.0,
+    8.25
+  ],
+  "model_scores_are_advisory": true,
+  "reward_points": 0,
+  "serving_policy_unchanged": true,
+  "policy_before_sha256": "bc60c6945a9af22b2443d24b507cbb58de28deda51a7acc7b893246226851003",
+  "policy_after_sha256": "bc60c6945a9af22b2443d24b507cbb58de28deda51a7acc7b893246226851003",
+  "cost_yuan": 0.4817,
+  "boundary": "Real single-run evidence only; no paired improvement established; positive award path covered by deterministic tests, not represented as a real improvement"
+}

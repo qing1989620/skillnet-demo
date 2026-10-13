@@ -1,0 +1,666 @@
+{
+  "kind": "frozen-chinese-retrieval-smoke",
+  "created_at": 1791447943.040473,
+  "cases_sha256": "5de178f3cd34e5134a892af02d4dc1f6673a883987aed7ed67ac717ddee27a39",
+  "library_size": 1881,
+  "encoder": {
+    "kind": "dense-onnx",
+    "active": true,
+    "model": "Xenova/multilingual-e5-small",
+    "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+    "dimension": 384,
+    "max_tokens": 256
+  },
+  "weights": [
+    0.35,
+    0.55,
+    0.1
+  ],
+  "k": 10,
+  "scope": "Hit@10 against manually frozen acceptable skills; labels not exhaustive; not a general quality claim",
+  "results": [
+    {
+      "query": "表格里有重复记录、空值和单位混乱，我需要清洗并保留审计记录",
+      "expected": [
+        "data-cleaning"
+      ],
+      "split": "development",
+      "lexical": {
+        "hit": false,
+        "selected": [
+          "gh-agentic-grill-me-e2de87",
+          "gh-agentic-since-cutoff-bfba48",
+          "gh-agentic-iconsax-library-da09d9",
+          "brand-guidelines",
+          "gh-agentic-grill-with-docs-3f2861",
+          "gh-agentic-skill-optimizer-c72e06",
+          "gh-agentic-stitch-design-taste-d17e04",
+          "gh-agentic-brooks-lint-4c3b0d",
+          "dose-response-curve-cleaning-and-ic50-fitting",
+          "gh-claude-revenue-operations-da9c67"
+        ]
+      },
+      "dense": {
+        "hit": true,
+        "selected": [
+          "data-cleaning",
+          "dose-response-cleaning-ic50-pipeline",
+          "descriptive-stats-acceptance-audit",
+          "dose-response-curve-analysis",
+          "business-metrics-audit",
+          "dose-response-curve-cleaning-and-ic50-fitting",
+          "estimator-robustness-audit",
+          "missing-data-baseline-modeling",
+          "leakage-guard",
+          "dose-response-ic50-robust-estimation"
+        ]
+      },
+      "hybrid": {
+        "selected": [
+          "data-cleaning",
+          "dose-response-cleaning-ic50-pipeline",
+          "dose-response-curve-cleaning-and-ic50-fitting",
+          "missing-data-baseline-modeling",
+          "dose-response-curve-analysis",
+          "leakage-guard",
+          "two-group-statistical-testing-with-effect-size",
+          "descriptive-stats-acceptance-audit",
+          "estimator-robustness-audit",
+          "business-metrics-audit"
+        ],
+        "hit": true
+      }
+    },
+    {
+      "query": "论文图需要误差带、显著性标记、合适的配色以及矢量导出",
+      "expected": [
+        "scientific-visualization"
+      ],
+      "split": "development",
+      "lexical": {
+        "hit": true,
+        "selected": [
+          "scientific-visualization",
+          "gh-claude-launch-strategy-e687e5",
+          "gh-agentic-odoo-security-rules-fa4a99",
+          "gh-agentic-crossframe-essay-d4d392",
+          "gh-agentic-humanize-chinese-2a67c7",
+          "discernment-nudge",
+          "gh-agentic-setup-matt-pocock-skills-a76b50",
+          "gh-agentic-rayden-use-86bbae",
+          "gh-claude-company-os-089480",
+          "demo-descriptive-stats-report"
+        ]
+      },
+      "dense": {
+        "hit": true,
+        "selected": [
+          "scientific-visualization",
+          "math-modeling-pipeline",
+          "dose-response-curve-analysis",
+          "demo-descriptive-stats-report",
+          "research-field-top-ideas-distillation",
+          "estimator-robustness-audit",
+          "poster-slides",
+          "dose-response-curve-cleaning-and-ic50-fitting",
+          "broad-topic-to-evidence-pipeline",
+          "scientific-writing"
+        ]
+      },
+      "hybrid": {
+        "selected": [
+          "scientific-visualization",
+          "math-modeling-pipeline",
+          "dose-response-curve-analysis",
+          "demo-descriptive-stats-report",
+          "scientific-writing",
+          "research-field-top-ideas-distillation",
+          "poster-slides",
+          "dose-response-curve-cleaning-and-ic50-fitting",
+          "competition-reproducible-ml-pipeline",
+          "two-group-statistical-testing-with-effect-size"
+        ],
+        "hit": true
+      }
+    },
+    {
+      "query": "模型预测成绩异常高，检查训练测试重叠和目标变量提前泄漏",
+      "expected": [
+        "leakage-guard"
+      ],
+      "split": "development",
+      "lexical": {
+        "hit": false,
+        "selected": [
+          "gh-agentic-php-5ddf5d",
+          "gh-scientific-nmrglue-679255",
+          "gh-agentic-busybox-on-windows-aa3841",
+          "model-interpretability",
+          "peer-review-response",
+          "gh-agentic-nanobanana-ppt-skills-7ab003",
+          "gh-agentic-salesforce-development-e5d35d",
+          "gh-agentic-go-concurrency-patterns-ffbae2",
+          "deep-learning-training",
+          "gh-agentic-documentation-templates-94acaa"
+        ]
+      },
+      "dense": {
+        "hit": true,
+        "selected": [
+          "leakage-guard",
+          "competition-reproducible-ml-pipeline",
+          "competition-data-science-pipeline",
+          "missing-data-baseline-modeling",
+          "estimator-robustness-audit",
+          "exam-weakness-analysis-and-review-plan",
+          "materials-screening",
+          "gh-scientific-scikit-survival-e853c1",
+          "two-group-statistical-testing-with-effect-size",
+          "dose-response-curve-analysis"
+        ]
+      },
+      "hybrid": {
+        "selected": [
+          "leakage-guard",
+          "competition-reproducible-ml-pipeline",
+          "competition-data-science-pipeline",
+          "missing-data-baseline-modeling",
+          "materials-screening",
+          "estimator-robustness-audit",
+          "deep-learning-training",
+          "clinical-feature-engineering",
+          "model-interpretability",
+          "flux-tower-ml"
+        ],
+        "hit": true
+      }
+    },
+    {
+      "query": "清理模拟订单，汇总每月收入成本和毛利率，生成经营月报",
+      "expected": [
+        "business-metrics-audit"
+      ],
+      "split": "development",
+      "lexical": {
+        "hit": true,
+        "selected": [
+          "business-metrics-audit",
+          "gh-agentic-crossframe-casebook-0865ba",
+          "gh-agentic-crossframe-teach-2498ab",
+          "gh-agentic-crossframe-public-a7bed8",
+          "gh-claude-azure-cloud-architect-42de2e",
+          "gh-agentic-aas-discover-410ef2",
+          "gh-agentic-crossframe-org-10b340",
+          "gh-agentic-crossframe-debate-a5aa10",
+          "gh-agentic-crossframe-review-91b081",
+          "gh-agentic-azure-functions-d08c60"
+        ]
+      },
+      "dense": {
+        "hit": true,
+        "selected": [
+          "business-metrics-audit",
+          "competition-data-science-pipeline",
+          "math-modeling-pipeline",
+          "competition-reproducible-ml-pipeline",
+          "gh-agentic-weather-data-lifecycle-management-340ae1",
+          "dose-response-curve-analysis",
+          "gh-claude-finance-skills-0b078c",
+          "gh-agentic-asset-it-management-26c655",
+          "gh-agentic-fal-platform-4735d2",
+          "data-cleaning"
+        ]
+      },
+      "hybrid": {
+        "selected": [
+          "business-metrics-audit",
+          "competition-data-science-pipeline",
+          "math-modeling-pipeline",
+          "competition-reproducible-ml-pipeline",
+          "gh-agentic-weather-data-lifecycle-management-340ae1",
+          "dose-response-curve-analysis",
+          "gh-claude-finance-skills-0b078c",
+          "gh-agentic-fact-check-x-unified-da13a6",
+          "materials-screening",
+          "gh-agentic-asset-it-management-26c655"
+        ],
+        "hit": true
+      }
+    },
+    {
+      "query": "关系数据库查询变慢了，需要分析执行计划、优化索引和查询性能",
+      "expected": [
+        "gh-agentic-postgres-best-practices-ed32a6",
+        "gh-agentic-postgresql-optimization-2fea25",
+        "gh-agentic-supabase-postgres-best-practices-f18084"
+      ],
+      "split": "development",
+      "lexical": {
+        "hit": false,
+        "selected": [
+          "gh-claude-roadmap-communicator-56098a",
+          "gh-agentic-us-property-data-293d2a",
+          "gh-agentic-brendangregg-use-tsa-dad034",
+          "gh-claude-senior-computer-vision-89f318",
+          "gh-claude-pw-review-66b12b",
+          "gh-claude-fix-817919",
+          "gh-scientific-astropy-b3a34d",
+          "gh-claude-internal-narrative-261a70",
+          "gh-agentic-business-website-setup-4c700a",
+          "gh-agentic-seo-meta-optimizer-feeeb4"
+        ]
+      },
+      "dense": {
+        "hit": true,
+        "selected": [
+          "gh-agentic-postgresql-optimization-2fea25",
+          "gh-agentic-database-db9486",
+          "gh-agentic-postgres-readonly-queries-ac391b",
+          "gh-agentic-odoo-performance-tuner-334084",
+          "exam-weakness-analysis-and-review-plan",
+          "gh-agentic-decision-navigator-b103ba",
+          "gh-claude-database-designer-e303ca",
+          "gh-agentic-react-component-performance-b06dd8",
+          "dose-response-cleaning-ic50-pipeline",
+          "data-cleaning"
+        ]
+      },
+      "hybrid": {
+        "selected": [
+          "exam-weakness-analysis-and-review-plan",
+          "gh-agentic-postgresql-optimization-2fea25",
+          "gh-agentic-database-db9486",
+          "eda-profiling",
+          "data-cleaning",
+          "gh-agentic-postgres-readonly-queries-ac391b",
+          "gh-agentic-travel-planner-3b0cd4",
+          "dose-response-cleaning-ic50-pipeline",
+          "dose-response-curve-analysis",
+          "gh-agentic-odoo-performance-tuner-334084"
+        ],
+        "hit": true
+      }
+    },
+    {
+      "query": "把容器应用部署到生产集群，配置编排、服务网格和部署清单",
+      "expected": [
+        "gh-agentic-kubernetes-deployment-84d43d"
+      ],
+      "split": "development",
+      "lexical": {
+        "hit": false,
+        "selected": [
+          "gh-agentic-docs-generator-ae0086",
+          "gh-agentic-color-blocking-80524d",
+          "gh-agentic-cyberpunk-ui-634a1b",
+          "gh-agentic-sequence-psychologist-0f454a",
+          "gh-agentic-copywriting-psychologist-73182c",
+          "gh-agentic-headline-psychologist-5e199b",
+          "gh-agentic-pitch-psychologist-ca8dc7",
+          "gh-agentic-identity-mirror-b0c8b1",
+          "gh-agentic-trust-calibrator-f76b05",
+          "gh-agentic-social-proof-architect-b48929"
+        ]
+      },
+      "dense": {
+        "hit": true,
+        "selected": [
+          "gh-agentic-kubernetes-deployment-84d43d",
+          "gh-agentic-odoo-docker-deployment-c1678d",
+          "gh-agentic-devops-pipeline-builder-bf8436",
+          "gh-agentic-mirrord-b7d126",
+          "gh-agentic-dep-b4042f",
+          "gh-agentic-app-store-changelog-f4ae08",
+          "gh-agentic-container-security-hardening-c8d555",
+          "gh-agentic-cloud-devops-254c97",
+          "gh-agentic-sop-company-wiki-dd0bdc",
+          "gh-claude-docker-development-521176"
+        ]
+      },
+      "hybrid": {
+        "selected": [
+          "gh-agentic-kubernetes-deployment-84d43d",
+          "gh-agentic-odoo-docker-deployment-c1678d",
+          "gh-agentic-devops-pipeline-builder-bf8436",
+          "mcp-builder",
+          "cfd-simulation",
+          "web-artifacts-builder",
+          "gh-agentic-mirrord-b7d126",
+          "webapp-testing",
+          "gh-agentic-dep-b4042f",
+          "gh-agentic-app-store-changelog-f4ae08"
+        ],
+        "hit": true
+      }
+    },
+    {
+      "query": "开发异步的 Python 后端接口，使用数据校验、数据库映射和身份认证",
+      "expected": [
+        "gh-agentic-python-fastapi-development-a46d86"
+      ],
+      "split": "development",
+      "lexical": {
+        "hit": false,
+        "selected": [
+          "gh-agentic-jobgpt-341fa5",
+          "gh-claude-dependency-auditor-de819d",
+          "gh-agentic-pypict-skill-2bc978",
+          "gh-agentic-debugging-strategies-6d5343",
+          "gh-agentic-seek-and-analyze-video-4081e7",
+          "gh-claude-statistical-analyst-1f36af",
+          "math-concept-formalization-and-verification",
+          "gh-scientific-get-available-resources-d2fc26",
+          "gh-agentic-dbt-transformation-patterns-55dcda",
+          "broad-topic-to-evidence-pipeline"
+        ]
+      },
+      "dense": {
+        "hit": true,
+        "selected": [
+          "gh-agentic-python-fastapi-development-a46d86",
+          "gh-claude-senior-backend-aa81c3",
+          "gh-agentic-snowflake-development-d53b3f",
+          "gh-claude-senior-fullstack-31bed5",
+          "gh-agentic-code-audit-ef38da",
+          "gh-claude-atlassian-admin-0ba253",
+          "gh-claude-senior-secops-d0f907",
+          "gh-claude-snowflake-development-f3548a",
+          "gh-scientific-pi-agent-df0a66",
+          "gh-agentic-hipaa-compliance-08d6bb"
+        ]
+      },
+      "hybrid": {
+        "selected": [
+          "gh-agentic-python-fastapi-development-a46d86",
+          "gh-claude-senior-backend-aa81c3",
+          "data-cleaning",
+          "gh-agentic-snowflake-development-d53b3f",
+          "broad-topic-to-evidence-pipeline",
+          "claude-api",
+          "descriptive-stats-csv-summary",
+          "eda-profiling",
+          "gh-claude-snowflake-development-f3548a",
+          "econometric-panel"
+        ],
+        "hit": true
+      }
+    },
+    {
+      "query": "把 PDF 转成 Markdown 或结构化笔记，选择合适的提取和转换工具",
+      "expected": [
+        "gh-agentic-pdf-conversion-router-8ab07e"
+      ],
+      "split": "development",
+      "lexical": {
+        "hit": false,
+        "selected": [
+          "gh-agentic-arrowspace-1efc68",
+          "gh-agentic-team-collaboration-issue-e6f6e0",
+          "gh-agentic-ai-agent-tool-routing-2e8944",
+          "gh-agentic-ai-agents-architect-4f778c",
+          "gh-agentic-clients-accounts-0c0b14",
+          "gh-claude-report-d0382e",
+          "gh-agentic-tutorial-engineer-65be36",
+          "gh-agentic-prototype-ebf329",
+          "gh-agentic-bug-hunter-a02a9c",
+          "causal-inference"
+        ]
+      },
+      "dense": {
+        "hit": true,
+        "selected": [
+          "gh-scientific-markitdown-418a56",
+          "pdf",
+          "gh-agentic-pdf-conversion-router-8ab07e",
+          "research-field-top-ideas-distillation",
+          "gh-claude-book-to-skill-0e8c61",
+          "gh-claude-md-document-b33cbf",
+          "gh-agentic-audio-transcriber-075926",
+          "poster-slides",
+          "gh-agentic-writer-18a282",
+          "gh-claude-md-review-005e1e"
+        ]
+      },
+      "hybrid": {
+        "selected": [
+          "pdf",
+          "gh-scientific-markitdown-418a56",
+          "gh-agentic-pdf-conversion-router-8ab07e",
+          "gh-claude-book-to-skill-0e8c61",
+          "research-field-top-ideas-distillation",
+          "gh-scientific-liteparse-549796",
+          "gh-claude-md-document-b33cbf",
+          "poster-slides",
+          "gh-agentic-audio-transcriber-075926",
+          "gh-agentic-markdown-rendering-ffb206"
+        ],
+        "hit": true
+      }
+    },
+    {
+      "query": "给定氨基酸序列估计蛋白三维构象，并分析置信度和结构误差",
+      "expected": [
+        "protein-structure-predict"
+      ],
+      "split": "heldout",
+      "lexical": {
+        "hit": true,
+        "selected": [
+          "protein-structure-predict",
+          "gh-claude-senior-data-scientist-3337e5",
+          "gh-agentic-odoo-ecommerce-configurator-a3ed47",
+          "gh-agentic-audit-context-building-41e0be",
+          "gh-claude-migration-architect-2582e8",
+          "gh-agentic-pre-release-review-7cdcdb",
+          "gh-claude-business-investment-advisor-924b0b",
+          "md-simulation",
+          "gh-agentic-design-philosophy-a13e3d",
+          "gh-claude-ad-creative-cafe00"
+        ]
+      },
+      "dense": {
+        "hit": true,
+        "selected": [
+          "protein-structure-predict",
+          "sequence-to-lead-structure-based-screening",
+          "gh-scientific-scvi-tools-00c64c",
+          "noncoding-snp-crispr-causal-validation",
+          "dose-response-curve-analysis",
+          "dose-response-ic50-robust-estimation",
+          "dose-response-cleaning-ic50-pipeline",
+          "demo-descriptive-stats-report",
+          "gh-scientific-scikit-bio-b64822",
+          "md-simulation"
+        ]
+      },
+      "hybrid": {
+        "selected": [
+          "protein-structure-predict",
+          "sequence-to-lead-structure-based-screening",
+          "md-simulation",
+          "dose-response-curve-analysis",
+          "dose-response-ic50-robust-estimation",
+          "dose-response-cleaning-ic50-pipeline",
+          "noncoding-snp-crispr-causal-validation",
+          "gh-scientific-scvi-tools-00c64c",
+          "dose-response-curve-cleaning-and-ic50-fitting",
+          "demo-descriptive-stats-report"
+        ],
+        "hit": true
+      }
+    },
+    {
+      "query": "准备受体和候选小分子，确定结合口袋，比较对接打分和相互作用",
+      "expected": [
+        "molecular-docking"
+      ],
+      "split": "heldout",
+      "lexical": {
+        "hit": true,
+        "selected": [
+          "molecular-docking",
+          "sequence-to-lead-structure-based-screening",
+          "gh-scientific-pymatgen-1ba9d5",
+          "gh-scientific-openpiv-3885a2",
+          "gh-agentic-game-audio-4ff73f",
+          "gh-agentic-audio-transcriber-075926",
+          "gh-agentic-spatial-design-0a71a9",
+          "gh-agentic-remotion-captions-cfcd73",
+          "gh-agentic-remotion-docs-a3d7b5",
+          "gh-agentic-crypto-bd-agent-16e4dd"
+        ]
+      },
+      "dense": {
+        "hit": true,
+        "selected": [
+          "molecular-docking",
+          "sequence-to-lead-structure-based-screening",
+          "md-simulation",
+          "materials-screening",
+          "gh-scientific-molecular-dynamics-41fe95",
+          "dose-response-curve-analysis",
+          "molecular-descriptors",
+          "two-group-statistical-testing-with-effect-size",
+          "gh-scientific-molfeat-bb3faf",
+          "gh-claude-experiment-designer-1ac6e4"
+        ]
+      },
+      "hybrid": {
+        "selected": [
+          "molecular-docking",
+          "sequence-to-lead-structure-based-screening",
+          "md-simulation",
+          "materials-screening",
+          "molecular-descriptors",
+          "two-group-statistical-testing-with-effect-size",
+          "gh-scientific-molecular-dynamics-41fe95",
+          "dose-response-curve-analysis",
+          "differential-expression",
+          "protein-structure-predict"
+        ],
+        "hit": true
+      }
+    },
+    {
+      "query": "已经有文章草稿，需要逐条核对参考文献的 DOI、作者、年份和引用结论",
+      "expected": [
+        "citation-verify"
+      ],
+      "split": "heldout",
+      "lexical": {
+        "hit": true,
+        "selected": [
+          "citation-verify",
+          "gh-agentic-vendor-contractor-management-f8aeef",
+          "gh-agentic-rich-elicitation-f0eb6d",
+          "gh-agentic-accesslint-diff-204982",
+          "gh-agentic-crossframe-dialogue-071daf",
+          "gh-agentic-falsify-e78238",
+          "gh-agentic-patterns-f576b4",
+          "gh-agentic-nanobanana-ppt-skills-7ab003",
+          "gh-agentic-template-library-f98a90",
+          "gh-scientific-paper-lookup-70612a"
+        ]
+      },
+      "dense": {
+        "hit": true,
+        "selected": [
+          "citation-verify",
+          "research-field-top-ideas-distillation",
+          "arxiv-monitor",
+          "peer-review-response",
+          "scientific-writing",
+          "literature-review",
+          "historical-scientist-work-survey",
+          "gh-agentic-git-pr-review-877d80",
+          "gh-claude-content-production-961bae",
+          "poster-slides"
+        ]
+      },
+      "hybrid": {
+        "selected": [
+          "citation-verify",
+          "arxiv-monitor",
+          "research-field-top-ideas-distillation",
+          "literature-review",
+          "peer-review-response",
+          "historical-scientist-work-survey",
+          "scientific-writing",
+          "paper-deep-read",
+          "poster-slides",
+          "competition-profile-research"
+        ],
+        "hit": true
+      }
+    },
+    {
+      "query": "时间到事件的数据有删失，想画生存曲线和做风险比例回归",
+      "expected": [
+        "survival-analysis"
+      ],
+      "split": "heldout",
+      "lexical": {
+        "hit": true,
+        "selected": [
+          "survival-analysis",
+          "gh-agentic-stellar-escrow-timelock-348651",
+          "dft-formation-energy",
+          "gh-agentic-tool-design-733eb8",
+          "gh-agentic-zod-validation-expert-8ceddb",
+          "gh-agentic-rust-7e979f",
+          "gh-agentic-git-hooks-automation-5bc469",
+          "gh-agentic-skill-sentinel-fb8f30",
+          "gh-claude-eval-1b3d8f",
+          "gh-agentic-makepad-skills-ae9671"
+        ]
+      },
+      "dense": {
+        "hit": true,
+        "selected": [
+          "survival-analysis",
+          "missing-data-baseline-modeling",
+          "dose-response-curve-analysis",
+          "gh-agentic-weather-data-lifecycle-management-340ae1",
+          "competition-data-science-pipeline",
+          "competition-reproducible-ml-pipeline",
+          "gh-agentic-monte-carlo-prevent-c022e9",
+          "descriptive-stats-csv-and-plot",
+          "gh-agentic-weather-model-data-fetching-283f66",
+          "remote-sensing-index"
+        ]
+      },
+      "hybrid": {
+        "selected": [
+          "survival-analysis",
+          "eda-profiling",
+          "dose-response-curve-analysis",
+          "missing-data-baseline-modeling",
+          "data-cleaning",
+          "competition-data-science-pipeline",
+          "causal-inference",
+          "gh-agentic-weather-data-lifecycle-management-340ae1",
+          "leakage-guard",
+          "statistical-testing"
+        ],
+        "hit": true
+      }
+    }
+  ],
+  "hit_at_10": {
+    "lexical": 0.5,
+    "dense": 1.0,
+    "hybrid": 1.0
+  },
+  "splits": {
+    "heldout": {
+      "lexical": 1.0,
+      "dense": 1.0,
+      "hybrid": 1.0
+    },
+    "development": {
+      "lexical": 0.25,
+      "dense": 1.0,
+      "hybrid": 1.0
+    }
+  }
+}

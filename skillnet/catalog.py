@@ -79,7 +79,8 @@ def normalize_relations(skills: list[Skill]) -> list[Skill]:
 
 def build_seed_skills() -> list[Skill]:
     """把目录数据实例化成 Skill 对象，校验目标存在性并规范化关系图。"""
-    skills = [Skill(**item) for item in RAW]
+    from seed.business_skills import RAW as BUSINESS_RAW
+    skills = [Skill(**item) for item in [*RAW, *BUSINESS_RAW]]
     names = {s.name for s in skills}
     for s in skills:
         valid = [(rel, tgt) for rel, tgt in s.relations if tgt in names]
@@ -213,7 +214,10 @@ class SkillLibrary:
             "edge_types": edge_types,
             "generations": gen,
             "avg_quality": round(qsum / max(1, len(snapshot)), 3),
-            "evolved": sum(1 for s in snapshot if s.source != "seed"),
+            "evolved": sum(1 for s in snapshot if s.generation > 0 and s.source != 'github'),
+            "community": sum(1 for s in snapshot if s.source == 'github'),
+            "community_verified": sum(1 for s in snapshot if s.source == 'github' and s.stats.get('exec_ok', 0) > 0),
+            "community_repositories": len({s.metadata.get('repository') for s in snapshot if s.source == 'github'}),
             "total_pulls": int(sum(s.stats.get("pulls", 0) for s in snapshot)),
         }
 
@@ -230,10 +234,10 @@ class SkillLibrary:
             "schema_version": 2,
             "saved_at": time.strftime("%Y-%m-%d %H:%M:%S"),
             # 只存演化技能：种子技能由代码提供，这样升级代码时种子更新能自动生效
-            "evolved": [s.to_dict() for s in snapshot if s.source != "seed"],
+            "evolved": [s.to_dict() for s in snapshot if s.source not in ('seed', 'github')],
             # 统计（老虎机回填的实测奖励）按技能名单独存
             "stats": {
-                s.name: s.stats for s in snapshot if s.stats.get("pulls", 0) > 0
+                s.name: s.stats for s in snapshot if s.stats.get("pulls", 0) > 0 or s.stats.get('verified_improvement_receipt')
             },
         }
         text = json.dumps(payload, ensure_ascii=False, indent=1)
@@ -254,9 +258,14 @@ class SkillLibrary:
         return str(p)
 
     @classmethod
-    def load(cls, path=None) -> "SkillLibrary":
+    def load(cls, path=None, *, include_community=True) -> "SkillLibrary":
         """种子技能 + 演化技能 + 统计，三层叠加。"""
         lib = cls(build_seed_skills())
+        community = pathlib.Path(__file__).resolve().parents[1] / 'seed/community/catalog.json'
+        if include_community and community.exists():
+            for item in json.loads(community.read_text(encoding='utf-8')):
+                lib.add(Skill.from_dict(item))
+            lib.dirty = False
         p = pathlib.Path(path or config.LIBRARY_FILE)
         if not p.exists():
             # 克隆仓库后首次运行：library.json 不在版本库（随运行变化），
@@ -316,6 +325,12 @@ def export_skill_dirs(lib: SkillLibrary, out_dir=None) -> int:
     for s in lib:
         d = base / s.name
         d.mkdir(parents=True, exist_ok=True)
+        if s.source == 'github':
+            import shutil
+            root = pathlib.Path(__file__).resolve().parents[1]
+            package = (root / s.metadata.get('package_path', '')).resolve()
+            if package.is_relative_to((root / 'seed/community/skills').resolve()):
+                shutil.copytree(package, d, dirs_exist_ok=True)
         (d / "SKILL.md").write_text(s.to_skill_md(), encoding="utf-8")
         n += 1
     return n

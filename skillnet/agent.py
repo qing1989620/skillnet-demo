@@ -27,6 +27,13 @@ _RESP_SCHEMA = """{
      "action": "这一步具体做什么",
      "key_params": ["关键参数或阈值及取值理由"],
      "expected_output": "这一步应产出什么",
+     "depends_on": [0],
+     "input_files": ["上游真实文件名；第一步没有则空数组"],
+     "output_files": ["本步生成的真实文件名；验证步骤可以为空"],
+     "data_checks": [],
+     "requires": [],
+     "ensures": [],
+     "verification": ["只验收本步职责，必须引用实际产物的可验证判据"],
      "check": "怎么判断这一步做对了"}
   ],
   "risks": ["可能出错的地方与应对"],
@@ -120,7 +127,8 @@ class ResearchAgent:
                     f"  适用：{'；'.join(s.use_when[:2])}"
                 )
             else:
-                blocks.append(s.to_skill_md())
+                definition = s.to_skill_md()
+                blocks.append(definition[:16000] + ('\n[剩余正文和资源在技能详情中按需查看]' if len(definition) > 16000 else ''))
         if style == STYLE_CARDS:
             return "【可用技能（仅元数据）】\n" + "\n".join(blocks)
         # 技能正文会被整段放进提示词，而这些正文可能是模型生成的（进化技能）。
@@ -143,6 +151,7 @@ class ResearchAgent:
         skills: list[str] | None = None,
         style: str = STYLE_GUIDED,
         max_tokens: int = 3200,
+        max_steps: int | None = None,
     ) -> AgentRun:
         skills = skills or []
         if style == STYLE_BARE:
@@ -161,15 +170,44 @@ class ResearchAgent:
             )
 
         user = f"【研究任务】\n{task}\n\n"
+        from .contracts import planning_data_facts
+        input_facts = planning_data_facts(task)
+        if input_facts:
+            user += "【服务端解析的输入事实（不是目标答案）】\n" + json.dumps(input_facts, ensure_ascii=False) + "\n\n"
+        from .state_policy import input_catalog
+        catalog = input_catalog(task)
+        if catalog:
+            user += "【执行器会挂载的真实输入文件清单】\n" + json.dumps(catalog,ensure_ascii=False) + "\n"
+            user += "引用原始输入时必须使用清单中的实际 file（例如 raw_predictions.csv），input_files 与 requires.file 均一致；不能把‘输入原始 CSV’这种描述写成文件名。\n\n"
         if block:
             user += block + "\n\n"
         user += (
             "请给出完成该任务的研究执行方案。要求：\n"
-            "1. 步骤控制在 4–6 步，每步写明用什么技能或工具、关键参数取值及理由；\n"
+            f"1. 步骤控制在 {max_steps or '4–6'} 步以内，每步写明用什么技能或工具、关键参数取值及理由；\n"
             "2. 必须包含对结果可靠性的验证方式（如何证明这一步没做错）；\n"
             "3. 指出最可能出错的环节及应对，不超过 4 条；\n"
             "4. 若提供了技能且与任务匹配，步骤中的 skill 字段必须填对应的技能名；\n"
-            "5. 控制篇幅，直接输出 JSON，不要写解释性文字。\n\n"
+            "5. depends_on 使用从 0 开始的上游步骤编号；由真实文件读写决定依赖，禁止下游重新生成上游数据。\n"
+            "6. input_files/output_files 写具体路径名；verification 只包含本步负责的验收，别把后续绘图要求放到清洗步骤。\n"
+            "验收中的行数、去重数量和合计应由实际输入计算并回读比较；不要心算后把未经证实的常数写成验收目标。"
+            "保留用户给出的明确数值要求；不得为了满足你自己推算的数字删改有效数据。\n"
+            "仅选择已有 CSV 的部分列并排序、要求原值不变时，必须添加 data_checks："
+            "[{\"kind\":\"csv_projection\",\"input_file\":\"输入名.csv\",\"output_file\":\"输出名.csv\","
+            "\"keys\":[\"唯一键列\"],\"columns\":[\"保留值列\"],\"atol\":1e-9,\"sort_by\":\"排序列\",\"ascending\":true}]。"
+            "聚合、舍入或变更数值的步骤不要声明原值投影。\n"
+            "7. requires/ensures 是待检验的状态契约，分别约束实际输入/本步产物。仅声明用户要求或技能确有需要的条件。"
+            "支持 {kind:csv_schema,file:文件名,columns:[列名],exact:false}、csv_nonempty、"
+            "csv_no_missing(columns)、csv_unique(columns)、csv_numeric_range(column,min,max)、"
+            "csv_values_in(column,values:[0,1])、csv_disjoint_groups(entity,group)、file_exists；每条都必须有 kind/file，file 必须等于真实 input_files/output_files 文件名，不能用描述或别名。"
+            "仅有自然语言的条件不要伪造机器判据，保留在 risks。未知或不满足的前置条件会在代码生成之前阻断。"
+            "csv_* 条件只能用于 .csv 文件；web_sources.json 等 JSON 输入只能声明 file_exists，JSON 结构由分析代码读取校验，不能把 sources 当 CSV 表头。"
+            "这些声明不是参考答案，产物仍会被独立核验。\n"
+            "csv_numeric_range 对该列每一行生效：不要给混合单位的长表 value 列统一设 [0,1]；"
+            "例如 metric,value 同时含 n/tp/fp 等计数与 accuracy/f1 等比例，计数可大于1，此时仅声明结构与非空，数值正确性交给独立逐指标复算。"
+            "清洗前的原始数据允许有重复/缺失/泄漏，只有清洗后才声明唯一/无缺失/无泄漏。\n"
+            "若要求保留原列原值，按原始字符串读写（例如 csv.DictReader 或 pandas dtype=str），0.10 不要改写为 0.1；"
+            "保持剩余记录的原始顺序，检查时与原输入逐单元格核对。\n"
+            "8. 控制篇幅，直接输出 JSON，不要写解释性文字。\n\n"
             f"严格输出 JSON：\n{_RESP_SCHEMA}"
         )
 
@@ -181,6 +219,19 @@ class ResearchAgent:
             model=self.model,
         )
         parsed = _safe_json(raw)
+        errors = _format_contract_errors(parsed)
+        if errors:
+            # Repair a malformed plan at the planning boundary, instead of
+            # deleting checks or spending executor attempts on impossible IO.
+            repair = chat([{'role':'system','content':system}, {'role':'user','content':user},
+                {'role':'assistant','content':raw}, {'role':'user','content':
+                    '方案格式检查未通过：'+json.dumps(errors,ensure_ascii=False)+
+                    '。请保留任务目标、数据与必要验收，修正文件类型不匹配的条件；JSON不可按CSV验收，已有来源指纹由宿主核对。完整输出修正JSON。'}],
+                role='executor', temperature=0.1, max_tokens=max_tokens, model=self.model)
+            parsed = _safe_json(repair)
+            parsed['_plan_repairs'] = [dict(reason='file_predicate_type_mismatch', errors=errors,
+                                           remaining=_format_contract_errors(parsed))]
+            raw = repair
         return AgentRun(task=task, style=style, skills=skills, response=parsed, raw=raw)
 
     # ------------------------------------------------------------------
@@ -221,6 +272,22 @@ def _safe_json(text: str) -> dict[str, Any]:
     except Exception:  # noqa: BLE001
         return {"approach": text.strip()[:1500], "steps": [], "risks": [], "artifacts": [],
                 "_parse_failed": True}
+
+
+def _format_contract_errors(plan: dict) -> list[str]:
+    errors = []
+    for index, step in enumerate(plan.get('steps') or []):
+        if not isinstance(step, dict):
+            continue
+        for field in ('requires','ensures'):
+            specs = step.get(field)
+            if not isinstance(specs, list):
+                continue
+            for spec in specs:
+                if (isinstance(spec, dict) and str(spec.get('kind','')).startswith('csv_')
+                        and not str(spec.get('file','')).lower().endswith('.csv')):
+                    errors.append(f'步骤{index+1}.{field}: {spec.get("kind")} 不能检查非CSV文件 {spec.get("file")}')
+    return errors[:16]
 
 
 def dumps(obj: Any) -> str:

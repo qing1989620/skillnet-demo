@@ -401,7 +401,7 @@ def main() -> int:
             probe.stats.update({"pulls": 7, "reward_sum": 5.6, "best": 0.9})
             lib.save(tmp)
             assert tmp.exists(), "落盘失败"
-            back = SkillLibrary.load(tmp)
+            back = SkillLibrary.load(tmp, include_community=False)
             assert set(back.names()) == set(lib.names()), "往返后技能集合不一致"
             assert back.get("literature-review").stats.get("pulls") == 7, "运行统计未持久化"
             assert "scrna-qc-clustering" in back, "种子技能丢失"
@@ -440,14 +440,18 @@ def main() -> int:
 
         def writer(tid: int) -> None:
             i = 0
-            while not stop.is_set():
-                i += 1
-                c_lib.add(Skill(name=f"verify-conc-{tid}-{i}", description="并发自检技能",
-                                domain="自检", steps=["a", "b", "c"], source="distill"))
-                holder["r"] = Retriever(c_lib).build()      # 模拟 refresh_runtime 的原子替换
-                if i % 30 == 0:
-                    c_lib.remove(f"verify-conc-{tid}-{i}")
-                time.sleep(0.0005)
+            try:
+                while not stop.is_set():
+                    i += 1
+                    c_lib.add(Skill(name=f"verify-conc-{tid}-{i}", description="并发自检技能",
+                                    domain="自检", steps=["a", "b", "c"], source="distill"))
+                    holder["r"] = Retriever(c_lib).build()      # 模拟 refresh_runtime 的原子替换
+                    if i % 30 == 0:
+                        c_lib.remove(f"verify-conc-{tid}-{i}")
+                    time.sleep(0.0005)
+            except Exception as exc:
+                errs.append(f"writer {tid}: {type(exc).__name__}: {exc}")
+                stop.set()
 
         def reader() -> None:
             while not stop.is_set():
@@ -467,6 +471,7 @@ def main() -> int:
         stop.set()
         for t in ts:
             t.join(timeout=5)
+        assert not any(t.is_alive() for t in ts), "并发自检线程没有在超时内停止"
         assert not errs, f"并发出错 {len(errs)} 次，例如 {errs[:2]}"
         return f"2 写 4 读并发 2 秒：零异常、零幽灵技能（库规模做到 {len(c_lib)}）"
     check("并发读写安全", t_concurrency)
