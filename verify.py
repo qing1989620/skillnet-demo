@@ -433,47 +433,51 @@ def main() -> int:
     check("检索索引跨进程可复现", t_stable_hash)
 
     def t_concurrency():
-        c_lib = SkillLibrary(build_seed_skills())
-        holder = {"r": Retriever(c_lib).build()}
-        errs: list[str] = []
-        stop = threading.Event()
+        # This BM25 snapshot race tests library/index publication, not model-loading latency.
+        # Dense routing is exercised by the earlier three-mode retrieval check.
+        from unittest.mock import patch
+        with patch.dict(os.environ, {"SKILLNET_ENCODER": "lexical"}):
+            c_lib = SkillLibrary(build_seed_skills())
+            holder = {"r": Retriever(c_lib).build()}
+            errs: list[str] = []
+            stop = threading.Event()
 
-        def writer(tid: int) -> None:
-            i = 0
-            try:
-                while not stop.is_set():
-                    i += 1
-                    c_lib.add(Skill(name=f"verify-conc-{tid}-{i}", description="并发自检技能",
-                                    domain="自检", steps=["a", "b", "c"], source="distill"))
-                    holder["r"] = Retriever(c_lib).build()      # 模拟 refresh_runtime 的原子替换
-                    if i % 30 == 0:
-                        c_lib.remove(f"verify-conc-{tid}-{i}")
-                    time.sleep(0.0005)
-            except Exception as exc:
-                errs.append(f"writer {tid}: {type(exc).__name__}: {exc}")
-                stop.set()
-
-        def reader() -> None:
-            while not stop.is_set():
+            def writer(tid: int) -> None:
+                i = 0
                 try:
-                    sel = holder["r"].search("单细胞测序质控", k=5, mode="bm25").selected
-                    for nm in sel:
-                        if c_lib.get(nm) is None:
-                            errs.append(f"幽灵技能 {nm}")
-                except Exception as exc:  # noqa: BLE001
-                    errs.append(f"{type(exc).__name__}: {exc}")
+                    while not stop.is_set():
+                        i += 1
+                        c_lib.add(Skill(name=f"verify-conc-{tid}-{i}", description="并发自检技能",
+                                        domain="自检", steps=["a", "b", "c"], source="distill"))
+                        holder["r"] = Retriever(c_lib).build()      # 模拟 refresh_runtime 的原子替换
+                        if i % 30 == 0:
+                            c_lib.remove(f"verify-conc-{tid}-{i}")
+                        time.sleep(0.0005)
+                except Exception as exc:
+                    errs.append(f"writer {tid}: {type(exc).__name__}: {exc}")
+                    stop.set()
 
-        ts = [threading.Thread(target=writer, args=(i,)) for i in range(2)]
-        ts += [threading.Thread(target=reader, daemon=True) for _ in range(4)]
-        for t in ts:
-            t.start()
-        time.sleep(2.0)
-        stop.set()
-        for t in ts:
-            t.join(timeout=5)
-        assert not any(t.is_alive() for t in ts), "并发自检线程没有在超时内停止"
-        assert not errs, f"并发出错 {len(errs)} 次，例如 {errs[:2]}"
-        return f"2 写 4 读并发 2 秒：零异常、零幽灵技能（库规模做到 {len(c_lib)}）"
+            def reader() -> None:
+                while not stop.is_set():
+                    try:
+                        sel = holder["r"].search("单细胞测序质控", k=5, mode="bm25").selected
+                        for nm in sel:
+                            if c_lib.get(nm) is None:
+                                errs.append(f"幽灵技能 {nm}")
+                    except Exception as exc:  # noqa: BLE001
+                        errs.append(f"{type(exc).__name__}: {exc}")
+
+            ts = [threading.Thread(target=writer, args=(i,)) for i in range(2)]
+            ts += [threading.Thread(target=reader, daemon=True) for _ in range(4)]
+            for t in ts:
+                t.start()
+            time.sleep(2.0)
+            stop.set()
+            for t in ts:
+                t.join(timeout=5)
+            assert not any(t.is_alive() for t in ts), "并发自检线程没有在超时内停止"
+            assert not errs, f"并发出错 {len(errs)} 次，例如 {errs[:2]}"
+            return f"2 写 4 读并发 2 秒：零异常、零幽灵技能（库规模做到 {len(c_lib)}）"
     check("并发读写安全", t_concurrency)
 
     def t_ledger_isolation():

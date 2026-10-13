@@ -42,7 +42,7 @@ def write_manifest(root=ROOT):
         rows.append({'path': name, 'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest(),
                      'mutable': name in MUTABLE})
     tree = digest(rows)
-    manifest = {'schema_version': 1, 'release': '2026.10.13-complete.15',
+    manifest = {'schema_version': 1, 'release': '2026.10.13-complete.16',
                 'source_tree_sha256': tree, 'files': rows}
     raw = (json.dumps(manifest, ensure_ascii=False, indent=2) + '\n').encode()
     safe_path(root, MANIFEST).write_bytes(raw)

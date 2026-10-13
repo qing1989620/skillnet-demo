@@ -1,6 +1,6 @@
 # 完整交付与一致性核验
 
-交付版：`2026.10.13-complete.15`。日期：2026-10-13。
+交付版：`2026.10.13-complete.16`。日期：2026-10-13。
 
 ## 本次纠正的问题
 
@@ -35,7 +35,7 @@ python run.py --version
 python run.py --no-browser
 ```
 
-校验应显示 `ok: true`、`differences: []` 和本页的发布标识。`/api/health` 应显示首页版本 `2026-10-13.complete.15`、1,881 个初始技能，`encoder.kind=dense-onnx`，以及 `distribution.release / git_commit / source_tree_sha256`。Git 克隆的提交还应与 `git ls-remote origin refs/heads/main` 相同。
+校验应显示 `ok: true`、`differences: []` 和本页的发布标识。`/api/health` 应显示首页版本 `2026-10-13.complete.16`、1,881 个初始技能，`encoder.kind=dense-onnx`，以及 `distribution.release / git_commit / source_tree_sha256`。Git 克隆的提交还应与 `git ls-remote origin refs/heads/main` 相同。
 
 若 8848 已被旧服务占用，新启动会明确退出；先关闭旧服务，或运行 `python run.py --port 9000 --no-browser`，然后打开 9000。浏览器“连接设置”若曾指定其他服务器，也需核对连接目标。
 

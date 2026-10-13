@@ -6,7 +6,7 @@
 
 **[产品说明](docs/product-guide.md)**：产品定位、业务价值、核心能力、应用场景与 S1 协同方式。环境配置、页面操作及工程验证见 **[技术部署与操作说明](docs/technical-operations.md)**。
 
-**完整交付版：`2026.10.13-complete.15`。** [正式 PDF](docs/SkillNet-S1-产品说明.pdf) 与全部前后端、技能资源和部署文件一起维护。全新克隆后先运行 `python tools/verify_delivery.py --strict-runtime`，确认文件 SHA-256 清单一致，再启动服务。安装版本、旧服务排查和交付范围见 [完整交付核验](docs/delivery-parity.md)。
+**完整交付版：`2026.10.13-complete.16`。** [正式 PDF](docs/SkillNet-S1-产品说明.pdf) 与全部前后端、技能资源和部署文件一起维护。全新克隆后先运行 `python tools/verify_delivery.py --strict-runtime`，确认文件 SHA-256 清单一致，再启动服务。安装版本、旧服务排查和交付范围见 [完整交付核验](docs/delivery-parity.md)。
 
 **10 月 13 日：产品总览与正式文档更新。** 界面预览已同步当前内核实验室和球体能力网络；交付依据按能力资产、真实产物、经验准入和工程验证组织。产品说明与技术操作文档分别维护，页面更新及断点观察见 [本次界面核验](docs/frontend-audit/delivery-ui-review.md)。
 
