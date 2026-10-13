@@ -219,6 +219,17 @@ def test_s1_scope_and_queued_cancel_without_model_calls(monkeypatch,tmp_path):
     sha=hashlib.sha256(raw).hexdigest()
     prior.artifacts=[runtime.Artifact(name='step1_monthly_summary.csv',sha256=sha,bytes=len(raw),logical_name='monthly_summary.csv')]
     server.run_store().save(prior)
+    foreign=runtime.Run('foreign-history','other project data','foreign')
+    foreign.staged['s1_identity']=other.to_dict();foreign.status='COMPLETED'
+    foreign.artifacts=list(prior.artifacts)
+    foreign_folder=tmp_path/'runs'/foreign.run_id/'artifacts';foreign_folder.mkdir(parents=True)
+    (foreign_folder/'step1_monthly_summary.csv').write_bytes(raw)
+    server.run_store().save(foreign)
+    denied=json.dumps({'task':'继续使用上一轮数据','history':[
+        {'q':foreign.task,'run_id':foreign.run_id},{'q':prior.task,'run_id':prior.run_id}]}).encode()
+    response=client.post('/api/runs',content=denied,
+        headers=headers('POST','/api/runs',denied)|{'Content-Type':'application/json'})
+    assert response.status_code==404
     payload=json.dumps({'task':'read previous file','max_steps':1,'artifact_refs':[
         dict(run_id='prior-run',name='step1_monthly_summary.csv',sha256=sha)]}).encode()
     response=client.post('/api/runs',content=payload,headers=headers('POST','/api/runs',payload)|{'Content-Type':'application/json'})

@@ -1,6 +1,6 @@
 # 完整交付与一致性核验
 
-交付版：`2026.10.13-complete.17`。日期：2026-10-13。
+交付版：`2026.10.13-complete.18`。日期：2026-10-13。
 
 ## 本次纠正的问题
 
@@ -35,7 +35,7 @@ python run.py --version
 python run.py --no-browser
 ```
 
-校验应显示 `ok: true`、`differences: []` 和本页的发布标识。`/api/health` 应显示首页版本 `2026-10-13.complete.17`、1,881 个初始技能，`encoder.kind=dense-onnx`，以及 `distribution.release / git_commit / source_tree_sha256`。Git 克隆的提交还应与 `git ls-remote origin refs/heads/main` 相同。
+校验应显示 `ok: true`、`differences: []` 和本页的发布标识。`/api/health` 应显示首页版本 `2026-10-13.complete.18`、1,881 个初始技能，`encoder.kind=dense-onnx`，以及 `distribution.release / git_commit / source_tree_sha256`。Git 克隆的提交还应与 `git ls-remote origin refs/heads/main` 相同。
 
 若 8848 已被旧服务占用，新启动会明确退出；先关闭旧服务，或运行 `python run.py --port 9000 --no-browser`，然后打开 9000。浏览器“连接设置”若曾指定其他服务器，也需核对连接目标。
 
@@ -54,3 +54,7 @@ python tools/package_deliverable.py --output ../SkillNet-S1-Demo.zip
 ## 多行问题与结构化数据
 
 完整实机录像前发现首页的单行输入会删除示例 CSV 换行，真实效果契约阻断了错误输入产生的结果。17 版将任务输入改为多行文本框，保留完整示例与粘贴数据；Enter 提交，Shift+Enter 换行，输入法选字不提交。重新通过真实前端入口执行科研复核并核验产物。
+
+## 连续追问与输入继承
+
+18 版修复第三轮追问缺少原始表格的问题。明确引用前文且没有指定 artifact_refs 时，从最近三轮已授权运行中合并文件；相同逻辑名取最近版本，最多携带 16 个文件。跨轮输入可以继续继承，历史前缀不再无限增长。显式指定版本仍优先；每个来源的身份范围、登记 SHA 和物理字节均重新核验，缺失或篡改拒绝入队。失败的最新一轮不会遮蔽较早的有效上下文文件。新增真实 HTTP 边界回归覆盖五轮继承、新版本覆盖、失败后继续引用、篡改拦截与较早上下文越权拒绝。

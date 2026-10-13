@@ -1874,17 +1874,21 @@ def create_run(req: RunReq, request: Request = None) -> Any:
                         max_seconds=req.max_seconds, max_attempts_per_step=3)
     try:
         refs = list(req.artifact_refs)
-        if not refs and web_research.uses_history(req.task) and req.history and req.history[-1].run_id:
-            previous = run_store().get(req.history[-1].run_id)
-            if previous is None or identity and previous.staged.get('s1_identity') != identity:
-                raise HTTPException(404, '上一轮运行不存在或无权访问')
-            if previous:
-                latest = {}
+        if not refs and web_research.uses_history(req.task) and req.history:
+            latest = {}
+            for turn in req.history[-3:]:
+                if not turn.run_id:
+                    continue
+                previous = run_store().get(turn.run_id)
+                if previous is None or identity and previous.staged.get('s1_identity') != identity:
+                    raise HTTPException(404, '上下文运行不存在或无权访问')
                 for artifact in sorted(previous.artifacts, key=lambda a:(a.version,a.from_step if a.from_step is not None else -1,a.name)):
-                    if artifact.kind != '跨轮输入' and artifact.sha256:
-                        latest[artifact.logical_name or artifact.name] = artifact
-                refs = [ArtifactRef(run_id=previous.run_id, name=a.name, sha256=a.sha256)
-                        for a in latest.values()][:16]
+                    if artifact.sha256:
+                        logical = artifact.logical_name or artifact.name
+                        latest.pop(logical, None)
+                        latest[logical] = ArtifactRef(run_id=previous.run_id, name=artifact.name,
+                                                     sha256=artifact.sha256)
+            refs = list(latest.values())[-16:]
         seen_destinations = set()
         for ref in refs:
             previous = run_store().get(ref.run_id)
@@ -1898,7 +1902,9 @@ def create_run(req: RunReq, request: Request = None) -> Any:
                 raise HTTPException(400, '非法的文件引用')
             if not origin.is_file() or pipeline._sha256_file(origin) != ref.sha256:
                 raise HTTPException(409, '跨轮文件内容校验失败')
-            history_name = 'history_' + ref.run_id[-8:] + '_' + ref.name
+            # Preserve provenance without growing another prefix on every turn.
+            base_name = re.sub(r'^(?:history_[A-Za-z0-9-]{1,8}_)+', '', Path(ref.name).name)
+            history_name = 'history_' + ref.run_id[-8:] + '_' + base_name
             logical = artifact.logical_name or re.sub(r'^step\d+_', '', artifact.name)
             if logical in seen_destinations:
                 raise HTTPException(409, '同一逻辑文件存在多个历史版本，请明确选择一个版本')

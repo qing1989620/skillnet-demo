@@ -187,6 +187,64 @@ def test_explicit_artifact_reference_is_respected_even_for_new_topic(api):
     assert queued[-1][1]['artifact_refs'] == [reference]
 
 
+def test_original_inputs_survive_multiple_followups_and_latest_output_wins(api):
+    client, root, store, _queued = api
+    previous = previous_run(root, store)
+    history = [{'q':previous.task, 'run_id':previous.run_id}]
+    names = []
+    for index in range(5):
+        response = client.post('/api/runs', json={'task':'继续读取上一轮的 data.csv',
+            'history':history}, headers=AUTH)
+        assert response.status_code == 200, response.text
+        current = store.get(response.json()['run_id'])
+        assert len(current.artifacts) == 1
+        copied = current.artifacts[0]
+        assert copied.logical_name == 'data.csv' and copied.version == 2
+        assert copied.sha256 == previous.artifacts[-1].sha256
+        names.append(copied.name)
+        downloaded = client.get(f'/api/runs/{current.run_id}/artifacts/{copied.name}', headers=AUTH)
+        assert downloaded.status_code == 200 and downloaded.content == b'value\n2\n'
+        history.append({'q':current.task, 'run_id':current.run_id})
+    assert max(map(len, names)) == min(map(len, names))
+    # An updated output with the same logical name replaces its inherited version.
+    data = b'value\n3\n'
+    name = 'step1_data.csv'
+    (root/'runs'/current.run_id/'artifacts'/name).write_bytes(data)
+    current.artifacts.append(runtime.Artifact(name=name, logical_name='data.csv', kind='csv',
+        bytes=len(data),sha256=hashlib.sha256(data).hexdigest(),from_step=0,version=3))
+    store.save(current)
+    response = client.post('/api/runs',json={'task':'继续读取上一轮的 data.csv','history':history},headers=AUTH)
+    final = store.get(response.json()['run_id'])
+    assert len(final.artifacts) == 1 and final.artifacts[0].version == 3
+    assert (root/'runs'/final.run_id/'artifacts'/final.artifacts[0].name).read_bytes() == data
+
+
+def test_failed_latest_turn_does_not_hide_earlier_explicit_context_files(api):
+    client, root, store, _queued = api
+    previous = previous_run(root, store)
+    failed = runtime.Run(run_id='failed-turn-12345678',task='上一轮排版失败',task_fp='failed',status='FAILED')
+    store.save(failed)
+    response = client.post('/api/runs',json={'task':'继续使用上一轮数据','history':[
+        {'q':previous.task,'run_id':previous.run_id},{'q':failed.task,'run_id':failed.run_id}]},headers=AUTH)
+    assert response.status_code == 200, response.text
+    current = store.get(response.json()['run_id'])
+    assert len(current.artifacts) == 1
+    assert current.artifacts[0].sha256 == previous.artifacts[-1].sha256
+
+
+def test_modified_inherited_file_is_rejected_before_another_job_is_queued(api):
+    client, root, store, queued = api
+    previous = previous_run(root, store)
+    response = client.post('/api/runs',json={'task':'继续使用上一轮数据','history':[
+        {'q':previous.task,'run_id':previous.run_id}]},headers=AUTH)
+    inherited = store.get(response.json()['run_id'])
+    (root/'runs'/inherited.run_id/'artifacts'/inherited.artifacts[0].name).write_bytes(b'tampered')
+    before = len(queued)
+    response = client.post('/api/runs',json={'task':'继续使用上一轮数据','history':[
+        {'q':inherited.task,'run_id':inherited.run_id}]},headers=AUTH)
+    assert response.status_code == 409 and len(queued) == before
+
+
 def test_explicit_stale_sha_never_copies_or_enqueues(api):
     client, root, store, queued = api
     previous = previous_run(root, store)
