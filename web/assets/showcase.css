@@ -107,9 +107,9 @@
 .show-replay-controls select { color:#c9dfeb; background:#102d3d; border:1px solid #456273; border-radius:4px; padding:3px; }
 .show-composer { border-top:1px solid var(--sc-line); padding:18px 24px; background:#05121b88; }
 .show-composer > .ws-composer { padding:0; background:none; border:0; }
-.show-composer .inputline input { min-width:0; width:100%; background:#ffffff08; border:1px solid #b2d0dd33; border-radius:8px; font-size:13px; color:#edf5fa; padding:13px 16px; }
-.show-composer .inputline input::placeholder { color:#8ca4b9; }
-.show-composer .inputline input:focus { outline:1px solid #8fdcc9; border-color:#8fdcc9; }
+.show-composer .inputline :is(input, textarea) { min-width:0; width:100%; background:#ffffff08; border:1px solid #b2d0dd33; border-radius:8px; font-size:13px; color:#edf5fa; padding:13px 16px; }
+.show-composer .inputline :is(input, textarea)::placeholder { color:#8ca4b9; }
+.show-composer .inputline :is(input, textarea):focus { outline:1px solid #8fdcc9; border-color:#8fdcc9; }
 .show-composer .runbtn { background:#96e4d2; color:#0b2830; border-radius:8px; padding:0 20px; font-size:12px; letter-spacing:0; white-space:nowrap; }
 .show-composer .runbtn:disabled { background:#35515d; color:#c1d7de; }
 .show-prompts { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:11px; }

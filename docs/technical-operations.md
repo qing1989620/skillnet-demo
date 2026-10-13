@@ -4,7 +4,7 @@
 
 ## 1. 页面与服务入口
 
-完整交付版为 `2026.10.13-complete.16`，初始技能库与本机交付快照一致，共 1,881 个技能。全新克隆后先执行 `python tools/verify_delivery.py --strict-runtime`；启动时显示项目目录、交付版本和 Git 提交，`/api/health` 的 `distribution` 提供同一进程的版本信息。正式 PDF 见 [产品说明 PDF](SkillNet-S1-产品说明.pdf)，完整范围见 [交付一致性说明](delivery-parity.md)。
+完整交付版为 `2026.10.13-complete.17`，初始技能库与本机交付快照一致，共 1,881 个技能。全新克隆后先执行 `python tools/verify_delivery.py --strict-runtime`；启动时显示项目目录、交付版本和 Git 提交，`/api/health` 的 `distribution` 提供同一进程的版本信息。正式 PDF 见 [产品说明 PDF](SkillNet-S1-产品说明.pdf)，完整范围见 [交付一致性说明](delivery-parity.md)。
 
 | 页面 | 路径 | 主要内容 |
 |---|---|---|

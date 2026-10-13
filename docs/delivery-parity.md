@@ -1,6 +1,6 @@
 # 完整交付与一致性核验
 
-交付版：`2026.10.13-complete.16`。日期：2026-10-13。
+交付版：`2026.10.13-complete.17`。日期：2026-10-13。
 
 ## 本次纠正的问题
 
@@ -35,7 +35,7 @@ python run.py --version
 python run.py --no-browser
 ```
 
-校验应显示 `ok: true`、`differences: []` 和本页的发布标识。`/api/health` 应显示首页版本 `2026-10-13.complete.16`、1,881 个初始技能，`encoder.kind=dense-onnx`，以及 `distribution.release / git_commit / source_tree_sha256`。Git 克隆的提交还应与 `git ls-remote origin refs/heads/main` 相同。
+校验应显示 `ok: true`、`differences: []` 和本页的发布标识。`/api/health` 应显示首页版本 `2026-10-13.complete.17`、1,881 个初始技能，`encoder.kind=dense-onnx`，以及 `distribution.release / git_commit / source_tree_sha256`。Git 克隆的提交还应与 `git ls-remote origin refs/heads/main` 相同。
 
 若 8848 已被旧服务占用，新启动会明确退出；先关闭旧服务，或运行 `python run.py --port 9000 --no-browser`，然后打开 9000。浏览器“连接设置”若曾指定其他服务器，也需核对连接目标。
 
@@ -50,3 +50,7 @@ python tools/package_deliverable.py --output ../SkillNet-S1-Demo.zip
 打包工具只读取已经核验的同一份清单，不再用手写目录白名单遗漏组件，也不递归带入本机秘密和缓存。解压后可运行相同校验命令；GitHub 下载 ZIP 没有 `.git`，此时 `git_commit` 为 null，仍能用清单摘要确定产品版本。
 
 正式文档为 [产品说明 PDF](SkillNet-S1-产品说明.pdf)。`docs/SkillNet-S1-guide.pdf`、`docs/SkillNet-S1-交付报告.pdf`、`report/SkillNet-S1-report.pdf` 与 `output/pdf/SkillNet-S1-产品说明.pdf` 是同版 PDF 的兼容路径，内容哈希一致。
+
+## 多行问题与结构化数据
+
+完整实机录像前发现首页的单行输入会删除示例 CSV 换行，真实效果契约阻断了错误输入产生的结果。17 版将任务输入改为多行文本框，保留完整示例与粘贴数据；Enter 提交，Shift+Enter 换行，输入法选字不提交。重新通过真实前端入口执行科研复核并核验产物。

@@ -333,9 +333,10 @@
   .risk-box, .art-box { margin-top: 10px; font-size: 12px; padding: 9px 12px; border: 1px solid var(--line); background: var(--soft); color: var(--ink2); }
   .risk-box b, .art-box b { color: var(--brand); }
   .risk-box li, .art-box li { margin: 2px 0; }
+  .inputline textarea { resize:vertical; min-height:64px; max-height:180px; line-height:1.6; }
   .inputline { display: flex; gap: 10px; align-items: stretch; }
-  .inputline input { flex: 1; border: 1px solid var(--line); padding: 11px 14px; font: inherit; font-size: 13.5px; background: #fff; color: var(--ink); }
-  .inputline input:focus { outline: 2px solid var(--brand2); border-color: transparent; }
+  .inputline :is(input, textarea) { flex: 1; border: 1px solid var(--line); padding: 11px 14px; font: inherit; font-size: 13.5px; background: #fff; color: var(--ink); }
+  .inputline :is(input, textarea):focus { outline: 2px solid var(--brand2); border-color: transparent; }
 
   /* ---------- 幕4 对比 ---------- */
   table.vs { width: 100%; border-collapse: collapse; font-size: 12.5px; background: #fff; }
@@ -668,10 +669,10 @@
       <div class="ws-composer">
 
         <div class="inputline">
-          <input id="task" aria-label="研究任务或追问" placeholder="提出一个问题，观察技能如何被选择、执行、验收与沉淀…" onkeydown="if(event.key==='Enter' && !event.isComposing)wsSubmit()">
+          <textarea id="task" rows="2" aria-label="研究任务或追问" placeholder="提出一个问题，观察技能如何被选择、执行、验收与沉淀…" onkeydown="if(event.key==='Enter' &amp;&amp; !event.shiftKey &amp;&amp; !event.isComposing){event.preventDefault();wsSubmit();}"></textarea>
           <button class="runbtn" id="run" onclick="wsSubmit()">启动能力网络 ↗</button>
         </div>
-        <div class="show-prompts"><span>从一个问题开始</span><button type="button" data-show-prompt="stats">数据分析与图表</button><button type="button" data-show-prompt="plan">机器学习方案</button><button type="button" data-show-prompt="follow">结合结果继续追问</button><button type="button" onclick="wsNew()">新建对话</button></div><div class="runhint" id="hint">每次真实调用 DeepSeek，约 20–60 秒；追问自动携带本会话此前问答（最多 3 轮）</div>
+        <div class="show-prompts"><span>从一个问题开始</span><button type="button" data-show-prompt="stats">数据分析与图表</button><button type="button" data-show-prompt="plan">机器学习方案</button><button type="button" data-show-prompt="follow">结合结果继续追问</button><button type="button" onclick="wsNew()">新建对话</button></div><div class="runhint" id="hint">Enter 提交 · Shift+Enter 换行；真实模型调用约 20–60 秒；追问携带此前问答（最多 3 轮）</div>
         <div class="errmsg" id="err"></div>
       </div>
 </div>
@@ -979,7 +980,7 @@
 </section>
 
 <script>
-const PAGE_VER = "2026-10-13.complete.16";
+const PAGE_VER = "2026-10-13.complete.17";
 const API = location.origin;
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
