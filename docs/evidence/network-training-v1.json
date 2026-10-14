@@ -1,0 +1,554 @@
+{
+  "version": "skill-network-research-report-v1",
+  "scope": "Official SkillNet-Gym attached-skill retrieval in a frozen local mixed catalog; not execution success or the full SkillRouter benchmark",
+  "protocol_sha256": "5706178b4d193b05d629089cf3226cdb103332a53e880f8183037a9d797821d3",
+  "features_sha256": "5547d49acd759b486e292f6540459df1f59f817a3cc695cebfb372a2e59c1d7b",
+  "selected_by_validation": "text-29",
+  "corpus": {
+    "skills": 2043,
+    "edges": 2957,
+    "tasks": 159,
+    "splits": {
+      "train": 106,
+      "validation": 21,
+      "test": 32
+    },
+    "edge_records": 2957,
+    "unique_typed_edges": 2539
+  },
+  "comparison": {
+    "mean_recall5_gain": 0.2359375,
+    "wins": 18,
+    "losses": 3,
+    "ties": 11,
+    "all_tasks_non_regressing": false,
+    "query_sign_p_diagnostic": 0.0007448196411132812,
+    "independent_gold_package_families": 14,
+    "family_equal_weight_mean_gain": 0.19999999999999998,
+    "family_wins": 8,
+    "family_losses": 2,
+    "family_sign_p": 0.0546875,
+    "statistical_boundary": "Post-hoc descriptive family analysis, not an anytime-valid or execution improvement certificate"
+  },
+  "training_seconds": 12.313,
+  "device": "cuda",
+  "torch_version": "2.7.1+cu118",
+  "status": "research_candidate_not_admitted",
+  "serving_changed": false,
+  "rewards_applied": 0,
+  "limitations": [
+    "159 synthesized tasks, not human user preferences",
+    "attached packages are reference retrieval targets, not causal contribution evidence",
+    "original Gym dependency gold edges were not present in this ZIP subset; co_use is not a dependency",
+    "upstream skill content stays in local research storage; licenses are not assumed transferable",
+    "A routing relevance gain does not establish downstream task improvement",
+    "No user data or artificial model scores enter this training run"
+  ],
+  "baseline_test": {
+    "recall5": 0.359375,
+    "precision5": 0.21875,
+    "mrr": 0.4787049559108383,
+    "exact_set": 0.03125,
+    "tasks": 32
+  },
+  "selected_test": {
+    "recall5": 0.5953124999999999,
+    "precision5": 0.41875,
+    "mrr": 0.7674851190476191,
+    "exact_set": 0.0625,
+    "tasks": 32
+  },
+  "ablations": [
+    {
+      "name": "text-17",
+      "seed": 17,
+      "graph": false,
+      "validation_recall5": 0.5238095238095238,
+      "test_recall5": 0.54375,
+      "selected_epoch": 5,
+      "parameter_delta_l2": 9.87504635570607
+    },
+    {
+      "name": "text-29",
+      "seed": 29,
+      "graph": false,
+      "validation_recall5": 0.5396825396825397,
+      "test_recall5": 0.5953124999999999,
+      "selected_epoch": 7,
+      "parameter_delta_l2": 10.196726827336947
+    },
+    {
+      "name": "graph-17",
+      "seed": 17,
+      "graph": true,
+      "validation_recall5": 0.5047619047619046,
+      "test_recall5": 0.540625,
+      "selected_epoch": 0,
+      "parameter_delta_l2": 12.816265544406745
+    },
+    {
+      "name": "graph-29",
+      "seed": 29,
+      "graph": true,
+      "validation_recall5": 0.48095238095238085,
+      "test_recall5": 0.49375,
+      "selected_epoch": 0,
+      "parameter_delta_l2": 12.556040056970064
+    }
+  ],
+  "admission": {
+    "version": "improvement-gates-v1",
+    "policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+    "operator": "AND",
+    "eligible": false,
+    "reward_applied": false,
+    "points": 0,
+    "passed": 7,
+    "total": 12,
+    "blockers": [
+      "frozen",
+      "regression",
+      "gain",
+      "reliable",
+      "novel"
+    ],
+    "gates": [
+      {
+        "id": "frozen",
+        "title": "标准提前冻结",
+        "rule": "执行前锁定判据、阈值、模型与评测代码，禁止事后改规则",
+        "status": "unknown",
+        "reason": "训练/验证/测试已冻结；首轮协议未绑定奖励政策指纹，不能补写历史证据",
+        "evidence": {}
+      },
+      {
+        "id": "independent",
+        "title": "独立重算结果",
+        "rule": "从真实产物重算冻结的业务参考，模型评分不能替代",
+        "status": "passed",
+        "reason": "独立实现重新读取权重和真实冻结参考，复算每条 Recall@5；仅证明路由匹配",
+        "evidence": {
+          "recomputed_rows": 64
+        }
+      },
+      {
+        "id": "integrity",
+        "title": "物理产物可信",
+        "rule": "实际文件存在、路径合法、SHA-256 与登记一致",
+        "status": "passed",
+        "reason": "权重、语料、协议与特征指纹一致",
+        "evidence": {
+          "weights_sha256": "b9e7622390ddc71633586f71bce15960940801808693eea2189d2835c267f3f5",
+          "evidence_sha256": "d7ca56e6d551c61b39c920d5684eb048509110f2f9c5781da4159da8a8238f8c"
+        }
+      },
+      {
+        "id": "complete",
+        "title": "执行完整合格",
+        "rule": "候选全部步骤完成、必要验收通过、无删步取消或预算超限",
+        "status": "passed",
+        "reason": "全部冻结测试题均已报告，没有删除退步样本",
+        "evidence": {
+          "tasks": 32
+        }
+      },
+      {
+        "id": "version",
+        "title": "绑定技能版本",
+        "rule": "对照组与候选组实际执行冻结的精确技能版本",
+        "status": "passed",
+        "reason": "核验绑定同一候选权重、编码器和公开语料版本",
+        "evidence": {
+          "model_id": "network-b9e7622390ddc716"
+        }
+      },
+      {
+        "id": "fair",
+        "title": "对照条件公平",
+        "rule": "模型、预算、动作依赖相同，并按预定次序交替执行",
+        "status": "passed",
+        "reason": "同一候选池、查询、冻结文本编码器；候选仅增加已声明的小适配器",
+        "evidence": {
+          "candidate_count": 2043,
+          "paid_llm_calls": 0
+        }
+      },
+      {
+        "id": "heldout",
+        "title": "任务未用于生成",
+        "rule": "排除当前任务、记录的祖先训练任务和实际来源运行",
+        "status": "passed",
+        "reason": "测试问题和标签未进入梯度或检查点选择；公开技能文档用于传导式预训练",
+        "evidence": {
+          "test_task_overlap": 0
+        }
+      },
+      {
+        "id": "suite",
+        "title": "完整报告样本",
+        "rule": "至少 5 道留出任务各 2 组配对，禁止漏报、重用或挑选赢家",
+        "status": "passed",
+        "reason": "完整报告全部任务族，两次确定性复算；按任务族计算独立样本量",
+        "evidence": {
+          "families": 14,
+          "deterministic_rechecks": 2
+        }
+      },
+      {
+        "id": "regression",
+        "title": "每组没有退步",
+        "rule": "每一组候选结果均不低于对应基线，提升不能抵消退步",
+        "status": "failed",
+        "reason": "域内与外部探针均存在退步，必须拦截",
+        "evidence": {
+          "in_domain_regressions": 3,
+          "external_regressions": 20
+        }
+      },
+      {
+        "id": "gain",
+        "title": "增益达到门槛",
+        "rule": "按不同任务等权计算平均增益，至少 0.02",
+        "status": "failed",
+        "reason": "域内改善没有迁移为外部来源改善，不能给通用底座认证",
+        "evidence": {
+          "in_domain_family_gain": 0.19999999999999998,
+          "external_gain": -0.05768253968253967
+        }
+      },
+      {
+        "id": "reliable",
+        "title": "多任务一致提升",
+        "rule": "以不同任务为统计单位，单侧符号检验 p ≤ 0.05",
+        "status": "unknown",
+        "reason": "任务族符号检验未过 0.05，且该统计分析未预注册；不能用逐题 p 值冒充可靠增益",
+        "evidence": {
+          "family_sign_p": 0.0546875
+        }
+      },
+      {
+        "id": "novel",
+        "title": "同一版本只奖一次",
+        "rule": "积分只给被验证版本；相同版本不能重放或换报告重复领奖",
+        "status": "unknown",
+        "reason": "尚无模型版本准入与奖励凭证，不生成积分",
+        "evidence": {}
+      }
+    ],
+    "context": {
+      "kind": "research_routing_candidate",
+      "model_id": "network-b9e7622390ddc716",
+      "scope": "冻结路由参考的模型研究检查，不是下游执行能力证书；确定性复算两次不增加独立样本数",
+      "protocol_sha256": "5706178b4d193b05d629089cf3226cdb103332a53e880f8183037a9d797821d3"
+    },
+    "reward_scope": "此技能版本在冻结评测范围内的相对提升积分；不代表全网或所有任务提升",
+    "ranking_weights_deployed": false,
+    "serving_changed": false,
+    "external_transfer": "540c6aa51c47889f38dbdcf3347abe29521de6ef25f6ef4c576804fddc4c2627",
+    "audit_sha256": "c2b7a8febff98459da4bdadebe087a8111a64cab197579b359865265d4e344e9"
+  },
+  "external_transfer": {
+    "version": "network-transfer-probe-v1",
+    "model_id": "network-b9e7622390ddc716",
+    "weights_sha256": "b9e7622390ddc71633586f71bce15960940801808693eea2189d2835c267f3f5",
+    "external_corpus_sha256": "e85f9b4200891d5fe9fa69827058f2a856f973303444a5108548cf10b4985be9",
+    "training_forbidden": true,
+    "scope": "Reduced-pool transfer probe only. Not the published 79,141-skill Hard benchmark.",
+    "candidate_count": 2000,
+    "tasks": 75,
+    "baseline_recall5": 0.5592698412698413,
+    "trained_recall5": 0.5015873015873016,
+    "mean_gain": -0.05768253968253967,
+    "wins": 7,
+    "losses": 20,
+    "ties": 48,
+    "upstream_graded_relevance_boundary": "Some graded degraded/* identifiers are absent from the released Hard pool. Only existing ground-truth IDs are used for Recall/MRR; no invented variants or nDCG claims.",
+    "model_retrained": false,
+    "served": false,
+    "reward": 0,
+    "report_sha256": "540c6aa51c47889f38dbdcf3347abe29521de6ef25f6ef4c576804fddc4c2627"
+  },
+  "selected_training_curve": [
+    {
+      "phase": "public_document_pretraining",
+      "epoch": 1,
+      "loss": 4.211341291666031
+    },
+    {
+      "phase": "public_document_pretraining",
+      "epoch": 2,
+      "loss": 1.8600065782666206
+    },
+    {
+      "phase": "public_document_pretraining",
+      "epoch": 3,
+      "loss": 1.5860965922474861
+    },
+    {
+      "phase": "public_document_pretraining",
+      "epoch": 4,
+      "loss": 1.5513835772871971
+    },
+    {
+      "phase": "public_document_pretraining",
+      "epoch": 5,
+      "loss": 1.5084483176469803
+    },
+    {
+      "phase": "public_document_pretraining",
+      "epoch": 6,
+      "loss": 1.4370263069868088
+    },
+    {
+      "phase": "public_document_pretraining",
+      "epoch": 7,
+      "loss": 1.3581279590725899
+    },
+    {
+      "phase": "public_document_pretraining",
+      "epoch": 8,
+      "loss": 1.2897022888064384
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 1,
+      "loss": 2.6871829509735106,
+      "validation_recall5": 0.47619047619047616
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 2,
+      "loss": 1.9935187101364136,
+      "validation_recall5": 0.3555555555555556
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 3,
+      "loss": 1.7784894704818726,
+      "validation_recall5": 0.34444444444444444
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 4,
+      "loss": 1.5577762126922607,
+      "validation_recall5": 0.3793650793650794
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 5,
+      "loss": 1.3752820491790771,
+      "validation_recall5": 0.36984126984126986
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 6,
+      "loss": 1.2683668375015258,
+      "validation_recall5": 0.13174603174603175
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 7,
+      "loss": 1.4529315948486328,
+      "validation_recall5": 0.5396825396825397
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 8,
+      "loss": 1.2391271829605102,
+      "validation_recall5": 0.20317460317460317
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 9,
+      "loss": 0.9663673162460327,
+      "validation_recall5": 0.2111111111111111
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 10,
+      "loss": 0.9192932844161987,
+      "validation_recall5": 0.3952380952380953
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 11,
+      "loss": 0.7887436509132385,
+      "validation_recall5": 0.32222222222222224
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 12,
+      "loss": 0.6749269545078278,
+      "validation_recall5": 0.2253968253968254
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 13,
+      "loss": 0.616302239894867,
+      "validation_recall5": 0.2095238095238095
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 14,
+      "loss": 0.528222131729126,
+      "validation_recall5": 0.26507936507936514
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 15,
+      "loss": 0.4455560684204102,
+      "validation_recall5": 0.28095238095238095
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 16,
+      "loss": 0.4023960292339325,
+      "validation_recall5": 0.35555555555555557
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 17,
+      "loss": 0.3800238728523254,
+      "validation_recall5": 0.26507936507936514
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 18,
+      "loss": 0.3365105867385864,
+      "validation_recall5": 0.22539682539682543
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 19,
+      "loss": 0.30176629722118375,
+      "validation_recall5": 0.2412698412698413
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 20,
+      "loss": 0.25856356620788573,
+      "validation_recall5": 0.2650793650793651
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 21,
+      "loss": 0.22842011451721192,
+      "validation_recall5": 0.26507936507936514
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 22,
+      "loss": 0.20849916934967042,
+      "validation_recall5": 0.2888888888888889
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 23,
+      "loss": 0.18686057031154632,
+      "validation_recall5": 0.23174603174603176
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 24,
+      "loss": 0.160515895485878,
+      "validation_recall5": 0.24920634920634926
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 25,
+      "loss": 0.15131263434886932,
+      "validation_recall5": 0.26507936507936514
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 26,
+      "loss": 0.13507364690303802,
+      "validation_recall5": 0.23968253968253966
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 27,
+      "loss": 0.12142695486545563,
+      "validation_recall5": 0.2174603174603175
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 28,
+      "loss": 0.11538412868976593,
+      "validation_recall5": 0.19365079365079363
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 29,
+      "loss": 0.1040016382932663,
+      "validation_recall5": 0.1841269841269841
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 30,
+      "loss": 0.1028454378247261,
+      "validation_recall5": 0.2095238095238095
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 31,
+      "loss": 0.0894069328904152,
+      "validation_recall5": 0.2095238095238095
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 32,
+      "loss": 0.08589423596858978,
+      "validation_recall5": 0.1746031746031746
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 33,
+      "loss": 0.07817363739013672,
+      "validation_recall5": 0.1841269841269841
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 34,
+      "loss": 0.07473825067281722,
+      "validation_recall5": 0.1841269841269841
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 35,
+      "loss": 0.07023205682635307,
+      "validation_recall5": 0.1841269841269841
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 36,
+      "loss": 0.06756915301084518,
+      "validation_recall5": 0.1841269841269841
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 37,
+      "loss": 0.0645221047103405,
+      "validation_recall5": 0.2095238095238095
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 38,
+      "loss": 0.05968282520771027,
+      "validation_recall5": 0.1746031746031746
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 39,
+      "loss": 0.058387082815170285,
+      "validation_recall5": 0.1746031746031746
+    },
+    {
+      "phase": "train_partition_finetuning",
+      "epoch": 40,
+      "loss": 0.05539476275444031,
+      "validation_recall5": 0.20793650793650792
+    }
+  ],
+  "report_sha256": "61c2a2345dbae5b74965d49e9c9b600a7c3564bf5e3e460f830ebe8de39ad135"
+}

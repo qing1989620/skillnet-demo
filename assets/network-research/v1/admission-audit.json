@@ -1,0 +1,151 @@
+{
+  "version": "improvement-gates-v1",
+  "policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+  "operator": "AND",
+  "eligible": false,
+  "reward_applied": false,
+  "points": 0,
+  "passed": 7,
+  "total": 12,
+  "blockers": [
+    "frozen",
+    "regression",
+    "gain",
+    "reliable",
+    "novel"
+  ],
+  "gates": [
+    {
+      "id": "frozen",
+      "title": "标准提前冻结",
+      "rule": "执行前锁定判据、阈值、模型与评测代码，禁止事后改规则",
+      "status": "unknown",
+      "reason": "训练/验证/测试已冻结；首轮协议未绑定奖励政策指纹，不能补写历史证据",
+      "evidence": {}
+    },
+    {
+      "id": "independent",
+      "title": "独立重算结果",
+      "rule": "从真实产物重算冻结的业务参考，模型评分不能替代",
+      "status": "passed",
+      "reason": "独立实现重新读取权重和真实冻结参考，复算每条 Recall@5；仅证明路由匹配",
+      "evidence": {
+        "recomputed_rows": 64
+      }
+    },
+    {
+      "id": "integrity",
+      "title": "物理产物可信",
+      "rule": "实际文件存在、路径合法、SHA-256 与登记一致",
+      "status": "passed",
+      "reason": "权重、语料、协议与特征指纹一致",
+      "evidence": {
+        "weights_sha256": "b9e7622390ddc71633586f71bce15960940801808693eea2189d2835c267f3f5",
+        "evidence_sha256": "d7ca56e6d551c61b39c920d5684eb048509110f2f9c5781da4159da8a8238f8c"
+      }
+    },
+    {
+      "id": "complete",
+      "title": "执行完整合格",
+      "rule": "候选全部步骤完成、必要验收通过、无删步取消或预算超限",
+      "status": "passed",
+      "reason": "全部冻结测试题均已报告，没有删除退步样本",
+      "evidence": {
+        "tasks": 32
+      }
+    },
+    {
+      "id": "version",
+      "title": "绑定技能版本",
+      "rule": "对照组与候选组实际执行冻结的精确技能版本",
+      "status": "passed",
+      "reason": "核验绑定同一候选权重、编码器和公开语料版本",
+      "evidence": {
+        "model_id": "network-b9e7622390ddc716"
+      }
+    },
+    {
+      "id": "fair",
+      "title": "对照条件公平",
+      "rule": "模型、预算、动作依赖相同，并按预定次序交替执行",
+      "status": "passed",
+      "reason": "同一候选池、查询、冻结文本编码器；候选仅增加已声明的小适配器",
+      "evidence": {
+        "candidate_count": 2043,
+        "paid_llm_calls": 0
+      }
+    },
+    {
+      "id": "heldout",
+      "title": "任务未用于生成",
+      "rule": "排除当前任务、记录的祖先训练任务和实际来源运行",
+      "status": "passed",
+      "reason": "测试问题和标签未进入梯度或检查点选择；公开技能文档用于传导式预训练",
+      "evidence": {
+        "test_task_overlap": 0
+      }
+    },
+    {
+      "id": "suite",
+      "title": "完整报告样本",
+      "rule": "至少 5 道留出任务各 2 组配对，禁止漏报、重用或挑选赢家",
+      "status": "passed",
+      "reason": "完整报告全部任务族，两次确定性复算；按任务族计算独立样本量",
+      "evidence": {
+        "families": 14,
+        "deterministic_rechecks": 2
+      }
+    },
+    {
+      "id": "regression",
+      "title": "每组没有退步",
+      "rule": "每一组候选结果均不低于对应基线，提升不能抵消退步",
+      "status": "failed",
+      "reason": "域内与外部探针均存在退步，必须拦截",
+      "evidence": {
+        "in_domain_regressions": 3,
+        "external_regressions": 20
+      }
+    },
+    {
+      "id": "gain",
+      "title": "增益达到门槛",
+      "rule": "按不同任务等权计算平均增益，至少 0.02",
+      "status": "failed",
+      "reason": "域内改善没有迁移为外部来源改善，不能给通用底座认证",
+      "evidence": {
+        "in_domain_family_gain": 0.19999999999999998,
+        "external_gain": -0.05768253968253967
+      }
+    },
+    {
+      "id": "reliable",
+      "title": "多任务一致提升",
+      "rule": "以不同任务为统计单位，单侧符号检验 p ≤ 0.05",
+      "status": "unknown",
+      "reason": "任务族符号检验未过 0.05，且该统计分析未预注册；不能用逐题 p 值冒充可靠增益",
+      "evidence": {
+        "family_sign_p": 0.0546875
+      }
+    },
+    {
+      "id": "novel",
+      "title": "同一版本只奖一次",
+      "rule": "积分只给被验证版本；相同版本不能重放或换报告重复领奖",
+      "status": "unknown",
+      "reason": "尚无模型版本准入与奖励凭证，不生成积分",
+      "evidence": {}
+    }
+  ],
+  "context": {
+    "kind": "research_routing_candidate",
+    "model_id": "network-b9e7622390ddc716",
+    "scope": "冻结路由参考的模型研究检查，不是下游执行能力证书；确定性复算两次不增加独立样本数",
+    "protocol_sha256": "5706178b4d193b05d629089cf3226cdb103332a53e880f8183037a9d797821d3"
+  },
+  "reward_scope": "此技能版本在冻结评测范围内的相对提升积分；不代表全网或所有任务提升",
+  "ranking_weights_deployed": false,
+  "serving_changed": false,
+  "external_transfer": "540c6aa51c47889f38dbdcf3347abe29521de6ef25f6ef4c576804fddc4c2627",
+  "audit_sha256": "c2b7a8febff98459da4bdadebe087a8111a64cab197579b359865265d4e344e9"
+}

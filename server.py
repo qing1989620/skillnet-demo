@@ -236,6 +236,7 @@ def _startup_sweep() -> None:
 async def s1_authorization(request: Request, call_next):
     if S1_SIGNING_KEY and (request.url.path.startswith('/api/runs')
                            or request.url.path.startswith('/api/frontier')
+                           or request.url.path.startswith('/api/personal')
                            or request.url.path == '/api/candidates'):
         try:
             body = bytearray()
@@ -271,6 +272,9 @@ async def _no_cache_html(request: Any, call_next: Any) -> Any:
     started = time.perf_counter()
     resp = await call_next(request)
     resp.headers["X-Request-ID"] = request_id
+    if request.url.path.startswith('/api/personal'):
+        resp.headers['Cache-Control'] = 'private, no-store'
+        resp.headers['Vary'] = 'Authorization, X-SkillNet-Token, X-S1-User, X-S1-Project'
     resp.headers["X-Content-Type-Options"] = "nosniff"
     resp.headers["Referrer-Policy"] = "no-referrer"
     elapsed_ms = int((time.perf_counter() - started) * 1000)
@@ -1832,6 +1836,20 @@ def _run_worker(run_id: str, req: "RunReq") -> None:
         except Exception:
             log.exception("run_id=%s 奖励门禁收尾核验失败",run.run_id)
         try:
+            personal_identity = run.staged.get('personal_learning_identity')
+            if personal_identity:
+                from skillnet.personal_api import personal_store
+                observation = personal_store().observe(personal_identity, 'run_observation', run.task,
+                    dict(run_id=run.run_id, status=run.status,
+                         actual_skills=sorted({s.skill for s in run.steps if s.skill and s.skill != 'manual'}),
+                         assessment_sha256=(run.staged.get('quality_assessment') or {}).get('evidence_sha256'),
+                         gates_passed=(run.staged.get('reward_gates') or {}).get('passed', 0),
+                         gates_total=12, label_kind='unlabeled_execution_observation'),
+                    event_id='run-' + run.run_id)
+                run.staged['personal_observation'] = observation
+        except Exception:
+            log.exception('run_id=%s 个人经验记录未完成', run.run_id)
+        try:
             BUS.publish(run, "run.finished", status=run.status, duration_ms=run.duration_ms,
                         cost=run.cost_yuan, tokens=run.tokens,
                         steps=run.step_stats(), artifacts=len(run.artifacts))
@@ -1870,6 +1888,11 @@ def create_run(req: RunReq, request: Request = None) -> Any:
     identity = getattr(request.state, 's1_identity', None) if request else None
     if identity:
         run.staged['s1_identity'] = identity
+    if request is not None:
+        try:
+            run.staged['personal_learning_identity'] = _personal_identity(request)
+        except HTTPException:
+            pass  # Nonlocal, unsigned callers never receive the local profile.
     run.budget = Budget(max_cost_yuan=req.max_cost_yuan, max_llm_calls=req.max_llm_calls,
                         max_seconds=req.max_seconds, max_attempts_per_step=3)
     try:
@@ -2148,3 +2171,28 @@ def api_config() -> dict[str, Any]:
         "domains": sorted({s.domain for s in lib()}),
         "modes": ["bm25", "hybrid", "fabric"],
     }
+
+
+# Personal data is bound to the verified S1 scope. A browser cannot select an
+# arbitrary owner by supplying IDs in the body or query string.
+def _personal_identity(request: Request) -> dict[str, str]:
+    if S1_SIGNING_KEY:
+        identity = getattr(request.state, 's1_identity', None)
+        if not identity:
+            raise HTTPException(401, '需要 S1 后端签名身份')
+        return dict(identity)
+    if request.client is None or request.client.host not in ('127.0.0.1', '::1'):
+        raise HTTPException(403, '个人网络仅供本机使用；多人接入需要 S1 签名身份')
+    return dict(tenant='local', user='local', project='default')
+
+
+from skillnet.personal_api import make_router as make_personal_router
+app.include_router(make_personal_router(lib, lambda: STATE['retriever'], _personal_identity, require_token))
+
+
+@app.get('/personal')
+def personal_page() -> Any:
+    path = WEB_DIR / 'personal.html'
+    if not path.exists():
+        raise HTTPException(404, '个人网络页面尚未生成')
+    return FileResponse(str(path))
