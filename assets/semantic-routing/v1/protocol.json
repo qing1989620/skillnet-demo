@@ -1,0 +1,59 @@
+{
+  "version": "semantic-intent-routing-v1",
+  "created_at_ns": 1791967812380751000,
+  "cases_sha256": "f6bc1ce057905ca851118f0e11ffa521c3651cb16d49803f9cfc33a5d0b5d372",
+  "code_sha256": {
+    "skillnet/semantic_routing.py": "c1197383469bd616d2924ca64212af96ef80d5bce012800664166fcb94bb27b0",
+    "tools/semantic_routing_lab.py": "0aca6bb283babb9e8bfae8fd3a12b57a7841c5f6e0f6394d6e76a40b57909274",
+    "skillnet/utility_ops.py": "4329b26be1106064766a55808225fce4541972af6d33067643de89f554710c52",
+    "skillnet/utility_oracle.py": "4dca9f0f6acc055053a25c63ec37099ee8f0e8b4dbd68fccdb078b75220e4c92",
+    "skillnet/semantic.py": "233a5e17e73a5a678921c1fc8b91230997c3cc233bc827d2458ed868654806a2"
+  },
+  "source": {
+    "url": "https://archive.ics.uci.edu/static/public/109/wine.zip",
+    "page": "https://archive.ics.uci.edu/dataset/109/wine",
+    "license": "CC BY 4.0",
+    "zip_sha256": "2bae62c4481220623579d4c4fb36b55652b6b75e06e49fa1981b8198362dfdab",
+    "data_sha256": "6be6b1203f3d51df0b553a70e57b8a723cd405683958204f96d23d7cd6aea659",
+    "measurement": "alcohol (second column)",
+    "warning": "IDs, splits, groups and defects are controlled transforms; shared Wine rows are not independent domains."
+  },
+  "encoder": {
+    "repository": "Xenova/multilingual-e5-small",
+    "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78"
+  },
+  "training": {
+    "alpha_grid": [
+      0.01,
+      0.1,
+      1.0,
+      10.0
+    ],
+    "selection": "highest calibration exact-label accuracy, tie larger alpha",
+    "labels": "manually authored requested effects, not execution utility"
+  },
+  "llm": {
+    "model_alias": "deepseek-chat",
+    "temperature": 0.2,
+    "max_tokens": 180,
+    "repeats": 2,
+    "arms": [
+      "plain",
+      "retrieved_examples",
+      "trained_hint"
+    ],
+    "max_requests": 144,
+    "retries": 0,
+    "request_timeout_seconds": 90
+  },
+  "admission": {
+    "minimum_delivery_gain_over_each_control": 0.02,
+    "maximum_regression_pairs": 0,
+    "maximum_unsafe_boundary_actions": 0,
+    "maximum_input_token_overhead": 0.15,
+    "immutable_backbone_revision_required": true
+  },
+  "primary": "paired exact physical delivery on 16 valid tasks; report 8 boundary tasks separately",
+  "scope": "one manually authored task family, one held-out measurement source, not cross-domain or SOTA",
+  "protocol_sha256": "aaf3802d3f66ffaf9d913e091d55799580f2a23bb8c1bf8bfce3fd9ade0388a7"
+}

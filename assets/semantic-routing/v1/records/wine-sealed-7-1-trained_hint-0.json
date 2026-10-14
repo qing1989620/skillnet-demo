@@ -1,0 +1,75 @@
+{
+  "task_id": "wine-sealed-7-1",
+  "repeat": 0,
+  "arm": "trained_hint",
+  "prompt_sha256": "628d394d69e346c51a854efe1c00d5dda66047691e57ff443959c742d395e46a",
+  "started_at_ns": 1791967872838231900,
+  "status": "completed",
+  "quality": 1,
+  "correct": true,
+  "execution": {
+    "version": "conditional-tabular-operators-v1",
+    "mask": 7,
+    "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+    "input_sha256": "37ea3b0ad58cf63656a72c3b41242b0df6295c88fa5f44d69369e3aeca59a47c",
+    "started_at_ns": 1791967873661488400,
+    "finished_at_ns": 1791967873731479400,
+    "status": "completed",
+    "stderr": "",
+    "artifacts": {
+      "output.csv": {
+        "sha256": "24c0502b585514c384d63bf2d7cbf45d7611e454f6888bb11556235f1356b36d",
+        "bytes": 683
+      },
+      "summary.csv": {
+        "sha256": "aa6fbc4854b1ea83ceb63ea8bfbd8096182146f12b2317d365f562c8722752d4",
+        "bytes": 165
+      }
+    },
+    "operator_calls": 4
+  },
+  "http_status": 200,
+  "response_model": "deepseek-flash",
+  "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+  "prompt_tokens": 910,
+  "completion_tokens": 10,
+  "response": "{\"mask\":7,\"reject\":false}",
+  "finish_reason": "stop",
+  "action": {
+    "mask": 7,
+    "reject": false
+  },
+  "oracle": {
+    "version": "conditional-tabular-oracle-v1",
+    "input_sha256": "37ea3b0ad58cf63656a72c3b41242b0df6295c88fa5f44d69369e3aeca59a47c",
+    "deliverable": true,
+    "reference_valid": true,
+    "state": "passed",
+    "checks": [
+      {
+        "id": "original_cells_and_policy",
+        "passed": true
+      },
+      {
+        "id": "summary_schema",
+        "passed": true
+      },
+      {
+        "id": "numeric_group_G0",
+        "passed": true
+      },
+      {
+        "id": "numeric_group_G1",
+        "passed": true
+      },
+      {
+        "id": "numeric_group_G2",
+        "passed": true
+      }
+    ],
+    "output_sha256": "24c0502b585514c384d63bf2d7cbf45d7611e454f6888bb11556235f1356b36d",
+    "summary_sha256": "aa6fbc4854b1ea83ceb63ea8bfbd8096182146f12b2317d365f562c8722752d4"
+  },
+  "directory": "executions/wine-sealed-7-1-trained_hint-0",
+  "finished_at_ns": 1791967873731479400
+}

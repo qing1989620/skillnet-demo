@@ -177,3 +177,9 @@ Linux Docker 执行隔离已通过 CI 实机验证；Windows Docker、S1 SSO、�
 ```
 
 检查会读取文件实际快照并记录 SHA。匹配分组不存在、分组全空或非空值非法时，现有执行管线在付费代码生成前阻断。
+
+## 自然语言路由实测与登记程序数据检查
+
+入口 `/utility#semantic-study`。GET `/api/frontier/utility/semantic` 返回三组对照、原始失败与完整十二门；POST `/api/frontier/utility/semantic/replay` 仅接受 `{"case_id":"wine-sealed-0-0","repeat":0}`，repeat 只能为整数 0 或 1。需要连接令牌，并发与其他能力实验共用上限。它使用历史真实 API 决策，重新执行固定程序，新增 API 调用为 0。增加数据检查的分支使用实际检查过的输入快照；检查不证明语义正确。版本不匹配返回 503；不接受代码、路径或客户端证书。
+
+核验全部调用与产物：`python tools/verify_semantic_routing.py --public assets/semantic-routing/v1`。核验独立 Glass 验证：`python tools/verify_reviewed_guard.py --public assets/semantic-routing/guard-v1`。详细协议、失败与模型限制见 [最终研究验证](semantic-routing-research.md)。

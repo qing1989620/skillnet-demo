@@ -1,10 +1,17 @@
 # 完整交付与一致性核验
 
-交付版：`2026.10.14-complete.21`。日期：2026-10-14。
+交付版：`2026.10.14-complete.22`。日期：2026-10-14。
 
 19 版补入个人能力网络的前后端、可预览的训练候选、四组预训练／微调检查点及完整复现脚本。克隆后无需重新训练即可对照排序；候选仍受十二门约束，发布文件不代表自动晋级。首轮正负实验见 [研究报告](learned-network-research.md)，数值资产与来源见 [模型卡](../data/network-model/MODEL_CARD.md)。正式 PDF 保留先前产品说明，新增研究功能与验证边界以本页及研究报告为准。
 
 20 版补入第二轮继续训练证据与全部六组候选、个人作用范围保护、候选报告／权重版本绑定及页面配置恢复。`/api/personal` 的 `model_candidates.v2.available=true`、`evidence_bindings.v2.verified=true`，模型为 `network-b747f23c038d5521`。两轮候选都只作研究对照；完整新结果见 [继续训练与作用范围](continual-routing-research.md)。个人原始问答和个人支持向量继续保留在本机，不随克隆上传。
+
+22 版增加自然语言选择三臂对照、144 次真实 API 原始请求/响应、139 次物理执行、全部训练权重与公开输入，以及全新 Glass 上的 96 次数据边界验证。`/utility#semantic-study` 可重跑两个原始批次的登记程序，明确区分历史 API 决策与新物理执行。冷克隆另执行：
+
+```powershell
+python tools/verify_semantic_routing.py --public assets/semantic-routing/v1
+python tools/verify_reviewed_guard.py --public assets/semantic-routing/guard-v1
+```
 
 21 版补入条件收益与失败边界的两轮冻结研究、80 道封存任务、48 次真实 API 对照、全部物理证据和 `/utility` 前后端。研究摘要见 [条件收益与失败边界](conditional-utility-research.md)。克隆后运行 `python tools/verify_conditional_evidence.py` 可离线复核 2,684 次真实程序的产物，不需要重训或消耗 API 额度。正式路由与奖励不因研究结果自动更新。
 
@@ -41,7 +48,7 @@ python run.py --version
 python run.py --no-browser
 ```
 
-校验应显示 `ok: true`、`differences: []` 和本页的发布标识。`/api/health` 应显示首页版本 `2026-10-14.complete.21`、1,881 个初始技能，`encoder.kind=dense-onnx`，以及 `distribution.release / git_commit / source_tree_sha256`。`/api/personal` 的 `model.available=true`，候选模型为 `network-b9e7622390ddc716`；它保持隔离对照。Git 克隆的提交还应与 `git ls-remote origin refs/heads/main` 相同。
+校验应显示 `ok: true`、`differences: []` 和本页的发布标识。`/api/health` 应显示首页版本 `2026-10-14.complete.22`、1,881 个初始技能，`encoder.kind=dense-onnx`，以及 `distribution.release / git_commit / source_tree_sha256`。`/api/personal` 的 `model.available=true`，候选模型为 `network-b9e7622390ddc716`；它保持隔离对照。Git 克隆的提交还应与 `git ls-remote origin refs/heads/main` 相同。
 
 若 8848 已被旧服务占用，新启动会明确退出；先关闭旧服务，或运行 `python run.py --port 9000 --no-browser`，然后打开 9000。浏览器“连接设置”若曾指定其他服务器，也需核对连接目标。
 

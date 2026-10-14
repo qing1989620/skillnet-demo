@@ -1,0 +1,53 @@
+{
+  "case_id": "glass-sealed-04",
+  "mask": 5,
+  "execution": {
+    "version": "conditional-tabular-operators-v1",
+    "mask": 5,
+    "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+    "input_sha256": "e340b39ce309f9da011fc4317a5aadc7eeb8addd6b7ec43601f69c4d65defac3",
+    "started_at_ns": 1791968178299456500,
+    "finished_at_ns": 1791968178368079100,
+    "status": "completed",
+    "stderr": "",
+    "artifacts": {
+      "output.csv": {
+        "sha256": "2db66fe48d6a9f261bf49dd5f8bb93770a650dc01b6814a8ce66bfb5d7d40f94",
+        "bytes": 592
+      },
+      "summary.csv": {
+        "sha256": "28fec598e2f01c75563c9bf4af74898ca17b7088d65792eed8ea6681723235e7",
+        "bytes": 81
+      }
+    },
+    "operator_calls": 3
+  },
+  "oracle": {
+    "version": "conditional-tabular-oracle-v1",
+    "input_sha256": "e340b39ce309f9da011fc4317a5aadc7eeb8addd6b7ec43601f69c4d65defac3",
+    "deliverable": true,
+    "reference_valid": true,
+    "state": "passed",
+    "checks": [
+      {
+        "id": "original_cells_and_policy",
+        "passed": true
+      },
+      {
+        "id": "summary_schema",
+        "passed": true
+      },
+      {
+        "id": "numeric_group_G0",
+        "passed": true
+      },
+      {
+        "id": "numeric_group_G1",
+        "passed": true
+      }
+    ],
+    "output_sha256": "2db66fe48d6a9f261bf49dd5f8bb93770a650dc01b6814a8ce66bfb5d7d40f94",
+    "summary_sha256": "28fec598e2f01c75563c9bf4af74898ca17b7088d65792eed8ea6681723235e7"
+  },
+  "directory": "executions/glass-sealed-04-5"
+}

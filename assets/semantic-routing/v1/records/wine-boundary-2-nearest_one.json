@@ -1,0 +1,64 @@
+{
+  "task_id": "wine-boundary-2",
+  "arm": "nearest_one",
+  "repeat": 0,
+  "action": {
+    "mask": 5,
+    "reject": false
+  },
+  "quality": 0,
+  "correct": false,
+  "execution": {
+    "version": "conditional-tabular-operators-v1",
+    "mask": 5,
+    "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+    "input_sha256": "2ae1384ce5f733dd644883bbb5d82afd46113b1435d30790f09f1fa825841d45",
+    "started_at_ns": 1791967852444151100,
+    "finished_at_ns": 1791967852511737500,
+    "status": "completed",
+    "stderr": "",
+    "artifacts": {
+      "output.csv": {
+        "sha256": "ad18a8be0d1cca9fc09409aa98508aeaec267c40b7166c21ffcc33b414cf46de",
+        "bytes": 802
+      },
+      "summary.csv": {
+        "sha256": "1e3961b87ee6774914404e34cc8918994af2f8db157df08346eb7fb2802453b5",
+        "bytes": 131
+      }
+    },
+    "operator_calls": 3
+  },
+  "oracle": {
+    "version": "conditional-tabular-oracle-v1",
+    "input_sha256": "2ae1384ce5f733dd644883bbb5d82afd46113b1435d30790f09f1fa825841d45",
+    "deliverable": false,
+    "reference_valid": true,
+    "state": "failed",
+    "checks": [
+      {
+        "id": "original_cells_and_policy",
+        "passed": false
+      },
+      {
+        "id": "summary_schema",
+        "passed": true
+      },
+      {
+        "id": "numeric_group_G0",
+        "passed": true
+      },
+      {
+        "id": "numeric_group_G1",
+        "passed": true
+      },
+      {
+        "id": "numeric_group_G2",
+        "passed": false
+      }
+    ],
+    "output_sha256": "ad18a8be0d1cca9fc09409aa98508aeaec267c40b7166c21ffcc33b414cf46de",
+    "summary_sha256": "1e3961b87ee6774914404e34cc8918994af2f8db157df08346eb7fb2802453b5"
+  },
+  "directory": "executions/wine-boundary-2-nearest_one"
+}

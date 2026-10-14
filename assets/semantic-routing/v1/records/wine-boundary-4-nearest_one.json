@@ -1,0 +1,38 @@
+{
+  "task_id": "wine-boundary-4",
+  "arm": "nearest_one",
+  "repeat": 0,
+  "action": {
+    "mask": 2,
+    "reject": false
+  },
+  "quality": 0,
+  "correct": false,
+  "execution": {
+    "version": "conditional-tabular-operators-v1",
+    "mask": 2,
+    "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+    "input_sha256": "988a25b87d1731dc9623fa93fa216bfc3f35019df7172e15164231d094f7a6c2",
+    "started_at_ns": 1791967852591675500,
+    "finished_at_ns": 1791967852659128300,
+    "status": "failed",
+    "stderr": "Traceback (most recent call last):\r\n  File \"D:\\qing_zhuomian_\\������\\skillnet\\skillnet-demo\\..\\�о�ʵ��\\2026-10-14-semantic-routing\\experiment\\executions\\wine-boundary-4-nearest_one\\main.py\", line 39, in <module>\r\n    if not groups: raise ValueError('no test records')\r\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\r\nValueError: no test records\r\n",
+    "artifacts": {
+      "output.csv": {
+        "sha256": "4ee90ce6cbce661b7536e555157790f19a3b1c15ae98642d711008910d023786",
+        "bytes": 935
+      }
+    },
+    "operator_calls": 2
+  },
+  "oracle": {
+    "version": "conditional-tabular-oracle-v1",
+    "input_sha256": "988a25b87d1731dc9623fa93fa216bfc3f35019df7172e15164231d094f7a6c2",
+    "deliverable": false,
+    "reference_valid": false,
+    "state": "unknown",
+    "checks": [],
+    "reason": "reference has no test groups"
+  },
+  "directory": "executions/wine-boundary-4-nearest_one"
+}

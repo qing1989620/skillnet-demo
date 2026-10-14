@@ -1,0 +1,38 @@
+{
+  "task_id": "wine-boundary-6",
+  "arm": "nearest_one",
+  "repeat": 0,
+  "action": {
+    "mask": 2,
+    "reject": false
+  },
+  "quality": 0,
+  "correct": false,
+  "execution": {
+    "version": "conditional-tabular-operators-v1",
+    "mask": 2,
+    "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+    "input_sha256": "a95387315303ebabc16f080c82d6a85228dd6289ca800cf3e8f773353f11c152",
+    "started_at_ns": 1791967852738463100,
+    "finished_at_ns": 1791967852808055900,
+    "status": "failed",
+    "stderr": "Traceback (most recent call last):\r\n  File \"D:\\qing_zhuomian_\\������\\skillnet\\skillnet-demo\\..\\�о�ʵ��\\2026-10-14-semantic-routing\\experiment\\executions\\wine-boundary-6-nearest_one\\main.py\", line 44, in <module>\r\n    numeric = [Decimal(v.strip()) for v in values if v.strip()]\r\n               ^^^^^^^^^^^^^^^^^^\r\ndecimal.InvalidOperation: [<class 'decimal.ConversionSyntax'>]\r\n",
+    "artifacts": {
+      "output.csv": {
+        "sha256": "7a09f44516909cb0a3f8a03c5e18de51a18d2766e69d295872284ce695fb7327",
+        "bytes": 871
+      }
+    },
+    "operator_calls": 2
+  },
+  "oracle": {
+    "version": "conditional-tabular-oracle-v1",
+    "input_sha256": "a95387315303ebabc16f080c82d6a85228dd6289ca800cf3e8f773353f11c152",
+    "deliverable": false,
+    "reference_valid": false,
+    "state": "unknown",
+    "checks": [],
+    "reason": "reference rejects nonnumeric input"
+  },
+  "directory": "executions/wine-boundary-6-nearest_one"
+}

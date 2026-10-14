@@ -133,8 +133,37 @@ class CaseRequest(BaseModel):
     case_id: str=Field(strict=True,min_length=1,max_length=80,pattern=r'^[a-z][a-z0-9-]*$')
 
 
+class SemanticReplayRequest(CaseRequest):
+    repeat:int=Field(default=0,strict=True,ge=0,le=1)
+
+
 def make_router(root_provider,out_provider,require_token,slots_provider):
     router=APIRouter(prefix='/api/frontier/utility')
+    from . import semantic_study
+    def checked_semantic(version='v1'):
+        try:return semantic_study.bundle(root_provider(),version)
+        except (OSError,ValueError,TypeError,KeyError,UnicodeError):
+            raise HTTPException(503,'语义路由研究文件缺失或版本不一致，已停止实验') from None
+    @router.get('/semantic')
+    def semantic_report():
+        b=checked_semantic();guard=checked_semantic('guard-v1')
+        return JSONResponse({'report':b['report'],'guard_validation':guard['report'],
+            'selection':b['selection'],'cases':[{'id':c['id'],'request':c['request'],'kind':c['kind']}
+                for c in b['cases'] if c['split']=='sealed_test']},headers={'Cache-Control':'no-store'})
+    @router.get('/semantic/evidence')
+    def semantic_evidence():
+        b=checked_semantic()
+        return FileResponse(b['base']/'execution-evidence.zip',media_type='application/zip',
+            filename='skillnet-semantic-routing-physical-evidence-v1.zip',headers={'Cache-Control':'no-store'})
+    @router.post('/semantic/replay',dependencies=[Depends(require_token)])
+    def semantic_replay(req:SemanticReplayRequest):
+        b=checked_semantic();checked_semantic('guard-v1');slots=slots_provider()
+        if not slots.acquire(blocking=False):raise HTTPException(429,'已有能力实验运行，请稍后重试',headers={'Retry-After':'2'})
+        try:return JSONResponse(semantic_study.replay(b,req.case_id,out_provider(),req.repeat),headers={'Cache-Control':'no-store'})
+        except semantic_study.UnknownCase:raise HTTPException(422,'请选择已登记的公开语义任务') from None
+        except (OSError,ValueError,TypeError,KeyError,UnicodeError):
+            raise HTTPException(503,'语义实验未完成；未更新正式技能库与奖励') from None
+        finally:slots.release()
     def checked():
         try:return bundle(root_provider())
         except (OSError,ValueError,TypeError,KeyError,UnicodeError):

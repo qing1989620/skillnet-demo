@@ -1,0 +1,240 @@
+{
+  "version": "semantic-intent-routing-v1",
+  "protocol_sha256": "aaf3802d3f66ffaf9d913e091d55799580f2a23bb8c1bf8bfce3fd9ade0388a7",
+  "model_sha256": "691657bc0e122af4705ad1167dd8abd5040b10296ad8fda4d5e9c29064d5d67b",
+  "tasks": 24,
+  "valid_tasks": 16,
+  "boundary_tasks": 8,
+  "api_requests": 144,
+  "records": 192,
+  "physical_executions": 139,
+  "verified_output_files": 257,
+  "metrics": {
+    "plain": {
+      "valid_trials": 32,
+      "valid_deliveries": 32,
+      "delivery_rate": 1.0,
+      "boundary_trials": 16,
+      "boundary_refusals": 9,
+      "unsafe_boundary_actions": 7,
+      "failed_calls": 0,
+      "prompt_tokens": 35590,
+      "completion_tokens": 480
+    },
+    "retrieved_examples": {
+      "valid_trials": 32,
+      "valid_deliveries": 27,
+      "delivery_rate": 0.84375,
+      "boundary_trials": 16,
+      "boundary_refusals": 9,
+      "unsafe_boundary_actions": 7,
+      "failed_calls": 0,
+      "prompt_tokens": 46376,
+      "completion_tokens": 480
+    },
+    "trained_hint": {
+      "valid_trials": 32,
+      "valid_deliveries": 30,
+      "delivery_rate": 0.9375,
+      "boundary_trials": 16,
+      "boundary_refusals": 9,
+      "unsafe_boundary_actions": 6,
+      "failed_calls": 1,
+      "prompt_tokens": 42256,
+      "completion_tokens": 480
+    },
+    "offline_trained": {
+      "valid_trials": 16,
+      "valid_deliveries": 0,
+      "delivery_rate": 0.0,
+      "boundary_trials": 8,
+      "boundary_refusals": 8,
+      "unsafe_boundary_actions": 0,
+      "failed_calls": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    },
+    "nearest_one": {
+      "valid_trials": 16,
+      "valid_deliveries": 4,
+      "delivery_rate": 0.25,
+      "boundary_trials": 8,
+      "boundary_refusals": 1,
+      "unsafe_boundary_actions": 7,
+      "failed_calls": 0,
+      "prompt_tokens": 0,
+      "completion_tokens": 0
+    }
+  },
+  "paired_comparisons": {
+    "plain": {
+      "mean_delivery_gain": -0.0625,
+      "win_pairs": 0,
+      "loss_pairs": 2,
+      "tie_pairs": 30,
+      "input_token_overhead": 0.18729980331553797
+    },
+    "retrieved_examples": {
+      "mean_delivery_gain": 0.09375,
+      "win_pairs": 3,
+      "loss_pairs": 0,
+      "tie_pairs": 29,
+      "input_token_overhead": -0.08883905468345699
+    }
+  },
+  "response_models": [
+    "deepseek-flash"
+  ],
+  "artifact_audit": {
+    "ok": true,
+    "predictions_before_execution": true,
+    "training_test_disjoint": true
+  },
+  "scope": "one manually authored task family, one held-out measurement source, not cross-domain or SOTA",
+  "reward_applied": false,
+  "formal_routing_deployed": false,
+  "points": 0,
+  "limitations": [
+    "Manually authored semantic labels, not learned causal skill effects.",
+    "One task family and one new measurement source; repeats and shared source rows are not independent samples.",
+    "Provider model aliases are not immutable revisions; no cross-model or SOTA claim.",
+    "Replays use recorded API decisions and new physical executions, not new API completions."
+  ],
+  "admission": {
+    "version": "improvement-gates-v1",
+    "policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+    "operator": "AND",
+    "eligible": false,
+    "reward_applied": false,
+    "points": 0,
+    "passed": 5,
+    "total": 12,
+    "blockers": [
+      "complete",
+      "version",
+      "fair",
+      "regression",
+      "gain",
+      "reliable",
+      "novel"
+    ],
+    "gates": [
+      {
+        "id": "frozen",
+        "title": "标准提前冻结",
+        "rule": "执行前锁定判据、阈值、模型与评测代码，禁止事后改规则",
+        "status": "passed",
+        "reason": "任务、参数选择、调用预算、增益与开销门槛在新测试前冻结。",
+        "evidence": {}
+      },
+      {
+        "id": "independent",
+        "title": "独立重算结果",
+        "rule": "从真实产物重算冻结的业务参考，模型评分不能替代",
+        "status": "passed",
+        "reason": "重读实际 CSV，独立逐行与 Decimal 验算；不用模型评分。",
+        "evidence": {}
+      },
+      {
+        "id": "integrity",
+        "title": "物理产物可信",
+        "rule": "实际文件存在、路径合法、SHA-256 与登记一致",
+        "status": "passed",
+        "reason": "全部原始调用、预测时序与物理产物 SHA 已复核。",
+        "evidence": {
+          "physical_executions": 139
+        }
+      },
+      {
+        "id": "complete",
+        "title": "执行完整合格",
+        "rule": "候选全部步骤完成、必要验收通过、无删步取消或预算超限",
+        "status": "failed",
+        "reason": "严格保留非法 JSON 和失败调用，不用成功重试替换。",
+        "evidence": {
+          "failed_calls": 1
+        }
+      },
+      {
+        "id": "version",
+        "title": "绑定技能版本",
+        "rule": "对照组与候选组实际执行冻结的精确技能版本",
+        "status": "unknown",
+        "reason": "数值头与程序版本精确绑定；提供方模型别名不是不可变修订版本。",
+        "evidence": {}
+      },
+      {
+        "id": "fair",
+        "title": "对照条件公平",
+        "rule": "模型、预算、动作依赖相同，并按预定次序交替执行",
+        "status": "failed",
+        "reason": "同一动作、模型别名与输出预算；另要求训练提示相对独立模型的输入开销不超过预定 15%。",
+        "evidence": {
+          "input_token_overhead": 0.18729980331553797
+        }
+      },
+      {
+        "id": "heldout",
+        "title": "任务未用于生成",
+        "rule": "排除当前任务、记录的祖先训练任务和实际来源运行",
+        "status": "passed",
+        "reason": "本轮训练、校准与测试请求及输入指纹不重叠；只证明本研究留出。",
+        "evidence": {}
+      },
+      {
+        "id": "suite",
+        "title": "完整报告样本",
+        "rule": "至少 5 道留出任务各 2 组配对，禁止漏报、重用或挑选赢家",
+        "status": "passed",
+        "reason": "24 题、3 臂、2 次调用全部保留，包括拒绝与格式错误。",
+        "evidence": {}
+      },
+      {
+        "id": "regression",
+        "title": "每组没有退步",
+        "rule": "每一组候选结果均不低于对应基线，提升不能抵消退步",
+        "status": "failed",
+        "reason": "逐个有效任务配对比较，任何退步阻止晋级。",
+        "evidence": {
+          "loss_pairs": 2
+        }
+      },
+      {
+        "id": "gain",
+        "title": "增益达到门槛",
+        "rule": "按不同任务等权计算平均增益，至少 0.02",
+        "status": "failed",
+        "reason": "必须同时超过独立模型和检索示例两种对照。",
+        "evidence": {
+          "minimum_control_gain": -0.0625
+        }
+      },
+      {
+        "id": "reliable",
+        "title": "多任务一致提升",
+        "rule": "以不同任务为统计单位，单侧符号检验 p ≤ 0.05",
+        "status": "unknown",
+        "reason": "单一任务族与测量来源，重复和共享源记录不能算独立跨领域样本。",
+        "evidence": {}
+      },
+      {
+        "id": "novel",
+        "title": "同一版本只奖一次",
+        "rule": "积分只给被验证版本；相同版本不能重放或换报告重复领奖",
+        "status": "unknown",
+        "reason": "没有正式候选版本提升证书，不发放一次性奖励。",
+        "evidence": {}
+      }
+    ],
+    "context": {
+      "kind": "semantic-routing-research",
+      "protocol_sha256": "aaf3802d3f66ffaf9d913e091d55799580f2a23bb8c1bf8bfce3fd9ade0388a7",
+      "model_sha256": "691657bc0e122af4705ad1167dd8abd5040b10296ad8fda4d5e9c29064d5d67b",
+      "scope": "one manually authored task family, one held-out measurement source, not cross-domain or SOTA"
+    },
+    "reward_scope": "此技能版本在冻结评测范围内的相对提升积分；不代表全网或所有任务提升",
+    "ranking_weights_deployed": false,
+    "audit_sha256": "bcd4af5983e816cc6efb5ad8e336011cab7974878483a7ef01d11e64bb592aa9"
+  },
+  "report_sha256": "94112b5d7c12c7639a67689d84ab51ce7684747b96c474d04462b0c7e60cb349"
+}

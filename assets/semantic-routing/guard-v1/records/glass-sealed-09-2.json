@@ -1,0 +1,31 @@
+{
+  "case_id": "glass-sealed-09",
+  "mask": 2,
+  "execution": {
+    "version": "conditional-tabular-operators-v1",
+    "mask": 2,
+    "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+    "input_sha256": "d3efedd269e99cb89eb1ad9f9e80019bcce441f0b92cef18f705342b0e96809f",
+    "started_at_ns": 1791968181038471300,
+    "finished_at_ns": 1791968181104595200,
+    "status": "failed",
+    "stderr": "Traceback (most recent call last):\r\n  File \"D:\\qing_zhuomian_\\������\\skillnet\\skillnet-demo\\..\\�о�ʵ��\\2026-10-14-semantic-routing\\guard-validation-v1\\executions\\glass-sealed-09-2\\main.py\", line 46, in <module>\r\n    raise ValueError('no finite numeric values for group')\r\nValueError: no finite numeric values for group\r\n",
+    "artifacts": {
+      "output.csv": {
+        "sha256": "819e137d863f75ed22a448ecd86c780850c5c29ebe9ddc14b31ecdc0aadc6013",
+        "bytes": 651
+      }
+    },
+    "operator_calls": 2
+  },
+  "oracle": {
+    "version": "conditional-tabular-oracle-v1",
+    "input_sha256": "d3efedd269e99cb89eb1ad9f9e80019bcce441f0b92cef18f705342b0e96809f",
+    "deliverable": false,
+    "reference_valid": false,
+    "state": "unknown",
+    "checks": [],
+    "reason": "reference rejects nonfinite input"
+  },
+  "directory": "executions/glass-sealed-09-2"
+}
