@@ -1,0 +1,129 @@
+{
+  "version": "improvement-gates-v1",
+  "policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+  "operator": "AND",
+  "eligible": false,
+  "reward_applied": false,
+  "points": 0,
+  "passed": 8,
+  "total": 12,
+  "blockers": [
+    "version",
+    "gain",
+    "reliable",
+    "novel"
+  ],
+  "gates": [
+    {
+      "id": "frozen",
+      "title": "标准提前冻结",
+      "rule": "执行前锁定判据、阈值、模型与评测代码，禁止事后改规则",
+      "status": "passed",
+      "reason": "输入、协议、技能程序、判据先冻结；测试预测与 API 提示在执行前写入。",
+      "evidence": {}
+    },
+    {
+      "id": "independent",
+      "title": "独立重算结果",
+      "rule": "从真实产物重算冻结的业务参考，模型评分不能替代",
+      "status": "passed",
+      "reason": "独立于执行器的原单元格与 Decimal 数值判据重读真实文件；不采用模型评分。",
+      "evidence": {}
+    },
+    {
+      "id": "integrity",
+      "title": "物理产物可信",
+      "rule": "实际文件存在、路径合法、SHA-256 与登记一致",
+      "status": "passed",
+      "reason": "逐项重算 2464 次固定程序与真实 API 执行产物的指纹。",
+      "evidence": {
+        "errors": []
+      }
+    },
+    {
+      "id": "complete",
+      "title": "执行完整合格",
+      "rule": "候选全部步骤完成、必要验收通过、无删步取消或预算超限",
+      "status": "passed",
+      "reason": "全部 48 次调用与失败/拒绝记录完整保留；有效任务文件逐项验算。",
+      "evidence": {}
+    },
+    {
+      "id": "version",
+      "title": "绑定技能版本",
+      "rule": "对照组与候选组实际执行冻结的精确技能版本",
+      "status": "unknown",
+      "reason": "三个登记程序与数值候选已锁定；提供方仅返回 deepseek-flash 别名，尚无不可变模型修订标识或正式库技能候选凭证。",
+      "evidence": {}
+    },
+    {
+      "id": "fair",
+      "title": "对照条件公平",
+      "rule": "模型、预算、动作依赖相同，并按预定次序交替执行",
+      "status": "passed",
+      "reason": "同一 API 别名、动作集、预算；每题两次配对交替顺序，逐臂记录真实 token。",
+      "evidence": {}
+    },
+    {
+      "id": "heldout",
+      "title": "任务未用于生成",
+      "rule": "排除当前任务、记录的祖先训练任务和实际来源运行",
+      "status": "passed",
+      "reason": "本研究训练/校准/新测试输入指纹不重叠，公开测量来源整体留出；不宣称基础大模型从未见过原始数据。",
+      "evidence": {}
+    },
+    {
+      "id": "suite",
+      "title": "完整报告样本",
+      "rule": "至少 5 道留出任务各 2 组配对，禁止漏报、重用或挑选赢家",
+      "status": "passed",
+      "reason": "12 道预先登记的任务各两次配对，所有组与无效边界任务完整报告。",
+      "evidence": {}
+    },
+    {
+      "id": "regression",
+      "title": "每组没有退步",
+      "rule": "每一组候选结果均不低于对应基线，提升不能抵消退步",
+      "status": "passed",
+      "reason": "真实 API 有效任务配对没有观察到候选退步。",
+      "evidence": {}
+    },
+    {
+      "id": "gain",
+      "title": "增益达到门槛",
+      "rule": "按不同任务等权计算平均增益，至少 0.02",
+      "status": "failed",
+      "reason": "真实 API 的交付质量增益为 0；提前拒绝无效任务不能冒充有效任务质量提升。",
+      "evidence": {
+        "mean_gain": 0.0
+      }
+    },
+    {
+      "id": "reliable",
+      "title": "多任务一致提升",
+      "rule": "以不同任务为统计单位，单侧符号检验 p ≤ 0.05",
+      "status": "unknown",
+      "reason": "首轮真实测量只来自一个公开来源，题目共享记录；任务符号检验不能作为跨领域可靠性证据。",
+      "evidence": {}
+    },
+    {
+      "id": "novel",
+      "title": "同一版本只奖一次",
+      "rule": "积分只给被验证版本；相同版本不能重放或换报告重复领奖",
+      "status": "unknown",
+      "reason": "研究候选尚无正式提升证书与一次性版本奖励凭证；不产生奖励。",
+      "evidence": {}
+    }
+  ],
+  "context": {
+    "kind": "conditional-execution-research",
+    "protocol_sha256": "36d9b398419127dcae22006c90173ff8816d6869dd0d63601d474073fb610f4b",
+    "model_sha256": "de80310337e6601834a919ea621b722904e1fa0d50f10737bf613512866cd389",
+    "llm_model_alias": "deepseek-chat",
+    "public_source_clusters": 1,
+    "interpretation": "research scope only; no formally registered candidate promotion"
+  },
+  "reward_scope": "此技能版本在冻结评测范围内的相对提升积分；不代表全网或所有任务提升",
+  "ranking_weights_deployed": false,
+  "audit_sha256": "b101e7070c9c6d0902e64df83936b1b7c6e4b79161c27b671eac67ac940e1497"
+}

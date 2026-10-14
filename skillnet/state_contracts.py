@@ -26,6 +26,7 @@ MAX_STEPS = 128
 KINDS = frozenset({
     'file_exists', 'csv_schema', 'csv_nonempty', 'csv_no_missing',
     'csv_unique', 'csv_numeric_range', 'csv_disjoint_groups', 'csv_values_in',
+    'csv_group_numeric_coverage',
 })
 
 
@@ -113,6 +114,15 @@ def _validate(spec: Any) -> str | None:
         keys.update({'entity', 'group'})
         if not _column(spec.get('entity')) or not _column(spec.get('group')):
             return 'entity and group must be column names'
+    if kind == 'csv_group_numeric_coverage':
+        keys.update({'group', 'column', 'where'})
+        if not _column(spec.get('group')) or not _column(spec.get('column')):
+            return 'group and column must be column names'
+        where = spec.get('where')
+        if where is not None and (type(where) is not dict or set(where) != {'column', 'equals'}
+                or not _column(where.get('column')) or type(where.get('equals')) is not str
+                or len(where['equals']) > 256 or any(ord(c) < 32 for c in where['equals'])):
+            return 'where must contain one column and an exact bounded text value'
     if kind == 'csv_values_in':
         keys.update({'column', 'values'})
         values = spec.get('values')
@@ -201,6 +211,8 @@ def _required_columns(spec: dict) -> set[str]:
         return {spec['column']}
     if spec['kind'] == 'csv_disjoint_groups':
         return {spec['entity'], spec['group']}
+    if spec['kind'] == 'csv_group_numeric_coverage':
+        return {spec['group'], spec['column']} | ({spec['where']['column']} if spec.get('where') else set())
     return set()
 
 
@@ -225,6 +237,34 @@ def _test(spec: dict, data: dict) -> tuple[str, str, dict]:
         return ('passed' if ok else 'failed', 'CSV column set satisfies schema' if ok else 'CSV has undeclared columns', evidence)
     if kind == 'csv_nonempty':
         return ('passed' if rows else 'failed', 'CSV has data records' if rows else 'CSV has no data records', evidence)
+    if kind == 'csv_group_numeric_coverage':
+        group_counts: dict[str, int] = {}
+        invalid_records = []
+        invalid_count = 0
+        where = spec.get('where')
+        for number, row in enumerate(rows, start=2):
+            if where and row[indices[where['column']]] != where['equals']:
+                continue
+            group = row[indices[spec['group']]]
+            group_counts.setdefault(group, 0)
+            text = row[indices[spec['column']]].strip()
+            if not text:
+                continue
+            try:
+                _decimal(text)
+                group_counts[group] += 1
+            except ValueError:
+                invalid_count += 1
+                if len(invalid_records) < 8:
+                    invalid_records.append(number)
+        empty = sorted(k for k, count in group_counts.items() if count == 0)
+        evidence.update(groups=len(group_counts), groups_without_numeric=len(empty),
+                        empty_groups=[k[:256] for k in empty[:8]],
+                        invalid_numeric_records=invalid_count, violating_records=invalid_records)
+        ok = bool(group_counts) and not empty and not invalid_count
+        return ('passed' if ok else 'failed',
+                'every selected group has finite numeric coverage and every nonblank value is finite'
+                if ok else 'selected groups are absent, contain no numeric values, or contain invalid values', evidence)
     seen: set[tuple[str, ...]] = set()
     groups: dict[str, str] = {}
     low = _decimal(spec['min']) if 'min' in spec else None
@@ -346,6 +386,9 @@ def _implication(ensure: dict, require: dict, known_columns: set[str], nonempty:
     elif kind == 'csv_values_in':
         compatible = (ensure['column'] == require['column']
                       and {_enum_key(v) for v in ensure['values']} <= {_enum_key(v) for v in require['values']})
+    elif kind == 'csv_group_numeric_coverage':
+        compatible = (ensure['group'] == require['group'] and ensure['column'] == require['column']
+                      and ensure.get('where') == require.get('where'))
     else:
         compatible = True  # csv_nonempty (file_exists handled above)
     return ('declared_compatible', 'output predicate conservatively entails the precondition') if compatible else ('unknown', 'output predicate does not establish the precondition')
@@ -358,7 +401,13 @@ def _inconsistent(specs: list[dict]) -> bool:
             return True
         if any(not _required_columns(s) <= exact_schemas[0] for s in specs):
             return True
-    ranges = [s for s in specs if s['kind'] == 'csv_numeric_range'] if any(s['kind'] == 'csv_nonempty' for s in specs) else []
+    for coverage in (s for s in specs if s['kind'] == 'csv_group_numeric_coverage' and s.get('where')):
+        where = coverage['where']
+        for values in (s for s in specs if s['kind'] == 'csv_values_in' and s['column'] == where['column']):
+            if _enum_key(where['equals']) not in {_enum_key(v) for v in values['values']}:
+                return True  # Coverage requires a selected row; enumeration forbids every selected row.
+    nonempty = any(s['kind'] in ('csv_nonempty', 'csv_group_numeric_coverage') for s in specs)
+    ranges = [s for s in specs if s['kind'] == 'csv_numeric_range'] if nonempty else []
     for first in ranges:
         low, high = _bounds(first)
         for second in ranges:

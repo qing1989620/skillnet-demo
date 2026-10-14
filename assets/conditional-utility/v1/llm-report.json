@@ -1,0 +1,3331 @@
+{
+  "version": "conditional-llm-execution-v1",
+  "protocol_sha256": "36d9b398419127dcae22006c90173ff8816d6869dd0d63601d474073fb610f4b",
+  "model_sha256": "de80310337e6601834a919ea621b722904e1fa0d50f10737bf613512866cd389",
+  "requested_calls": 48,
+  "records": [
+    {
+      "task_id": "sealed-penguins-00",
+      "repeat": 0,
+      "arm": "plain",
+      "prompt_sha256": "4b788d767dd1031e8317eb26b810e3fe6aceee9278acbbf1db91ec713881b116",
+      "input_sha256": "e36718d883e410b424e5d6c4812bab85834f3372c3da5a7f6dec6c5302ab443a",
+      "started_at_ns": 1791958482086721700,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 0,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1506,
+      "completion_tokens": 10,
+      "response": "{\"mask\":0,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 0,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "e36718d883e410b424e5d6c4812bab85834f3372c3da5a7f6dec6c5302ab443a",
+        "started_at_ns": 1791958482820975000,
+        "finished_at_ns": 1791958482886848300,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "7e6013726bdc0b88e4d0324c2a92982120decb9b41ae97e6613385da862f752e",
+            "bytes": 2057
+          },
+          "summary.csv": {
+            "sha256": "ff5d6caddf24c06231a2f664e5b45e2f85ec3c5dcf34c4413d49f4d03ebff2d2",
+            "bytes": 147
+          }
+        },
+        "operator_calls": 1
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "e36718d883e410b424e5d6c4812bab85834f3372c3da5a7f6dec6c5302ab443a",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "7e6013726bdc0b88e4d0324c2a92982120decb9b41ae97e6613385da862f752e",
+        "summary_sha256": "ff5d6caddf24c06231a2f664e5b45e2f85ec3c5dcf34c4413d49f4d03ebff2d2"
+      },
+      "directory": "executions/llm-plain/sealed-penguins-00/r0-m0",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958482886848300
+    },
+    {
+      "task_id": "sealed-penguins-00",
+      "repeat": 0,
+      "arm": "evidence",
+      "prompt_sha256": "5193d6677a051a51b63ed2adf37b4ff1e0390e6e63d5a7b4e6c16b6564a036de",
+      "input_sha256": "e36718d883e410b424e5d6c4812bab85834f3372c3da5a7f6dec6c5302ab443a",
+      "started_at_ns": 1791958482887987400,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 0,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1973,
+      "completion_tokens": 10,
+      "response": "{\"mask\":0,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 0,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "e36718d883e410b424e5d6c4812bab85834f3372c3da5a7f6dec6c5302ab443a",
+        "started_at_ns": 1791958484433138700,
+        "finished_at_ns": 1791958484498205900,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "7e6013726bdc0b88e4d0324c2a92982120decb9b41ae97e6613385da862f752e",
+            "bytes": 2057
+          },
+          "summary.csv": {
+            "sha256": "ff5d6caddf24c06231a2f664e5b45e2f85ec3c5dcf34c4413d49f4d03ebff2d2",
+            "bytes": 147
+          }
+        },
+        "operator_calls": 1
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "e36718d883e410b424e5d6c4812bab85834f3372c3da5a7f6dec6c5302ab443a",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "7e6013726bdc0b88e4d0324c2a92982120decb9b41ae97e6613385da862f752e",
+        "summary_sha256": "ff5d6caddf24c06231a2f664e5b45e2f85ec3c5dcf34c4413d49f4d03ebff2d2"
+      },
+      "directory": "executions/llm-evidence/sealed-penguins-00/r0-m0",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958484499209400
+    },
+    {
+      "task_id": "sealed-penguins-00",
+      "repeat": 1,
+      "arm": "evidence",
+      "prompt_sha256": "5193d6677a051a51b63ed2adf37b4ff1e0390e6e63d5a7b4e6c16b6564a036de",
+      "input_sha256": "e36718d883e410b424e5d6c4812bab85834f3372c3da5a7f6dec6c5302ab443a",
+      "started_at_ns": 1791958484500243000,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 0,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1973,
+      "completion_tokens": 10,
+      "response": "{\"mask\":0,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 0,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "e36718d883e410b424e5d6c4812bab85834f3372c3da5a7f6dec6c5302ab443a",
+        "started_at_ns": 1791958485012961100,
+        "finished_at_ns": 1791958485079288500,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "7e6013726bdc0b88e4d0324c2a92982120decb9b41ae97e6613385da862f752e",
+            "bytes": 2057
+          },
+          "summary.csv": {
+            "sha256": "ff5d6caddf24c06231a2f664e5b45e2f85ec3c5dcf34c4413d49f4d03ebff2d2",
+            "bytes": 147
+          }
+        },
+        "operator_calls": 1
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "e36718d883e410b424e5d6c4812bab85834f3372c3da5a7f6dec6c5302ab443a",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "7e6013726bdc0b88e4d0324c2a92982120decb9b41ae97e6613385da862f752e",
+        "summary_sha256": "ff5d6caddf24c06231a2f664e5b45e2f85ec3c5dcf34c4413d49f4d03ebff2d2"
+      },
+      "directory": "executions/llm-evidence/sealed-penguins-00/r1-m0",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958485080292400
+    },
+    {
+      "task_id": "sealed-penguins-00",
+      "repeat": 1,
+      "arm": "plain",
+      "prompt_sha256": "4b788d767dd1031e8317eb26b810e3fe6aceee9278acbbf1db91ec713881b116",
+      "input_sha256": "e36718d883e410b424e5d6c4812bab85834f3372c3da5a7f6dec6c5302ab443a",
+      "started_at_ns": 1791958485081452600,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 0,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1506,
+      "completion_tokens": 10,
+      "response": "{\"mask\":0,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 0,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "e36718d883e410b424e5d6c4812bab85834f3372c3da5a7f6dec6c5302ab443a",
+        "started_at_ns": 1791958485918473900,
+        "finished_at_ns": 1791958485982822700,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "7e6013726bdc0b88e4d0324c2a92982120decb9b41ae97e6613385da862f752e",
+            "bytes": 2057
+          },
+          "summary.csv": {
+            "sha256": "ff5d6caddf24c06231a2f664e5b45e2f85ec3c5dcf34c4413d49f4d03ebff2d2",
+            "bytes": 147
+          }
+        },
+        "operator_calls": 1
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "e36718d883e410b424e5d6c4812bab85834f3372c3da5a7f6dec6c5302ab443a",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "7e6013726bdc0b88e4d0324c2a92982120decb9b41ae97e6613385da862f752e",
+        "summary_sha256": "ff5d6caddf24c06231a2f664e5b45e2f85ec3c5dcf34c4413d49f4d03ebff2d2"
+      },
+      "directory": "executions/llm-plain/sealed-penguins-00/r1-m0",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958485983825300
+    },
+    {
+      "task_id": "sealed-penguins-01",
+      "repeat": 0,
+      "arm": "plain",
+      "prompt_sha256": "ecb0f4a79a858ff2e6f3b567e4240f8d98d0aa428ad48eb06c87f18f8681722a",
+      "input_sha256": "127dad8ab8dc126076b26a59713d9e3caf69264774ec14acb2ca08636bae3af2",
+      "started_at_ns": 1791958482078957200,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 1,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1523,
+      "completion_tokens": 10,
+      "response": "{\"mask\":1,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 1,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "127dad8ab8dc126076b26a59713d9e3caf69264774ec14acb2ca08636bae3af2",
+        "started_at_ns": 1791958483000628500,
+        "finished_at_ns": 1791958483064984200,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "586bc948e8141152d2c643d5d064855d15e7cc50dd05656136730bc3301a4374",
+            "bytes": 2055
+          },
+          "summary.csv": {
+            "sha256": "5116109cb997013b0716d9d3037e0e051bdbcb9940de73b8ee31c902e43d328d",
+            "bytes": 181
+          }
+        },
+        "operator_calls": 2
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "127dad8ab8dc126076b26a59713d9e3caf69264774ec14acb2ca08636bae3af2",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "586bc948e8141152d2c643d5d064855d15e7cc50dd05656136730bc3301a4374",
+        "summary_sha256": "5116109cb997013b0716d9d3037e0e051bdbcb9940de73b8ee31c902e43d328d"
+      },
+      "directory": "executions/llm-plain/sealed-penguins-01/r0-m1",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958483066088400
+    },
+    {
+      "task_id": "sealed-penguins-01",
+      "repeat": 0,
+      "arm": "evidence",
+      "prompt_sha256": "4cb2352da2d756afbf648f5dc61a2de6dffbcece9f0700848d85d23945516692",
+      "input_sha256": "127dad8ab8dc126076b26a59713d9e3caf69264774ec14acb2ca08636bae3af2",
+      "started_at_ns": 1791958483067249100,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 1,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1990,
+      "completion_tokens": 10,
+      "response": "{\"mask\":1,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 1,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "127dad8ab8dc126076b26a59713d9e3caf69264774ec14acb2ca08636bae3af2",
+        "started_at_ns": 1791958484454318500,
+        "finished_at_ns": 1791958484522903800,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "586bc948e8141152d2c643d5d064855d15e7cc50dd05656136730bc3301a4374",
+            "bytes": 2055
+          },
+          "summary.csv": {
+            "sha256": "5116109cb997013b0716d9d3037e0e051bdbcb9940de73b8ee31c902e43d328d",
+            "bytes": 181
+          }
+        },
+        "operator_calls": 2
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "127dad8ab8dc126076b26a59713d9e3caf69264774ec14acb2ca08636bae3af2",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "586bc948e8141152d2c643d5d064855d15e7cc50dd05656136730bc3301a4374",
+        "summary_sha256": "5116109cb997013b0716d9d3037e0e051bdbcb9940de73b8ee31c902e43d328d"
+      },
+      "directory": "executions/llm-evidence/sealed-penguins-01/r0-m1",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958484524216100
+    },
+    {
+      "task_id": "sealed-penguins-01",
+      "repeat": 1,
+      "arm": "evidence",
+      "prompt_sha256": "4cb2352da2d756afbf648f5dc61a2de6dffbcece9f0700848d85d23945516692",
+      "input_sha256": "127dad8ab8dc126076b26a59713d9e3caf69264774ec14acb2ca08636bae3af2",
+      "started_at_ns": 1791958484524216100,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 1,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1990,
+      "completion_tokens": 10,
+      "response": "{\"mask\":1,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 1,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "127dad8ab8dc126076b26a59713d9e3caf69264774ec14acb2ca08636bae3af2",
+        "started_at_ns": 1791958485404036500,
+        "finished_at_ns": 1791958485470794600,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "586bc948e8141152d2c643d5d064855d15e7cc50dd05656136730bc3301a4374",
+            "bytes": 2055
+          },
+          "summary.csv": {
+            "sha256": "5116109cb997013b0716d9d3037e0e051bdbcb9940de73b8ee31c902e43d328d",
+            "bytes": 181
+          }
+        },
+        "operator_calls": 2
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "127dad8ab8dc126076b26a59713d9e3caf69264774ec14acb2ca08636bae3af2",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "586bc948e8141152d2c643d5d064855d15e7cc50dd05656136730bc3301a4374",
+        "summary_sha256": "5116109cb997013b0716d9d3037e0e051bdbcb9940de73b8ee31c902e43d328d"
+      },
+      "directory": "executions/llm-evidence/sealed-penguins-01/r1-m1",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958485471801900
+    },
+    {
+      "task_id": "sealed-penguins-01",
+      "repeat": 1,
+      "arm": "plain",
+      "prompt_sha256": "ecb0f4a79a858ff2e6f3b567e4240f8d98d0aa428ad48eb06c87f18f8681722a",
+      "input_sha256": "127dad8ab8dc126076b26a59713d9e3caf69264774ec14acb2ca08636bae3af2",
+      "started_at_ns": 1791958485472808500,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 1,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1523,
+      "completion_tokens": 10,
+      "response": "{\"mask\":1,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 1,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "127dad8ab8dc126076b26a59713d9e3caf69264774ec14acb2ca08636bae3af2",
+        "started_at_ns": 1791958486349391700,
+        "finished_at_ns": 1791958486418175500,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "586bc948e8141152d2c643d5d064855d15e7cc50dd05656136730bc3301a4374",
+            "bytes": 2055
+          },
+          "summary.csv": {
+            "sha256": "5116109cb997013b0716d9d3037e0e051bdbcb9940de73b8ee31c902e43d328d",
+            "bytes": 181
+          }
+        },
+        "operator_calls": 2
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "127dad8ab8dc126076b26a59713d9e3caf69264774ec14acb2ca08636bae3af2",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "586bc948e8141152d2c643d5d064855d15e7cc50dd05656136730bc3301a4374",
+        "summary_sha256": "5116109cb997013b0716d9d3037e0e051bdbcb9940de73b8ee31c902e43d328d"
+      },
+      "directory": "executions/llm-plain/sealed-penguins-01/r1-m1",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958486419181000
+    },
+    {
+      "task_id": "sealed-penguins-02",
+      "repeat": 0,
+      "arm": "plain",
+      "prompt_sha256": "f945f6c5a68afe3fefe509c12abb10f7381527af9abff2c7bbfd7bbf8c71009c",
+      "input_sha256": "f73a5b35c695da68240ffcaf68689b00df702c831d475561c73a512f4de329a5",
+      "started_at_ns": 1791958482084060300,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 2,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1526,
+      "completion_tokens": 10,
+      "response": "{\"mask\":2,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 2,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "f73a5b35c695da68240ffcaf68689b00df702c831d475561c73a512f4de329a5",
+        "started_at_ns": 1791958483462740200,
+        "finished_at_ns": 1791958483528475100,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "bcd3e27a35ea41b7271fb0a1efc2eaf4be11d4e26cbee6ff5c277c303d682a83",
+            "bytes": 1971
+          },
+          "summary.csv": {
+            "sha256": "996d2aec21d89c2808e235505a13922f53da6531d4706a05dcd12df40c7a36f3",
+            "bytes": 144
+          }
+        },
+        "operator_calls": 2
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "f73a5b35c695da68240ffcaf68689b00df702c831d475561c73a512f4de329a5",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "bcd3e27a35ea41b7271fb0a1efc2eaf4be11d4e26cbee6ff5c277c303d682a83",
+        "summary_sha256": "996d2aec21d89c2808e235505a13922f53da6531d4706a05dcd12df40c7a36f3"
+      },
+      "directory": "executions/llm-plain/sealed-penguins-02/r0-m2",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958483529477900
+    },
+    {
+      "task_id": "sealed-penguins-02",
+      "repeat": 0,
+      "arm": "evidence",
+      "prompt_sha256": "62622a10b321671fe965004f41b4c88435710b062a58bc1fc13e6a20e3c390b6",
+      "input_sha256": "f73a5b35c695da68240ffcaf68689b00df702c831d475561c73a512f4de329a5",
+      "started_at_ns": 1791958483530480700,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 2,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1993,
+      "completion_tokens": 10,
+      "response": "{\"mask\":2,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 2,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "f73a5b35c695da68240ffcaf68689b00df702c831d475561c73a512f4de329a5",
+        "started_at_ns": 1791958484703942200,
+        "finished_at_ns": 1791958484771114600,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "bcd3e27a35ea41b7271fb0a1efc2eaf4be11d4e26cbee6ff5c277c303d682a83",
+            "bytes": 1971
+          },
+          "summary.csv": {
+            "sha256": "996d2aec21d89c2808e235505a13922f53da6531d4706a05dcd12df40c7a36f3",
+            "bytes": 144
+          }
+        },
+        "operator_calls": 2
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "f73a5b35c695da68240ffcaf68689b00df702c831d475561c73a512f4de329a5",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "bcd3e27a35ea41b7271fb0a1efc2eaf4be11d4e26cbee6ff5c277c303d682a83",
+        "summary_sha256": "996d2aec21d89c2808e235505a13922f53da6531d4706a05dcd12df40c7a36f3"
+      },
+      "directory": "executions/llm-evidence/sealed-penguins-02/r0-m2",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958484772120100
+    },
+    {
+      "task_id": "sealed-penguins-02",
+      "repeat": 1,
+      "arm": "evidence",
+      "prompt_sha256": "62622a10b321671fe965004f41b4c88435710b062a58bc1fc13e6a20e3c390b6",
+      "input_sha256": "f73a5b35c695da68240ffcaf68689b00df702c831d475561c73a512f4de329a5",
+      "started_at_ns": 1791958484772120100,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 2,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1993,
+      "completion_tokens": 10,
+      "response": "{\"mask\":2,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 2,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "f73a5b35c695da68240ffcaf68689b00df702c831d475561c73a512f4de329a5",
+        "started_at_ns": 1791958485368418700,
+        "finished_at_ns": 1791958485433770800,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "bcd3e27a35ea41b7271fb0a1efc2eaf4be11d4e26cbee6ff5c277c303d682a83",
+            "bytes": 1971
+          },
+          "summary.csv": {
+            "sha256": "996d2aec21d89c2808e235505a13922f53da6531d4706a05dcd12df40c7a36f3",
+            "bytes": 144
+          }
+        },
+        "operator_calls": 2
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "f73a5b35c695da68240ffcaf68689b00df702c831d475561c73a512f4de329a5",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "bcd3e27a35ea41b7271fb0a1efc2eaf4be11d4e26cbee6ff5c277c303d682a83",
+        "summary_sha256": "996d2aec21d89c2808e235505a13922f53da6531d4706a05dcd12df40c7a36f3"
+      },
+      "directory": "executions/llm-evidence/sealed-penguins-02/r1-m2",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958485434774800
+    },
+    {
+      "task_id": "sealed-penguins-02",
+      "repeat": 1,
+      "arm": "plain",
+      "prompt_sha256": "f945f6c5a68afe3fefe509c12abb10f7381527af9abff2c7bbfd7bbf8c71009c",
+      "input_sha256": "f73a5b35c695da68240ffcaf68689b00df702c831d475561c73a512f4de329a5",
+      "started_at_ns": 1791958485435779000,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 2,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1526,
+      "completion_tokens": 10,
+      "response": "{\"mask\":2,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 2,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "f73a5b35c695da68240ffcaf68689b00df702c831d475561c73a512f4de329a5",
+        "started_at_ns": 1791958486400416900,
+        "finished_at_ns": 1791958486468020300,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "bcd3e27a35ea41b7271fb0a1efc2eaf4be11d4e26cbee6ff5c277c303d682a83",
+            "bytes": 1971
+          },
+          "summary.csv": {
+            "sha256": "996d2aec21d89c2808e235505a13922f53da6531d4706a05dcd12df40c7a36f3",
+            "bytes": 144
+          }
+        },
+        "operator_calls": 2
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "f73a5b35c695da68240ffcaf68689b00df702c831d475561c73a512f4de329a5",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "bcd3e27a35ea41b7271fb0a1efc2eaf4be11d4e26cbee6ff5c277c303d682a83",
+        "summary_sha256": "996d2aec21d89c2808e235505a13922f53da6531d4706a05dcd12df40c7a36f3"
+      },
+      "directory": "executions/llm-plain/sealed-penguins-02/r1-m2",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958486469038400
+    },
+    {
+      "task_id": "sealed-penguins-03",
+      "repeat": 0,
+      "arm": "plain",
+      "prompt_sha256": "a2330b4970d8b18317e04d1e5106546caae3c3ab516d548bd34b407cbe083786",
+      "input_sha256": "b3bab0a8ef4d5d857c12635a98ae97b27a4d1fac32b1f312f7385171ff33c270",
+      "started_at_ns": 1791958486606916200,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 3,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1557,
+      "completion_tokens": 10,
+      "response": "{\"mask\":3,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 3,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "b3bab0a8ef4d5d857c12635a98ae97b27a4d1fac32b1f312f7385171ff33c270",
+        "started_at_ns": 1791958487771840800,
+        "finished_at_ns": 1791958487836396900,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "3fb9a403835215827b4f7f69f95a19eb1d9582515c115d1af37a82914458d848",
+            "bytes": 1962
+          },
+          "summary.csv": {
+            "sha256": "da8f1822f80522be9a15af660322eca751b85f1edd77792a792c6d1c820f92aa",
+            "bytes": 182
+          }
+        },
+        "operator_calls": 3
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "b3bab0a8ef4d5d857c12635a98ae97b27a4d1fac32b1f312f7385171ff33c270",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "3fb9a403835215827b4f7f69f95a19eb1d9582515c115d1af37a82914458d848",
+        "summary_sha256": "da8f1822f80522be9a15af660322eca751b85f1edd77792a792c6d1c820f92aa"
+      },
+      "directory": "executions/llm-plain/sealed-penguins-03/r0-m3",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958487837399800
+    },
+    {
+      "task_id": "sealed-penguins-03",
+      "repeat": 0,
+      "arm": "evidence",
+      "prompt_sha256": "bca4149d129cfea1de836e0ae32e3735d8a36ce95e1b6b8fe6f555d89ac3fbc5",
+      "input_sha256": "b3bab0a8ef4d5d857c12635a98ae97b27a4d1fac32b1f312f7385171ff33c270",
+      "started_at_ns": 1791958487838417500,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 3,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 2024,
+      "completion_tokens": 10,
+      "response": "{\"mask\":3,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 3,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "b3bab0a8ef4d5d857c12635a98ae97b27a4d1fac32b1f312f7385171ff33c270",
+        "started_at_ns": 1791958488665873400,
+        "finished_at_ns": 1791958488735232000,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "3fb9a403835215827b4f7f69f95a19eb1d9582515c115d1af37a82914458d848",
+            "bytes": 1962
+          },
+          "summary.csv": {
+            "sha256": "da8f1822f80522be9a15af660322eca751b85f1edd77792a792c6d1c820f92aa",
+            "bytes": 182
+          }
+        },
+        "operator_calls": 3
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "b3bab0a8ef4d5d857c12635a98ae97b27a4d1fac32b1f312f7385171ff33c270",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "3fb9a403835215827b4f7f69f95a19eb1d9582515c115d1af37a82914458d848",
+        "summary_sha256": "da8f1822f80522be9a15af660322eca751b85f1edd77792a792c6d1c820f92aa"
+      },
+      "directory": "executions/llm-evidence/sealed-penguins-03/r0-m3",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958488736482600
+    },
+    {
+      "task_id": "sealed-penguins-03",
+      "repeat": 1,
+      "arm": "evidence",
+      "prompt_sha256": "bca4149d129cfea1de836e0ae32e3735d8a36ce95e1b6b8fe6f555d89ac3fbc5",
+      "input_sha256": "b3bab0a8ef4d5d857c12635a98ae97b27a4d1fac32b1f312f7385171ff33c270",
+      "started_at_ns": 1791958488736482600,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 3,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 2024,
+      "completion_tokens": 10,
+      "response": "{\"mask\":3,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 3,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "b3bab0a8ef4d5d857c12635a98ae97b27a4d1fac32b1f312f7385171ff33c270",
+        "started_at_ns": 1791958489536569100,
+        "finished_at_ns": 1791958489604711200,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "3fb9a403835215827b4f7f69f95a19eb1d9582515c115d1af37a82914458d848",
+            "bytes": 1962
+          },
+          "summary.csv": {
+            "sha256": "da8f1822f80522be9a15af660322eca751b85f1edd77792a792c6d1c820f92aa",
+            "bytes": 182
+          }
+        },
+        "operator_calls": 3
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "b3bab0a8ef4d5d857c12635a98ae97b27a4d1fac32b1f312f7385171ff33c270",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "3fb9a403835215827b4f7f69f95a19eb1d9582515c115d1af37a82914458d848",
+        "summary_sha256": "da8f1822f80522be9a15af660322eca751b85f1edd77792a792c6d1c820f92aa"
+      },
+      "directory": "executions/llm-evidence/sealed-penguins-03/r1-m3",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958489605475000
+    },
+    {
+      "task_id": "sealed-penguins-03",
+      "repeat": 1,
+      "arm": "plain",
+      "prompt_sha256": "a2330b4970d8b18317e04d1e5106546caae3c3ab516d548bd34b407cbe083786",
+      "input_sha256": "b3bab0a8ef4d5d857c12635a98ae97b27a4d1fac32b1f312f7385171ff33c270",
+      "started_at_ns": 1791958489606483500,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 3,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1557,
+      "completion_tokens": 10,
+      "response": "{\"mask\":3,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 3,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "b3bab0a8ef4d5d857c12635a98ae97b27a4d1fac32b1f312f7385171ff33c270",
+        "started_at_ns": 1791958490230018400,
+        "finished_at_ns": 1791958490295702400,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "3fb9a403835215827b4f7f69f95a19eb1d9582515c115d1af37a82914458d848",
+            "bytes": 1962
+          },
+          "summary.csv": {
+            "sha256": "da8f1822f80522be9a15af660322eca751b85f1edd77792a792c6d1c820f92aa",
+            "bytes": 182
+          }
+        },
+        "operator_calls": 3
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "b3bab0a8ef4d5d857c12635a98ae97b27a4d1fac32b1f312f7385171ff33c270",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "3fb9a403835215827b4f7f69f95a19eb1d9582515c115d1af37a82914458d848",
+        "summary_sha256": "da8f1822f80522be9a15af660322eca751b85f1edd77792a792c6d1c820f92aa"
+      },
+      "directory": "executions/llm-plain/sealed-penguins-03/r1-m3",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958490296704000
+    },
+    {
+      "task_id": "sealed-penguins-04",
+      "repeat": 0,
+      "arm": "plain",
+      "prompt_sha256": "9c3a5d4c7951918781f17b523dd4198ef35880141a1ea10d4e7edd06a855af46",
+      "input_sha256": "075a840a1376fa02c00051fb89a426b8b0f293530532ea0398f4a9761e19b354",
+      "started_at_ns": 1791958487120061800,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 4,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1520,
+      "completion_tokens": 10,
+      "response": "{\"mask\":4,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 4,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "075a840a1376fa02c00051fb89a426b8b0f293530532ea0398f4a9761e19b354",
+        "started_at_ns": 1791958487898207500,
+        "finished_at_ns": 1791958487966276700,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "8b95a02974f482e48e7fbd9ac6d88e862cb6c33f040be57a5ca396db3a785ba7",
+            "bytes": 2065
+          },
+          "summary.csv": {
+            "sha256": "88a016c068937442f0057bd4aef03f9f680f648ace9eed5334b6fc05d0e5cec8",
+            "bytes": 148
+          }
+        },
+        "operator_calls": 2
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "075a840a1376fa02c00051fb89a426b8b0f293530532ea0398f4a9761e19b354",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "8b95a02974f482e48e7fbd9ac6d88e862cb6c33f040be57a5ca396db3a785ba7",
+        "summary_sha256": "88a016c068937442f0057bd4aef03f9f680f648ace9eed5334b6fc05d0e5cec8"
+      },
+      "directory": "executions/llm-plain/sealed-penguins-04/r0-m4",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958487967277700
+    },
+    {
+      "task_id": "sealed-penguins-04",
+      "repeat": 0,
+      "arm": "evidence",
+      "prompt_sha256": "91c45ecbd5667bde134edf0fcca4fc8ac6b23fbf6fcc6cd69e42bcfc83631bb1",
+      "input_sha256": "075a840a1376fa02c00051fb89a426b8b0f293530532ea0398f4a9761e19b354",
+      "started_at_ns": 1791958487968280000,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 4,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1987,
+      "completion_tokens": 10,
+      "response": "{\"mask\":4,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 4,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "075a840a1376fa02c00051fb89a426b8b0f293530532ea0398f4a9761e19b354",
+        "started_at_ns": 1791958488653785500,
+        "finished_at_ns": 1791958488723815300,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "8b95a02974f482e48e7fbd9ac6d88e862cb6c33f040be57a5ca396db3a785ba7",
+            "bytes": 2065
+          },
+          "summary.csv": {
+            "sha256": "88a016c068937442f0057bd4aef03f9f680f648ace9eed5334b6fc05d0e5cec8",
+            "bytes": 148
+          }
+        },
+        "operator_calls": 2
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "075a840a1376fa02c00051fb89a426b8b0f293530532ea0398f4a9761e19b354",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "8b95a02974f482e48e7fbd9ac6d88e862cb6c33f040be57a5ca396db3a785ba7",
+        "summary_sha256": "88a016c068937442f0057bd4aef03f9f680f648ace9eed5334b6fc05d0e5cec8"
+      },
+      "directory": "executions/llm-evidence/sealed-penguins-04/r0-m4",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958488724818300
+    },
+    {
+      "task_id": "sealed-penguins-04",
+      "repeat": 1,
+      "arm": "evidence",
+      "prompt_sha256": "91c45ecbd5667bde134edf0fcca4fc8ac6b23fbf6fcc6cd69e42bcfc83631bb1",
+      "input_sha256": "075a840a1376fa02c00051fb89a426b8b0f293530532ea0398f4a9761e19b354",
+      "started_at_ns": 1791958488725821900,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 4,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1987,
+      "completion_tokens": 10,
+      "response": "{\"mask\":4,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 4,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "075a840a1376fa02c00051fb89a426b8b0f293530532ea0398f4a9761e19b354",
+        "started_at_ns": 1791958489531833300,
+        "finished_at_ns": 1791958489600370400,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "8b95a02974f482e48e7fbd9ac6d88e862cb6c33f040be57a5ca396db3a785ba7",
+            "bytes": 2065
+          },
+          "summary.csv": {
+            "sha256": "88a016c068937442f0057bd4aef03f9f680f648ace9eed5334b6fc05d0e5cec8",
+            "bytes": 148
+          }
+        },
+        "operator_calls": 2
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "075a840a1376fa02c00051fb89a426b8b0f293530532ea0398f4a9761e19b354",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "8b95a02974f482e48e7fbd9ac6d88e862cb6c33f040be57a5ca396db3a785ba7",
+        "summary_sha256": "88a016c068937442f0057bd4aef03f9f680f648ace9eed5334b6fc05d0e5cec8"
+      },
+      "directory": "executions/llm-evidence/sealed-penguins-04/r1-m4",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958489601875400
+    },
+    {
+      "task_id": "sealed-penguins-04",
+      "repeat": 1,
+      "arm": "plain",
+      "prompt_sha256": "9c3a5d4c7951918781f17b523dd4198ef35880141a1ea10d4e7edd06a855af46",
+      "input_sha256": "075a840a1376fa02c00051fb89a426b8b0f293530532ea0398f4a9761e19b354",
+      "started_at_ns": 1791958489603256900,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 4,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1520,
+      "completion_tokens": 10,
+      "response": "{\"mask\":4,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 4,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "075a840a1376fa02c00051fb89a426b8b0f293530532ea0398f4a9761e19b354",
+        "started_at_ns": 1791958490523025600,
+        "finished_at_ns": 1791958490590423000,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "8b95a02974f482e48e7fbd9ac6d88e862cb6c33f040be57a5ca396db3a785ba7",
+            "bytes": 2065
+          },
+          "summary.csv": {
+            "sha256": "88a016c068937442f0057bd4aef03f9f680f648ace9eed5334b6fc05d0e5cec8",
+            "bytes": 148
+          }
+        },
+        "operator_calls": 2
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "075a840a1376fa02c00051fb89a426b8b0f293530532ea0398f4a9761e19b354",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "8b95a02974f482e48e7fbd9ac6d88e862cb6c33f040be57a5ca396db3a785ba7",
+        "summary_sha256": "88a016c068937442f0057bd4aef03f9f680f648ace9eed5334b6fc05d0e5cec8"
+      },
+      "directory": "executions/llm-plain/sealed-penguins-04/r1-m4",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958490591785500
+    },
+    {
+      "task_id": "sealed-penguins-05",
+      "repeat": 0,
+      "arm": "plain",
+      "prompt_sha256": "9b73c0f7c2836aa9551669d1ceb28576306c28a10641603f7e99e1dac23b81ee",
+      "input_sha256": "a8e087b04ba2e8ae37acf4b0c7dd2b0997cf0b016e3f2d5dcdb966db6d1a487a",
+      "started_at_ns": 1791958487162871300,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 5,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1561,
+      "completion_tokens": 10,
+      "response": "{\"mask\":5,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 5,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "a8e087b04ba2e8ae37acf4b0c7dd2b0997cf0b016e3f2d5dcdb966db6d1a487a",
+        "started_at_ns": 1791958487866205400,
+        "finished_at_ns": 1791958487931963000,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "6a4cafe12f5149274be4c4899be4a2297444d9555ee266695a2344c4bfa4518e",
+            "bytes": 1963
+          },
+          "summary.csv": {
+            "sha256": "505ce4cd65ea392adaa5ec2cafc5931fca1cab8392d5082cfbbeafa5c21b519f",
+            "bytes": 182
+          }
+        },
+        "operator_calls": 3
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "a8e087b04ba2e8ae37acf4b0c7dd2b0997cf0b016e3f2d5dcdb966db6d1a487a",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "6a4cafe12f5149274be4c4899be4a2297444d9555ee266695a2344c4bfa4518e",
+        "summary_sha256": "505ce4cd65ea392adaa5ec2cafc5931fca1cab8392d5082cfbbeafa5c21b519f"
+      },
+      "directory": "executions/llm-plain/sealed-penguins-05/r0-m5",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958487933353700
+    },
+    {
+      "task_id": "sealed-penguins-05",
+      "repeat": 0,
+      "arm": "evidence",
+      "prompt_sha256": "8777964089d40a7070113fb88e041fe1ccf726f1462d8efc5e6806ef2778e5f3",
+      "input_sha256": "a8e087b04ba2e8ae37acf4b0c7dd2b0997cf0b016e3f2d5dcdb966db6d1a487a",
+      "started_at_ns": 1791958487934357500,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 5,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 2028,
+      "completion_tokens": 10,
+      "response": "{\"mask\":5,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 5,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "a8e087b04ba2e8ae37acf4b0c7dd2b0997cf0b016e3f2d5dcdb966db6d1a487a",
+        "started_at_ns": 1791958489214368300,
+        "finished_at_ns": 1791958489279688400,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "6a4cafe12f5149274be4c4899be4a2297444d9555ee266695a2344c4bfa4518e",
+            "bytes": 1963
+          },
+          "summary.csv": {
+            "sha256": "505ce4cd65ea392adaa5ec2cafc5931fca1cab8392d5082cfbbeafa5c21b519f",
+            "bytes": 182
+          }
+        },
+        "operator_calls": 3
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "a8e087b04ba2e8ae37acf4b0c7dd2b0997cf0b016e3f2d5dcdb966db6d1a487a",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "6a4cafe12f5149274be4c4899be4a2297444d9555ee266695a2344c4bfa4518e",
+        "summary_sha256": "505ce4cd65ea392adaa5ec2cafc5931fca1cab8392d5082cfbbeafa5c21b519f"
+      },
+      "directory": "executions/llm-evidence/sealed-penguins-05/r0-m5",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958489280850400
+    },
+    {
+      "task_id": "sealed-penguins-05",
+      "repeat": 1,
+      "arm": "evidence",
+      "prompt_sha256": "8777964089d40a7070113fb88e041fe1ccf726f1462d8efc5e6806ef2778e5f3",
+      "input_sha256": "a8e087b04ba2e8ae37acf4b0c7dd2b0997cf0b016e3f2d5dcdb966db6d1a487a",
+      "started_at_ns": 1791958489281855100,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 5,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 2028,
+      "completion_tokens": 10,
+      "response": "{\"mask\":5,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 5,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "a8e087b04ba2e8ae37acf4b0c7dd2b0997cf0b016e3f2d5dcdb966db6d1a487a",
+        "started_at_ns": 1791958490666177100,
+        "finished_at_ns": 1791958490738461700,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "6a4cafe12f5149274be4c4899be4a2297444d9555ee266695a2344c4bfa4518e",
+            "bytes": 1963
+          },
+          "summary.csv": {
+            "sha256": "505ce4cd65ea392adaa5ec2cafc5931fca1cab8392d5082cfbbeafa5c21b519f",
+            "bytes": 182
+          }
+        },
+        "operator_calls": 3
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "a8e087b04ba2e8ae37acf4b0c7dd2b0997cf0b016e3f2d5dcdb966db6d1a487a",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "6a4cafe12f5149274be4c4899be4a2297444d9555ee266695a2344c4bfa4518e",
+        "summary_sha256": "505ce4cd65ea392adaa5ec2cafc5931fca1cab8392d5082cfbbeafa5c21b519f"
+      },
+      "directory": "executions/llm-evidence/sealed-penguins-05/r1-m5",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958490739477200
+    },
+    {
+      "task_id": "sealed-penguins-05",
+      "repeat": 1,
+      "arm": "plain",
+      "prompt_sha256": "9b73c0f7c2836aa9551669d1ceb28576306c28a10641603f7e99e1dac23b81ee",
+      "input_sha256": "a8e087b04ba2e8ae37acf4b0c7dd2b0997cf0b016e3f2d5dcdb966db6d1a487a",
+      "started_at_ns": 1791958490740553400,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 5,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1561,
+      "completion_tokens": 10,
+      "response": "{\"mask\":5,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 5,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "a8e087b04ba2e8ae37acf4b0c7dd2b0997cf0b016e3f2d5dcdb966db6d1a487a",
+        "started_at_ns": 1791958491890163300,
+        "finished_at_ns": 1791958491957441300,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "6a4cafe12f5149274be4c4899be4a2297444d9555ee266695a2344c4bfa4518e",
+            "bytes": 1963
+          },
+          "summary.csv": {
+            "sha256": "505ce4cd65ea392adaa5ec2cafc5931fca1cab8392d5082cfbbeafa5c21b519f",
+            "bytes": 182
+          }
+        },
+        "operator_calls": 3
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "a8e087b04ba2e8ae37acf4b0c7dd2b0997cf0b016e3f2d5dcdb966db6d1a487a",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "6a4cafe12f5149274be4c4899be4a2297444d9555ee266695a2344c4bfa4518e",
+        "summary_sha256": "505ce4cd65ea392adaa5ec2cafc5931fca1cab8392d5082cfbbeafa5c21b519f"
+      },
+      "directory": "executions/llm-plain/sealed-penguins-05/r1-m5",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958491957441300
+    },
+    {
+      "task_id": "sealed-penguins-06",
+      "repeat": 0,
+      "arm": "plain",
+      "prompt_sha256": "4cde8739271fedc2c9dd2fc4b5794897c564d12312cdcd5321a575555897289f",
+      "input_sha256": "604aa7ba1d56ebbc4c3f567744d39ecec14990c2787a0d5973c8baee4d54dd01",
+      "started_at_ns": 1791958490934710700,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 6,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1560,
+      "completion_tokens": 10,
+      "response": "{\"mask\":6,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 6,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "604aa7ba1d56ebbc4c3f567744d39ecec14990c2787a0d5973c8baee4d54dd01",
+        "started_at_ns": 1791958491691814300,
+        "finished_at_ns": 1791958491756344800,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "e3e6e78c7bf505267bcce42c925a33640260e6a69bb2499ec5ea63fe746e37bb",
+            "bytes": 1999
+          },
+          "summary.csv": {
+            "sha256": "60dbfa11f83dab60fec48c829e31280f00bfc3d5c0f2aee9e2bbb8944f577bd5",
+            "bytes": 145
+          }
+        },
+        "operator_calls": 3
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "604aa7ba1d56ebbc4c3f567744d39ecec14990c2787a0d5973c8baee4d54dd01",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "e3e6e78c7bf505267bcce42c925a33640260e6a69bb2499ec5ea63fe746e37bb",
+        "summary_sha256": "60dbfa11f83dab60fec48c829e31280f00bfc3d5c0f2aee9e2bbb8944f577bd5"
+      },
+      "directory": "executions/llm-plain/sealed-penguins-06/r0-m6",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958491757348300
+    },
+    {
+      "task_id": "sealed-penguins-06",
+      "repeat": 0,
+      "arm": "evidence",
+      "prompt_sha256": "35fcdfd9a8764df770477a55361392252f72d7d099a1d1217742e8351dfcfad6",
+      "input_sha256": "604aa7ba1d56ebbc4c3f567744d39ecec14990c2787a0d5973c8baee4d54dd01",
+      "started_at_ns": 1791958491758350400,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 6,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 2027,
+      "completion_tokens": 10,
+      "response": "{\"mask\":6,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 6,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "604aa7ba1d56ebbc4c3f567744d39ecec14990c2787a0d5973c8baee4d54dd01",
+        "started_at_ns": 1791958492497515100,
+        "finished_at_ns": 1791958492564360900,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "e3e6e78c7bf505267bcce42c925a33640260e6a69bb2499ec5ea63fe746e37bb",
+            "bytes": 1999
+          },
+          "summary.csv": {
+            "sha256": "60dbfa11f83dab60fec48c829e31280f00bfc3d5c0f2aee9e2bbb8944f577bd5",
+            "bytes": 145
+          }
+        },
+        "operator_calls": 3
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "604aa7ba1d56ebbc4c3f567744d39ecec14990c2787a0d5973c8baee4d54dd01",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "e3e6e78c7bf505267bcce42c925a33640260e6a69bb2499ec5ea63fe746e37bb",
+        "summary_sha256": "60dbfa11f83dab60fec48c829e31280f00bfc3d5c0f2aee9e2bbb8944f577bd5"
+      },
+      "directory": "executions/llm-evidence/sealed-penguins-06/r0-m6",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958492565984300
+    },
+    {
+      "task_id": "sealed-penguins-06",
+      "repeat": 1,
+      "arm": "evidence",
+      "prompt_sha256": "35fcdfd9a8764df770477a55361392252f72d7d099a1d1217742e8351dfcfad6",
+      "input_sha256": "604aa7ba1d56ebbc4c3f567744d39ecec14990c2787a0d5973c8baee4d54dd01",
+      "started_at_ns": 1791958492565984300,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 6,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 2027,
+      "completion_tokens": 10,
+      "response": "{\"mask\":6,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 6,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "604aa7ba1d56ebbc4c3f567744d39ecec14990c2787a0d5973c8baee4d54dd01",
+        "started_at_ns": 1791958493356067000,
+        "finished_at_ns": 1791958493421828700,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "e3e6e78c7bf505267bcce42c925a33640260e6a69bb2499ec5ea63fe746e37bb",
+            "bytes": 1999
+          },
+          "summary.csv": {
+            "sha256": "60dbfa11f83dab60fec48c829e31280f00bfc3d5c0f2aee9e2bbb8944f577bd5",
+            "bytes": 145
+          }
+        },
+        "operator_calls": 3
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "604aa7ba1d56ebbc4c3f567744d39ecec14990c2787a0d5973c8baee4d54dd01",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "e3e6e78c7bf505267bcce42c925a33640260e6a69bb2499ec5ea63fe746e37bb",
+        "summary_sha256": "60dbfa11f83dab60fec48c829e31280f00bfc3d5c0f2aee9e2bbb8944f577bd5"
+      },
+      "directory": "executions/llm-evidence/sealed-penguins-06/r1-m6",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958493421828700
+    },
+    {
+      "task_id": "sealed-penguins-06",
+      "repeat": 1,
+      "arm": "plain",
+      "prompt_sha256": "4cde8739271fedc2c9dd2fc4b5794897c564d12312cdcd5321a575555897289f",
+      "input_sha256": "604aa7ba1d56ebbc4c3f567744d39ecec14990c2787a0d5973c8baee4d54dd01",
+      "started_at_ns": 1791958493423576800,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 6,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1560,
+      "completion_tokens": 10,
+      "response": "{\"mask\":6,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 6,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "604aa7ba1d56ebbc4c3f567744d39ecec14990c2787a0d5973c8baee4d54dd01",
+        "started_at_ns": 1791958494210347400,
+        "finished_at_ns": 1791958494275436600,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "e3e6e78c7bf505267bcce42c925a33640260e6a69bb2499ec5ea63fe746e37bb",
+            "bytes": 1999
+          },
+          "summary.csv": {
+            "sha256": "60dbfa11f83dab60fec48c829e31280f00bfc3d5c0f2aee9e2bbb8944f577bd5",
+            "bytes": 145
+          }
+        },
+        "operator_calls": 3
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "604aa7ba1d56ebbc4c3f567744d39ecec14990c2787a0d5973c8baee4d54dd01",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "e3e6e78c7bf505267bcce42c925a33640260e6a69bb2499ec5ea63fe746e37bb",
+        "summary_sha256": "60dbfa11f83dab60fec48c829e31280f00bfc3d5c0f2aee9e2bbb8944f577bd5"
+      },
+      "directory": "executions/llm-plain/sealed-penguins-06/r1-m6",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958494276440000
+    },
+    {
+      "task_id": "sealed-penguins-07",
+      "repeat": 0,
+      "arm": "plain",
+      "prompt_sha256": "53fba9a7e45e8698d62d2330a21ea3800219e35bc8324a36fd6c889e76536218",
+      "input_sha256": "9f4822af92c947c19c8a9124694dfff4dea3578e023206fac0cc84d2cf172fb7",
+      "started_at_ns": 1791958491223367100,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 7,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1581,
+      "completion_tokens": 10,
+      "response": "{\"mask\":7,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 7,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "9f4822af92c947c19c8a9124694dfff4dea3578e023206fac0cc84d2cf172fb7",
+        "started_at_ns": 1791958491919611200,
+        "finished_at_ns": 1791958491986839000,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "5118a9c8367afeb46bcd030aa2e6c7be7b8401b784b89f70260fbe6f21ebebae",
+            "bytes": 1990
+          },
+          "summary.csv": {
+            "sha256": "e9d9d0dea67bb7463c2d79e958e426f8a9a3b9ab00378a52da288038376a27a3",
+            "bytes": 179
+          }
+        },
+        "operator_calls": 4
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "9f4822af92c947c19c8a9124694dfff4dea3578e023206fac0cc84d2cf172fb7",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "5118a9c8367afeb46bcd030aa2e6c7be7b8401b784b89f70260fbe6f21ebebae",
+        "summary_sha256": "e9d9d0dea67bb7463c2d79e958e426f8a9a3b9ab00378a52da288038376a27a3"
+      },
+      "directory": "executions/llm-plain/sealed-penguins-07/r0-m7",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958491987841600
+    },
+    {
+      "task_id": "sealed-penguins-07",
+      "repeat": 0,
+      "arm": "evidence",
+      "prompt_sha256": "988f7c959fab69913c4c5bf4f9493f4fbb2dbdfe82eb935faaf4e45249d0c3ae",
+      "input_sha256": "9f4822af92c947c19c8a9124694dfff4dea3578e023206fac0cc84d2cf172fb7",
+      "started_at_ns": 1791958491988844400,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 7,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 2048,
+      "completion_tokens": 10,
+      "response": "{\"mask\":7,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 7,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "9f4822af92c947c19c8a9124694dfff4dea3578e023206fac0cc84d2cf172fb7",
+        "started_at_ns": 1791958492877384900,
+        "finished_at_ns": 1791958492943590300,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "5118a9c8367afeb46bcd030aa2e6c7be7b8401b784b89f70260fbe6f21ebebae",
+            "bytes": 1990
+          },
+          "summary.csv": {
+            "sha256": "e9d9d0dea67bb7463c2d79e958e426f8a9a3b9ab00378a52da288038376a27a3",
+            "bytes": 179
+          }
+        },
+        "operator_calls": 4
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "9f4822af92c947c19c8a9124694dfff4dea3578e023206fac0cc84d2cf172fb7",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "5118a9c8367afeb46bcd030aa2e6c7be7b8401b784b89f70260fbe6f21ebebae",
+        "summary_sha256": "e9d9d0dea67bb7463c2d79e958e426f8a9a3b9ab00378a52da288038376a27a3"
+      },
+      "directory": "executions/llm-evidence/sealed-penguins-07/r0-m7",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958492944717400
+    },
+    {
+      "task_id": "sealed-penguins-07",
+      "repeat": 1,
+      "arm": "evidence",
+      "prompt_sha256": "988f7c959fab69913c4c5bf4f9493f4fbb2dbdfe82eb935faaf4e45249d0c3ae",
+      "input_sha256": "9f4822af92c947c19c8a9124694dfff4dea3578e023206fac0cc84d2cf172fb7",
+      "started_at_ns": 1791958492945752400,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 7,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 2048,
+      "completion_tokens": 10,
+      "response": "{\"mask\":7,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 7,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "9f4822af92c947c19c8a9124694dfff4dea3578e023206fac0cc84d2cf172fb7",
+        "started_at_ns": 1791958494420699800,
+        "finished_at_ns": 1791958494487539100,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "5118a9c8367afeb46bcd030aa2e6c7be7b8401b784b89f70260fbe6f21ebebae",
+            "bytes": 1990
+          },
+          "summary.csv": {
+            "sha256": "e9d9d0dea67bb7463c2d79e958e426f8a9a3b9ab00378a52da288038376a27a3",
+            "bytes": 179
+          }
+        },
+        "operator_calls": 4
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "9f4822af92c947c19c8a9124694dfff4dea3578e023206fac0cc84d2cf172fb7",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "5118a9c8367afeb46bcd030aa2e6c7be7b8401b784b89f70260fbe6f21ebebae",
+        "summary_sha256": "e9d9d0dea67bb7463c2d79e958e426f8a9a3b9ab00378a52da288038376a27a3"
+      },
+      "directory": "executions/llm-evidence/sealed-penguins-07/r1-m7",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958494488612100
+    },
+    {
+      "task_id": "sealed-penguins-07",
+      "repeat": 1,
+      "arm": "plain",
+      "prompt_sha256": "53fba9a7e45e8698d62d2330a21ea3800219e35bc8324a36fd6c889e76536218",
+      "input_sha256": "9f4822af92c947c19c8a9124694dfff4dea3578e023206fac0cc84d2cf172fb7",
+      "started_at_ns": 1791958494489617200,
+      "status": "completed",
+      "quality": 1,
+      "action": {
+        "mask": 7,
+        "reject": false
+      },
+      "reference_valid": true,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1581,
+      "completion_tokens": 10,
+      "response": "{\"mask\":7,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 7,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "9f4822af92c947c19c8a9124694dfff4dea3578e023206fac0cc84d2cf172fb7",
+        "started_at_ns": 1791958495778002500,
+        "finished_at_ns": 1791958495846960300,
+        "status": "completed",
+        "stderr": "",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "5118a9c8367afeb46bcd030aa2e6c7be7b8401b784b89f70260fbe6f21ebebae",
+            "bytes": 1990
+          },
+          "summary.csv": {
+            "sha256": "e9d9d0dea67bb7463c2d79e958e426f8a9a3b9ab00378a52da288038376a27a3",
+            "bytes": 179
+          }
+        },
+        "operator_calls": 4
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "9f4822af92c947c19c8a9124694dfff4dea3578e023206fac0cc84d2cf172fb7",
+        "deliverable": true,
+        "reference_valid": true,
+        "state": "passed",
+        "checks": [
+          {
+            "id": "original_cells_and_policy",
+            "passed": true
+          },
+          {
+            "id": "summary_schema",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Adelie",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Chinstrap",
+            "passed": true
+          },
+          {
+            "id": "numeric_group_Gentoo",
+            "passed": true
+          }
+        ],
+        "output_sha256": "5118a9c8367afeb46bcd030aa2e6c7be7b8401b784b89f70260fbe6f21ebebae",
+        "summary_sha256": "e9d9d0dea67bb7463c2d79e958e426f8a9a3b9ab00378a52da288038376a27a3"
+      },
+      "directory": "executions/llm-plain/sealed-penguins-07/r1-m7",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958495847961600
+    },
+    {
+      "task_id": "sealed-boundary-no-test",
+      "repeat": 0,
+      "arm": "plain",
+      "prompt_sha256": "8f974e73f4f37227ae0c8e1d9c7a6fc2a8729c0d5c71327b4225767590ab0561",
+      "input_sha256": "0359dd91f17b84b9ea3583623d178d0c2e1c2cdacc8a37b627ab9be94372036f",
+      "started_at_ns": 1791958492535307400,
+      "status": "completed",
+      "quality": 0,
+      "action": {
+        "mask": null,
+        "reject": true
+      },
+      "reference_valid": false,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1049,
+      "completion_tokens": 10,
+      "response": "{\"mask\":null,\"reject\":true}",
+      "finish_reason": "stop",
+      "correct_boundary_rejection": true,
+      "finished_at_ns": 1791958493718424900
+    },
+    {
+      "task_id": "sealed-boundary-no-test",
+      "repeat": 0,
+      "arm": "evidence",
+      "prompt_sha256": "0ef265ed7609bee79f2d6f7ce5f3014ab603d0cd7b45b8ed8217ebf22ffb8059",
+      "input_sha256": "0359dd91f17b84b9ea3583623d178d0c2e1c2cdacc8a37b627ab9be94372036f",
+      "started_at_ns": 1791958493718947600,
+      "status": "completed",
+      "quality": 0,
+      "action": {
+        "mask": null,
+        "reject": true
+      },
+      "reference_valid": false,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1433,
+      "completion_tokens": 10,
+      "response": "{\"mask\":null,\"reject\":true}",
+      "finish_reason": "stop",
+      "correct_boundary_rejection": true,
+      "finished_at_ns": 1791958494613521200
+    },
+    {
+      "task_id": "sealed-boundary-no-test",
+      "repeat": 1,
+      "arm": "evidence",
+      "prompt_sha256": "0ef265ed7609bee79f2d6f7ce5f3014ab603d0cd7b45b8ed8217ebf22ffb8059",
+      "input_sha256": "0359dd91f17b84b9ea3583623d178d0c2e1c2cdacc8a37b627ab9be94372036f",
+      "started_at_ns": 1791958494615036300,
+      "status": "completed",
+      "quality": 0,
+      "action": {
+        "mask": null,
+        "reject": true
+      },
+      "reference_valid": false,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1433,
+      "completion_tokens": 10,
+      "response": "{\"mask\":null,\"reject\":true}",
+      "finish_reason": "stop",
+      "correct_boundary_rejection": true,
+      "finished_at_ns": 1791958495812308000
+    },
+    {
+      "task_id": "sealed-boundary-no-test",
+      "repeat": 1,
+      "arm": "plain",
+      "prompt_sha256": "8f974e73f4f37227ae0c8e1d9c7a6fc2a8729c0d5c71327b4225767590ab0561",
+      "input_sha256": "0359dd91f17b84b9ea3583623d178d0c2e1c2cdacc8a37b627ab9be94372036f",
+      "started_at_ns": 1791958495813313200,
+      "status": "completed",
+      "quality": 0,
+      "action": {
+        "mask": null,
+        "reject": true
+      },
+      "reference_valid": false,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1049,
+      "completion_tokens": 10,
+      "response": "{\"mask\":null,\"reject\":true}",
+      "finish_reason": "stop",
+      "correct_boundary_rejection": true,
+      "finished_at_ns": 1791958497583406300
+    },
+    {
+      "task_id": "sealed-boundary-bad-number",
+      "repeat": 0,
+      "arm": "plain",
+      "prompt_sha256": "b5645b21cff53b44b770a4348cb4b625c4082a82c831433f7c4fccf1f601a295",
+      "input_sha256": "eaacfe4740a2b0c89580df6f6a0e607a51b3d7df6b70800bbb137d70ffd93780",
+      "started_at_ns": 1791958494848355300,
+      "status": "completed",
+      "quality": 0,
+      "action": {
+        "mask": 2,
+        "reject": false
+      },
+      "reference_valid": false,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1080,
+      "completion_tokens": 10,
+      "response": "{\"mask\":2,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 2,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "eaacfe4740a2b0c89580df6f6a0e607a51b3d7df6b70800bbb137d70ffd93780",
+        "started_at_ns": 1791958495808854900,
+        "finished_at_ns": 1791958495874849200,
+        "status": "failed",
+        "stderr": "Traceback (most recent call last):\r\n  File \"D:\\qing_zhuomian_\\������\\skillnet\\�о�ʵ��\\2026-10-14-conditional-utility\\experiment-v1\\executions\\llm-plain\\sealed-boundary-bad-number\\r0-m2\\main.py\", line 44, in <module>\r\n    numeric = [Decimal(v.strip()) for v in values if v.strip()]\r\n               ^^^^^^^^^^^^^^^^^^\r\ndecimal.InvalidOperation: [<class 'decimal.ConversionSyntax'>]\r\n",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "5fb7feb8b049f0b65f806788f499ea897410a4414f9afa6be1adaeeaa28dee2d",
+            "bytes": 1308
+          }
+        },
+        "operator_calls": 2
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "eaacfe4740a2b0c89580df6f6a0e607a51b3d7df6b70800bbb137d70ffd93780",
+        "deliverable": false,
+        "reference_valid": false,
+        "state": "unknown",
+        "checks": [],
+        "reason": "reference rejects nonnumeric input"
+      },
+      "directory": "executions/llm-plain/sealed-boundary-bad-number/r0-m2",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958495874849200
+    },
+    {
+      "task_id": "sealed-boundary-bad-number",
+      "repeat": 0,
+      "arm": "evidence",
+      "prompt_sha256": "49e966137df02c461d06297f4eca24f7b0356e12496c0ef7795dcc9ae0429e3c",
+      "input_sha256": "eaacfe4740a2b0c89580df6f6a0e607a51b3d7df6b70800bbb137d70ffd93780",
+      "started_at_ns": 1791958495875850600,
+      "status": "completed",
+      "quality": 0,
+      "action": {
+        "mask": 2,
+        "reject": false
+      },
+      "reference_valid": false,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1452,
+      "completion_tokens": 10,
+      "response": "{\"mask\":2,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 2,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "eaacfe4740a2b0c89580df6f6a0e607a51b3d7df6b70800bbb137d70ffd93780",
+        "started_at_ns": 1791958497183705600,
+        "finished_at_ns": 1791958497247691000,
+        "status": "failed",
+        "stderr": "Traceback (most recent call last):\r\n  File \"D:\\qing_zhuomian_\\������\\skillnet\\�о�ʵ��\\2026-10-14-conditional-utility\\experiment-v1\\executions\\llm-evidence\\sealed-boundary-bad-number\\r0-m2\\main.py\", line 44, in <module>\r\n    numeric = [Decimal(v.strip()) for v in values if v.strip()]\r\n               ^^^^^^^^^^^^^^^^^^\r\ndecimal.InvalidOperation: [<class 'decimal.ConversionSyntax'>]\r\n",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "5fb7feb8b049f0b65f806788f499ea897410a4414f9afa6be1adaeeaa28dee2d",
+            "bytes": 1308
+          }
+        },
+        "operator_calls": 2
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "eaacfe4740a2b0c89580df6f6a0e607a51b3d7df6b70800bbb137d70ffd93780",
+        "deliverable": false,
+        "reference_valid": false,
+        "state": "unknown",
+        "checks": [],
+        "reason": "reference rejects nonnumeric input"
+      },
+      "directory": "executions/llm-evidence/sealed-boundary-bad-number/r0-m2",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958497247691000
+    },
+    {
+      "task_id": "sealed-boundary-bad-number",
+      "repeat": 1,
+      "arm": "evidence",
+      "prompt_sha256": "49e966137df02c461d06297f4eca24f7b0356e12496c0ef7795dcc9ae0429e3c",
+      "input_sha256": "eaacfe4740a2b0c89580df6f6a0e607a51b3d7df6b70800bbb137d70ffd93780",
+      "started_at_ns": 1791958497248693000,
+      "status": "completed",
+      "quality": 0,
+      "action": {
+        "mask": 2,
+        "reject": false
+      },
+      "reference_valid": false,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1452,
+      "completion_tokens": 10,
+      "response": "{\"mask\":2,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 2,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "eaacfe4740a2b0c89580df6f6a0e607a51b3d7df6b70800bbb137d70ffd93780",
+        "started_at_ns": 1791958498116252500,
+        "finished_at_ns": 1791958498181535000,
+        "status": "failed",
+        "stderr": "Traceback (most recent call last):\r\n  File \"D:\\qing_zhuomian_\\������\\skillnet\\�о�ʵ��\\2026-10-14-conditional-utility\\experiment-v1\\executions\\llm-evidence\\sealed-boundary-bad-number\\r1-m2\\main.py\", line 44, in <module>\r\n    numeric = [Decimal(v.strip()) for v in values if v.strip()]\r\n               ^^^^^^^^^^^^^^^^^^\r\ndecimal.InvalidOperation: [<class 'decimal.ConversionSyntax'>]\r\n",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "5fb7feb8b049f0b65f806788f499ea897410a4414f9afa6be1adaeeaa28dee2d",
+            "bytes": 1308
+          }
+        },
+        "operator_calls": 2
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "eaacfe4740a2b0c89580df6f6a0e607a51b3d7df6b70800bbb137d70ffd93780",
+        "deliverable": false,
+        "reference_valid": false,
+        "state": "unknown",
+        "checks": [],
+        "reason": "reference rejects nonnumeric input"
+      },
+      "directory": "executions/llm-evidence/sealed-boundary-bad-number/r1-m2",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958498181535000
+    },
+    {
+      "task_id": "sealed-boundary-bad-number",
+      "repeat": 1,
+      "arm": "plain",
+      "prompt_sha256": "b5645b21cff53b44b770a4348cb4b625c4082a82c831433f7c4fccf1f601a295",
+      "input_sha256": "eaacfe4740a2b0c89580df6f6a0e607a51b3d7df6b70800bbb137d70ffd93780",
+      "started_at_ns": 1791958498183032200,
+      "status": "completed",
+      "quality": 0,
+      "action": {
+        "mask": 2,
+        "reject": false
+      },
+      "reference_valid": false,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1080,
+      "completion_tokens": 10,
+      "response": "{\"mask\":2,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 2,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "eaacfe4740a2b0c89580df6f6a0e607a51b3d7df6b70800bbb137d70ffd93780",
+        "started_at_ns": 1791958499017613400,
+        "finished_at_ns": 1791958499080819500,
+        "status": "failed",
+        "stderr": "Traceback (most recent call last):\r\n  File \"D:\\qing_zhuomian_\\������\\skillnet\\�о�ʵ��\\2026-10-14-conditional-utility\\experiment-v1\\executions\\llm-plain\\sealed-boundary-bad-number\\r1-m2\\main.py\", line 44, in <module>\r\n    numeric = [Decimal(v.strip()) for v in values if v.strip()]\r\n               ^^^^^^^^^^^^^^^^^^\r\ndecimal.InvalidOperation: [<class 'decimal.ConversionSyntax'>]\r\n",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "5fb7feb8b049f0b65f806788f499ea897410a4414f9afa6be1adaeeaa28dee2d",
+            "bytes": 1308
+          }
+        },
+        "operator_calls": 2
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "eaacfe4740a2b0c89580df6f6a0e607a51b3d7df6b70800bbb137d70ffd93780",
+        "deliverable": false,
+        "reference_valid": false,
+        "state": "unknown",
+        "checks": [],
+        "reason": "reference rejects nonnumeric input"
+      },
+      "directory": "executions/llm-plain/sealed-boundary-bad-number/r1-m2",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958499081924200
+    },
+    {
+      "task_id": "sealed-boundary-unknown-goal",
+      "repeat": 0,
+      "arm": "plain",
+      "prompt_sha256": "4b51f78798c8d25dc0a199797f2d6478748150bef4a78f436ae97874eb03c29d",
+      "input_sha256": "93d73e0040e14826409e4153c0698549c0e95ed3b3477c3be293ab62b9c7da31",
+      "started_at_ns": 1791958496415098200,
+      "status": "completed",
+      "quality": 0,
+      "action": {
+        "mask": null,
+        "reject": true
+      },
+      "reference_valid": false,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1117,
+      "completion_tokens": 10,
+      "response": "{\"mask\":null,\"reject\":true}",
+      "finish_reason": "stop",
+      "correct_boundary_rejection": true,
+      "finished_at_ns": 1791958497020821100
+    },
+    {
+      "task_id": "sealed-boundary-unknown-goal",
+      "repeat": 0,
+      "arm": "evidence",
+      "prompt_sha256": "5862dd6addf3e4c8da91b1b83187fdf774c0a3d627daa17e24838246776759a8",
+      "input_sha256": "93d73e0040e14826409e4153c0698549c0e95ed3b3477c3be293ab62b9c7da31",
+      "started_at_ns": 1791958497022328800,
+      "status": "completed",
+      "quality": 0,
+      "action": {
+        "mask": null,
+        "reject": true
+      },
+      "reference_valid": false,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1581,
+      "completion_tokens": 10,
+      "response": "{\"mask\":null,\"reject\":true}",
+      "finish_reason": "stop",
+      "correct_boundary_rejection": true,
+      "finished_at_ns": 1791958497845478400
+    },
+    {
+      "task_id": "sealed-boundary-unknown-goal",
+      "repeat": 1,
+      "arm": "evidence",
+      "prompt_sha256": "5862dd6addf3e4c8da91b1b83187fdf774c0a3d627daa17e24838246776759a8",
+      "input_sha256": "93d73e0040e14826409e4153c0698549c0e95ed3b3477c3be293ab62b9c7da31",
+      "started_at_ns": 1791958497846996900,
+      "status": "completed",
+      "quality": 0,
+      "action": {
+        "mask": null,
+        "reject": true
+      },
+      "reference_valid": false,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1581,
+      "completion_tokens": 10,
+      "response": "{\"mask\":null,\"reject\":true}",
+      "finish_reason": "stop",
+      "correct_boundary_rejection": true,
+      "finished_at_ns": 1791958498395845900
+    },
+    {
+      "task_id": "sealed-boundary-unknown-goal",
+      "repeat": 1,
+      "arm": "plain",
+      "prompt_sha256": "4b51f78798c8d25dc0a199797f2d6478748150bef4a78f436ae97874eb03c29d",
+      "input_sha256": "93d73e0040e14826409e4153c0698549c0e95ed3b3477c3be293ab62b9c7da31",
+      "started_at_ns": 1791958498396852400,
+      "status": "completed",
+      "quality": 0,
+      "action": {
+        "mask": null,
+        "reject": true
+      },
+      "reference_valid": false,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1117,
+      "completion_tokens": 10,
+      "response": "{\"mask\":null,\"reject\":true}",
+      "finish_reason": "stop",
+      "correct_boundary_rejection": true,
+      "finished_at_ns": 1791958499140372000
+    },
+    {
+      "task_id": "sealed-boundary-new-empty-group",
+      "repeat": 0,
+      "arm": "plain",
+      "prompt_sha256": "2e9219f1e537b7f6b34137297c45007ac7c4ce7dfdce9d58597ca9b60dca6994",
+      "input_sha256": "785a6b141b17b7a75cde313b4e79f89e2ca8b954f61e54c922f41bc46f729c35",
+      "started_at_ns": 1791958498173174500,
+      "status": "completed",
+      "quality": 0,
+      "action": {
+        "mask": 0,
+        "reject": false
+      },
+      "reference_valid": false,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1109,
+      "completion_tokens": 10,
+      "response": "{\"mask\":0,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 0,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "785a6b141b17b7a75cde313b4e79f89e2ca8b954f61e54c922f41bc46f729c35",
+        "started_at_ns": 1791958499066660200,
+        "finished_at_ns": 1791958499129985300,
+        "status": "failed",
+        "stderr": "Traceback (most recent call last):\r\n  File \"D:\\qing_zhuomian_\\������\\skillnet\\�о�ʵ��\\2026-10-14-conditional-utility\\experiment-v1\\executions\\llm-plain\\sealed-boundary-new-empty-group\\r0-m0\\main.py\", line 46, in <module>\r\n    raise ValueError('no finite numeric values for group')\r\nValueError: no finite numeric values for group\r\n",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "f88b68496ef09fddafbe18bc9066cafe9371c4b2a0331506b94247f3827be6f7",
+            "bytes": 1552
+          }
+        },
+        "operator_calls": 1
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "785a6b141b17b7a75cde313b4e79f89e2ca8b954f61e54c922f41bc46f729c35",
+        "deliverable": false,
+        "reference_valid": false,
+        "state": "unknown",
+        "checks": [],
+        "reason": "reference group has no numeric values"
+      },
+      "directory": "executions/llm-plain/sealed-boundary-new-empty-group/r0-m0",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958499131087600
+    },
+    {
+      "task_id": "sealed-boundary-new-empty-group",
+      "repeat": 0,
+      "arm": "evidence",
+      "prompt_sha256": "910a176501dfe61f905e49496cad50640938c55dc0a308f86d9b65ed4a567bd3",
+      "input_sha256": "785a6b141b17b7a75cde313b4e79f89e2ca8b954f61e54c922f41bc46f729c35",
+      "started_at_ns": 1791958499132596600,
+      "status": "completed",
+      "quality": 0,
+      "action": {
+        "mask": 0,
+        "reject": false
+      },
+      "reference_valid": false,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1576,
+      "completion_tokens": 10,
+      "response": "{\"mask\":0,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 0,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "785a6b141b17b7a75cde313b4e79f89e2ca8b954f61e54c922f41bc46f729c35",
+        "started_at_ns": 1791958500004837400,
+        "finished_at_ns": 1791958500070656900,
+        "status": "failed",
+        "stderr": "Traceback (most recent call last):\r\n  File \"D:\\qing_zhuomian_\\������\\skillnet\\�о�ʵ��\\2026-10-14-conditional-utility\\experiment-v1\\executions\\llm-evidence\\sealed-boundary-new-empty-group\\r0-m0\\main.py\", line 46, in <module>\r\n    raise ValueError('no finite numeric values for group')\r\nValueError: no finite numeric values for group\r\n",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "f88b68496ef09fddafbe18bc9066cafe9371c4b2a0331506b94247f3827be6f7",
+            "bytes": 1552
+          }
+        },
+        "operator_calls": 1
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "785a6b141b17b7a75cde313b4e79f89e2ca8b954f61e54c922f41bc46f729c35",
+        "deliverable": false,
+        "reference_valid": false,
+        "state": "unknown",
+        "checks": [],
+        "reason": "reference group has no numeric values"
+      },
+      "directory": "executions/llm-evidence/sealed-boundary-new-empty-group/r0-m0",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958500070656900
+    },
+    {
+      "task_id": "sealed-boundary-new-empty-group",
+      "repeat": 1,
+      "arm": "evidence",
+      "prompt_sha256": "910a176501dfe61f905e49496cad50640938c55dc0a308f86d9b65ed4a567bd3",
+      "input_sha256": "785a6b141b17b7a75cde313b4e79f89e2ca8b954f61e54c922f41bc46f729c35",
+      "started_at_ns": 1791958500072662900,
+      "status": "completed",
+      "quality": 0,
+      "action": {
+        "mask": 0,
+        "reject": false
+      },
+      "reference_valid": false,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1576,
+      "completion_tokens": 10,
+      "response": "{\"mask\":0,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 0,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "785a6b141b17b7a75cde313b4e79f89e2ca8b954f61e54c922f41bc46f729c35",
+        "started_at_ns": 1791958500898993400,
+        "finished_at_ns": 1791958500961923500,
+        "status": "failed",
+        "stderr": "Traceback (most recent call last):\r\n  File \"D:\\qing_zhuomian_\\������\\skillnet\\�о�ʵ��\\2026-10-14-conditional-utility\\experiment-v1\\executions\\llm-evidence\\sealed-boundary-new-empty-group\\r1-m0\\main.py\", line 46, in <module>\r\n    raise ValueError('no finite numeric values for group')\r\nValueError: no finite numeric values for group\r\n",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "f88b68496ef09fddafbe18bc9066cafe9371c4b2a0331506b94247f3827be6f7",
+            "bytes": 1552
+          }
+        },
+        "operator_calls": 1
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "785a6b141b17b7a75cde313b4e79f89e2ca8b954f61e54c922f41bc46f729c35",
+        "deliverable": false,
+        "reference_valid": false,
+        "state": "unknown",
+        "checks": [],
+        "reason": "reference group has no numeric values"
+      },
+      "directory": "executions/llm-evidence/sealed-boundary-new-empty-group/r1-m0",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958500962951400
+    },
+    {
+      "task_id": "sealed-boundary-new-empty-group",
+      "repeat": 1,
+      "arm": "plain",
+      "prompt_sha256": "2e9219f1e537b7f6b34137297c45007ac7c4ce7dfdce9d58597ca9b60dca6994",
+      "input_sha256": "785a6b141b17b7a75cde313b4e79f89e2ca8b954f61e54c922f41bc46f729c35",
+      "started_at_ns": 1791958500963972400,
+      "status": "completed",
+      "quality": 0,
+      "action": {
+        "mask": 0,
+        "reject": false
+      },
+      "reference_valid": false,
+      "http_status": 200,
+      "response_model": "deepseek-flash",
+      "system_fingerprint": "aeb56401ca74e127821c4f9126dcb669",
+      "prompt_tokens": 1109,
+      "completion_tokens": 10,
+      "response": "{\"mask\":0,\"reject\":false}",
+      "finish_reason": "stop",
+      "execution": {
+        "version": "conditional-tabular-operators-v1",
+        "mask": 0,
+        "code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+        "input_sha256": "785a6b141b17b7a75cde313b4e79f89e2ca8b954f61e54c922f41bc46f729c35",
+        "started_at_ns": 1791958502020910200,
+        "finished_at_ns": 1791958502084718600,
+        "status": "failed",
+        "stderr": "Traceback (most recent call last):\r\n  File \"D:\\qing_zhuomian_\\������\\skillnet\\�о�ʵ��\\2026-10-14-conditional-utility\\experiment-v1\\executions\\llm-plain\\sealed-boundary-new-empty-group\\r1-m0\\main.py\", line 46, in <module>\r\n    raise ValueError('no finite numeric values for group')\r\nValueError: no finite numeric values for group\r\n",
+        "artifacts": {
+          "output.csv": {
+            "sha256": "f88b68496ef09fddafbe18bc9066cafe9371c4b2a0331506b94247f3827be6f7",
+            "bytes": 1552
+          }
+        },
+        "operator_calls": 1
+      },
+      "oracle": {
+        "version": "conditional-tabular-oracle-v1",
+        "input_sha256": "785a6b141b17b7a75cde313b4e79f89e2ca8b954f61e54c922f41bc46f729c35",
+        "deliverable": false,
+        "reference_valid": false,
+        "state": "unknown",
+        "checks": [],
+        "reason": "reference group has no numeric values"
+      },
+      "directory": "executions/llm-plain/sealed-boundary-new-empty-group/r1-m0",
+      "correct_boundary_rejection": false,
+      "finished_at_ns": 1791958502084718600
+    }
+  ],
+  "pairs": [
+    {
+      "task_id": "sealed-penguins-00",
+      "repeat": 0,
+      "reference_valid": true,
+      "before": 1,
+      "after": 1,
+      "plain_rejected": false,
+      "evidence_rejected": false
+    },
+    {
+      "task_id": "sealed-penguins-00",
+      "repeat": 1,
+      "reference_valid": true,
+      "before": 1,
+      "after": 1,
+      "plain_rejected": false,
+      "evidence_rejected": false
+    },
+    {
+      "task_id": "sealed-penguins-01",
+      "repeat": 0,
+      "reference_valid": true,
+      "before": 1,
+      "after": 1,
+      "plain_rejected": false,
+      "evidence_rejected": false
+    },
+    {
+      "task_id": "sealed-penguins-01",
+      "repeat": 1,
+      "reference_valid": true,
+      "before": 1,
+      "after": 1,
+      "plain_rejected": false,
+      "evidence_rejected": false
+    },
+    {
+      "task_id": "sealed-penguins-02",
+      "repeat": 0,
+      "reference_valid": true,
+      "before": 1,
+      "after": 1,
+      "plain_rejected": false,
+      "evidence_rejected": false
+    },
+    {
+      "task_id": "sealed-penguins-02",
+      "repeat": 1,
+      "reference_valid": true,
+      "before": 1,
+      "after": 1,
+      "plain_rejected": false,
+      "evidence_rejected": false
+    },
+    {
+      "task_id": "sealed-penguins-03",
+      "repeat": 0,
+      "reference_valid": true,
+      "before": 1,
+      "after": 1,
+      "plain_rejected": false,
+      "evidence_rejected": false
+    },
+    {
+      "task_id": "sealed-penguins-03",
+      "repeat": 1,
+      "reference_valid": true,
+      "before": 1,
+      "after": 1,
+      "plain_rejected": false,
+      "evidence_rejected": false
+    },
+    {
+      "task_id": "sealed-penguins-04",
+      "repeat": 0,
+      "reference_valid": true,
+      "before": 1,
+      "after": 1,
+      "plain_rejected": false,
+      "evidence_rejected": false
+    },
+    {
+      "task_id": "sealed-penguins-04",
+      "repeat": 1,
+      "reference_valid": true,
+      "before": 1,
+      "after": 1,
+      "plain_rejected": false,
+      "evidence_rejected": false
+    },
+    {
+      "task_id": "sealed-penguins-05",
+      "repeat": 0,
+      "reference_valid": true,
+      "before": 1,
+      "after": 1,
+      "plain_rejected": false,
+      "evidence_rejected": false
+    },
+    {
+      "task_id": "sealed-penguins-05",
+      "repeat": 1,
+      "reference_valid": true,
+      "before": 1,
+      "after": 1,
+      "plain_rejected": false,
+      "evidence_rejected": false
+    },
+    {
+      "task_id": "sealed-penguins-06",
+      "repeat": 0,
+      "reference_valid": true,
+      "before": 1,
+      "after": 1,
+      "plain_rejected": false,
+      "evidence_rejected": false
+    },
+    {
+      "task_id": "sealed-penguins-06",
+      "repeat": 1,
+      "reference_valid": true,
+      "before": 1,
+      "after": 1,
+      "plain_rejected": false,
+      "evidence_rejected": false
+    },
+    {
+      "task_id": "sealed-penguins-07",
+      "repeat": 0,
+      "reference_valid": true,
+      "before": 1,
+      "after": 1,
+      "plain_rejected": false,
+      "evidence_rejected": false
+    },
+    {
+      "task_id": "sealed-penguins-07",
+      "repeat": 1,
+      "reference_valid": true,
+      "before": 1,
+      "after": 1,
+      "plain_rejected": false,
+      "evidence_rejected": false
+    },
+    {
+      "task_id": "sealed-boundary-no-test",
+      "repeat": 0,
+      "reference_valid": false,
+      "before": 0,
+      "after": 0,
+      "plain_rejected": true,
+      "evidence_rejected": true
+    },
+    {
+      "task_id": "sealed-boundary-no-test",
+      "repeat": 1,
+      "reference_valid": false,
+      "before": 0,
+      "after": 0,
+      "plain_rejected": true,
+      "evidence_rejected": true
+    },
+    {
+      "task_id": "sealed-boundary-bad-number",
+      "repeat": 0,
+      "reference_valid": false,
+      "before": 0,
+      "after": 0,
+      "plain_rejected": false,
+      "evidence_rejected": false
+    },
+    {
+      "task_id": "sealed-boundary-bad-number",
+      "repeat": 1,
+      "reference_valid": false,
+      "before": 0,
+      "after": 0,
+      "plain_rejected": false,
+      "evidence_rejected": false
+    },
+    {
+      "task_id": "sealed-boundary-unknown-goal",
+      "repeat": 0,
+      "reference_valid": false,
+      "before": 0,
+      "after": 0,
+      "plain_rejected": true,
+      "evidence_rejected": true
+    },
+    {
+      "task_id": "sealed-boundary-unknown-goal",
+      "repeat": 1,
+      "reference_valid": false,
+      "before": 0,
+      "after": 0,
+      "plain_rejected": true,
+      "evidence_rejected": true
+    },
+    {
+      "task_id": "sealed-boundary-new-empty-group",
+      "repeat": 0,
+      "reference_valid": false,
+      "before": 0,
+      "after": 0,
+      "plain_rejected": false,
+      "evidence_rejected": false
+    },
+    {
+      "task_id": "sealed-boundary-new-empty-group",
+      "repeat": 1,
+      "reference_valid": false,
+      "before": 0,
+      "after": 0,
+      "plain_rejected": false,
+      "evidence_rejected": false
+    }
+  ],
+  "summary": {
+    "tasks": 12,
+    "valid_tasks": 8,
+    "pairs": 24,
+    "plain_delivery_rate": 1.0,
+    "evidence_delivery_rate": 1.0,
+    "regression_pairs": [],
+    "failed_or_malformed_calls": 0,
+    "response_models": [
+      "deepseek-flash"
+    ],
+    "invalid_plain_rejections": 4,
+    "invalid_evidence_rejections": 4
+  },
+  "usage": {
+    "calls": 48,
+    "prompt_tokens": 77602,
+    "completion_tokens": 480,
+    "total_tokens": 78082,
+    "cost_yuan": 0.159,
+    "by_role": {
+      "conditional-plain": {
+        "calls": 24,
+        "prompt": 33378,
+        "completion": 240,
+        "cost_yuan": 0.0687
+      },
+      "conditional-evidence": {
+        "calls": 24,
+        "prompt": 44224,
+        "completion": 240,
+        "cost_yuan": 0.0904
+      }
+    }
+  },
+  "cost_warning": "cost uses configured input/output prices; token counts are actual, invoice may differ",
+  "causal_scope": "paired skill-evidence prompt intervention on one API alias; not per-skill Shapley attribution or generic network improvement",
+  "reward_applied": false,
+  "points": 0,
+  "formal_routing_deployed": false,
+  "report_sha256": "7224977e973f29b36aad543e9235fd4a05d7472e6f8a64aec782b8f6c261458e"
+}

@@ -1,0 +1,61 @@
+{
+  "version": "conditional-boundary-v2",
+  "protocol_sha256": "df8de6480167f70e9ea49fc24a0bcddcf3289aa30fb235403078fe2fae741782",
+  "model_sha256": "3de0d2862a3d759b06657ac19140a0945fc4c6bf68ea6feed6de230d295b4e96",
+  "metrics": {
+    "contract_preflight_v1": {
+      "valid_tasks": 20,
+      "invalid_tasks": 20,
+      "valid_deliveries": 20,
+      "invalid_refusals": 10,
+      "invalid_execution_attempts": 10,
+      "valid_false_refusals": 0,
+      "subprocesses": 60
+    },
+    "learned_boundary_v2": {
+      "valid_tasks": 20,
+      "invalid_tasks": 20,
+      "valid_deliveries": 20,
+      "invalid_refusals": 20,
+      "invalid_execution_attempts": 0,
+      "valid_false_refusals": 0,
+      "subprocesses": 40
+    },
+    "forced_contract_diagnostic": {
+      "valid_tasks": 20,
+      "invalid_tasks": 20,
+      "valid_deliveries": 20,
+      "invalid_refusals": 0,
+      "invalid_execution_attempts": 20,
+      "valid_false_refusals": 0,
+      "subprocesses": 80
+    }
+  },
+  "artifact_audit": {
+    "ok": true,
+    "errors": [],
+    "arms": 240
+  },
+  "training_execution_rows": 1280,
+  "test_tasks": 40,
+  "source": {
+    "url": "https://archive.ics.uci.edu/static/public/53/iris.zip",
+    "license": "CC BY 4.0",
+    "citation": "Fisher, R. (1936). Iris. UCI. doi:10.24432/C56C76",
+    "zip_sha256": "d11fe30213d36434a0879aab7cb00ce3c812eb7ba2495874438abff7b7b762e9",
+    "data_sha256": "6f608b71a7317216319b4d27b4d9bc84e6abd734eda7872b71a458569e2656c0",
+    "note": "published measurements; authored missing groups/units/splits are experimental perturbations"
+  },
+  "limitations": [
+    "one fresh public source",
+    "tasks share source measurements",
+    "human-designed feature repair",
+    "projected preconditions are not actual execution evidence",
+    "no generic network improvement or causal-calibration guarantee"
+  ],
+  "reward_applied": false,
+  "points": 0,
+  "formal_routing_deployed": false,
+  "conclusion": "failure avoidance is separate from verified valid-task quality gain; no improvement reward",
+  "report_sha256": "a5aec15dd3218c5973da187c083e6350465991125f086f08c7dc7a395d611839"
+}

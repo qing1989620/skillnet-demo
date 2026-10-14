@@ -2189,6 +2189,14 @@ def _personal_identity(request: Request) -> dict[str, str]:
 from skillnet.personal_api import make_router as make_personal_router
 app.include_router(make_personal_router(lib, lambda: STATE['retriever'], _personal_identity, require_token))
 
+from skillnet.utility_api import make_router as make_utility_router
+app.include_router(make_utility_router(lambda: ROOT, lambda: config.OUT_DIR, require_token, lambda: _FRONTIER_SLOTS))
+
+
+@app.get('/utility')
+def utility_page() -> Any:
+    return FileResponse(str(WEB_DIR / 'utility.html'))
+
 
 @app.get('/personal')
 def personal_page() -> Any:

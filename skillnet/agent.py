@@ -198,6 +198,8 @@ class ResearchAgent:
             "7. requires/ensures 是待检验的状态契约，分别约束实际输入/本步产物。仅声明用户要求或技能确有需要的条件。"
             "支持 {kind:csv_schema,file:文件名,columns:[列名],exact:false}、csv_nonempty、"
             "csv_no_missing(columns)、csv_unique(columns)、csv_numeric_range(column,min,max)、"
+            "csv_group_numeric_coverage(group,column,where可选:{column:筛选列,equals:精确文本})：选中分组至少含一个有限数值且全部非空值可解析。"
+            "分组均值应对实际清洗后的输入检查该条件，允许空值时不要误用整列无缺失要求，也不能把全空组填成0。"
             "csv_values_in(column,values:[0,1])、csv_disjoint_groups(entity,group)、file_exists；每条都必须有 kind/file，file 必须等于真实 input_files/output_files 文件名，不能用描述或别名。"
             "仅有自然语言的条件不要伪造机器判据，保留在 risks。未知或不满足的前置条件会在代码生成之前阻断。"
             "csv_* 条件只能用于 .csv 文件；web_sources.json 等 JSON 输入只能声明 file_exists，JSON 结构由分析代码读取校验，不能把 sources 当 CSV 表头。"

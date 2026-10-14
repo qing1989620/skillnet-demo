@@ -160,3 +160,20 @@ Linux Docker 执行隔离已通过 CI 实机验证；Windows Docker、S1 SSO、�
 **为什么别人电脑打不开 127.0.0.1？** 它表示访问者自己的电脑。每位同事可按上文本机启动；共享内网服务则使用服务器地址，配置服务令牌及浏览器“连接设置”。
 
 **网页正常但任务不能执行？** 检查 `.env` 模型密钥、余额、模型地址及服务重启情况；联网任务另看搜索/原站错误记录。端口冲突时，用上文相同的虚拟环境解释器执行 `run.py --port 9000 --no-browser`。
+
+
+## 条件收益与失败边界实验
+
+入口 `/utility`。选择两轮已登记的公开任务，先读取输入与预测，再运行固定程序的对照。页面操作不调用付费模型；真实 API 对照是已冻结研究记录。下载证据时使用连接设置中的令牌，不将令牌写入 URL。
+
+接口前缀 `/api/frontier/utility`，第二轮为 `/boundary`；`/cases` 读取任务，POST `/predict` 与 `/execute` 只接受 `case_id`。不接受代码、文件路径或奖励证书。版本不一致返回 503，并发已满返回 429；运行临时目录自动清理。
+
+离线核验：`python tools/verify_conditional_evidence.py`。研究复现及付费调用的边界见 [条件收益研究](conditional-utility-research.md)。
+
+分组统计可在聚合步骤的 `requires` 声明以下谓词；`file` 必须对应本步已登记的真实输入，清洗步骤完成后再检查：
+
+```json
+{"kind":"csv_group_numeric_coverage","file":"clean.csv","group":"group","column":"value","where":{"column":"split","equals":"test"}}
+```
+
+检查会读取文件实际快照并记录 SHA。匹配分组不存在、分组全空或非空值非法时，现有执行管线在付费代码生成前阻断。

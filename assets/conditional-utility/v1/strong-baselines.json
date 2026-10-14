@@ -1,0 +1,2587 @@
+{
+  "version": "conditional-utility-strong-baselines-v1",
+  "protocol_sha256": "36d9b398419127dcae22006c90173ff8816d6869dd0d63601d474073fb610f4b",
+  "supplement_plan_sha256": "f0e7a6f73cbf233c372ec6bb43d40d3dd75bca6f6a5edbdc2a13355ac8e634d9",
+  "metrics": {
+    "none": {
+      "valid_tasks": 32,
+      "verified_delivery_rate": 0.40625,
+      "invalid_tasks": 8,
+      "invalid_abstentions": 0,
+      "invalid_execution_attempts": 8
+    },
+    "all": {
+      "valid_tasks": 32,
+      "verified_delivery_rate": 0.4375,
+      "invalid_tasks": 8,
+      "invalid_abstentions": 0,
+      "invalid_execution_attempts": 8
+    },
+    "contract": {
+      "valid_tasks": 32,
+      "verified_delivery_rate": 1.0,
+      "invalid_tasks": 8,
+      "invalid_abstentions": 2,
+      "invalid_execution_attempts": 6
+    },
+    "contract_preflight": {
+      "valid_tasks": 32,
+      "verified_delivery_rate": 1.0,
+      "invalid_tasks": 8,
+      "invalid_abstentions": 7,
+      "invalid_execution_attempts": 1
+    },
+    "learned": {
+      "valid_tasks": 32,
+      "verified_delivery_rate": 1.0,
+      "invalid_tasks": 8,
+      "invalid_abstentions": 7,
+      "invalid_execution_attempts": 1
+    }
+  },
+  "effects": [
+    {
+      "task_id": "sealed-penguins-00",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-00",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-00",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": -0.5
+    },
+    {
+      "task_id": "sealed-penguins-01",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 1.0,
+      "predicted_marginal_gain": 0.75
+    },
+    {
+      "task_id": "sealed-penguins-01",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-01",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": -0.25
+    },
+    {
+      "task_id": "sealed-penguins-02",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-02",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 1.0,
+      "predicted_marginal_gain": 0.75
+    },
+    {
+      "task_id": "sealed-penguins-02",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": -0.25
+    },
+    {
+      "task_id": "sealed-penguins-03",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.25,
+      "predicted_marginal_gain": 0.375
+    },
+    {
+      "task_id": "sealed-penguins-03",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.25,
+      "predicted_marginal_gain": 0.375
+    },
+    {
+      "task_id": "sealed-penguins-03",
+      "skill": "drop_missing",
+      "observed_marginal_gain": -0.25,
+      "predicted_marginal_gain": -0.125
+    },
+    {
+      "task_id": "sealed-penguins-04",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-04",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-04",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 1.0,
+      "predicted_marginal_gain": 0.5
+    },
+    {
+      "task_id": "sealed-penguins-05",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.5,
+      "predicted_marginal_gain": 0.75
+    },
+    {
+      "task_id": "sealed-penguins-05",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-05",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.5,
+      "predicted_marginal_gain": 0.25
+    },
+    {
+      "task_id": "sealed-penguins-06",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-06",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.5,
+      "predicted_marginal_gain": 0.75
+    },
+    {
+      "task_id": "sealed-penguins-06",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.5,
+      "predicted_marginal_gain": 0.25
+    },
+    {
+      "task_id": "sealed-penguins-07",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.25,
+      "predicted_marginal_gain": 0.375
+    },
+    {
+      "task_id": "sealed-penguins-07",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.25,
+      "predicted_marginal_gain": 0.375
+    },
+    {
+      "task_id": "sealed-penguins-07",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.25,
+      "predicted_marginal_gain": 0.125
+    },
+    {
+      "task_id": "sealed-penguins-08",
+      "skill": "deduplicate",
+      "observed_marginal_gain": -0.5,
+      "predicted_marginal_gain": -0.375
+    },
+    {
+      "task_id": "sealed-penguins-08",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": -0.5,
+      "predicted_marginal_gain": -0.375
+    },
+    {
+      "task_id": "sealed-penguins-08",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": -0.125
+    },
+    {
+      "task_id": "sealed-penguins-09",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-09",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-09",
+      "skill": "drop_missing",
+      "observed_marginal_gain": -1.0,
+      "predicted_marginal_gain": -0.5
+    },
+    {
+      "task_id": "sealed-penguins-10",
+      "skill": "deduplicate",
+      "observed_marginal_gain": -0.5,
+      "predicted_marginal_gain": -0.75
+    },
+    {
+      "task_id": "sealed-penguins-10",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-10",
+      "skill": "drop_missing",
+      "observed_marginal_gain": -0.5,
+      "predicted_marginal_gain": -0.25
+    },
+    {
+      "task_id": "sealed-penguins-11",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-11",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.5,
+      "predicted_marginal_gain": 0.75
+    },
+    {
+      "task_id": "sealed-penguins-11",
+      "skill": "drop_missing",
+      "observed_marginal_gain": -0.5,
+      "predicted_marginal_gain": -0.25
+    },
+    {
+      "task_id": "sealed-penguins-12",
+      "skill": "deduplicate",
+      "observed_marginal_gain": -0.25,
+      "predicted_marginal_gain": -0.375
+    },
+    {
+      "task_id": "sealed-penguins-12",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": -0.25,
+      "predicted_marginal_gain": -0.375
+    },
+    {
+      "task_id": "sealed-penguins-12",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.25,
+      "predicted_marginal_gain": 0.125
+    },
+    {
+      "task_id": "sealed-penguins-13",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-13",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-13",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.5
+    },
+    {
+      "task_id": "sealed-penguins-14",
+      "skill": "deduplicate",
+      "observed_marginal_gain": -1.0,
+      "predicted_marginal_gain": -0.75
+    },
+    {
+      "task_id": "sealed-penguins-14",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-14",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.25
+    },
+    {
+      "task_id": "sealed-penguins-15",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-15",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 1.0,
+      "predicted_marginal_gain": 0.75
+    },
+    {
+      "task_id": "sealed-penguins-15",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.25
+    },
+    {
+      "task_id": "sealed-penguins-16",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-16",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": -0.5,
+      "predicted_marginal_gain": -0.75
+    },
+    {
+      "task_id": "sealed-penguins-16",
+      "skill": "drop_missing",
+      "observed_marginal_gain": -0.5,
+      "predicted_marginal_gain": -0.25
+    },
+    {
+      "task_id": "sealed-penguins-17",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.25,
+      "predicted_marginal_gain": 0.375
+    },
+    {
+      "task_id": "sealed-penguins-17",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": -0.25,
+      "predicted_marginal_gain": -0.375
+    },
+    {
+      "task_id": "sealed-penguins-17",
+      "skill": "drop_missing",
+      "observed_marginal_gain": -0.25,
+      "predicted_marginal_gain": -0.125
+    },
+    {
+      "task_id": "sealed-penguins-18",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-18",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-18",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": -0.5
+    },
+    {
+      "task_id": "sealed-penguins-19",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 1.0,
+      "predicted_marginal_gain": 0.75
+    },
+    {
+      "task_id": "sealed-penguins-19",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-19",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": -0.25
+    },
+    {
+      "task_id": "sealed-penguins-20",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-20",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": -1.0,
+      "predicted_marginal_gain": -0.75
+    },
+    {
+      "task_id": "sealed-penguins-20",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.25
+    },
+    {
+      "task_id": "sealed-penguins-21",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.5,
+      "predicted_marginal_gain": 0.375
+    },
+    {
+      "task_id": "sealed-penguins-21",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": -0.5,
+      "predicted_marginal_gain": -0.375
+    },
+    {
+      "task_id": "sealed-penguins-21",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.125
+    },
+    {
+      "task_id": "sealed-penguins-22",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-22",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-22",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 1.0,
+      "predicted_marginal_gain": 0.5
+    },
+    {
+      "task_id": "sealed-penguins-23",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.5,
+      "predicted_marginal_gain": 0.75
+    },
+    {
+      "task_id": "sealed-penguins-23",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-23",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.5,
+      "predicted_marginal_gain": 0.25
+    },
+    {
+      "task_id": "sealed-penguins-24",
+      "skill": "deduplicate",
+      "observed_marginal_gain": -1.0,
+      "predicted_marginal_gain": -0.75
+    },
+    {
+      "task_id": "sealed-penguins-24",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-24",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": -0.25
+    },
+    {
+      "task_id": "sealed-penguins-25",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-25",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": -0.5,
+      "predicted_marginal_gain": -0.75
+    },
+    {
+      "task_id": "sealed-penguins-25",
+      "skill": "drop_missing",
+      "observed_marginal_gain": -0.5,
+      "predicted_marginal_gain": -0.25
+    },
+    {
+      "task_id": "sealed-penguins-26",
+      "skill": "deduplicate",
+      "observed_marginal_gain": -0.5,
+      "predicted_marginal_gain": -0.375
+    },
+    {
+      "task_id": "sealed-penguins-26",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.5,
+      "predicted_marginal_gain": 0.375
+    },
+    {
+      "task_id": "sealed-penguins-26",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": -0.125
+    },
+    {
+      "task_id": "sealed-penguins-27",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-27",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-27",
+      "skill": "drop_missing",
+      "observed_marginal_gain": -1.0,
+      "predicted_marginal_gain": -0.5
+    },
+    {
+      "task_id": "sealed-penguins-28",
+      "skill": "deduplicate",
+      "observed_marginal_gain": -0.5,
+      "predicted_marginal_gain": -0.75
+    },
+    {
+      "task_id": "sealed-penguins-28",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-28",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.5,
+      "predicted_marginal_gain": 0.25
+    },
+    {
+      "task_id": "sealed-penguins-29",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-29",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": -0.5,
+      "predicted_marginal_gain": -0.75
+    },
+    {
+      "task_id": "sealed-penguins-29",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.5,
+      "predicted_marginal_gain": 0.25
+    },
+    {
+      "task_id": "sealed-penguins-30",
+      "skill": "deduplicate",
+      "observed_marginal_gain": -0.25,
+      "predicted_marginal_gain": -0.375
+    },
+    {
+      "task_id": "sealed-penguins-30",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.25,
+      "predicted_marginal_gain": 0.375
+    },
+    {
+      "task_id": "sealed-penguins-30",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.25,
+      "predicted_marginal_gain": 0.125
+    },
+    {
+      "task_id": "sealed-penguins-31",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-31",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-penguins-31",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.5
+    },
+    {
+      "task_id": "sealed-boundary-no-test",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-boundary-no-test",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-boundary-no-test",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-boundary-all-blank",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-boundary-all-blank",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-boundary-all-blank",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-boundary-bad-number",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-boundary-bad-number",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-boundary-bad-number",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-boundary-nonfinite",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-boundary-nonfinite",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-boundary-nonfinite",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-boundary-unknown-goal",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-boundary-unknown-goal",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-boundary-unknown-goal",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.5
+    },
+    {
+      "task_id": "sealed-boundary-bad-schema",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-boundary-bad-schema",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-boundary-bad-schema",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-boundary-new-unit",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-boundary-new-unit",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-boundary-new-unit",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-boundary-new-empty-group",
+      "skill": "deduplicate",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-boundary-new-empty-group",
+      "skill": "exclude_cross_split",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": 0.0
+    },
+    {
+      "task_id": "sealed-boundary-new-empty-group",
+      "skill": "drop_missing",
+      "observed_marginal_gain": 0.0,
+      "predicted_marginal_gain": -0.5
+    }
+  ],
+  "effect_distribution": {
+    "deduplicate": {
+      "positive": 8,
+      "negative": 8,
+      "zero": 24
+    },
+    "exclude_cross_split": {
+      "positive": 8,
+      "negative": 8,
+      "zero": 24
+    },
+    "drop_missing": {
+      "positive": 10,
+      "negative": 8,
+      "zero": 22
+    }
+  },
+  "rows": [
+    {
+      "task_id": "sealed-penguins-00",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-00",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-00",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-00",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-00",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-01",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-01",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-01",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 1,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-01",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 1,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-01",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 1,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-02",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-02",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-02",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 2,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-02",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 2,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-02",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 2,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-03",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-03",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-03",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 3,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-03",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 3,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-03",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 3,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-04",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-04",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-04",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 4,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-04",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 4,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-04",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 4,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-05",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-05",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-05",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 5,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-05",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 5,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-05",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 5,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-06",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-06",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-06",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 6,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-06",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 6,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-06",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 6,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-07",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-07",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-07",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-07",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-07",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-08",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-08",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-08",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-08",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-08",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-09",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-09",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-09",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 1,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-09",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 1,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-09",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-10",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-10",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-10",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 2,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-10",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 2,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-10",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-11",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-11",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-11",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 3,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-11",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 3,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-11",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 2,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-12",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-12",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-12",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 4,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-12",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 4,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-12",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 4,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-13",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-13",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-13",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 5,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-13",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 5,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-13",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 4,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-14",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-14",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-14",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 6,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-14",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 6,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-14",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 4,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-15",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-15",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-15",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-15",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-15",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 6,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-16",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-16",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-16",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-16",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-16",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-17",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-17",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-17",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 1,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-17",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 1,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-17",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 1,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-18",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-18",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-18",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 2,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-18",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 2,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-18",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-19",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-19",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-19",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 3,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-19",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 3,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-19",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 1,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-20",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-20",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-20",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 4,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-20",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 4,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-20",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 4,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-21",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-21",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-21",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 5,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-21",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 5,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-21",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 5,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-22",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-22",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-22",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 6,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-22",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 6,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-22",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 4,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-23",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-23",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-23",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-23",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-23",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 5,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-24",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-24",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-24",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-24",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-24",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-25",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-25",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-25",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 1,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-25",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 1,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-25",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-26",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-26",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-26",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 2,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-26",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 2,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-26",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 2,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-27",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-27",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-27",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 3,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-27",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 3,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-27",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-28",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-28",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-28",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 4,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-28",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 4,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-28",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 4,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-29",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-29",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-29",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 5,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-29",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 5,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-29",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 4,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-30",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-30",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-30",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 6,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-30",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 6,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-30",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 6,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-31",
+      "strategy": "none",
+      "reference_valid": true,
+      "mask": 0,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-31",
+      "strategy": "all",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-31",
+      "strategy": "contract",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-31",
+      "strategy": "contract_preflight",
+      "reference_valid": true,
+      "mask": 7,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-penguins-31",
+      "strategy": "learned",
+      "reference_valid": true,
+      "mask": 4,
+      "quality": 1,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-boundary-no-test",
+      "strategy": "none",
+      "reference_valid": false,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": true
+    },
+    {
+      "task_id": "sealed-boundary-no-test",
+      "strategy": "all",
+      "reference_valid": false,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": true
+    },
+    {
+      "task_id": "sealed-boundary-no-test",
+      "strategy": "contract",
+      "reference_valid": false,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": true
+    },
+    {
+      "task_id": "sealed-boundary-no-test",
+      "strategy": "contract_preflight",
+      "reference_valid": false,
+      "mask": null,
+      "quality": 0,
+      "abstain": true,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-boundary-no-test",
+      "strategy": "learned",
+      "reference_valid": false,
+      "mask": null,
+      "quality": 0,
+      "abstain": true,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-boundary-all-blank",
+      "strategy": "none",
+      "reference_valid": false,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": true
+    },
+    {
+      "task_id": "sealed-boundary-all-blank",
+      "strategy": "all",
+      "reference_valid": false,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": true
+    },
+    {
+      "task_id": "sealed-boundary-all-blank",
+      "strategy": "contract",
+      "reference_valid": false,
+      "mask": 1,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": true
+    },
+    {
+      "task_id": "sealed-boundary-all-blank",
+      "strategy": "contract_preflight",
+      "reference_valid": false,
+      "mask": null,
+      "quality": 0,
+      "abstain": true,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-boundary-all-blank",
+      "strategy": "learned",
+      "reference_valid": false,
+      "mask": null,
+      "quality": 0,
+      "abstain": true,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-boundary-bad-number",
+      "strategy": "none",
+      "reference_valid": false,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": true
+    },
+    {
+      "task_id": "sealed-boundary-bad-number",
+      "strategy": "all",
+      "reference_valid": false,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": true
+    },
+    {
+      "task_id": "sealed-boundary-bad-number",
+      "strategy": "contract",
+      "reference_valid": false,
+      "mask": 2,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": true
+    },
+    {
+      "task_id": "sealed-boundary-bad-number",
+      "strategy": "contract_preflight",
+      "reference_valid": false,
+      "mask": null,
+      "quality": 0,
+      "abstain": true,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-boundary-bad-number",
+      "strategy": "learned",
+      "reference_valid": false,
+      "mask": null,
+      "quality": 0,
+      "abstain": true,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-boundary-nonfinite",
+      "strategy": "none",
+      "reference_valid": false,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": true
+    },
+    {
+      "task_id": "sealed-boundary-nonfinite",
+      "strategy": "all",
+      "reference_valid": false,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": true
+    },
+    {
+      "task_id": "sealed-boundary-nonfinite",
+      "strategy": "contract",
+      "reference_valid": false,
+      "mask": 3,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": true
+    },
+    {
+      "task_id": "sealed-boundary-nonfinite",
+      "strategy": "contract_preflight",
+      "reference_valid": false,
+      "mask": null,
+      "quality": 0,
+      "abstain": true,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-boundary-nonfinite",
+      "strategy": "learned",
+      "reference_valid": false,
+      "mask": null,
+      "quality": 0,
+      "abstain": true,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-boundary-unknown-goal",
+      "strategy": "none",
+      "reference_valid": false,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-boundary-unknown-goal",
+      "strategy": "all",
+      "reference_valid": false,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-boundary-unknown-goal",
+      "strategy": "contract",
+      "reference_valid": false,
+      "mask": null,
+      "quality": 0,
+      "abstain": true,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-boundary-unknown-goal",
+      "strategy": "contract_preflight",
+      "reference_valid": false,
+      "mask": null,
+      "quality": 0,
+      "abstain": true,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-boundary-unknown-goal",
+      "strategy": "learned",
+      "reference_valid": false,
+      "mask": null,
+      "quality": 0,
+      "abstain": true,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-boundary-bad-schema",
+      "strategy": "none",
+      "reference_valid": false,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": true
+    },
+    {
+      "task_id": "sealed-boundary-bad-schema",
+      "strategy": "all",
+      "reference_valid": false,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": true
+    },
+    {
+      "task_id": "sealed-boundary-bad-schema",
+      "strategy": "contract",
+      "reference_valid": false,
+      "mask": null,
+      "quality": 0,
+      "abstain": true,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-boundary-bad-schema",
+      "strategy": "contract_preflight",
+      "reference_valid": false,
+      "mask": null,
+      "quality": 0,
+      "abstain": true,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-boundary-bad-schema",
+      "strategy": "learned",
+      "reference_valid": false,
+      "mask": null,
+      "quality": 0,
+      "abstain": true,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-boundary-new-unit",
+      "strategy": "none",
+      "reference_valid": false,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": true
+    },
+    {
+      "task_id": "sealed-boundary-new-unit",
+      "strategy": "all",
+      "reference_valid": false,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": true
+    },
+    {
+      "task_id": "sealed-boundary-new-unit",
+      "strategy": "contract",
+      "reference_valid": false,
+      "mask": 6,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": true
+    },
+    {
+      "task_id": "sealed-boundary-new-unit",
+      "strategy": "contract_preflight",
+      "reference_valid": false,
+      "mask": null,
+      "quality": 0,
+      "abstain": true,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-boundary-new-unit",
+      "strategy": "learned",
+      "reference_valid": false,
+      "mask": null,
+      "quality": 0,
+      "abstain": true,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-boundary-new-empty-group",
+      "strategy": "none",
+      "reference_valid": false,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": true
+    },
+    {
+      "task_id": "sealed-boundary-new-empty-group",
+      "strategy": "all",
+      "reference_valid": false,
+      "mask": 7,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": false
+    },
+    {
+      "task_id": "sealed-boundary-new-empty-group",
+      "strategy": "contract",
+      "reference_valid": false,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": true
+    },
+    {
+      "task_id": "sealed-boundary-new-empty-group",
+      "strategy": "contract_preflight",
+      "reference_valid": false,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": true
+    },
+    {
+      "task_id": "sealed-boundary-new-empty-group",
+      "strategy": "learned",
+      "reference_valid": false,
+      "mask": 0,
+      "quality": 0,
+      "abstain": false,
+      "execution_failed": true
+    }
+  ],
+  "conclusion": "beating mask7 alone cannot establish learning is necessary or better than explicit contract rules",
+  "reward_applied": false,
+  "points": 0,
+  "report_sha256": "db527fd5203fe79600c5c8a6b270272adb87cacda979d2ea82d678125ca72208"
+}

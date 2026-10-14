@@ -1,0 +1,53 @@
+{
+  "version": "conditional-boundary-experiment-v2",
+  "created_at_ns": 1791958961491812300,
+  "discovery": "v1 sealed-boundary-new-empty-group; original v1 results remain unchanged",
+  "prior_protocol_sha256": "36d9b398419127dcae22006c90173ff8816d6869dd0d63601d474073fb610f4b",
+  "training_source": "only prior train-executions.json; v1 discovery/test outcomes excluded",
+  "training_records_sha256": "a7dcf6c5e059589114865035e5a613e861e680a96c31ad192f4d1f3f0b7c695a",
+  "calibration_records_sha256": "302cb422c532cb42fc26b9ca496287e66e3d8870bc21b4ccf51b631cc0b7fa73",
+  "source": {
+    "url": "https://archive.ics.uci.edu/static/public/53/iris.zip",
+    "license": "CC BY 4.0",
+    "citation": "Fisher, R. (1936). Iris. UCI. doi:10.24432/C56C76",
+    "zip_sha256": "d11fe30213d36434a0879aab7cb00ce3c812eb7ba2495874438abff7b7b762e9",
+    "data_sha256": "6f608b71a7317216319b4d27b4d9bc84e6abd734eda7872b71a458569e2656c0",
+    "note": "published measurements; authored missing groups/units/splits are experimental perturbations"
+  },
+  "cases_sha256": "1475680ce55763569331ae4f59d8a5f9cd1ccf4c92a408bf7cdbc28014fe9f24",
+  "code_sha256": {
+    "skillnet/conditional_boundary.py": "8a18a99439bb8922ce444119cd81f9c1052d53fb64101789149a14b8b2e6c9ab",
+    "tools/conditional_boundary_lab.py": "17e198f95473524db2cb2e2c80b48dc3ca263a5d873c846571cf973eaf8ae8bd"
+  },
+  "reward_policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+  "operator_code_sha256": "a8cdb2a0f43f7c1f544100a643c450ea5d14282ca5df9a2c1969502546403899",
+  "training": {
+    "steps": 1200,
+    "learning_rate": 0.2,
+    "l2": 0.002
+  },
+  "threshold_grid": [
+    0.1,
+    0.25,
+    0.5,
+    0.75
+  ],
+  "selection": "no false refusals on prior calibration executable arms; maximum failure recall; ties highest threshold",
+  "arms": [
+    "contract_preflight_v1",
+    "learned_boundary_v2",
+    "forced_contract_diagnostic"
+  ],
+  "repeats": 2,
+  "order": "hash(task:repeat:arm) frozen before results",
+  "primary": "invalid task refusal BEFORE executing; valid deliverable non-regression",
+  "not_primary": "refusing an invalid task is not an improvement in valid-task output quality or an improvement reward",
+  "limits": [
+    "one fresh public source",
+    "tasks share source measurements",
+    "human-designed feature repair",
+    "projected preconditions are not actual execution evidence",
+    "no generic network improvement or causal-calibration guarantee"
+  ],
+  "protocol_sha256": "df8de6480167f70e9ea49fc24a0bcddcf3289aa30fb235403078fe2fae741782"
+}
