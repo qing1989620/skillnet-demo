@@ -31,7 +31,10 @@ class NetworkModelService:
         m=self.adapter.metadata if self.adapter else {}
         return dict(available=self.adapter is not None,model_id=m.get('model_id'),
             stage='research_candidate_not_admitted' if self.adapter else 'unavailable',
+            protocol_sha256=m.get('protocol_sha256'),
             trainable_parameters=m.get('trainable_parameters',0),dimension=384,
+            active_trainable_parameters=m.get('active_trainable_parameters'),
+            recommended_shadow_alpha=m.get('recommended_shadow_alpha'),
             graph_messages=bool(m.get('graph')),encoder=m.get('encoder'),
             scope='技能相关度表示与路由；不是会执行任务的通用语言模型',
             serving_weights_changed=False,rewards_applied=0,shadow_only=True,
@@ -75,11 +78,13 @@ def train_private_preference_candidate(store,identity,encoder,library,output_roo
             pairs[(row['query_sha256'],*sorted([row['preferred'],row['rejected']]))]=row
     # Unlabelled questions must not crowd explicit preferences out of the fit.
     rows=sorted(pairs.values(),key=lambda r:(r['created'],r['id']))[-200:]
-    protocol=dict(version='private-preference-training-v1',profile_version=profile['version'],
+    protocol=dict(version='private-preference-training-v2',profile_version=profile['version'],
         profile_config_sha256=configuration_sha(profile),
         data_sha256=digest([{k:r[k] for k in ['id','query_sha256','preferred','rejected']} for r in rows]),
         label_kind='owner_explicit_pair_preference',epochs=120,learning_rate=.08,rank=8,
         max_explicit_pairs=200,pair_selection='latest explicit preference for each query/unordered pair; newest 200 eligible pairs',
+        scope_min_cosine=.88,scope_reference='unique explicit training questions only; holdout questions excluded',
+        outside_scope_action='use current personal search, without applying the preference adapter',
         preference_temperature=.1,residual_strength=.25,max_up_norm=4.,
         split='query SHA256 modulo 5: zero is holdout; repeated query stays in one partition',
         global_weights_frozen=True,quality_reward=False,
@@ -100,7 +105,11 @@ def train_private_preference_candidate(store,identity,encoder,library,output_roo
     Q=encoder.embed([r['query'] for r in rows],'query: ')
     diff=np.stack([S[by[r['preferred']]]-S[by[r['rejected']]] for r in rows])
     hold=np.array([int(r['query_sha256'][:8],16)%5==0 for r in rows]);train=np.where(~hold)[0];test=np.where(hold)[0]
-    if len(train)<2:raise ValueError('More distinct training queries are required; frozen holdout cannot be moved into training')
+    support_indices=list({rows[i]['query_sha256']:int(i) for i in train}.values())
+    if len(support_indices)<2:raise ValueError('至少需要两道不同问题的明确偏好；固定留出样本不能挪入训练')
+    query_support=Q[support_indices].astype(np.float32)
+    protocol['scope_training_targets']=[sorted({r[key] for i,r in enumerate(rows) if i in train and r['query_sha256']==rows[j]['query_sha256'] for key in ['preferred','rejected']}) for j in support_indices]
+    protocol['max_extra_supported_candidates']=40
     rng=np.random.default_rng(17);down=rng.normal(0,1/math.sqrt(8),(384,8)).astype(np.float32);up=np.zeros((8,384),np.float32)
     projected=Q@down;trace=[];started=time.monotonic()
     for step in range(protocol['epochs']):
@@ -114,15 +123,19 @@ def train_private_preference_candidate(store,identity,encoder,library,output_roo
     assert np.isfinite(up).all()
     changed=float(np.linalg.norm(up))
     identity_sha=digest(identity);model_key=digest(protocol)[:24];directory=Path(output_root)/identity_sha/model_key;directory.mkdir(parents=True,exist_ok=True)
-    np.savez_compressed(directory/'model.npz',down=down,up=up)
+    np.savez_compressed(directory/'model.npz',down=down,up=up,query_support=query_support)
     weights_sha=hashlib.sha256((directory/'model.npz').read_bytes()).hexdigest()
-    before=np.sum(Q*diff,1);after=np.sum(normalize(Q+.25*(projected@up))*diff,1)
+    before=np.sum(Q*diff,1);adapted=np.sum(normalize(Q+.25*(projected@up))*diff,1)
+    support_similarity=np.max(Q@query_support.T,axis=1);within=support_similarity>=protocol['scope_min_cosine']
+    after=np.where(within,adapted,before)
     result=dict(stage='shadow',deployed=False,reward=0,trained=True,protocol=protocol,
         examples=len(rows),train_queries=len({rows[i]['query_sha256'] for i in train}),holdout_queries=len({rows[i]['query_sha256'] for i in test}),
         loss_before=trace[0],loss_after=trace[-1],parameter_delta_l2=changed,
         weights_sha256=weights_sha,training_seconds=round(time.monotonic()-started,4),
         holdout_preference_accuracy_before=float((before[test]>0).mean()) if len(test) else None,
         holdout_preference_accuracy_after=float((after[test]>0).mean()) if len(test) else None,
+        scope_min_cosine=protocol['scope_min_cosine'],support_questions=len(query_support),
+        holdout_scope_coverage=float(within[test].mean()) if len(test) else None,
         reason='个人偏好候选已真实训练；没有能力增益准入证书，保持影子预览',
         gate=dict(eligible=False,passed=0,total=12,blockers=['no_complete_preregistered_paired_admission','preference_labels_are_not_capability_rewards']))
     (directory/'protocol.json').write_text(json.dumps(protocol,ensure_ascii=False,indent=2),encoding='utf-8')
@@ -137,6 +150,7 @@ def preview_private_candidate(store,identity,encoder,library,ranking,query,outpu
         chosen=store.candidate(identity,model_id);candidates=[chosen] if chosen and chosen.get('trained') else []
     if not candidates:return None
     report=candidates[0];protocol=report['protocol'];profile=store.profile(identity)
+    if protocol.get('version')!='private-preference-training-v2':return dict(available=False,model_id=report['model_id'],reason='旧个人候选没有作用范围检查，请重新训练；已保留旧版本')
     if protocol.get('profile_config_sha256')!=configuration_sha(profile):return dict(available=False,reason='个人配置已经变化；旧候选未被应用，请重新训练')
     if protocol.get('encoder_revision')!=getattr(encoder,'status',{}).get('revision'):return dict(available=False,reason='编码器版本已变化')
     known={s.name:s for s in library.all()};private={s['name']:s for s in profile['custom_skills']}
@@ -144,17 +158,34 @@ def preview_private_candidate(store,identity,encoder,library,ranking,query,outpu
         if name not in known or hashlib.sha256(known[name].l2_text().encode()).hexdigest()!=sha:
             return dict(available=False,reason='训练偏好所用技能正文已经变化，请重新训练')
     directory=Path(output_root)/digest(identity)/digest(protocol)[:24];p=directory/'model.npz'
-    if not p.is_file() or p.stat().st_size>65536 or hashlib.sha256(p.read_bytes()).hexdigest()!=report['weights_sha256']:raise ValueError('Private checkpoint integrity failed')
+    if not p.is_file() or p.stat().st_size>512*1024 or hashlib.sha256(p.read_bytes()).hexdigest()!=report['weights_sha256']:raise ValueError('Private checkpoint integrity failed')
     with zipfile.ZipFile(p) as archive:
-        if sum(i.file_size for i in archive.infolist())>65536:raise ValueError('Expanded private checkpoint too large')
+        if sum(i.file_size for i in archive.infolist())>512*1024:raise ValueError('Expanded private checkpoint too large')
     with np.load(p,allow_pickle=False) as z:
-        if set(z.files)!={'down','up'}:raise ValueError('Invalid private checkpoint fields')
-        down,up=z['down'],z['up']
+        if set(z.files)!={'down','up','query_support'}:raise ValueError('Invalid private checkpoint fields')
+        down,up,query_support=z['down'],z['up'],z['query_support']
     if down.shape!=(384,8) or up.shape!=(8,384) or not np.isfinite(down).all() or not np.isfinite(up).all():raise ValueError('Invalid private checkpoint shape')
+    if query_support.ndim!=2 or not 2<=len(query_support)<=200 or query_support.shape[1]!=384 or not np.isfinite(query_support).all():raise ValueError('Invalid private question support')
+    q=encoder.embed([query],'query: ')[0];support_scores=query_support@q;max_similarity=float(np.max(support_scores))
+    minimum=protocol.get('scope_min_cosine')
+    if minimum!=.88:raise ValueError('Unsupported private scope policy')
+    if max_similarity<minimum:
+        return dict(available=True,model_id=report['model_id'],within_support=False,max_support_similarity=round(max_similarity,6),scope_min_cosine=minimum,
+            ranking=list(ranking),applied=False,score_kind='current_personal_search_outside_learned_scope',
+            reason='这个问题超出已标注偏好的相似范围，本次沿用原个人检索；这项相似度检查不是能力成功率保证')
     names=list(dict.fromkeys(r['name'] for r in [*ranking,*(private_ranking or [])] if r['name'] in known or r['name'] in private))
+    targets=protocol.get('scope_training_targets',[])
+    if targets:
+        if len(targets)!=len(query_support):raise ValueError('Invalid private support target mapping')
+        added=0
+        for index in np.argsort(-support_scores,kind='stable')[:3]:
+            if support_scores[index]<minimum:continue
+            for name in targets[index]:
+                if added>=40:break
+                if name not in names and (name in known or name in private):names.append(name);added+=1
     if not names:return dict(available=True,model_id=report['model_id'],ranking=[],applied=False)
     texts=[known[n].l2_text() if n in known else private[n]['description']+' '+private[n]['instructions'] for n in names]
-    q=encoder.embed([query],'query: ')[0];s=encoder.embed([text[:5000] for text in texts],'passage: ')
+    s=encoder.embed([text[:5000] for text in texts],'passage: ')
     scores=s@normalize(q+.25*((q@down)@up));order=np.argsort(-scores,kind='stable')
-    return dict(available=True,model_id=report['model_id'],ranking=[dict(name=names[i],score=round(float(scores[i]),6),private=names[i] in private,
+    return dict(available=True,model_id=report['model_id'],within_support=True,max_support_similarity=round(max_similarity,6),scope_min_cosine=minimum,ranking=[dict(name=names[i],score=round(float(scores[i]),6),private=names[i] in private,
         source='owner_preference_adapter',execution_verified=False) for i in order],applied=False,score_kind='learned_owner_preference_not_execution_success')

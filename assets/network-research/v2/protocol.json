@@ -1,0 +1,121 @@
+{
+  "version": "continual-routing-protocol-v2",
+  "frozen_before_embeddings_and_training": true,
+  "reward_policy_sha256": "d540c19054e9fbac58dcb5d4c6358a2372bdf4e42063f50905f64f1e308dc4cd",
+  "corpus_sha256": "5abfecd24db4baefcea1b5c516a16dcdbf422f187df7ab20547db84db2edc13c",
+  "upstream_commit": "277fd8d2bbd7d3b81a5cf4ffa6e87e18c7906e4f",
+  "upstream_manifest_sha256": "64ebcedfbdb38013c6ffbc17c8115b3149c3cba02a1e8b0c4f2554f07f3f7128",
+  "initial_weights_sha256": "b9e7622390ddc71633586f71bce15960940801808693eea2189d2835c267f3f5",
+  "initial_checkpoint": "D:\\qing_zhuomian_\\开发区\\skillnet\\研究实验\\2026-10-14-skill-pretraining\\experiment-v1\\product-bundle",
+  "encoder": {
+    "repository": "Xenova/multilingual-e5-small",
+    "revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
+    "frozen": true
+  },
+  "seeds": [
+    17,
+    29
+  ],
+  "retention_coefficients": [
+    0.0,
+    1.0,
+    4.0
+  ],
+  "epochs": 40,
+  "learning_rate": 0.001,
+  "batch_size": 32,
+  "temperature": 0.07,
+  "teacher_temperature": 0.2,
+  "loss": "source-balanced multi-positive InfoNCE + coefficient*(query cosine drift + skill cosine drift + KL(frozen E5 teacher || candidate))",
+  "graph_messages": false,
+  "active_trainable_parameters": 73728,
+  "architecture_parameters": 110596,
+  "selection": "highest validation source/family-macro Recall@5; ties retain earlier epoch, then lower retention coefficient and seed; no final test used",
+  "validation_feasibility": "report source-wise non-regression; no validation metric grants twelve-gate approval",
+  "pools": {
+    "gymv1": 2043,
+    "sra": 1660
+  },
+  "caps": {
+    "train": 200,
+    "validation": 80,
+    "calibration": 80,
+    "test": 100,
+    "external_test": 150
+  },
+  "splits": {
+    "train": 786,
+    "validation": 298,
+    "legacy_test_diagnostic": 32,
+    "external_test": 300,
+    "calibration": 303,
+    "test": 343
+  },
+  "source_splits": {
+    "gymv1": {
+      "train": 106,
+      "validation": 21,
+      "legacy_test_diagnostic": 32
+    },
+    "bigcodebench": {
+      "external_test": 150
+    },
+    "champ": {
+      "calibration": 63,
+      "test": 43,
+      "train": 80,
+      "validation": 37
+    },
+    "logicbench": {
+      "calibration": 80,
+      "validation": 80,
+      "test": 100,
+      "train": 200
+    },
+    "medcalcbench": {
+      "train": 200,
+      "validation": 80,
+      "calibration": 80,
+      "test": 100
+    },
+    "theoremqa": {
+      "external_test": 150
+    },
+    "toolqa": {
+      "calibration": 80,
+      "test": 100,
+      "validation": 80,
+      "train": 200
+    }
+  },
+  "split_rule": "same query and exact reference set form connected components; hash-order components per source; 20/20/20/40 test/validation/calibration/train; theoremqa and bigcodebench only external",
+  "prior_test_boundary": "Gym test was exposed in v1 and is only a legacy regression diagnostic",
+  "reference_boundary": "Attached/annotated skill IDs are retrieval references, not necessarily minimal or causally necessary skills",
+  "statistics": "Report all paired query and component outcomes. Reference-family sign statistic is descriptive under independence assumptions; deterministic rechecks do not increase N.",
+  "calibration_use": "Never gradient training. Reserved for declared safety-policy analysis after checkpoint selection, before final evaluation.",
+  "calibration_policy": {
+    "alphas": [
+      0.0,
+      0.25,
+      0.5,
+      0.75,
+      1.0
+    ],
+    "target_incremental_family_regret": 0.1,
+    "delta": 0.05,
+    "correction": "Bonferroni over four nonzero strengths; validation selects one checkpoint independently of calibration",
+    "selection": "highest calibration source/family-macro gain among nonzero strengths with no observed query regressions and risk upper <= .1; otherwise exact frozen-E5 fallback alpha=0",
+    "independence": "Binomial bounds require independent exchangeable reference-family units; this assumption is not established by the benchmark and is not an anytime-valid certificate"
+  },
+  "prior_external_questions_sha256": "760b9d5b345b929ded9eb14e8ef2fd61422a1fb63b6607facaed4fc3baf2634e",
+  "deployment": "No automatic production promotion or capability rewards from routing recall alone",
+  "training_script_sha256": "5897fee05d9cb851d37ace02133cd5c8b6510709ebad9e841795050cd995ff02",
+  "metric_code_sha256": "5d2093be80df9299e781b2f8211b460066df8b371631603b503200bc7d900ee0",
+  "limitations": [
+    "Reduced SRA pool of 1660, not full 26262 benchmark",
+    "Capped hash-selected task sample, not full 5400 task execution",
+    "Public skill documents are transductive inputs",
+    "No end-task execution or causal capability claim",
+    "Source and reference-family dependence can invalidate iid interpretation"
+  ]
+}

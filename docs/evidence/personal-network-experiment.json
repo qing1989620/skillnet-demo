@@ -1,6 +1,7 @@
 {
-  "version": "personal-network-controlled-experiment-v2",
-  "scope": "Controlled synthetic owner pair preferences; not real user behaviour or execution success. A current-code deterministic rerun, not additional independent subjects.",
+  "version": "personal-network-controlled-experiment-v3",
+  "scope": "Controlled synthetic owner pair preferences and dissimilar-question probes; not real user behaviour or execution success. Reuses the same synthetic preferences; not additional independent subjects.",
+  "protocol_sha256": "90283056ab692f8a3714742cc9b3807d0018553bc0b37d13b65c9917dae51f4b",
   "encoder_revision": "761b726dd34fb83930e26aab4e9ac3899aa1fa78",
   "contexts_isolated": true,
   "shared_catalog_unchanged": true,
@@ -15,12 +16,39 @@
       "loss_after": 0.08343655616044998,
       "holdout_accuracy_before": 1.0,
       "holdout_accuracy_after": 1.0,
+      "holdout_scope_coverage": 1.0,
       "parameter_delta_l2": 1.7957266569137573,
       "preview_order": [
         "data-cleaning",
         "xlsx"
       ],
       "manual_selection_and_withdrawal_verified": true,
+      "scope_probes": [
+        {
+          "probe": 1,
+          "within_support": false,
+          "max_support_similarity": 0.842772,
+          "ranking_preserved": true
+        },
+        {
+          "probe": 2,
+          "within_support": false,
+          "max_support_similarity": 0.845068,
+          "ranking_preserved": true
+        },
+        {
+          "probe": 3,
+          "within_support": false,
+          "max_support_similarity": 0.863729,
+          "ranking_preserved": true
+        },
+        {
+          "probe": 4,
+          "within_support": false,
+          "max_support_similarity": 0.845932,
+          "ranking_preserved": true
+        }
+      ],
       "deployed": false,
       "reward": 0
     },
@@ -33,16 +61,43 @@
       "loss_after": 0.09153822064399719,
       "holdout_accuracy_before": 0.0,
       "holdout_accuracy_after": 1.0,
+      "holdout_scope_coverage": 1.0,
       "parameter_delta_l2": 2.060333728790283,
       "preview_order": [
         "xlsx",
         "data-cleaning"
       ],
       "manual_selection_and_withdrawal_verified": true,
+      "scope_probes": [
+        {
+          "probe": 1,
+          "within_support": false,
+          "max_support_similarity": 0.842772,
+          "ranking_preserved": true
+        },
+        {
+          "probe": 2,
+          "within_support": false,
+          "max_support_similarity": 0.845068,
+          "ranking_preserved": true
+        },
+        {
+          "probe": 3,
+          "within_support": false,
+          "max_support_similarity": 0.863729,
+          "ranking_preserved": true
+        },
+        {
+          "probe": 4,
+          "within_support": false,
+          "max_support_similarity": 0.845932,
+          "ranking_preserved": true
+        }
+      ],
       "deployed": false,
       "reward": 0
     }
   ],
   "quality_rewards": 0,
-  "report_sha256": "4cc7b80899874cbb7b64b56699f5b034f654cc69c49e61ec84b6237d8addcd7d"
+  "report_sha256": "db63615b36b6639da02ac1399eab5a7e7ccd48bcc9f369a493245a171ca49b67"
 }

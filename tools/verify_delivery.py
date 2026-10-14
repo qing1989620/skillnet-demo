@@ -38,11 +38,14 @@ def write_manifest(root=ROOT):
     for name in sorted(set(names) - EXCLUDE - {''}):
         path = safe_path(root, name)
         if not path.is_file(): raise ValueError('Missing tracked delivery file: ' + name)
-        raw = path.read_bytes()
+        # Keep the public initial snapshot from the Git index. A running local
+        # service may update its own library; that state is not public delivery.
+        raw = (subprocess.check_output(['git', 'show', ':' + name], cwd=root)
+               if name in MUTABLE else path.read_bytes())
         rows.append({'path': name, 'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest(),
                      'mutable': name in MUTABLE})
     tree = digest(rows)
-    manifest = {'schema_version': 1, 'release': '2026.10.14-complete.19',
+    manifest = {'schema_version': 1, 'release': '2026.10.14-complete.20',
                 'source_tree_sha256': tree, 'files': rows}
     raw = (json.dumps(manifest, ensure_ascii=False, indent=2) + '\n').encode()
     safe_path(root, MANIFEST).write_bytes(raw)

@@ -1,8 +1,16 @@
 {
-  "version": "network-artifacts-v1",
-  "model_id": "network-b9e7622390ddc716",
-  "purpose": "Research artifacts and shadow inference; no automatic serving promotion. Upstream raw documents and private user history excluded.",
+  "version": "network-artifacts-v2",
+  "model_ids": [
+    "network-b9e7622390ddc716",
+    "network-b747f23c038d5521"
+  ],
+  "purpose": "Read-only research and shadow inference artifacts. Neither global candidate has automatic production approval. Raw upstream data and all real user history/support vectors are excluded.",
   "files": [
+    {
+      "path": "assets/network-research/LICENSE.SRA.txt",
+      "bytes": 1067,
+      "sha256": "47bef547eb656e100323e67b6808dc59bf14846e0c1b4cef0bb9020e9c237b2a"
+    },
     {
       "path": "assets/network-research/v1/admission-audit.json",
       "bytes": 5576,
@@ -119,6 +127,11 @@
       "sha256": "f41559a1a381c127365f84dd140e257597b1bfa49847d5937eea4344523933ef"
     },
     {
+      "path": "assets/network-research/v1/personal-controlled-v2.json",
+      "bytes": 1604,
+      "sha256": "f7c07a245c5edbaa7cdbf4a51119be656016fcab7fdd89f836656d97c4a1ee82"
+    },
+    {
       "path": "assets/network-research/v1/protocol.json",
       "bytes": 4933,
       "sha256": "5706178b4d193b05d629089cf3226cdb103332a53e880f8183037a9d797821d3"
@@ -132,6 +145,131 @@
       "path": "assets/network-research/v1/split-audit.json",
       "bytes": 843,
       "sha256": "3cf26120f7331f7917c832c9ec7f5ad464aada3855df1012ec38102ab2830261"
+    },
+    {
+      "path": "assets/network-research/v2/admission-audit.json",
+      "bytes": 5951,
+      "sha256": "98ccc5eefd1a17c221e10bf296379111bfc6530c346cdfc88016aa5082b57eff"
+    },
+    {
+      "path": "assets/network-research/v2/calibration-before-final-test.json",
+      "bytes": 3988,
+      "sha256": "43cc6d49a4cb391ccee1c56cb990a8d7e72e0527354269e6dd3a78ddfaeedf39"
+    },
+    {
+      "path": "assets/network-research/v2/data-audit.json",
+      "bytes": 996,
+      "sha256": "079a0a5c8559206606a8c68e965b0333a0c1e2aee455bee0b9bb35beb6911330"
+    },
+    {
+      "path": "assets/network-research/v2/independent-routing-recheck.csv",
+      "bytes": 230920,
+      "sha256": "3877a0005caa68d20e9094919d0d15a792a19194ef8af03f7ee1ffc1a3b4fcf5"
+    },
+    {
+      "path": "assets/network-research/v2/models/retention-0-seed-17/manifest.json",
+      "bytes": 947,
+      "sha256": "2e37dbb970cadd8831571acba4955b96422afcbc3500cf359e69cebc31f9a0d3"
+    },
+    {
+      "path": "assets/network-research/v2/models/retention-0-seed-17/model.npz",
+      "bytes": 343591,
+      "sha256": "b9e7622390ddc71633586f71bce15960940801808693eea2189d2835c267f3f5"
+    },
+    {
+      "path": "assets/network-research/v2/models/retention-0-seed-17/training-curve.json",
+      "bytes": 7981,
+      "sha256": "eefe8f8e00ac377cbeb2609f396fbfe2d5bdc7cf61c6468f9b3dfba38b320dfd"
+    },
+    {
+      "path": "assets/network-research/v2/models/retention-0-seed-29/manifest.json",
+      "bytes": 947,
+      "sha256": "b6e747b3525610afebd083f6142591d101f03d7e82447a5d62624dc4a992f360"
+    },
+    {
+      "path": "assets/network-research/v2/models/retention-0-seed-29/model.npz",
+      "bytes": 343591,
+      "sha256": "b9e7622390ddc71633586f71bce15960940801808693eea2189d2835c267f3f5"
+    },
+    {
+      "path": "assets/network-research/v2/models/retention-0-seed-29/training-curve.json",
+      "bytes": 7980,
+      "sha256": "62f1508a391134591e027254a11b26d352cc8766996ff023794d712af59969b6"
+    },
+    {
+      "path": "assets/network-research/v2/models/retention-1-seed-17/manifest.json",
+      "bytes": 947,
+      "sha256": "66e3362073ecfd4e2d6eb2545d5f5f511d01ea0f2de817c9860fb80d4c2a93a8"
+    },
+    {
+      "path": "assets/network-research/v2/models/retention-1-seed-17/model.npz",
+      "bytes": 343591,
+      "sha256": "b9e7622390ddc71633586f71bce15960940801808693eea2189d2835c267f3f5"
+    },
+    {
+      "path": "assets/network-research/v2/models/retention-1-seed-17/training-curve.json",
+      "bytes": 7999,
+      "sha256": "7baa8cb8e998894c795f857cbc700d7ff1b97ce381e5c23c30375ce79a743b3e"
+    },
+    {
+      "path": "assets/network-research/v2/models/retention-1-seed-29/manifest.json",
+      "bytes": 947,
+      "sha256": "ac8b5c8fe934fe7f4373e95ad4065e96c93a552eaacddef2db732ebafddb7de2"
+    },
+    {
+      "path": "assets/network-research/v2/models/retention-1-seed-29/model.npz",
+      "bytes": 343591,
+      "sha256": "b9e7622390ddc71633586f71bce15960940801808693eea2189d2835c267f3f5"
+    },
+    {
+      "path": "assets/network-research/v2/models/retention-1-seed-29/training-curve.json",
+      "bytes": 7995,
+      "sha256": "cc864dec2409d9eec97188782073936555f75d4c2cf1ef94a89fe5398f89a8a3"
+    },
+    {
+      "path": "assets/network-research/v2/models/retention-4-seed-17/manifest.json",
+      "bytes": 962,
+      "sha256": "d2084751f07f08e8c941571be1229c1eab969e5067c3432a47e9634fcd5f7881"
+    },
+    {
+      "path": "assets/network-research/v2/models/retention-4-seed-17/model.npz",
+      "bytes": 343671,
+      "sha256": "b747f23c038d5521c6bba0b4c96e46398a781e9d87267f07a5f332086346a262"
+    },
+    {
+      "path": "assets/network-research/v2/models/retention-4-seed-17/training-curve.json",
+      "bytes": 8003,
+      "sha256": "939ee57fe7aa5b9dfb4deb1380863d76158312c359e1fb845a46cf323189c849"
+    },
+    {
+      "path": "assets/network-research/v2/models/retention-4-seed-29/manifest.json",
+      "bytes": 947,
+      "sha256": "d6bd98166f4c9c2442075b9a322ec5d18472d0de6677492a7a0e51de336028b7"
+    },
+    {
+      "path": "assets/network-research/v2/models/retention-4-seed-29/model.npz",
+      "bytes": 343591,
+      "sha256": "b9e7622390ddc71633586f71bce15960940801808693eea2189d2835c267f3f5"
+    },
+    {
+      "path": "assets/network-research/v2/models/retention-4-seed-29/training-curve.json",
+      "bytes": 8000,
+      "sha256": "9dffa2bd030affbaa06c783c069d9828bb693466ee916c5646f9010eb653db37"
+    },
+    {
+      "path": "assets/network-research/v2/personal-scope-protocol.json",
+      "bytes": 1799,
+      "sha256": "90283056ab692f8a3714742cc9b3807d0018553bc0b37d13b65c9917dae51f4b"
+    },
+    {
+      "path": "assets/network-research/v2/protocol.json",
+      "bytes": 4754,
+      "sha256": "3890372b4282733b866e030da03c222fd9ccb14786b5507953b4830dec896152"
+    },
+    {
+      "path": "assets/network-research/v2/selection-before-calibration-and-test.json",
+      "bytes": 581,
+      "sha256": "f00fcd5b54619732e2c7ce8a9e742d74969ef8631df2f1016827d62249d8f476"
     },
     {
       "path": "data/network-model/catalog.json",
@@ -157,6 +295,31 @@
       "path": "data/network-model/MODEL_CARD.md",
       "bytes": 2915,
       "sha256": "e0462fa29caa7603cd01e91fcbda1609678a8fb053889f74b358a758216a7d21"
+    },
+    {
+      "path": "data/network-model-v2/catalog.json",
+      "bytes": 199091,
+      "sha256": "52a1ceddb0604463a1a5159fce026ff85d4b70ea4c33fbff1e6b583c9e68ef89"
+    },
+    {
+      "path": "data/network-model-v2/catalog.npz",
+      "bytes": 4382812,
+      "sha256": "a1a19110beca02a7c8b74f4d74ec7065abe499ebc2f05382f63c1a37d65acb48"
+    },
+    {
+      "path": "data/network-model-v2/manifest.json",
+      "bytes": 1050,
+      "sha256": "37bea9fda86d4572f950a31b49e143c053ce19bcc92a8f7ab0cf590b868fa2ae"
+    },
+    {
+      "path": "data/network-model-v2/model.npz",
+      "bytes": 343671,
+      "sha256": "b747f23c038d5521c6bba0b4c96e46398a781e9d87267f07a5f332086346a262"
+    },
+    {
+      "path": "data/network-model-v2/MODEL_CARD.md",
+      "bytes": 1864,
+      "sha256": "5786d41b847bbab85b72cde6f105ab3b3e867c9576986cae999af28ef33f17ff"
     }
   ]
 }

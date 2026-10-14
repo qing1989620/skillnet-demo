@@ -143,3 +143,6 @@ python tools/audit_network_training.py --experiment data/network-experiment-new 
 4. 在新的预注册协议中冻结模型、奖励政策、指标与统计单位；从固定样本检验逐步研究有效的连续检验，不能直接套用论文名词作为证书。
 
 “可训练路由 + 私有适配 + 可验证准入”已具有可运行基础；通用网络自动晋级和领先性仍需要下一轮证据。
+
+
+后续继续训练及个人作用范围的正负结果见 [第二轮研究](continual-routing-research.md)。首轮协议、模型和结论保留原始记录；第二轮没有将失败训练改写为通用提升。

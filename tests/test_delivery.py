@@ -10,7 +10,7 @@ import pytest
 
 from skillnet.distribution import build_identity
 from skillnet.model_assets import restore_bundled_model
-from tools.verify_delivery import digest, verify, safe_path
+from tools.verify_delivery import digest, verify, safe_path, write_manifest
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -45,6 +45,18 @@ def test_runtime_only_changes_do_not_hide_product_changes(tmp_path):
     manifest=tmp_path/'config/delivery-manifest.json'
     manifest.write_bytes(manifest.read_bytes()+b' ')
     with pytest.raises(ValueError,match='manifest SHA'):verify(tmp_path)
+
+
+def test_release_freeze_uses_staged_initial_library_not_private_runtime_state(tmp_path):
+    fixture_delivery(tmp_path)
+    subprocess.run(['git','init','-q',str(tmp_path)],check=True,capture_output=True)
+    subprocess.run(['git','add','--','server.py','data/library.json'],cwd=tmp_path,check=True,capture_output=True)
+    (tmp_path/'data/library.json').write_bytes(b'{"private_runtime":"must stay local"}')
+    write_manifest(tmp_path)
+    report=json.loads((tmp_path/'config/delivery-manifest.json').read_text(encoding='utf-8'))
+    row=next(r for r in report['files'] if r['path']=='data/library.json')
+    assert row['sha256']==hashlib.sha256(b'{}\n').hexdigest()
+    assert verify(tmp_path)['ok'] and not verify(tmp_path,True)['ok']
 
 
 @pytest.mark.parametrize('name',['../secret','/etc/passwd','C:/secret','a\\b','.env','.env.local','x.key','.git/config','.e_run1/Local State'])

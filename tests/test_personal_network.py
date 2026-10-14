@@ -216,6 +216,69 @@ def test_unlabeled_queries_do_not_displace_retained_preference_training(store,tm
     assert report['trained'] and report['examples']==3 and report['train_queries']==3
 
 
+def test_preference_scope_rejects_an_unrelated_query_without_disabling_owner_version(api):
+    queries=[f'alpha data question {i}' for i in range(40)]
+    queries=[q for q in queries if int(hashlib.sha256(q.encode()).hexdigest()[:8],16)%5!=0]
+    for q in queries[:3]:api.post('/api/personal/feedback',headers=AUTH,json={'query':q,'preferred':'beta','rejected':'alpha'})
+    trained=api.post('/api/personal/train',headers=AUTH,json={}).json()
+    api.put('/api/personal/profile',headers=AUTH,json={'expected_version':0,'patch':{'active_personal_model':trained['model_id']}})
+    familiar=api.post('/api/personal/search',headers=AUTH,json={'query':queries[0],'compare_candidate':False}).json()
+    unrelated=api.post('/api/personal/search',headers=AUTH,json={'query':'astronomy exoplanet orbital transit','compare_candidate':False}).json()
+    assert familiar['manual_personal_model_applied'] and familiar['personal_candidate']['within_support']
+    assert not unrelated['manual_personal_model_applied'] and not unrelated['personal_candidate']['within_support']
+    assert [r['name'] for r in unrelated['selected']]==KNOWN
+    assert api.get('/api/personal',headers=AUTH).json()['profile']['active_personal_model']==trained['model_id']
+
+
+def test_supported_preference_targets_can_enter_personal_pool_outside_shared_top20(store,tmp_path):
+    lib=SkillLibrary([Skill('alpha','alpha data method','data'),Skill('beta','beta method','data')]);enc=Encoder()
+    qs=[f'alpha question {i}' for i in range(40)]
+    qs=[q for q in qs if int(hashlib.sha256(q.encode()).hexdigest()[:8],16)%5!=0]
+    for q in qs[:3]:store.feedback(A,q,'beta','alpha',KNOWN)
+    train_private_preference_candidate(store,A,enc,lib,tmp_path/'models')
+    result=preview_private_candidate(store,A,enc,lib,[dict(name='alpha',score=1)],qs[0],tmp_path/'models')
+    assert result['within_support'] and {r['name'] for r in result['ranking']}=={'alpha','beta'}
+
+
+def test_two_pairs_for_one_question_do_not_count_as_two_training_questions(store,tmp_path):
+    lib=SkillLibrary([Skill(n,n,'data') for n in ['alpha','beta','gamma']]);q='one question'
+    store.feedback(A,q,'beta','alpha',['alpha','beta','gamma']);store.feedback(A,q,'gamma','alpha',['alpha','beta','gamma'])
+    with pytest.raises(ValueError,match='不同问题'):
+        train_private_preference_candidate(store,A,Encoder(),lib,tmp_path/'models')
+
+
+def test_owned_history_and_installed_candidate_versions_are_explicit(api):
+    api.put('/api/personal/profile',headers=AUTH,json={'expected_version':0,'patch':{'pinned':['alpha']}})
+    state=api.get('/api/personal',headers=AUTH).json()
+    assert state['history_versions']==[0] and set(state['model_candidates'])=={'v1','v2'}
+    assert api.post('/api/personal/search',headers=AUTH,json={'query':'q','candidate_version':'../foreign'}).status_code==422
+    missing=api.post('/api/personal/search',headers=AUTH,json={'query':'q','candidate_version':'v2'}).json()
+    assert missing['candidate'] is None and missing['candidate_error'] and missing['candidate_version']=='v2'
+    assert api.post('/api/personal/rollback',headers=AUTH,json={'expected_version':1,'target_version':0}).status_code==200
+    assert not api.get('/api/personal',headers=AUTH).json()['profile']['pinned']
+
+
+def test_corrupted_research_reports_are_not_presented_as_verified(tmp_path):
+    from skillnet.personal_api import read_research_report
+    p=tmp_path/'report.json';p.write_text('[]')
+    assert read_research_report(p) is None
+    p.write_text('{"report_sha256":"forged","gain":1}')
+    assert read_research_report(p) is None
+
+
+def test_model_with_wrong_study_version_cannot_be_presented_as_the_reported_candidate(api):
+    folder=server.config.DATA_DIR/'network-model-v2';folder.mkdir(parents=True)
+    NetworkAdapter.identity().save(folder,encoder={'revision':'test-encoder'})
+    np.savez_compressed(folder/'catalog.npz',features=np.eye(384,dtype=np.float32)[:2],neighbours=np.zeros((2,4,384),np.float32))
+    (folder/'catalog.json').write_text(json.dumps({'names':KNOWN,'body_sha256':['x','y'],
+        'file_sha256':hashlib.sha256((folder/'catalog.npz').read_bytes()).hexdigest()}))
+    state=api.get('/api/personal',headers=AUTH).json()
+    assert state['model_candidates']['v2']['available'] and not state['evidence_bindings']['v2']['verified']
+    result=api.post('/api/personal/search',headers=AUTH,json={'query':'alpha','candidate_version':'v2'}).json()
+    assert result['candidate'] is None and '版本不一致' in result['candidate_error']
+    assert result['observation']['quality_label'] is None
+
+
 def test_pausing_collection_preserves_owner_settings(store):
     store.update(A,0,{'enabled':False,'pinned':['beta']},KNOWN)
     assert store.apply_preferences(A,[dict(name='alpha'),dict(name='beta')])[0]['name']=='beta'

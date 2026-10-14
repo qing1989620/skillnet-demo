@@ -200,3 +200,8 @@ class PersonalNetworkStore:
         key=scope_key(identity)
         with self.db() as c:row=c.execute('SELECT body FROM models WHERE scope=? AND id=?',(key,model_id)).fetchone()
         return dict(model_id=model_id,**json.loads(row['body'])) if row else None
+
+    def history_versions(self,identity):
+        key=scope_key(identity)
+        with self.db() as c:rows=c.execute('SELECT version FROM history WHERE scope=? ORDER BY version DESC LIMIT 20',(key,)).fetchall()
+        return [r['version'] for r in rows]

@@ -2,6 +2,7 @@
 from __future__ import annotations
 import json,threading
 from pathlib import Path
+from typing import Literal
 from fastapi import APIRouter,Depends,HTTPException,Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel,ConfigDict,Field
@@ -23,6 +24,7 @@ class PersonalSearch(StrictBody):
     query:str=Field(min_length=1,max_length=4000,pattern=r'\S')
     k:int=Field(default=5,ge=1,le=20)
     compare_candidate:bool=True
+    candidate_version:Literal['v1','v2']='v1'
 
 class Preference(StrictBody):
     query:str=Field(min_length=1,max_length=4000,pattern=r'\S')
@@ -36,8 +38,29 @@ class Rollback(StrictBody):
 def personal_store():
     return PersonalNetworkStore(config.OUT_DIR/'personal-network/private.sqlite3')
 
-def model_service():
-    return NetworkModelService(config.DATA_DIR/'network-model')
+def model_service(version='v1'):
+    folders={'v1':'network-model','v2':'network-model-v2'}
+    if version not in folders:raise ValueError('Unknown installed research version')
+    return NetworkModelService(config.DATA_DIR/folders[version])
+
+def read_research_report(path):
+    try:
+        if path.stat().st_size>1024*1024:return None
+        report=json.loads(path.read_text(encoding='utf-8'))
+        if not isinstance(report,dict):return None
+        claimed=report.pop('report_sha256',None)
+        if not isinstance(claimed,str) or digest(report)!=claimed:return None
+        return dict(**report,report_sha256=claimed)
+    except (OSError,ValueError,TypeError):return None
+
+def candidate_evidence(version):
+    service=model_service(version)
+    report=read_research_report(Path(__file__).resolve().parents[1]/f'docs/evidence/network-training-{version}.json')
+    status=service.status();expected=(report or {}).get('model_id') or ((report or {}).get('admission') or {}).get('context',{}).get('model_id')
+    binding=dict(model_id_matches=bool(expected and status['model_id']==expected),
+        protocol_matches=bool(report and status['protocol_sha256']==report.get('protocol_sha256')))
+    binding['verified']=bool(status['available'] and report and all(binding.values()))
+    return service,report,binding
 
 def make_router(get_lib,get_retriever,get_identity,require_token):
     router=APIRouter(prefix='/api/personal',tags=['personal-network'],dependencies=[Depends(require_token)])
@@ -48,17 +71,13 @@ def make_router(get_lib,get_retriever,get_identity,require_token):
 
     @router.get('')
     def state(request:Request):
-        context=owned(request);store=personal_store();report=None
-        path=Path(__file__).resolve().parents[1]/'docs/evidence/network-training-v1.json'
-        if path.exists():
-            try:
-                report=json.loads(path.read_text(encoding='utf-8'))
-                claimed=report.pop('report_sha256',None)
-                if digest(report)!=claimed:report=None
-                elif claimed:report['report_sha256']=claimed
-            except (OSError,ValueError):report=None
-        return dict(profile=store.profile(context),model=model_service().status(),research=report,
-            candidates=store.candidates(context))
+        context=owned(request);store=personal_store()
+        evidence={v:candidate_evidence(v) for v in ['v1','v2']}
+        reports={v:row[1] for v,row in evidence.items()};models={v:row[0].status() for v,row in evidence.items()}
+        return dict(profile=store.profile(context),model=models['v1'],research=reports['v1'],
+            candidates=store.candidates(context),history_versions=store.history_versions(context),
+            personal_training_version='private-preference-training-v2',
+            research_candidates=reports,model_candidates=models,evidence_bindings={v:row[2] for v,row in evidence.items()})
 
     @router.put('/profile')
     def edit(req:ProfileEdit,request:Request):
@@ -98,19 +117,21 @@ def make_router(get_lib,get_retriever,get_identity,require_token):
         preview=None;candidate_error=None
         if req.compare_candidate:
             try:
-                preview=model_service().preview(req.query,retriever.vec,library,req.k)
+                service,report,binding=candidate_evidence(req.candidate_version)
+                if service.status()['available'] and not binding['verified']:raise ValueError('候选权重与研究报告的版本不一致，已停止本次模型对照')
+                preview=service.preview(req.query,retriever.vec,library,req.k)
                 preview.pop('query_features',None)
             except ValueError as e:candidate_error=str(e)
         personal_preview=None
         try:
             personal_preview=preview_private_candidate(store,context,retriever.vec,library,rows,req.query,config.OUT_DIR/'personal-network/models',profile['active_personal_model'],private_rows)
         except ValueError as e:personal_preview=dict(available=False,reason=str(e))
-        manual_applied=bool(profile['active_personal_model'] and personal_preview and personal_preview.get('available'))
+        manual_applied=bool(profile['active_personal_model'] and personal_preview and personal_preview.get('available') and personal_preview.get('within_support',False))
         if personal_preview:personal_preview['applied_to_personal_search']=manual_applied
         if manual_applied:picked=store.apply_preferences(context,personal_preview['ranking'])[:req.k]
         if personal_preview and personal_preview.get('ranking'):personal_preview['ranking']=personal_preview['ranking'][:req.k]
         recorded=store.observe(context,'query',req.query,dict(selected=[r['name'] for r in picked],label_kind='unlabeled_question',manual_personal_model=profile['active_personal_model'] if manual_applied else None))
-        return dict(query=req.query,selected=picked,private_candidates=store.apply_preferences(context,private_rows)[:req.k],
+        return dict(query=req.query,candidate_version=req.candidate_version,selected=picked,private_candidates=store.apply_preferences(context,private_rows)[:req.k],
             candidate=preview,candidate_error=candidate_error,personal_candidate=personal_preview,profile_version=profile['version'],observation=recorded,
             source='owner_selected_preference_adapter' if manual_applied else 'current_hybrid_with_explicit_owner_preferences',formal_model_weights_changed=False,
             manual_personal_model_applied=manual_applied,
