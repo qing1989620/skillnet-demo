@@ -1,0 +1,150 @@
+{
+  "api_calls": 0,
+  "base_static_reference_disagreements": 0,
+  "by_variant": {
+    "equivalent_equals_syntax": {
+      "cases": 67,
+      "extended": {
+        "consistent_static": 67
+      },
+      "flags_only": {
+        "consistent_static": 67
+      },
+      "known_defect": false,
+      "parents": 33,
+      "standard_library_reference": {
+        "consistent_static": 67
+      }
+    },
+    "equivalent_whitespace": {
+      "cases": 80,
+      "extended": {
+        "consistent_static": 80
+      },
+      "flags_only": {
+        "consistent_static": 80
+      },
+      "known_defect": false,
+      "parents": 35,
+      "standard_library_reference": {
+        "consistent_static": 80
+      }
+    },
+    "invalid_literal_choice": {
+      "cases": 38,
+      "extended": {
+        "inconsistent_static": 38
+      },
+      "flags_only": {
+        "consistent_static": 38
+      },
+      "known_defect": true,
+      "parents": 22,
+      "standard_library_reference": {
+        "inconsistent_static": 38
+      }
+    },
+    "invalid_literal_type": {
+      "cases": 14,
+      "extended": {
+        "inconsistent_static": 14
+      },
+      "flags_only": {
+        "consistent_static": 14
+      },
+      "known_defect": true,
+      "parents": 11,
+      "standard_library_reference": {
+        "inconsistent_static": 14
+      }
+    },
+    "invented_option": {
+      "cases": 80,
+      "extended": {
+        "inconsistent_static": 80
+      },
+      "flags_only": {
+        "inconsistent_static": 80
+      },
+      "known_defect": true,
+      "parents": 35,
+      "standard_library_reference": {
+        "inconsistent_static": 80
+      }
+    },
+    "missing_required_option": {
+      "cases": 22,
+      "extended": {
+        "inconsistent_static": 22
+      },
+      "flags_only": {
+        "consistent_static": 22
+      },
+      "known_defect": true,
+      "parents": 9,
+      "standard_library_reference": {
+        "inconsistent_static": 22
+      }
+    },
+    "original": {
+      "cases": 80,
+      "extended": {
+        "consistent_static": 80
+      },
+      "flags_only": {
+        "consistent_static": 80
+      },
+      "known_defect": false,
+      "parents": 35,
+      "standard_library_reference": {
+        "consistent_static": 80
+      }
+    }
+  },
+  "command_observations": 470,
+  "command_statuses": {
+    "consistent_static": 134,
+    "inconsistent_static": 3,
+    "unknown": 333
+  },
+  "controlled_cases": 381,
+  "d2_used": 0,
+  "distinct_unresolved_parent_targets": 84,
+  "experiment": "D1_mechanical_contract_audit_and_interventions_v1",
+  "extended_reference_disagreements": 0,
+  "files_rehashed": 1441,
+  "human_gold_items": 0,
+  "inputs": {
+    "dataset_manifest_sha256": "ed6117e88c36760ac6752a0db15492117b39ae047995c9c9675105c045063a0b",
+    "snapshots_sha256": "a69d444211da3f8302fbec365fa6ed3f20aca4ffa53f44e98d261eccf4eed32f"
+  },
+  "limitations": [
+    "only supported literal CLI contracts; unknown is not good or bad",
+    "resource mentions include examples and optional links; not confirmed defects",
+    "edit labels are mechanical ground truth, not semantic quality labels",
+    "standard argparse is a strong independent baseline; matching it is not novel superiority",
+    "two source repositories and D1-only development; no confirmatory generalization claim"
+  ],
+  "opaque_files": 339,
+  "paired_parent_analysis": {
+    "conditional_parent_bootstrap_95_interval": [
+      0.2988095238095238,
+      0.46
+    ],
+    "parent_macro_detection_delta": 0.3814285714285714,
+    "parents": 35,
+    "scope": "selected_D1_parents_and_constructed_defects_not_open_ecosystem_accuracy"
+  },
+  "parents_audited": 200,
+  "parents_with_eligible_commands": 35,
+  "parents_with_unresolved_resource_mentions": 41,
+  "plan_sha256": "73858a1b9507179068f9ad2f543b39d11aa75e52bb9bc834c025ac245df6ce0e",
+  "python_files": 334,
+  "skill_execution_trials": 0,
+  "source_repositories": {
+    "https://github.com/alirezarezvani/claude-skills": 93,
+    "https://github.com/sickn33/agentic-awesome-skills": 107
+  },
+  "unresolved_resource_mentions": 95,
+  "variant_reference_mismatches": 0
+}
