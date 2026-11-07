@@ -1,0 +1,36 @@
+{
+  "access_date": "2026-11-07",
+  "documented_version": "DeepSeek-V4.1-Flash-1017",
+  "model_alias": "deepseek-flash",
+  "sources": [
+    {
+      "currency": "USD",
+      "url": "https://api-docs.deepseek.com/quick_start/pricing/",
+      "cached_page_sha256": "af6679690eb9a7838c47727bfc5ffdc4ac91c4445a0c1219741ffe00c076ece5"
+    },
+    {
+      "currency": "CNY",
+      "url": "https://api-docs.deepseek.com/zh-cn/quick_start/pricing/",
+      "cached_page_sha256": "6205cf5d53a7903827bf21938eefb6a8ab6041bb5a73fcf43e4bdd6adc8d344b"
+    }
+  ],
+  "rates_per_million": {
+    "USD": {
+      "hit_offpeak": "0.003",
+      "hit_peak": "0.006",
+      "miss_offpeak": "0.15",
+      "miss_peak": "0.3",
+      "output_offpeak": "0.6",
+      "output_peak": "1.2"
+    },
+    "CNY": {
+      "hit_offpeak": "0.02",
+      "hit_peak": "0.04",
+      "miss_offpeak": "1",
+      "miss_peak": "2",
+      "output_offpeak": "4",
+      "output_peak": "8"
+    }
+  },
+  "accounting": "token-based conservative upper bounds; not API invoice; no USD/CNY exchange conversion"
+}

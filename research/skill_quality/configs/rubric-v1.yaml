@@ -1,0 +1,25 @@
+id: quality-rubric-v1
+status: draft_pending_two_human_rater_training
+scale:
+  0: concrete evidence of serious omission or contradiction
+  1: weak observable support with major gaps
+  2: partial support with material gaps
+  3: explicit adequate observable support
+  4: specific, cross-checkable, sufficient observable support
+missing: unknown with null score; not zero; do not force an answer
+not_applicable: requires an applicability explanation; report excluded coverage separately
+dimensions:
+  contract_consistency: Compare stated capability, inputs, steps, exclusions and outputs for agreement; do not infer actual task success.
+  completeness: Check inputs, dependencies, steps, outputs, failure handling and limits; length alone is not completeness.
+  static_executability: Check command/API/parameter/version/environment specificity in supplied material; never equate documentation with executed success.
+  verification_quality: Look for independent, concrete, falsifiable artifact checks; an instruction to make results correct is insufficient.
+  maintainability: Check dependency constraints, versioning, replacements, diagnostics and updates; graph degree is not maintenance evidence.
+  provenance_license: Check pinned source, hash and supplied license evidence; a declaration alone does not establish legal permission.
+  cost_awareness: Check resource budgets, termination criteria, caching, charges and monitoring; mentioning token alone does not establish low cost.
+  safety_documentation: Check privilege boundaries, least permission, external I/O and injection mitigations; documentation quality is not safety certification.
+human_safety_gold: separate confirmed/suspicious/unknown risk adjudication with contextual evidence
+primary_comparison:
+  legacy_common_dimensions: [completeness, static_executability, maintainability, cost_awareness]
+  legacy_safety_is_not_safety_documentation: true
+  legacy_unavailable_dimensions_are_not_zero: true
+  development_mapping_only: true

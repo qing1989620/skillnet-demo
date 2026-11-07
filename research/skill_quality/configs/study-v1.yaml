@@ -1,0 +1,62 @@
+protocol:
+  id: skill-quality-study-v1
+  source_document_sha256: 11e5736ff7379615060788b6c194f0d122ad00e99027ca8cf0b8627254b727db
+  status: phase_a_only_main_study_draft
+  target_repo: https://github.com/qing1989620/skillnet-demo
+  repo_commit: 0af2de6a9c8b129e174e3442b67c5f7cb4324db9
+  split_seed: 20261104
+  execution_seed_base: 20261105
+  bootstrap_seed: 20261104
+  task_manifest_sha256: TO_BE_FROZEN_AFTER_PILOT
+  verifier_sha256: TO_BE_FROZEN_AFTER_MUTATION_TESTS
+data:
+  labels_per_split: 200
+  near_duplicate_jaccard: 0.85
+  source_disjoint: true
+  semantic_neighbor_review: pending
+  no_test_labels_exist: true
+quality:
+  dimensions: [contract_consistency, completeness, static_executability, verification_quality, maintainability, provenance_license, cost_awareness, safety_documentation]
+  ordinal_scale: [0, 1, 2, 3, 4]
+  unknown_is_missing_not_zero: true
+  primary_metric: mae_at_dev_selected_80pct_coverage
+  threshold_source: D1_only
+  min_evidence_coverage: 0.75
+  evidence_line_verification: required_not_semantic_proof
+execution:
+  enabled: false
+  main_arms: [A0, A2, A5, A7, A9]
+  task_families_dev_target: 40
+  task_families_test_target: 100
+  task_families_ood_target: 50
+  repeats_per_arm: 2
+  max_skill_count: 3
+  context_token_budgets: [2000, 4000]
+  policy_for_unrun_trials: TO_BE_FROZEN
+  policy_for_infra_failure: TO_BE_FROZEN
+  verifier_policy: independent_artifact_based
+model:
+  registry_status: not_probed
+  judge_models: []
+  executor_models: []
+  providers: []
+  temperature: 0
+  structured_output_required: true
+  fallback_disabled_for_primary: true
+privacy_safety:
+  allow_network_in_execution_sandbox: false
+  allow_untrusted_skill_code_execution: false
+  redact_secrets_before_logging: true
+  require_license_and_risk_review: true
+  publish_raw_documents: false
+cost:
+  approved_budget_usd: 0.0
+  max_concurrency: 1
+  key_rotation_confirmed: false
+  stop_on_unknown_billing: true
+stats:
+  alpha_two_sided: 0.05
+  n_boot: 10000
+  co_primary_rule: TO_BE_FROZEN_BEFORE_D2_OR_D5_OPENING
+  correction_for_secondary: holm
+  candidate_status: shadow_only

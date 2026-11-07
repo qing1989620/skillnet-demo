@@ -1,0 +1,44 @@
+{
+  "id": "skill-study-20261106-development-v1",
+  "status": "development_plan_not_registered_confirmatory_study",
+  "parent_protocol": "skill-quality-study-v1",
+  "date": "2026-11-06",
+  "seed": 20261106,
+  "tracks": {
+    "Q1": "mechanically falsifiable package/CLI consistency, then independent human and execution validation",
+    "Q2": "conditional utility, complementary set selection and network update with preserved regressions"
+  },
+  "quality_pilot": {
+    "parents": "all 200 fixed D1 original packages; do not inspect D2 cases",
+    "resource_policy": "rehash all registered resources, analyze supported text only, never import or execute them",
+    "scope": "literal single-parser argparse declarations and local resource references",
+    "eligible_commands": "at most 3 deterministically chosen commands per parent that pass supported static checks; report all excluded/unknown counts",
+    "controls": ["original", "equivalent_equals_syntax", "equivalent_whitespace"],
+    "faults": ["invented_option", "missing_required_option", "invalid_literal_choice", "invalid_literal_type"],
+    "comparators": ["literal_option_presence_only", "literal_option_value_required_type_checks"],
+    "primary_diagnostic": "paired intervention-local defect detection with benign false positives and unknown coverage",
+    "ground_truth": "known mechanical edit, not overall Skill quality or human gold",
+    "bootstrap_unit": "parent Skill; duplicated commands and variants are not independent samples",
+    "not_measured": ["maliciousness", "runtime_success", "human_semantic_accuracy", "task_utility"]
+  },
+  "routing_pilot": {
+    "data": "frozen 192 historical captures: 2 library frames x 32 previously seen tasks x 3 retrieval modes",
+    "status": "exploratory_only_all_historical_tasks_previously_seen",
+    "candidate_pool": 20,
+    "k": 5,
+    "policies": ["original_order", "MMR_0.7", "DPP_raw", "DPP_query_residual_0.5", "DPP_query_residual_1.0", "query_coverage_0.5"],
+    "similarity": "fixed lexical character-bigram/word TF-IDF; DSR-inspired proxy, not published model reproduction",
+    "item_quality": "frozen retrieval rank-derived relevance, not intrinsic Skill trust or calibrated probability",
+    "primary_diagnostics": ["gold_recall_at_5", "full_gold_set_coverage", "pool_oracle_ceiling", "paired_win_loss_tie", "selected_metadata_utf8_bytes"],
+    "forbidden": ["using gold labels inside the selector", "retuning on historical heldout tasks", "claiming execution lift from retrieval", "production routing changes"]
+  },
+  "inference": {
+    "bootstrap_repetitions": 10000,
+    "alpha": 0.05,
+    "report_all_policies_and_negative_results": true,
+    "confirmatory_claims": false,
+    "formal_risk_guarantee": "none; no independent calibration labels and source exchangeability not established"
+  },
+  "spend": {"approved_research_api_budget_usd": 0, "calls_in_this_pilot": 0},
+  "execution": {"community_code": false, "production_writes": false}
+}
