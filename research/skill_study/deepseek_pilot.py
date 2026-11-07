@@ -141,7 +141,7 @@ class Budget:
             if os.name == "nt":
                 import msvcrt
 
-                msvcrt.locking(self.lock.fileno(), msvcrt.LK_NBLCK, 1)
+                msvcrt.locking(self.lock.fileno(), msvcrt.LK_NBLCK, 1)  # type: ignore[attr-defined]
             else:
                 import fcntl
 

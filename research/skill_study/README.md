@@ -87,3 +87,7 @@ The two authorization/price JSON snapshots preserve their exact original bytes
 in Git because their hashes were frozen before the paid run. Other metadata can
 use normal repository line endings. Private run code snapshots also retain the
 original bytes needed for strict hash replay.
+The real API batch's exact source/configuration is also preserved at revision
+`292096d9c0928290fe63086b3d792737bd310856`. A later Linux type-check annotation
+has an identical executable AST; replay the historical snapshot for exact
+bytes instead of comparing its hash with the commented current source.
