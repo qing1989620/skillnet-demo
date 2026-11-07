@@ -82,3 +82,8 @@ Its private responses/balance snapshots stay outside Git, and observed-token
 tariff bounds are not presented as provider invoices. The historical USD 0
 protocol and offline-preparation flags are preserved; the separate direct
 authorization and run plan describe the subsequent paid batch.
+
+The two authorization/price JSON snapshots preserve their exact original bytes
+in Git because their hashes were frozen before the paid run. Other metadata can
+use normal repository line endings. Private run code snapshots also retain the
+original bytes needed for strict hash replay.
