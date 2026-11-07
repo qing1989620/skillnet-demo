@@ -72,6 +72,16 @@ def run(model_path: Path, source: Path, output: Path) -> dict:
             pairs[key] = (result["query"], candidate_text(candidate))
     if len(pairs) > plan["max_unique_query_candidate_pairs"]:
         raise ValueError("Pair budget exceeded")
+    download_manifest = json.loads((model_path / "download-manifest.json").read_text(encoding="utf-8"))
+    if (
+        download_manifest["model_id"] != plan["model_id"]
+        or download_manifest["revision"] != plan["model_revision"]
+        or file_sha(model_path / "model.safetensors") != plan["weights_sha256"]
+    ):
+        raise ValueError("Model identity mismatch")
+    for item in download_manifest["files"]:
+        if file_sha(model_path / item["path"]) != item["sha256"]:
+            raise ValueError("Model resource changed")
     output.mkdir(parents=True, exist_ok=False)
     torch.manual_seed(20261106)
     torch.cuda.set_per_process_memory_fraction(plan["gpu_memory_fraction"])
@@ -92,6 +102,8 @@ def run(model_path: Path, source: Path, output: Path) -> dict:
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token_id = tokenizer.eos_token_id
     yes, no = tokenizer.convert_tokens_to_ids("yes"), tokenizer.convert_tokens_to_ids("no")
+    if yes == no or tokenizer.unk_token_id in (yes, no):
+        raise ValueError("Expected distinct yes/no score tokens")
     prefix = "<|im_start|>system\nJudge whether the Document meets the requirements based on the Query and the Instruct provided. Answer only yes or no.<|im_end|>\n<|im_start|>user\n"
     suffix = "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
     prefix_ids = tokenizer.encode(prefix, add_special_tokens=False)
@@ -185,6 +197,8 @@ def run(model_path: Path, source: Path, output: Path) -> dict:
         "skill_execution_trials": 0,
         "new_d2_quality_bodies_read": False,
         "model_revision": plan["model_revision"],
+        "weights_sha256": plan["weights_sha256"],
+        "download_manifest_sha256": file_sha(model_path / "download-manifest.json"),
         "summary_by_cohort": {
             k: {
                 "tasks": len(v),

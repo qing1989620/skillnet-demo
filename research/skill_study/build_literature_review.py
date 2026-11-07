@@ -10,6 +10,7 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 
 VENUE_UPDATES = {
+    "P04": ("COLM 2026", "https://colm.eventhosts.cc/Conferences/2026/AcceptedPapers"),
     "P10": ("USENIX Security 2026", "https://www.usenix.org/conference/usenixsecurity26/presentation/liu-yi"),
     "P12": ("ICLR 2023", "https://openreview.net/forum?id=WE_vluYUL-X"),
     "P19": (
@@ -40,6 +41,7 @@ VENUE_UPDATES = {
     "P40": ("EMNLP 2023", "https://aclanthology.org/2023.emnlp-main.741/"),
     "P41": ("ACL 2023", "https://aclanthology.org/2023.acl-long.910/"),
     "P42": ("WWW 2010", "https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/p661.pdf"),
+    "P44": ("COLM 2026", "https://colm.eventhosts.cc/Conferences/2026/AcceptedPapers"),
 }
 
 
@@ -90,10 +92,12 @@ def build(cache: Path, destination: Path) -> None:
                 **{k: notes[identity][k] for k in ("strength", "limit", "use")},
             }
         )
-        if identity == "P44":
-            records[-1]["author_reported_venue"] = "COLM 2026"
-            records[-1]["author_reported_venue_source"] = "https://github.com/cxcscmu/SkillLearnBench"
-            records[-1]["formal_venue_independently_verified"] = False
+        if identity in ("P04", "P44"):
+            records[-1]["formal_venue_independently_verified"] = True
+            records[-1]["venue_verification"] = "official COLM 2026 accepted-paper list, checked 2026-11-06"
+            records[-1]["cached_venue_page_sha256"] = hashlib.sha256(
+                (folder / "colm-accepted-2026.html").read_bytes()
+            ).hexdigest()
     if len({r.get("pinned_arxiv") or r["primary_url"] for r in records}) != len(records):
         raise ValueError("Duplicate paper identity")
     index = {
@@ -121,7 +125,7 @@ def build(cache: Path, destination: Path) -> None:
         "",
         "核验日期：2026-11-06。",
         "",
-        "这是围绕两个研究问题的定向方法综述。P01–P10、P43–P44 直接讨论现代 Agent Skill，其余提供程序技能、工具执行、评价、校准与优化方法。11 篇目前仅按预印本列入，其余列明正式发表记录；它们并非 44 篇‘Skill 顶刊’。",
+        f"这是围绕两个研究问题的定向方法综述。P01–P10、P43–P44 直接讨论现代 Agent Skill，其余提供程序技能、工具执行、评价、校准与优化方法。{index['preprints_without_verified_formal_venue']} 篇目前仅按预印本列入，其余列明正式发表记录；它们并非 44 篇‘Skill 顶刊’。",
         "",
         "已取得每篇正文并定向阅读方法、实验或局限片段，不声称逐字通读全部正文。阅读版本与正式出版版本分开记录。每条优势是论文方法概括，局限及迁移建议包含本研究的判断，不是作者对本项目的背书。原始全文仅缓存本地，不在仓库转载。",
         "",
@@ -131,8 +135,6 @@ def build(cache: Path, destination: Path) -> None:
     for row in records:
         version = row["pinned_arxiv"] or "正式 PDF"
         publication = f"[{row['venue']}]({row['venue_source']})" if row["venue_source"] else row["venue"]
-        if row["id"] == "P44":
-            publication += "；作者仓库标注 COLM 2026，会议记录未独立核实"
         lines.append(
             f"| {row['id']} [{row['title']}]({row['primary_url']})；{version} | {publication} | {row['strength']} | {row['limit']} | {row['use']} |"
         )
@@ -141,6 +143,8 @@ def build(cache: Path, destination: Path) -> None:
         "正文指纹、作者、原始候选标题、阅读章节和版本差异记录见 `literature_review.json`。",
         "",
         "候选表中需核验的年份/会议信息已更正：ToolSandbox 为 Findings of NAACL 2025，RCPS 为 Journal of the ACM 2021。SkillRouter v5 的标题也与初版不同，按同一 arXiv ID 去重。",
+        "",
+        "SkillRouter 与 SkillLearnBench 的 COLM 2026 录用信息已在会议官方名单独立核实；初期未核实版本曾将它们保守列为预印本，现已更新。阅读正文仍固定为账本中的 arXiv 版本。",
     ]
     destination.with_name("LITERATURE_REVIEW.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 

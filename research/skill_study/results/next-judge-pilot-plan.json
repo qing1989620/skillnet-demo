@@ -1,0 +1,462 @@
+{
+  "arms": {
+    "counterevidence_first": "Check for implementation counterevidence and violated prerequisites before supporting evidence. Return exact citations for support and conflicts; retain unknown where the material is insufficient.",
+    "evidence_first": "Locate supporting source evidence before scoring. Return exact source citations.",
+    "rubric_only": "Apply the rubric and explain each score. Citations may be left empty."
+  },
+  "automatic_retry_or_provider_fallback": false,
+  "community_code_execution": false,
+  "currently_approved_budget_usd": 0,
+  "dataset_manifest_sha256": "ed6117e88c36760ac6752a0db15492117b39ae047995c9c9675105c045063a0b",
+  "excluded": [
+    {
+      "reason": "packing_byte_limit",
+      "skill_uid": "037b9884819b682cc6c8766015dcde672ca80a9361d71b4704873dc1edcf024f"
+    },
+    {
+      "reason": "packing_byte_limit",
+      "skill_uid": "211b10fad9b20d9b815cf0f535546bba688b61ae969a454e8c1094a40d16e4d5"
+    }
+  ],
+  "id": "matched-material-judge-readiness-pilot-v1",
+  "max_concurrency": 1,
+  "max_output_tokens": 2048,
+  "max_paid_attempts_including_failures": 60,
+  "measured_only_after_approval": [
+    "schema-valid response fraction",
+    "exact citation path/hash/line/quote validity",
+    "unknown/coverage, conflicts requiring contextual review",
+    "observed tokens, billed USD and wall time"
+  ],
+  "model_provider": {
+    "live_inference_probed": false,
+    "model": "deepseek/deepseek-v4.1-flash-1017",
+    "price_recheck_before_send": true,
+    "pricing_snapshot_sha256": "bf04967e2fb42447334348c55e4261ee8718f39d68d08b68a6274e08d810d691",
+    "provider": "deepinfra/fp8",
+    "quantization": "fp8"
+  },
+  "not_measured": [
+    "independent human quality accuracy",
+    "skill execution success or causal utility",
+    "network optimization gain or external generalization"
+  ],
+  "paid_calls_so_far": 0,
+  "parents_packed": 18,
+  "parents_selected": 20,
+  "proposed_budget_cap_usd": 5,
+  "requests": [
+    {
+      "arm": "rubric_only",
+      "material_sha256": "7043d17c98dc6c7a2bc013c373cece3f4fff1b8e1db9dff4e64cdaf0b6f4e6cd",
+      "request_sha256": "efbd8868b76c70a85adef10db498922316432fa9168e031cc6575dfeec4c7f2a",
+      "run_id": "judge-pilot-0cd893995f403696-rubric_only",
+      "skill_uid": "0cd893995f40369620abf55479c14c7150a017a61e0a4eb25c02bdcaa6dc12d9"
+    },
+    {
+      "arm": "evidence_first",
+      "material_sha256": "7043d17c98dc6c7a2bc013c373cece3f4fff1b8e1db9dff4e64cdaf0b6f4e6cd",
+      "request_sha256": "c0b362a594f584a609810475bbc7977f16bd3c78e8613c987826fed36ca2ef11",
+      "run_id": "judge-pilot-0cd893995f403696-evidence_first",
+      "skill_uid": "0cd893995f40369620abf55479c14c7150a017a61e0a4eb25c02bdcaa6dc12d9"
+    },
+    {
+      "arm": "counterevidence_first",
+      "material_sha256": "7043d17c98dc6c7a2bc013c373cece3f4fff1b8e1db9dff4e64cdaf0b6f4e6cd",
+      "request_sha256": "385cb4e08568a9b4ac408edcff5978acefa3c6be5ba0753aadc0ef0515b40c75",
+      "run_id": "judge-pilot-0cd893995f403696-counterevidence_first",
+      "skill_uid": "0cd893995f40369620abf55479c14c7150a017a61e0a4eb25c02bdcaa6dc12d9"
+    },
+    {
+      "arm": "rubric_only",
+      "material_sha256": "47ddb23fbeed0b8bc217b9488f78d280cff48149b68b6836b8688afb5f9925d5",
+      "request_sha256": "aaec60e5902f8fff6e45a1218b4ba7a32129e189bb24111162f2ac2b3548382b",
+      "run_id": "judge-pilot-111a02acd34032a7-rubric_only",
+      "skill_uid": "111a02acd34032a779c5e129a532498b5ad0729e1664f6cf6c7c723a08057b3d"
+    },
+    {
+      "arm": "evidence_first",
+      "material_sha256": "47ddb23fbeed0b8bc217b9488f78d280cff48149b68b6836b8688afb5f9925d5",
+      "request_sha256": "ff68682b377b7a6bcab1a1f588836ae8a325d478b6759052177a57804542d021",
+      "run_id": "judge-pilot-111a02acd34032a7-evidence_first",
+      "skill_uid": "111a02acd34032a779c5e129a532498b5ad0729e1664f6cf6c7c723a08057b3d"
+    },
+    {
+      "arm": "counterevidence_first",
+      "material_sha256": "47ddb23fbeed0b8bc217b9488f78d280cff48149b68b6836b8688afb5f9925d5",
+      "request_sha256": "f78443ef58cd4fe96458f225aee2642ac678bf5685709948b04d46830bf5610c",
+      "run_id": "judge-pilot-111a02acd34032a7-counterevidence_first",
+      "skill_uid": "111a02acd34032a779c5e129a532498b5ad0729e1664f6cf6c7c723a08057b3d"
+    },
+    {
+      "arm": "rubric_only",
+      "material_sha256": "22b36672e1a9d80401037e69bc2694a244e42101d47ebb71b35d5244cadb2978",
+      "request_sha256": "a5c34bbdd376e3884c3a80d7b84b5fd6d4db7c26f8ec1c32b9dbdc849438e847",
+      "run_id": "judge-pilot-133d1a3e8a292cd2-rubric_only",
+      "skill_uid": "133d1a3e8a292cd2277c2192cf9dfd34b847f2df979418382266fcbcbd5de627"
+    },
+    {
+      "arm": "evidence_first",
+      "material_sha256": "22b36672e1a9d80401037e69bc2694a244e42101d47ebb71b35d5244cadb2978",
+      "request_sha256": "af3cc463dabad7d6a3257dea362d00ec97a15918229cf9c03100bdcf30012a6a",
+      "run_id": "judge-pilot-133d1a3e8a292cd2-evidence_first",
+      "skill_uid": "133d1a3e8a292cd2277c2192cf9dfd34b847f2df979418382266fcbcbd5de627"
+    },
+    {
+      "arm": "counterevidence_first",
+      "material_sha256": "22b36672e1a9d80401037e69bc2694a244e42101d47ebb71b35d5244cadb2978",
+      "request_sha256": "6492fd782971664711f9423d182f4909e3ea0f59adcb5de513f35e76762a6916",
+      "run_id": "judge-pilot-133d1a3e8a292cd2-counterevidence_first",
+      "skill_uid": "133d1a3e8a292cd2277c2192cf9dfd34b847f2df979418382266fcbcbd5de627"
+    },
+    {
+      "arm": "rubric_only",
+      "material_sha256": "b209df049f47f83385622b3301799489e8db91cce4f7ddad43db6f297ffa7a7b",
+      "request_sha256": "c330ccae4d8f928f0ab15a98d8b5bec299096250a70966e0b8ad980bfe7dcd7a",
+      "run_id": "judge-pilot-1d82fd15c69e1146-rubric_only",
+      "skill_uid": "1d82fd15c69e11463b2eaf65f30f03df94c5dfde84f2287ef3223c7d37eb716f"
+    },
+    {
+      "arm": "evidence_first",
+      "material_sha256": "b209df049f47f83385622b3301799489e8db91cce4f7ddad43db6f297ffa7a7b",
+      "request_sha256": "4097460f70e2be5324ae55039663b29d819c23cea1559312d7a9e2eb1e7e5d00",
+      "run_id": "judge-pilot-1d82fd15c69e1146-evidence_first",
+      "skill_uid": "1d82fd15c69e11463b2eaf65f30f03df94c5dfde84f2287ef3223c7d37eb716f"
+    },
+    {
+      "arm": "counterevidence_first",
+      "material_sha256": "b209df049f47f83385622b3301799489e8db91cce4f7ddad43db6f297ffa7a7b",
+      "request_sha256": "6e65f861887e775d3e6c1feec2b2857eb357201e13dc34b3b34f3488e8d26db4",
+      "run_id": "judge-pilot-1d82fd15c69e1146-counterevidence_first",
+      "skill_uid": "1d82fd15c69e11463b2eaf65f30f03df94c5dfde84f2287ef3223c7d37eb716f"
+    },
+    {
+      "arm": "rubric_only",
+      "material_sha256": "7f4a2a6bcf7592c80824f488d2dd08be35cea0c11c8d2bf83c3efe9a1ef6d345",
+      "request_sha256": "558b227041c453bac2c6bab81ac525c385dd4f46a806153e6a72f16126ed641b",
+      "run_id": "judge-pilot-1e7f81edc8db766c-rubric_only",
+      "skill_uid": "1e7f81edc8db766c809b86be465dd2abf43f297ff05b4d48cb649eb4b9ef3019"
+    },
+    {
+      "arm": "evidence_first",
+      "material_sha256": "7f4a2a6bcf7592c80824f488d2dd08be35cea0c11c8d2bf83c3efe9a1ef6d345",
+      "request_sha256": "a3fe41edb5cbe79a2b4da7c0eb3ef421343e053c8d89e9df92ccfda5daf47ffd",
+      "run_id": "judge-pilot-1e7f81edc8db766c-evidence_first",
+      "skill_uid": "1e7f81edc8db766c809b86be465dd2abf43f297ff05b4d48cb649eb4b9ef3019"
+    },
+    {
+      "arm": "counterevidence_first",
+      "material_sha256": "7f4a2a6bcf7592c80824f488d2dd08be35cea0c11c8d2bf83c3efe9a1ef6d345",
+      "request_sha256": "65566a434b78c66b947990089466156be07e3bd16317182ee75fa19bca649110",
+      "run_id": "judge-pilot-1e7f81edc8db766c-counterevidence_first",
+      "skill_uid": "1e7f81edc8db766c809b86be465dd2abf43f297ff05b4d48cb649eb4b9ef3019"
+    },
+    {
+      "arm": "rubric_only",
+      "material_sha256": "1f7c3e71bb37d68ce61f9e7418ee76ab6c89488f415550446c42f562d99be200",
+      "request_sha256": "6730f9ee9c69446be41219565ec9afb62f9559497a80939419b83894d828727e",
+      "run_id": "judge-pilot-1feec4f6092a229e-rubric_only",
+      "skill_uid": "1feec4f6092a229e9f843aa1fb871d5614a531d6523b4fc7fb8a61f3fa24cd62"
+    },
+    {
+      "arm": "evidence_first",
+      "material_sha256": "1f7c3e71bb37d68ce61f9e7418ee76ab6c89488f415550446c42f562d99be200",
+      "request_sha256": "8f6f88567319a8dc081ae7d22746aba7012d2268b1fb3f168fe4de91560aaed2",
+      "run_id": "judge-pilot-1feec4f6092a229e-evidence_first",
+      "skill_uid": "1feec4f6092a229e9f843aa1fb871d5614a531d6523b4fc7fb8a61f3fa24cd62"
+    },
+    {
+      "arm": "counterevidence_first",
+      "material_sha256": "1f7c3e71bb37d68ce61f9e7418ee76ab6c89488f415550446c42f562d99be200",
+      "request_sha256": "f6ff2ba6685641032e057e5871969dd70e6f75a9042edf7f11408ecc7e9def26",
+      "run_id": "judge-pilot-1feec4f6092a229e-counterevidence_first",
+      "skill_uid": "1feec4f6092a229e9f843aa1fb871d5614a531d6523b4fc7fb8a61f3fa24cd62"
+    },
+    {
+      "arm": "rubric_only",
+      "material_sha256": "068d32bd5b7709e74df7eb88d033c8977711f7a13b8f072808f49fbc51eb828c",
+      "request_sha256": "bff8377ff726a7898e71c31e3f2d93e726f50f5f5edd0dc540331004dd94b87e",
+      "run_id": "judge-pilot-3ba9c20e660bc5da-rubric_only",
+      "skill_uid": "3ba9c20e660bc5da214ce8d8a87c0ab587ae3e2eeccd83da3109cd3aa9abbb24"
+    },
+    {
+      "arm": "evidence_first",
+      "material_sha256": "068d32bd5b7709e74df7eb88d033c8977711f7a13b8f072808f49fbc51eb828c",
+      "request_sha256": "c2926c6949ad9a9523b1448dfec911ebbd1a9ec9532266e0ff9baa36b3211d30",
+      "run_id": "judge-pilot-3ba9c20e660bc5da-evidence_first",
+      "skill_uid": "3ba9c20e660bc5da214ce8d8a87c0ab587ae3e2eeccd83da3109cd3aa9abbb24"
+    },
+    {
+      "arm": "counterevidence_first",
+      "material_sha256": "068d32bd5b7709e74df7eb88d033c8977711f7a13b8f072808f49fbc51eb828c",
+      "request_sha256": "e31d2a677f6d6da514e37b018f7eca2b903c39aed1295fea8ceca9795daa57b8",
+      "run_id": "judge-pilot-3ba9c20e660bc5da-counterevidence_first",
+      "skill_uid": "3ba9c20e660bc5da214ce8d8a87c0ab587ae3e2eeccd83da3109cd3aa9abbb24"
+    },
+    {
+      "arm": "rubric_only",
+      "material_sha256": "506cd261ae1780b1c4dcc842ad84b021956522dcd4ac8268e56aa43abf4b9bd3",
+      "request_sha256": "8a937934132249737b179686b132b036cc996050a12fe385b4e3742e88d11a6b",
+      "run_id": "judge-pilot-4cfbb00572bc444d-rubric_only",
+      "skill_uid": "4cfbb00572bc444d3fde66eabfcf493790e7a5733e834d5041c75ac510a03856"
+    },
+    {
+      "arm": "evidence_first",
+      "material_sha256": "506cd261ae1780b1c4dcc842ad84b021956522dcd4ac8268e56aa43abf4b9bd3",
+      "request_sha256": "d170e94530629b6e3af40a079a293c1ab3efa4b9444ec6ef0c8c811578a72809",
+      "run_id": "judge-pilot-4cfbb00572bc444d-evidence_first",
+      "skill_uid": "4cfbb00572bc444d3fde66eabfcf493790e7a5733e834d5041c75ac510a03856"
+    },
+    {
+      "arm": "counterevidence_first",
+      "material_sha256": "506cd261ae1780b1c4dcc842ad84b021956522dcd4ac8268e56aa43abf4b9bd3",
+      "request_sha256": "0f29207d2137566f5c49edc0f08f73c9465a3dff154e2f8f9b30c1b8ff616f2d",
+      "run_id": "judge-pilot-4cfbb00572bc444d-counterevidence_first",
+      "skill_uid": "4cfbb00572bc444d3fde66eabfcf493790e7a5733e834d5041c75ac510a03856"
+    },
+    {
+      "arm": "rubric_only",
+      "material_sha256": "acefd8a25a20b43052db50d5dfcf390e7b62713d8df42832b59b26c488643f22",
+      "request_sha256": "ecfb0c5a3763c1592b3badce6c70fd91d367e09b289a8c74b019a61236bfb838",
+      "run_id": "judge-pilot-504176260db2bca7-rubric_only",
+      "skill_uid": "504176260db2bca7a906a610a93b120c078190f8043ff71740932fc247daae77"
+    },
+    {
+      "arm": "evidence_first",
+      "material_sha256": "acefd8a25a20b43052db50d5dfcf390e7b62713d8df42832b59b26c488643f22",
+      "request_sha256": "070ad1ab37fc382f6191ca6028aa31a3581839acaecea7126115f8aad9b670c8",
+      "run_id": "judge-pilot-504176260db2bca7-evidence_first",
+      "skill_uid": "504176260db2bca7a906a610a93b120c078190f8043ff71740932fc247daae77"
+    },
+    {
+      "arm": "counterevidence_first",
+      "material_sha256": "acefd8a25a20b43052db50d5dfcf390e7b62713d8df42832b59b26c488643f22",
+      "request_sha256": "494306467b458a41a09b146e6953efb12e551316b494fdbe19b052d24f083363",
+      "run_id": "judge-pilot-504176260db2bca7-counterevidence_first",
+      "skill_uid": "504176260db2bca7a906a610a93b120c078190f8043ff71740932fc247daae77"
+    },
+    {
+      "arm": "rubric_only",
+      "material_sha256": "910221c25c8adfc32439f24a6ae88cd253e28babe4b831877d567d86e6f775fa",
+      "request_sha256": "d81443b4689f4e512e6093f9c08715436c949cd3c1c3be6e673d09d7833f032f",
+      "run_id": "judge-pilot-5c1331d43b78dc2b-rubric_only",
+      "skill_uid": "5c1331d43b78dc2b2e94c3e9467a06ed5008943a2522270516f608564b364612"
+    },
+    {
+      "arm": "evidence_first",
+      "material_sha256": "910221c25c8adfc32439f24a6ae88cd253e28babe4b831877d567d86e6f775fa",
+      "request_sha256": "9cb5bd546ac6128fa3e50b2a123e1daa7d6d2c47d8154de12c26a869e221a8e6",
+      "run_id": "judge-pilot-5c1331d43b78dc2b-evidence_first",
+      "skill_uid": "5c1331d43b78dc2b2e94c3e9467a06ed5008943a2522270516f608564b364612"
+    },
+    {
+      "arm": "counterevidence_first",
+      "material_sha256": "910221c25c8adfc32439f24a6ae88cd253e28babe4b831877d567d86e6f775fa",
+      "request_sha256": "26db451440a5ea5ce24812c9803a0f6252253cf8f7c40b63b5b89454b5544030",
+      "run_id": "judge-pilot-5c1331d43b78dc2b-counterevidence_first",
+      "skill_uid": "5c1331d43b78dc2b2e94c3e9467a06ed5008943a2522270516f608564b364612"
+    },
+    {
+      "arm": "rubric_only",
+      "material_sha256": "a01aba2ac840f1f9eb862305c2fc217a2e019a1ccf015ab5ea5db84067117eb4",
+      "request_sha256": "6a455333163011f4145061b93ccd3ef387f369cd0611b92e7d5f22c72fe62c7b",
+      "run_id": "judge-pilot-6962c2be4ca12bfe-rubric_only",
+      "skill_uid": "6962c2be4ca12bfecc49429cea5de0a5b668257987c372d5e5a4c668c026f633"
+    },
+    {
+      "arm": "evidence_first",
+      "material_sha256": "a01aba2ac840f1f9eb862305c2fc217a2e019a1ccf015ab5ea5db84067117eb4",
+      "request_sha256": "9128ec623af6f1a6c275e9f317afa06dae4b2dbadb1122b7098c6d7ee49c3e15",
+      "run_id": "judge-pilot-6962c2be4ca12bfe-evidence_first",
+      "skill_uid": "6962c2be4ca12bfecc49429cea5de0a5b668257987c372d5e5a4c668c026f633"
+    },
+    {
+      "arm": "counterevidence_first",
+      "material_sha256": "a01aba2ac840f1f9eb862305c2fc217a2e019a1ccf015ab5ea5db84067117eb4",
+      "request_sha256": "951df91d8ee5e2ff896cec24dfd94dff141269f3d3a560c0b693e94e552325ad",
+      "run_id": "judge-pilot-6962c2be4ca12bfe-counterevidence_first",
+      "skill_uid": "6962c2be4ca12bfecc49429cea5de0a5b668257987c372d5e5a4c668c026f633"
+    },
+    {
+      "arm": "rubric_only",
+      "material_sha256": "bb289af6fc7edf04fd6f66045ff3c29dbe348042d8f99082e7396cfe522cb2f9",
+      "request_sha256": "b619bc59a1022587c3a08440ab979957a49d5e3ab2a592ea3303c7874efa61fb",
+      "run_id": "judge-pilot-75a1ac953682def2-rubric_only",
+      "skill_uid": "75a1ac953682def2b494e1f6f2c4d631d93b8b0291329c9ad4a16e4c330c493d"
+    },
+    {
+      "arm": "evidence_first",
+      "material_sha256": "bb289af6fc7edf04fd6f66045ff3c29dbe348042d8f99082e7396cfe522cb2f9",
+      "request_sha256": "d201c943e0a2487a59f5041be5d40dd3a47d524472b8d119ea5893951682b288",
+      "run_id": "judge-pilot-75a1ac953682def2-evidence_first",
+      "skill_uid": "75a1ac953682def2b494e1f6f2c4d631d93b8b0291329c9ad4a16e4c330c493d"
+    },
+    {
+      "arm": "counterevidence_first",
+      "material_sha256": "bb289af6fc7edf04fd6f66045ff3c29dbe348042d8f99082e7396cfe522cb2f9",
+      "request_sha256": "64b83a748f8b858e45d4d84ac4e59708e58c11de3249a8f65d1011825fd818e7",
+      "run_id": "judge-pilot-75a1ac953682def2-counterevidence_first",
+      "skill_uid": "75a1ac953682def2b494e1f6f2c4d631d93b8b0291329c9ad4a16e4c330c493d"
+    },
+    {
+      "arm": "rubric_only",
+      "material_sha256": "8dbb6575f1f604082e83fef578d261fe19fa5ad33992f7e4723e8028bb3e39ee",
+      "request_sha256": "03c7e37ceace36720e60741c7b4e9236b4d34e37881cc03bb09cdce0e2a628fe",
+      "run_id": "judge-pilot-9264fd41e77d6c76-rubric_only",
+      "skill_uid": "9264fd41e77d6c7684389b4b165d16385ff9a913cf1bff5694cb992b3e0b6d31"
+    },
+    {
+      "arm": "evidence_first",
+      "material_sha256": "8dbb6575f1f604082e83fef578d261fe19fa5ad33992f7e4723e8028bb3e39ee",
+      "request_sha256": "bc8c70a2275b04cb659cfb60c7e495a8c7ce285058a548a01483f468405bf081",
+      "run_id": "judge-pilot-9264fd41e77d6c76-evidence_first",
+      "skill_uid": "9264fd41e77d6c7684389b4b165d16385ff9a913cf1bff5694cb992b3e0b6d31"
+    },
+    {
+      "arm": "counterevidence_first",
+      "material_sha256": "8dbb6575f1f604082e83fef578d261fe19fa5ad33992f7e4723e8028bb3e39ee",
+      "request_sha256": "1819fa256354585466f29d165d9dce6dd1990e91b390cf3cae869d608e82a848",
+      "run_id": "judge-pilot-9264fd41e77d6c76-counterevidence_first",
+      "skill_uid": "9264fd41e77d6c7684389b4b165d16385ff9a913cf1bff5694cb992b3e0b6d31"
+    },
+    {
+      "arm": "rubric_only",
+      "material_sha256": "c18400ad2679c3cea9d2e1e41be4b958b74289320f931b2bba0373beb0bde4a9",
+      "request_sha256": "f397d5b13b048eee068a898fc0b56261db7ba8404c926a374e1558d3754d2f31",
+      "run_id": "judge-pilot-9b40302abab5e681-rubric_only",
+      "skill_uid": "9b40302abab5e68142617a71a89d2c89e65d521a10d2aa87779afc0a8d9d64f8"
+    },
+    {
+      "arm": "evidence_first",
+      "material_sha256": "c18400ad2679c3cea9d2e1e41be4b958b74289320f931b2bba0373beb0bde4a9",
+      "request_sha256": "3bd6c14d662a64bb06688dc01249d4dc9a992eb87ce5bfc4dbb80ce83f00a526",
+      "run_id": "judge-pilot-9b40302abab5e681-evidence_first",
+      "skill_uid": "9b40302abab5e68142617a71a89d2c89e65d521a10d2aa87779afc0a8d9d64f8"
+    },
+    {
+      "arm": "counterevidence_first",
+      "material_sha256": "c18400ad2679c3cea9d2e1e41be4b958b74289320f931b2bba0373beb0bde4a9",
+      "request_sha256": "9d2171a1df2d8116766b7399e1e62b4772474627b65a83c5f167747112130839",
+      "run_id": "judge-pilot-9b40302abab5e681-counterevidence_first",
+      "skill_uid": "9b40302abab5e68142617a71a89d2c89e65d521a10d2aa87779afc0a8d9d64f8"
+    },
+    {
+      "arm": "rubric_only",
+      "material_sha256": "b29b6c3df3f503ec1776dac882e5a9cb4588ed8e405247ba370c85d27e4f3ad9",
+      "request_sha256": "0df81f85b29f22448aa9222665474b22eb8bbe3e04bb87823a93a8c87f530fa1",
+      "run_id": "judge-pilot-a5e7d9a3cd305502-rubric_only",
+      "skill_uid": "a5e7d9a3cd305502505f2e4d6e318e8a14bef6ba83fa55df5a9078e9e0c546b6"
+    },
+    {
+      "arm": "evidence_first",
+      "material_sha256": "b29b6c3df3f503ec1776dac882e5a9cb4588ed8e405247ba370c85d27e4f3ad9",
+      "request_sha256": "7d1abe5f9ed90e44c16d6c72b66e9ea9caa77301b57e9c1effa24ef2d120581f",
+      "run_id": "judge-pilot-a5e7d9a3cd305502-evidence_first",
+      "skill_uid": "a5e7d9a3cd305502505f2e4d6e318e8a14bef6ba83fa55df5a9078e9e0c546b6"
+    },
+    {
+      "arm": "counterevidence_first",
+      "material_sha256": "b29b6c3df3f503ec1776dac882e5a9cb4588ed8e405247ba370c85d27e4f3ad9",
+      "request_sha256": "65716c9a4bf95d5c6029d23a0183e611f566d300f876a3fda5409723a028d8b3",
+      "run_id": "judge-pilot-a5e7d9a3cd305502-counterevidence_first",
+      "skill_uid": "a5e7d9a3cd305502505f2e4d6e318e8a14bef6ba83fa55df5a9078e9e0c546b6"
+    },
+    {
+      "arm": "rubric_only",
+      "material_sha256": "2ba0489e966bf1f3bbc0bd71dc0071ceafa47b947508970a4744c5653e54363a",
+      "request_sha256": "da4c0e3920602a43df436afc11a0ace1294414e587304997e4c4403aaafe8513",
+      "run_id": "judge-pilot-adb186291caebed1-rubric_only",
+      "skill_uid": "adb186291caebed14d25b7ffa113364e87f18cce612fe00b9b861f53f3a49f3f"
+    },
+    {
+      "arm": "evidence_first",
+      "material_sha256": "2ba0489e966bf1f3bbc0bd71dc0071ceafa47b947508970a4744c5653e54363a",
+      "request_sha256": "a484cd18fb35a8dd1ab32333302091c64cf5b67f4ee03ca5251e06f5dbe08281",
+      "run_id": "judge-pilot-adb186291caebed1-evidence_first",
+      "skill_uid": "adb186291caebed14d25b7ffa113364e87f18cce612fe00b9b861f53f3a49f3f"
+    },
+    {
+      "arm": "counterevidence_first",
+      "material_sha256": "2ba0489e966bf1f3bbc0bd71dc0071ceafa47b947508970a4744c5653e54363a",
+      "request_sha256": "7bbc9ef8cd7ddb8b818fb43fa9b7895f8fa56d073cdf6da87f075a22ec4bfd0e",
+      "run_id": "judge-pilot-adb186291caebed1-counterevidence_first",
+      "skill_uid": "adb186291caebed14d25b7ffa113364e87f18cce612fe00b9b861f53f3a49f3f"
+    },
+    {
+      "arm": "rubric_only",
+      "material_sha256": "e841cbb1956f29605d39f8704710fc3666d062f565ddd87c1422698277c08610",
+      "request_sha256": "d51921849c000625f80552eea71e3364b50f5c4b6551e447fa14938c3cfa2c74",
+      "run_id": "judge-pilot-bcd77f0e710e69a2-rubric_only",
+      "skill_uid": "bcd77f0e710e69a20b37cf3a112e29a45c636cf1e07d767f60151a3a12b9c858"
+    },
+    {
+      "arm": "evidence_first",
+      "material_sha256": "e841cbb1956f29605d39f8704710fc3666d062f565ddd87c1422698277c08610",
+      "request_sha256": "42afb2494f189d9849c6078a7defee7d147a0c07cbfecb9ba66b25ced4ef4c6f",
+      "run_id": "judge-pilot-bcd77f0e710e69a2-evidence_first",
+      "skill_uid": "bcd77f0e710e69a20b37cf3a112e29a45c636cf1e07d767f60151a3a12b9c858"
+    },
+    {
+      "arm": "counterevidence_first",
+      "material_sha256": "e841cbb1956f29605d39f8704710fc3666d062f565ddd87c1422698277c08610",
+      "request_sha256": "bfbdbf33e1e7781362f479cffcf077ca0fd257f47ec05330f70507527fd9ea9e",
+      "run_id": "judge-pilot-bcd77f0e710e69a2-counterevidence_first",
+      "skill_uid": "bcd77f0e710e69a20b37cf3a112e29a45c636cf1e07d767f60151a3a12b9c858"
+    },
+    {
+      "arm": "rubric_only",
+      "material_sha256": "6e994fde1fa17efab94ae95a37a9a99f42e4433537c5da13bc47389a9c5f285a",
+      "request_sha256": "95514e7f4cb392b4fa1196d80378dedbb4d1982a06932add26044bd2193ed694",
+      "run_id": "judge-pilot-cae0136bea20e55f-rubric_only",
+      "skill_uid": "cae0136bea20e55f7928682e5e8e010cf3ae9e7289419f7e0cf4c1db0562fc7d"
+    },
+    {
+      "arm": "evidence_first",
+      "material_sha256": "6e994fde1fa17efab94ae95a37a9a99f42e4433537c5da13bc47389a9c5f285a",
+      "request_sha256": "51ad5b21253e72527b4322a5b96cac1355298f6499dbef1a5ce9208e25ffc43f",
+      "run_id": "judge-pilot-cae0136bea20e55f-evidence_first",
+      "skill_uid": "cae0136bea20e55f7928682e5e8e010cf3ae9e7289419f7e0cf4c1db0562fc7d"
+    },
+    {
+      "arm": "counterevidence_first",
+      "material_sha256": "6e994fde1fa17efab94ae95a37a9a99f42e4433537c5da13bc47389a9c5f285a",
+      "request_sha256": "c47083a9bd8a2c90c96f4033cf1f9acca1b4caf114a6c026b158dde1220e113c",
+      "run_id": "judge-pilot-cae0136bea20e55f-counterevidence_first",
+      "skill_uid": "cae0136bea20e55f7928682e5e8e010cf3ae9e7289419f7e0cf4c1db0562fc7d"
+    }
+  ],
+  "requests_prepared": 54,
+  "rubric_sha256": "efb49df065e6373875879111fe36f6f3f46e1ded448e62ebf3a6c36509a9f4da",
+  "same_material_across_arms": true,
+  "selection": "original frozen D1 training_20_ids only; not independent evaluation",
+  "status": "prepared_offline_approval_pending_not_sent",
+  "stop_conditions": [
+    "rotated key and fixed budget not confirmed",
+    "component license or secret review incomplete",
+    "unknown pricing or billed cost; pending reservation",
+    "next worst-case reservation would exceed remaining USD 5 cap",
+    "three consecutive invalid schema responses"
+  ],
+  "training_ids": [
+    "037b9884819b682cc6c8766015dcde672ca80a9361d71b4704873dc1edcf024f",
+    "0cd893995f40369620abf55479c14c7150a017a61e0a4eb25c02bdcaa6dc12d9",
+    "111a02acd34032a779c5e129a532498b5ad0729e1664f6cf6c7c723a08057b3d",
+    "133d1a3e8a292cd2277c2192cf9dfd34b847f2df979418382266fcbcbd5de627",
+    "1d82fd15c69e11463b2eaf65f30f03df94c5dfde84f2287ef3223c7d37eb716f",
+    "1e7f81edc8db766c809b86be465dd2abf43f297ff05b4d48cb649eb4b9ef3019",
+    "1feec4f6092a229e9f843aa1fb871d5614a531d6523b4fc7fb8a61f3fa24cd62",
+    "211b10fad9b20d9b815cf0f535546bba688b61ae969a454e8c1094a40d16e4d5",
+    "3ba9c20e660bc5da214ce8d8a87c0ab587ae3e2eeccd83da3109cd3aa9abbb24",
+    "4cfbb00572bc444d3fde66eabfcf493790e7a5733e834d5041c75ac510a03856",
+    "504176260db2bca7a906a610a93b120c078190f8043ff71740932fc247daae77",
+    "5c1331d43b78dc2b2e94c3e9467a06ed5008943a2522270516f608564b364612",
+    "6962c2be4ca12bfecc49429cea5de0a5b668257987c372d5e5a4c668c026f633",
+    "75a1ac953682def2b494e1f6f2c4d631d93b8b0291329c9ad4a16e4c330c493d",
+    "9264fd41e77d6c7684389b4b165d16385ff9a913cf1bff5694cb992b3e0b6d31",
+    "9b40302abab5e68142617a71a89d2c89e65d521a10d2aa87779afc0a8d9d64f8",
+    "a5e7d9a3cd305502505f2e4d6e318e8a14bef6ba83fa55df5a9078e9e0c546b6",
+    "adb186291caebed14d25b7ffa113364e87f18cce612fe00b9b861f53f3a49f3f",
+    "bcd77f0e710e69a20b37cf3a112e29a45c636cf1e07d767f60151a3a12b9c858",
+    "cae0136bea20e55f7928682e5e8e010cf3ae9e7289419f7e0cf4c1db0562fc7d"
+  ]
+}

@@ -1,4 +1,4 @@
-# Literature-grounded Skill research, 2026-11-06
+# Literature-grounded Skill research, 2026-11-07
 
 The two research questions are verifiable Skill quality and better SkillNet
 selection/orchestration. This additive package leaves the production library,
@@ -12,6 +12,19 @@ running local demo, prior assessment code and frozen datasets unchanged.
   it is not a registered confirmatory protocol.
 - [Corrections](CORRECTIONS.md) preserves the initial shell-comment false leads.
 - [All routing cohorts and policies](ROUTING_TABLES.md) prevents selective reporting.
+- [Local model preparation](results/local-model-preparation.json) records verified
+  SkillRouter weights and an incomplete CUDA dependency download. No model
+  inference was run and no model metrics are reported. The optional forward-only
+  probe and its pinned configuration are supplied for a later completed setup.
+- [Judge pilot execution](NEXT_BATCH_REVIEW.md) describes 54 real, matched-material
+  direct DeepSeek requests over 18 original D1 training examples, explicitly
+  authorized by the user after initial offline preparation. Two fixed training
+  examples exceeded the byte limit. 53 responses passed schema validation;
+  382/389 citations passed the strict supplied-source locator check. These are
+  not human quality accuracy or task-execution results.
+- [Source binding](results/evidence-binding-summary.json) records a post-hoc
+  independent resource fetch and version binding; model quote discrepancies
+  and unassessed semantic support remain explicit.
 
 Existing research environment, repository root:
 
@@ -62,4 +75,10 @@ and have a file manifest. Verify `manifest.json` using
 `code-manifest.json` uses the repository root and detects later code changes.
 Historical code can also be checked out from its pinned Git revision or restored
 from a run's `code-snapshot`. Only summaries/metadata are committed. No real API
-calls or Skill executions are performed by these pilots.
+calls or Skill executions are performed by the static-contract and lexical
+routing pilots. The separate direct DeepSeek pilot performed 54 cloud model
+requests after explicit authorization; it executed no community Skill code.
+Its private responses/balance snapshots stay outside Git, and observed-token
+tariff bounds are not presented as provider invoices. The historical USD 0
+protocol and offline-preparation flags are preserved; the separate direct
+authorization and run plan describe the subsequent paid batch.

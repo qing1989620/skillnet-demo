@@ -2,7 +2,7 @@
 
 核验日期：2026-11-06。
 
-这是围绕两个研究问题的定向方法综述。P01–P10、P43–P44 直接讨论现代 Agent Skill，其余提供程序技能、工具执行、评价、校准与优化方法。11 篇目前仅按预印本列入，其余列明正式发表记录；它们并非 44 篇‘Skill 顶刊’。
+这是围绕两个研究问题的定向方法综述。P01–P10、P43–P44 直接讨论现代 Agent Skill，其余提供程序技能、工具执行、评价、校准与优化方法。9 篇目前仅按预印本列入，其余列明正式发表记录；它们并非 44 篇‘Skill 顶刊’。
 
 已取得每篇正文并定向阅读方法、实验或局限片段，不声称逐字通读全部正文。阅读版本与正式出版版本分开记录。每条优势是论文方法概括，局限及迁移建议包含本研究的判断，不是作者对本项目的背书。原始全文仅缓存本地，不在仓库转载。
 
@@ -11,7 +11,7 @@
 | P01 [SkillNet: Create, Evaluate, and Connect AI Skills](https://arxiv.org/abs/2603.04448v3)；2603.04448v3 | arXiv preprint | 以统一技能本体连接创建、五维评价和技能关系；原文已有独立盲评与受控执行。 | 论文报告的评价器不等于本地卡片启发式；已有结论不能直接继承。 | 保留原框架，比较发表版评价原则与本地实现，新增可证伪的资源和接口证据。 |
 | P02 [SkillsBench: Benchmarking How Well Agent Skills Work Across Diverse Tasks](https://arxiv.org/abs/2602.12670v4)；2602.12670v4 | arXiv preprint | 固定任务环境与独立产物验收，配对比较有无 Skill；审查答案泄漏。 | 终端任务覆盖有限；额外上下文和生态筛选仍可能影响因果解释。 | 固定预算与会话隔离；公开开发样例和真正隐藏的正式任务分开。 |
 | P03 [Not All Skills Help: Measuring and Repairing Agent Knowledge](https://arxiv.org/abs/2606.15390v1)；2606.15390v1 | arXiv preprint | 随机屏蔽技能，估计每技能每任务的边际效果，再按任务预测收益。 | 估计依赖屏蔽分布、开发任务及足够实跑；不是无条件技能价值。 | 测条件收益和交互，保留负迁移；不以静态质量分代替收益矩阵。 |
-| P04 [SkillRouter: Skill Routing for LLM Agents at Scale](https://arxiv.org/abs/2603.22455v5)；2603.22455v5 | arXiv preprint | 完整正文包含元数据遗漏的路由信息；使用检索与重排，并做信息量对照。 | 特定标签、干扰项和编码器上的检索指标不等于下游成功率。 | 比较卡片、完整包和等长摘要，增加候选池上限与整组必要技能覆盖。 |
+| P04 [SkillRouter: Skill Routing for LLM Agents at Scale](https://arxiv.org/abs/2603.22455v5)；2603.22455v5 | [COLM 2026](https://colm.eventhosts.cc/Conferences/2026/AcceptedPapers) | 完整正文包含元数据遗漏的路由信息；使用检索与重排，并做信息量对照。 | 特定标签、干扰项和编码器上的检索指标不等于下游成功率。 | 比较卡片、完整包和等长摘要，增加候选池上限与整组必要技能覆盖。 |
 | P05 [Beyond Top-$k$ Skill Retrieval: Diversity-Aware Skill Routing for LLM Agents](https://arxiv.org/abs/2609.05824v1)；2609.05824v1 | arXiv preprint | 以 DPP 平衡相关性和非冗余，并用查询残差减弱共同相关性的惩罚。 | 其 quality 是查询相关性；效果依赖训练编码器与重排器，并非可信评级。 | 实现明确标注的词法代理对照；学习集合互补，但不把多样性直接当收益。 |
 | P06 [Skill++: Towards Lifelong Agents via Routing-Aware Skill Refinement](https://arxiv.org/abs/2611.00544v1)；2611.00544v1 | arXiv preprint | 新增技能到来时改写易混淆描述、名称和范围排除，并检验旧查询遗忘。 | 元数据忠实于正文仍是前提；持续路由改善不能直接证明执行更优。 | 只在证据支持下改元数据，每次变更跑旧任务回归并记录版本。 |
 | P07 [COBRA-Skills: Contextual Bandit-Guided Evolution for Agent Skill Optimization](https://arxiv.org/abs/2609.11682v1)；2609.11682v1 | arXiv preprint | 用奖励预测与 LinearUCB 分配评估预算，再依据轨迹再生、变异和组合。 | 依赖反馈可信度与表征；审计成本和非平稳候选可能改变表现。 | 在有真实收益标签后比较主动验证与随机分配；费用和所有尝试入账。 |
@@ -51,8 +51,10 @@
 | P41 [RARR: Researching and Revising What Language Models Say, Using Language Models](https://arxiv.org/abs/2210.08726v3)；2210.08726v3 | [ACL 2023](https://aclanthology.org/2023.acl-long.910/) | 先找证据，再作尽量保留原意的局部修订，并评价归因和保留。 | 证据检索漏失或误判可能造成错误修订。 | 修补范围最小化，验证原能力保留和新证据支持。 |
 | P42 [A Contextual-Bandit Approach to Personalized News Article Recommendation](https://arxiv.org/abs/1003.0146v2)；1003.0146v2 | [WWW 2010](https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/p661.pdf) | 在线权衡利用与探索，且讨论基于随机日志的离线评估。 | 线性收益假设和日志覆盖条件限制无偏评估。 | 将验证资源分配作为后续强基线；不从非随机历史日志宣称因果提升。 |
 | P43 [SkillCT: A Multidimensional Benchmark and Execution-Free Baseline for Agent Skill Assessment](https://arxiv.org/abs/2610.38147v1)；2610.38147v1 | arXiv preprint | 九维静态、动态及人辅画像，并用已评参考技能检索估计目标画像。 | 一致性不等于正确；相似技能的画像预测不是目标技能的执行证据。 | 列为最接近的评价强基线，比较借用画像与目标包可反驳证据、独立验收。 |
-| P44 [SkillLearnBench: Benchmarking Continual Learning Methods for Agent Skill Generation on Real-World Tasks](https://arxiv.org/abs/2604.20087v1)；2604.20087v1 | arXiv preprint；作者仓库标注 COLM 2026，会议记录未独立核实 | 把生成技能质量、执行轨迹和任务产物分层；终止后独立运行验收器。 | 三层框架与持续学习基准已存在；重复稳定性不是人类准确性。 | 复用公开任务与验收思想，明确区分评价器稳定、事实正确和实际增益。 |
+| P44 [SkillLearnBench: Benchmarking Continual Learning Methods for Agent Skill Generation on Real-World Tasks](https://arxiv.org/abs/2604.20087v1)；2604.20087v1 | [COLM 2026](https://colm.eventhosts.cc/Conferences/2026/AcceptedPapers) | 把生成技能质量、执行轨迹和任务产物分层；终止后独立运行验收器。 | 三层框架与持续学习基准已存在；重复稳定性不是人类准确性。 | 复用公开任务与验收思想，明确区分评价器稳定、事实正确和实际增益。 |
 
 正文指纹、作者、原始候选标题、阅读章节和版本差异记录见 `literature_review.json`。
 
 候选表中需核验的年份/会议信息已更正：ToolSandbox 为 Findings of NAACL 2025，RCPS 为 Journal of the ACM 2021。SkillRouter v5 的标题也与初版不同，按同一 arXiv ID 去重。
+
+SkillRouter 与 SkillLearnBench 的 COLM 2026 录用信息已在会议官方名单独立核实；初期未核实版本曾将它们保守列为预印本，现已更新。阅读正文仍固定为账本中的 arXiv 版本。
