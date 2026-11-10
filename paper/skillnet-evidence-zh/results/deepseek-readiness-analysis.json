@@ -1,0 +1,108 @@
+{
+  "run_id": "20261107-deepseek-readiness-v1",
+  "source_summary_sha256": "db819125927368b8f53e5c3263d060d38de703a1cf4d655b92c7694e41d6ab7c",
+  "model_requests_attempted": 54,
+  "model_requests_completed": 54,
+  "complete": true,
+  "served_model_values": [
+    "deepseek-flash"
+  ],
+  "parent_skills": 18,
+  "groups": [
+    {
+      "arm": "rubric_only",
+      "requests": 18,
+      "schema_valid": 17,
+      "dimensions_in_valid_responses": 136,
+      "unknown_dimensions": 9,
+      "not_applicable_dimensions": 0,
+      "model_marked_conflict_dimensions": 17,
+      "citations_from_schema_valid_responses": 125,
+      "exact_valid_locators": 123,
+      "locator_valid_fraction": 0.984,
+      "parents_with_citations": 17,
+      "parents_all_emitted_citations_valid": 15,
+      "invalid_reasons": {
+        "quote_not_exact": 2
+      }
+    },
+    {
+      "arm": "evidence_first",
+      "requests": 18,
+      "schema_valid": 18,
+      "dimensions_in_valid_responses": 144,
+      "unknown_dimensions": 9,
+      "not_applicable_dimensions": 0,
+      "model_marked_conflict_dimensions": 17,
+      "citations_from_schema_valid_responses": 135,
+      "exact_valid_locators": 132,
+      "locator_valid_fraction": 0.9777777777777777,
+      "parents_with_citations": 18,
+      "parents_all_emitted_citations_valid": 15,
+      "invalid_reasons": {
+        "path_not_supplied": 2,
+        "quote_not_exact": 1
+      }
+    },
+    {
+      "arm": "counterevidence_first",
+      "requests": 18,
+      "schema_valid": 18,
+      "dimensions_in_valid_responses": 144,
+      "unknown_dimensions": 15,
+      "not_applicable_dimensions": 0,
+      "model_marked_conflict_dimensions": 20,
+      "citations_from_schema_valid_responses": 129,
+      "exact_valid_locators": 127,
+      "locator_valid_fraction": 0.9844961240310077,
+      "parents_with_citations": 18,
+      "parents_all_emitted_citations_valid": 16,
+      "invalid_reasons": {
+        "quote_not_exact": 1,
+        "path_not_supplied": 1
+      }
+    }
+  ],
+  "schema_failures": [
+    {
+      "run_id": "judge-pilot-133d1a3e8a292cd2-rubric_only-direct-v1",
+      "arm": "rubric_only",
+      "issues": [
+        {
+          "loc": [
+            "dimensions",
+            6
+          ],
+          "type": "value_error",
+          "msg": "Value error, Missingness and score conflict"
+        }
+      ]
+    }
+  ],
+  "prompt_tokens": 501675,
+  "completion_tokens": 57833,
+  "tariff_upper_from_observed_usage": {
+    "CNY": "1.466014",
+    "USD": "0.2199021"
+  },
+  "observed_account_balance_decrease": {
+    "CNY": "0.25"
+  },
+  "balance_decrease_is_not_attributed_as_batch_invoice": true,
+  "posthoc_format_diagnostic": {
+    "citations_with_supplied_path_and_line_range": 386,
+    "hash_and_exact_quote_valid": 382,
+    "exact_quote_valid_if_system_binds_registered_hash": 382,
+    "substring_quote_valid_if_system_binds_hash": 384,
+    "not_a_new_model_run_or_semantic_validation": true
+  },
+  "human_quality_gold": 0,
+  "skill_execution_trials": 0,
+  "limitations": [
+    "training examples, partial excerpts, one model, one response per arm; not independent human quality accuracy",
+    "citation count is directly prompted; more citations alone is not evaluation-method superiority",
+    "exact locator validity does not prove semantic entailment",
+    "shared account balance delta can include unrelated use and is not attributed as a batch invoice",
+    "model alias can change and is not an immutable weight snapshot"
+  ]
+}

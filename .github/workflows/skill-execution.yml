@@ -1,0 +1,38 @@
+name: Verify controlled Skill artifact experiment
+on:
+  push:
+    paths:
+      - "research/skill_execution/**"
+      - "paper/skillnet-evidence-zh/**"
+      - ".github/workflows/skill-execution.yml"
+  pull_request:
+    paths:
+      - "research/skill_execution/**"
+      - "paper/skillnet-evidence-zh/**"
+      - ".github/workflows/skill-execution.yml"
+permissions:
+  contents: read
+jobs:
+  artifacts:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.11", "3.12"]
+    runs-on: ${{ matrix.os }}
+    env:
+      DEEPSEEK_API_KEY: ""
+      OPENROUTER_API_KEY: ""
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+      - run: python -m pip install -r research/skill_quality/requirements-research.txt
+      - run: python -m pytest research/skill_execution/tests -q
+      - run: python -m ruff check --config research/skill_quality/ruff.toml research/skill_execution
+      - run: python -m ruff format --check --config research/skill_quality/ruff.toml research/skill_execution
+      - run: python -m mypy --config-file research/skill_quality/mypy.ini research/skill_execution
+      - run: python paper/skillnet-evidence-zh/reproduce.py

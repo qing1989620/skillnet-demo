@@ -1,0 +1,97 @@
+% 中文研究稿；基于 Elsevier CAS double-column v2.4，使用 XeLaTeX。
+\documentclass[a4paper,fleqn]{cas-dc}
+% Preserve CAS's STIX math encodings when ctex loads fontspec.
+\PassOptionsToPackage{no-math}{fontspec}
+\usepackage[UTF8,scheme=plain,fontset=fandol]{ctex}
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{booktabs,tabularx,multirow,array,amsmath,amssymb}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage{enumitem}
+\usepackage{balance}
+\usepackage{microtype}
+\usepackage{xurl}
+\hypersetup{colorlinks=true,linkcolor=blue!45!black,citecolor=blue!45!black,urlcolor=blue!45!black}
+\setlist[itemize]{leftmargin=1.4em,itemsep=1pt,topsep=3pt}
+\setlength{\emergencystretch}{2em}
+\renewcommand{\figurename}{图}
+\renewcommand{\tablename}{表}
+\renewcommand{\refname}{参考文献}
+\newcommand{\skill}{\textit{Skill}}
+\newcommand{\dataset}{\mathcal{D}}
+\newcommand{\unknown}{\texttt{unknown}}
+\newcommand{\methodname}{分层证据核验}
+\ExplSyntaxOn
+\cs_set:Npn \__first_footerline: { \footnotesize 中文研究稿（未投稿）\quad 2026-11-11 }
+% CAS always prints an ORCID footnote, including when none was supplied.
+\RenewDocumentCommand \printorcid {} {}
+% Keep the official CAS layout; add stretch to its deliberately zero-width
+% keyword overlay so a correctly placed overlay does not trigger an overfull box.
+\RenewDocumentEnvironment { Abstract } { o }
+{
+  \group_begin:
+  \IfNoValueTF { #1 } {} { \tex_gdef:D \abstractname { #1 } }
+  \parindent 0pt
+  \box_if_empty:NTF \g_stm_key_box
+    { \leftskip = .35\textwidth }
+    {
+      \dim_gset:Nn \l_tmpa_dim { \box_ht:N \g_stm_key_box + \box_dp:N \g_stm_key_box }
+      \leftskip .35\textwidth
+      \hspace*{-.35\textwidth}
+      \noindent\hbox_to_wd:nn {0pt} {\box\g_stm_key_box\hss}
+      \skip_vertical:n {-\l_tmpa_dim}
+    }
+  \noindent\abstractname\par
+  \skip_vertical:n {-4pt}
+  \noindent\rule{.65\textwidth}{.2pt}\par\footnotesize
+  \ignorespaces\everypar{\parindent=1.5em}
+}
+{\par\group_end:}
+\ExplSyntaxOff
+\input{results/macros.tex}
+\begin{document}
+\let\WriteBookmarks\relax
+\def\floatpagepagefraction{1}
+\def\textpagefraction{.01}
+\shorttitle{开放技能包的证据核验与条件化效用}
+\shortauthors{SkillNet 研究项目}
+\title[mode=title]{开放技能包的证据核验与条件化效用：\texorpdfstring{\\}{ }来自 SkillNet 的受控实验研究}
+\author{SkillNet 研究项目（匿名研究稿）}
+\begin{abstract}
+开放技能网络常将文档评分、引用可追溯性和实际任务能力混为一谈，导致评价指标与使用决定脱节。
+本文提出分层证据核验协议，将固定包版本、机械反证、来源绑定和独立产物验收分别测量。
+基于 SkillNet-demo，审查200个原始技能包，完成381个受控命令案例、54次真实模型评价、
+300次五臂产物对照及1,152条历史网络选择回放。
+在受限参数契约上，扩展规则与标准库参照均检出154个构造缺陷，227个无害对照未误报；
+但470条实际命令中有333条超出当前静态检查范围。
+模型评价的389条引用有382条通过严格定位，而来源补证仍不能证明语义支持或运行能力。
+在新构造的CSV任务上，240份范围内产物仅23份完整合格，48行输入的120份产物均未完整通过；
+明确元数据边界的60次处置则全部正确。
+事后诊断显示逐项检查平均通过率为89.21\%，与9.58\%的完整产物成功率形成明显测量差异。
+原始技能、证据契约及仅契约的配对比较未建立稳定的总体收益，多样性重排也未显示普遍改善。
+结果支持将来源真实性、条件适配、完整产物和网络集合覆盖分开核验，
+并以全部失败、未知和成本约束评价方法。
+研究限于开发材料、构造任务、一个目标技能与单一可变模型别名，不作总体质量准确率或最优性主张。
+\end{abstract}
+\begin{keywords}
+智能体技能 \sep 质量核验 \sep 能力边界 \sep 独立产物验收 \sep 技能网络 \sep 条件化效用
+\end{keywords}
+\maketitle
+\hypersetup{pdfauthor={SkillNet 研究项目},pdfsubject={技能质量核验与条件化效用的受控研究},pdfproducer={XeTeX / TeX Live 2026}}
+\input{sections/introduction.tex}
+\input{sections/related.tex}
+\input{sections/method.tex}
+\input{sections/design.tex}
+\input{sections/results.tex}
+\input{sections/discussion.tex}
+\input{sections/conclusion.tex}
+\section*{数据、代码与研究状态声明}
+\input{sections/availability.tex}
+\bibliographystyle{cas-model2-names}
+\bibliography{references}
+\clearpage
+\appendix
+\input{sections/appendix.tex}
+\end{document}
