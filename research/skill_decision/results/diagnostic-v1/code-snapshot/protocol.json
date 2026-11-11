@@ -1,0 +1,36 @@
+{
+  "id": "evidence-constrained-skill-decision-v1",
+  "date": "2026-11-11",
+  "purpose": "A runnable defect and task-readiness discriminator, not a general learned quality model",
+  "budget_usd": 0,
+  "new_model_calls": 0,
+  "community_code_execution": false,
+  "decisions": ["repair_required", "tested_pass_within_scope", "insufficient_evidence", "outside_tested_scope"],
+  "layers": ["version_integrity", "entrypoint_syntax", "literal_cli_contract", "independent_task_artifact"],
+  "veto": "Any confirmed material defect or matching task failure prevents a tested-pass decision; document averages cannot offset it",
+  "acceptance": "All available required static checks pass, no unresolved required static check, and at least one registered matching behavior suite passes completely",
+  "unknown": "Unsupported contracts and missing task outcomes remain unknown; never convert absence of evidence into good or bad",
+  "static_benchmark": {
+    "parents": 60,
+    "dev_parents": 40,
+    "test_parents": 20,
+    "split_seed": 20261111,
+    "variants_per_parent": 10,
+    "truth": "Known independent edits plus a native argparse reference constructed from generator specifications, without the detector AST extractor",
+    "status": "constructed diagnostic benchmark; no independent human semantic labels"
+  },
+  "behavior_benchmark": {
+    "families": ["integer_sum", "stable_full_row_dedup", "directed_order"],
+    "implementations_per_family": 4,
+    "inputs_per_implementation": 24,
+    "truth": "Fixed constructive arithmetic/list/graph constraints, separate from implementation variants",
+    "execution": "Only locally authored registry functions through a credential-free child process; no arbitrary package code execution",
+    "status": "Owned executable fixtures, not twelve natural community Skills"
+  },
+  "comparators": ["original_document_heuristic", "option_names_only", "native_argparse_only", "static_gate", "full_gate"],
+  "ablations": ["without_integrity", "without_cli", "without_behavior"],
+  "metrics": ["defect_recall", "benign_false_alarm_rate", "abstention_rate", "correct_release_coverage", "incorrect_release_count"],
+  "natural_packages": "Frozen D1 200 originals; read-only diagnosis without newly invented semantic gold",
+  "threshold_learning": "none; fixed logical veto and conjunctive acceptance, not fitted on test outcomes",
+  "limitations": ["Diagnostic faults and task fixtures are researcher constructed", "Passing a finite suite is conditional evidence, not a permanent capability or security certificate", "Original heuristics are the project's heuristic implementation, not a reproduction of published SkillNet or SkillCT evaluators"]
+}
