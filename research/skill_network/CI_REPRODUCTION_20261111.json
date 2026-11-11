@@ -1,0 +1,36 @@
+{
+  "commit": "8e291e329b943dd8ecbbc1e2ac97aeccbd1f0f75",
+  "run_id": "43048770023",
+  "image": "python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+  "reproduction": {
+    "status": "PASS",
+    "api_calls": 0,
+    "api_cost_usd": 0,
+    "development_probes_reverified": 928,
+    "decisions_recomputed": 7856,
+    "primary_unique_executions_reverified": 1204,
+    "held_out_inputs": 152,
+    "posthoc_decisions_recomputed": 240,
+    "posthoc_executions_reverified": 132,
+    "owned_executions_repeated": 2264,
+    "backend": "docker",
+    "scope": "Same frozen inputs; reproduction is not additional independent evaluation"
+  },
+  "boundary": {
+    "status": "PASS",
+    "image": "python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b",
+    "facts": {
+      "uid": 65534,
+      "no_new_privileges": true,
+      "capabilities_zero": true,
+      "root_read_only": true,
+      "network_blocked": true,
+      "credentials_absent": true,
+      "memory_limit": "134217728",
+      "pids_limit": "32",
+      "cpu_limit": "100000 100000"
+    },
+    "scope": "Observed owned-code container boundary, not a penetration test"
+  },
+  "run_url": "https://github.com/qing1989620/skillnet-demo/actions/runs/43048770023"
+}
