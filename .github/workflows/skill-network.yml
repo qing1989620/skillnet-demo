@@ -1,0 +1,65 @@
+name: Verify evidence-conditioned network paths
+on:
+  push:
+    paths: ["research/skill_network/**", ".github/workflows/skill-network.yml"]
+  pull_request:
+    paths: ["research/skill_network/**", ".github/workflows/skill-network.yml"]
+permissions:
+  contents: read
+jobs:
+  reproduce:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.11", "3.12"]
+    runs-on: ${{ matrix.os }}
+    env:
+      DEEPSEEK_API_KEY: ""
+      OPENROUTER_API_KEY: ""
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install -r research/skill_network/requirements.txt pytest ruff mypy
+      - run: python -m pytest research/skill_network/tests -q
+      - run: python -m ruff check --config research/skill_quality/ruff.toml research/skill_network --exclude results
+      - run: python -m ruff format --check --config research/skill_quality/ruff.toml research/skill_network --exclude results
+      - run: python -m mypy --config-file research/skill_network/mypy.ini research/skill_network
+      - run: python -m research.skill_network.reproduce --execute
+  owned-container-reproduction:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      DEEPSEEK_API_KEY: ""
+      OPENROUTER_API_KEY: ""
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r research/skill_network/requirements.txt
+      - name: Use an immutable official worker image
+        run: |
+          docker pull python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b
+          echo "SKILL_NETWORK_IMAGE=python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b" >> "$GITHUB_ENV"
+          echo "SKILL_DECISION_IMAGE=python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b" >> "$GITHUB_ENV"
+      - run: python -m research.skill_network.reproduce --execute --backend docker --output out/network-ci/reproduction.json
+      - run: python -m research.skill_decision.container_checks > out/network-ci/boundary.json
+      - name: Preserve compact public evidence without artifact storage
+        shell: bash
+        run: |
+          python - <<'PY'
+          import base64,json,os,pathlib,zlib
+          root=pathlib.Path('out/network-ci')
+          data={'commit':os.environ['GITHUB_SHA'],'run_id':os.environ['GITHUB_RUN_ID'],
+                'image':os.environ['SKILL_NETWORK_IMAGE'],
+                'reproduction':json.loads((root/'reproduction.json').read_text()),
+                'boundary':json.loads((root/'boundary.json').read_text())}
+          print('SKILL_NETWORK_BLOB='+base64.b64encode(zlib.compress(json.dumps(data).encode())).decode())
+          pathlib.Path(os.environ['GITHUB_STEP_SUMMARY']).write_text(json.dumps(data,indent=2))
+          PY
