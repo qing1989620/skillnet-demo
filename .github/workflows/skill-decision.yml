@@ -1,0 +1,77 @@
+name: Verify evidence-constrained Skill decisions
+on:
+  push:
+    paths:
+      - "research/skill_decision/**"
+      - ".github/workflows/skill-decision.yml"
+  pull_request:
+    paths:
+      - "research/skill_decision/**"
+      - ".github/workflows/skill-decision.yml"
+permissions:
+  contents: read
+jobs:
+  method:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.11", "3.12"]
+    runs-on: ${{ matrix.os }}
+    env:
+      DEEPSEEK_API_KEY: ""
+      OPENROUTER_API_KEY: ""
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install -r research/skill_decision/requirements.txt pytest ruff mypy
+      - run: python -m pytest research/skill_decision/tests -q
+      - run: python -m ruff check --config research/skill_quality/ruff.toml research/skill_decision
+      - run: python -m ruff format --check --config research/skill_quality/ruff.toml research/skill_decision
+      - run: python -m mypy --config-file research/skill_decision/mypy.ini research/skill_decision
+      - run: python -m research.skill_decision.reproduce
+  owned-container-reproduction:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      DEEPSEEK_API_KEY: ""
+      OPENROUTER_API_KEY: ""
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r research/skill_decision/requirements.txt
+      - name: Resolve official image to immutable digest
+        shell: bash
+        run: |
+          docker pull python:3.12-slim
+          image_id=$(docker image inspect python:3.12-slim --format '{{index .RepoDigests 0}}')
+          echo "SKILL_DECISION_IMAGE=$image_id" >> "$GITHUB_ENV"
+          printf '%s\n' "$image_id"
+      - name: Reproduce owned artifact tests without container network or credentials
+        run: python -m research.skill_decision.benchmark --backend docker --output out/research/skill-decision/ci-container
+      - name: Observe the actual container boundary
+        run: python -m research.skill_decision.container_checks > out/research/skill-decision/ci-container/container-boundary.json
+      - name: Check reproduced behavioral decisions
+        run: python -c "import json,pathlib; local=json.loads(pathlib.Path('research/skill_decision/results/diagnostic-v3/summary.json').read_text()); remote=json.loads(pathlib.Path('out/research/skill-decision/ci-container/summary.json').read_text()); assert local['metrics']==remote['metrics']; assert local['behavior_by_program']==remote['behavior_by_program']; print('288 owned artifact trials reproduced under Docker; same fixtures, not 288 new independent inputs')"
+      - name: Record compact results in job summary
+        run: >-
+          python -c "import json,os,pathlib; p=json.loads(pathlib.Path('out/research/skill-decision/ci-container/summary.json').read_text()); pathlib.Path(os.environ['GITHUB_STEP_SUMMARY']).write_text('Owned-code Docker reproduction: '+str(p['owned_artifact_trials'])+' artifact trials, '+str(p['api_calls'])+' API calls. Image: '+os.environ['SKILL_DECISION_IMAGE']+'\n'+json.dumps(p['metrics']['behavior']['full_gate'],indent=2))"
+      - name: Preserve public reproduction evidence in logs without artifact storage
+        shell: bash
+        run: |
+          python - <<'PY'
+          import base64,json,os,pathlib,zlib
+          root=pathlib.Path('out/research/skill-decision/ci-container')
+          data={'commit':os.environ['GITHUB_SHA'],'run_id':os.environ['GITHUB_RUN_ID'],
+                'image':os.environ['SKILL_DECISION_IMAGE'],
+                'summary':json.loads((root/'summary.json').read_text()),
+                'boundary':json.loads((root/'container-boundary.json').read_text()),
+                'trials':[json.loads(s) for s in (root/'owned-trials.jsonl').read_text().splitlines()]}
+          print('SKILL_DECISION_BLOB='+base64.b64encode(zlib.compress(json.dumps(data).encode())).decode())
+          PY

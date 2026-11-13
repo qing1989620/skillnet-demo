@@ -1,0 +1,50 @@
+name: External evidence and original community runtime
+on:
+  push:
+    paths: ["research/skill_external/**", ".github/workflows/skill-external.yml"]
+  pull_request:
+    paths: ["research/skill_external/**", ".github/workflows/skill-external.yml"]
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install numpy pydantic httpx pytest ruff
+      - run: python -m pytest research/skill_external/tests -q
+      - run: python -m research.skill_external.reproduce
+      - run: python -m ruff check --config research/skill_quality/ruff.toml research/skill_external --exclude results
+      - run: python -m ruff format --check --config research/skill_quality/ruff.toml research/skill_external --exclude results
+  original-community-runtime:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      DEEPSEEK_API_KEY: ""
+      OPENROUTER_API_KEY: ""
+      SKILL_COMMUNITY_IMAGE: "python@sha256:5e2bdb1b0d542d5039cffb8181c65930093949194a65c365dfb1b0fe13a4fa5b"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install httpx pydantic
+      - run: docker pull "$SKILL_COMMUNITY_IMAGE"
+      - run: python -m research.skill_external.community_runtime --output out/community-ci
+      - name: Preserve actual observed outputs without artifact storage
+        run: |
+          python - <<'PY'
+          import base64,json,pathlib,zlib,os
+          root=pathlib.Path('out/community-ci')
+          data={'commit':os.environ['GITHUB_SHA'],'run_id':os.environ['GITHUB_RUN_ID']}
+          for name in ['outcomes','summary','verdicts','boundary','fixtures','entries','protocol']:
+              data[name]=json.loads((root/(name+'.json')).read_text())
+          blob=base64.b64encode(zlib.compress(json.dumps(data).encode())).decode()
+          for i in range(0,len(blob),12000):
+              print('SKILL_RUNTIME_BLOB_'+str(i//12000).zfill(4)+'='+blob[i:i+12000])
+          pathlib.Path(os.environ['GITHUB_STEP_SUMMARY']).write_text(json.dumps(data['summary'],indent=2))
+          PY

@@ -1,0 +1,17 @@
+\begin{table}[t]
+\caption{质量判别器的构造留出诊断。20个新父配置共200例；故障140、无害40、范围未知20。}\label{tab:gate}
+\centering\small
+\begin{tabularx}{\columnwidth}{Xrrr}
+\toprule
+方法 & 检出/140 & 误报/40 & 弃权 \\
+\midrule
+文档均分阈值适配 & 0 & 0 & 0 \\
+仅参数名 & 20 & 0 & 60 \\
+标准库 argparse & 80 & 0 & 60 \\
+去接口检查 & 60 & 0 & 140 \\
+去完整性检查 & 100 & 0 & 100 \\
+完整判别器 & 140 & 0 & 60 \\
+\bottomrule
+\end{tabularx}
+\par\vspace{3pt}\raggedright\footnotesize 阈值为本研究适配，不是发表版SkillNet的复现。完整判别器的60次弃权含40个缺行为证据的无害例；静态一致不自动获得可用认证。
+\end{table}

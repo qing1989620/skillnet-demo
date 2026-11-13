@@ -1,0 +1,15 @@
+\begin{table*}[t]
+\caption{事后自然工具联合验收回放：24个来源留出输入、两个阈值。复用355次CLI输出，不增加新执行；显式回归例与来源留出分开。}\label{tab:natural-joint}
+\centering\small
+\begin{tabularx}{\textwidth}{Xrrr}
+\toprule
+候选与选择策略 & 联合通过 & 弃权 & 显式回归 \\
+\midrule
+固定原始流程 & 38/48 & 0 & 1/2 \\
+原候选＋最短路径 & 46/48 & 0 & 1/2 \\
+原候选＋开发失败过滤 & 24/48 & 24 & 1/2 \\
+加修复候选＋最短路径 & 48/48 & 0 & 2/2 \\
+加修复候选＋证据路径 & 48/48 & 0 & 2/2 \\
+\bottomrule
+\end{tabularx}
+\end{table*}
