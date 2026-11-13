@@ -16,6 +16,7 @@ jobs:
           python-version: "3.12"
       - run: python -m pip install numpy pydantic httpx pytest ruff
       - run: python -m pytest research/skill_external/tests -q
+      - run: python -m research.skill_external.reproduce
       - run: python -m ruff check --config research/skill_quality/ruff.toml research/skill_external --exclude results
       - run: python -m ruff format --check --config research/skill_quality/ruff.toml research/skill_external --exclude results
   original-community-runtime:

@@ -1,0 +1,94 @@
+[
+  {
+    "commit": "19392f7a08264ed00486a251f5b2098321771f94",
+    "file": "data_profiler.py",
+    "script": "scripts/data_profiler.py",
+    "skill": "gh-claude-data-quality-auditor-9d8e63",
+    "source_sha256": "778ad37c7d455ad690e4d3636460c76bbee18fc445125c34faed7682dee188f8",
+    "variant": "original"
+  },
+  {
+    "commit": "19392f7a08264ed00486a251f5b2098321771f94",
+    "file": "missing_value_analyzer.py",
+    "script": "scripts/missing_value_analyzer.py",
+    "skill": "gh-claude-data-quality-auditor-9d8e63",
+    "source_sha256": "dd709bffad4a6bfc936673845d7bedc78a6fe9bde6b9fc45afbd81ee8f3d0b9b",
+    "variant": "original"
+  },
+  {
+    "commit": "19392f7a08264ed00486a251f5b2098321771f94",
+    "file": "outlier_detector.py",
+    "script": "scripts/outlier_detector.py",
+    "skill": "gh-claude-data-quality-auditor-9d8e63",
+    "source_sha256": "bab9d8dbb455a55e794d2dbf461e47371efe66c12a42dadeed425d370fd9cfa6",
+    "variant": "original"
+  },
+  {
+    "commit": "19392f7a08264ed00486a251f5b2098321771f94",
+    "file": "experiment_designer.py",
+    "script": "scripts/experiment_designer.py",
+    "skill": "gh-claude-senior-data-scientist-3337e5",
+    "source_sha256": "e086c9d66a67910d114c0831e16d6a658c712f11d5356b82f28687ba43de30fb",
+    "variant": "original"
+  },
+  {
+    "commit": "19392f7a08264ed00486a251f5b2098321771f94",
+    "file": "feature_engineering_pipeline.py",
+    "script": "scripts/feature_engineering_pipeline.py",
+    "skill": "gh-claude-senior-data-scientist-3337e5",
+    "source_sha256": "706602f103fa3403196ceb0d110e91b56b039c0f21fc0302ebfc7856c1874168",
+    "variant": "original"
+  },
+  {
+    "commit": "19392f7a08264ed00486a251f5b2098321771f94",
+    "file": "model_evaluation_suite.py",
+    "script": "scripts/model_evaluation_suite.py",
+    "skill": "gh-claude-senior-data-scientist-3337e5",
+    "source_sha256": "e7ce48ead1011fcf20f1cbed140061914ddc76b9ecf022101630bbec816fcc39",
+    "variant": "original"
+  },
+  {
+    "commit": "19392f7a08264ed00486a251f5b2098321771f94",
+    "file": "ml_monitoring_suite.py",
+    "script": "scripts/ml_monitoring_suite.py",
+    "skill": "gh-claude-senior-ml-engineer-9b50c5",
+    "source_sha256": "149446725afa9280d42531f9306528aacb235271b8aaabc59c6201d328ba6c56",
+    "variant": "original"
+  },
+  {
+    "commit": "19392f7a08264ed00486a251f5b2098321771f94",
+    "file": "model_deployment_pipeline.py",
+    "script": "scripts/model_deployment_pipeline.py",
+    "skill": "gh-claude-senior-ml-engineer-9b50c5",
+    "source_sha256": "07a2d39de49d0c695f951510996205af95161d8def0ce26d70b660164539a734",
+    "variant": "original"
+  },
+  {
+    "commit": "19392f7a08264ed00486a251f5b2098321771f94",
+    "file": "rag_system_builder.py",
+    "script": "scripts/rag_system_builder.py",
+    "skill": "gh-claude-senior-ml-engineer-9b50c5",
+    "source_sha256": "cdd6c6a1acdfa564fbff4bc7391fd4e8669f8c30657582918e5e8dfe50fcf6e2",
+    "variant": "original"
+  },
+  {
+    "file": "data_profiler_repaired.py",
+    "new": "profile[\"std\"] = round(safe_std(nums, mean), 4) if len(nums) >= 2 and mean is not None else None",
+    "old": "profile[\"std\"] = round(safe_std(nums, mean), 4) if mean is not None else None",
+    "parent_sha256": "778ad37c7d455ad690e4d3636460c76bbee18fc445125c34faed7682dee188f8",
+    "script": "scripts/data_profiler.py",
+    "skill": "gh-claude-data-quality-auditor-9d8e63",
+    "source_sha256": "a4bacbf6ea86b83a4ec725b52b35286f4d2b92add8b4870dbac977dce7c37c90",
+    "variant": "minimal_repair"
+  },
+  {
+    "file": "outlier_detector_repaired.py",
+    "new": "multiplier=threshold",
+    "old": "multiplier=threshold if threshold != 3.0 else 1.5",
+    "parent_sha256": "bab9d8dbb455a55e794d2dbf461e47371efe66c12a42dadeed425d370fd9cfa6",
+    "script": "scripts/outlier_detector.py",
+    "skill": "gh-claude-data-quality-auditor-9d8e63",
+    "source_sha256": "96ba9bc4c68c1119074f1e5f71ebae55e835b83f31180082012076f9bcf76a5c",
+    "variant": "minimal_repair"
+  }
+]
