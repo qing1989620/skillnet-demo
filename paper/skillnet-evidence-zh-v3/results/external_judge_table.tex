@@ -1,0 +1,13 @@
+\begin{table*}[t]
+\caption{因402中断后的86个完整配对案例；24个官方通过、62个失败。Brier中无效响应固定概率0.5。没有产物快照的实际子集不能检验有产物时的增强收益。}\label{tab:external-judge}
+\centering\small
+\begin{tabularx}{\textwidth}{Xrrrrrr}
+\toprule
+方案 & 结构有效 & 判断正确 & 平衡准确率(\%) & Brier & 错误放行 & 置信覆盖(\%) \\
+\midrule
+普通直接评审 & 86/86 & 42/86 & 51.75 & 0.310 & 34/62 & 40.70 \\
+同材料证据规则 & 84/86 & 42/86 & 50.47 & 0.276 & 32/62 & 37.21 \\
+范围提示臂（原计划附产物） & 85/86 & 42/86 & 49.19 & 0.290 & 32/62 & 36.05 \\
+\bottomrule
+\end{tabularx}
+\end{table*}

@@ -1,0 +1,18 @@
+\begin{table*}[t]
+\caption{全库Fabric组的历史检索回放。既见12例不是新留出；相关性与完整集合覆盖分别计量。}\label{tab:routing}
+\centering\small
+\begin{tabularx}{\textwidth}{Xrrrr}
+\toprule
+方法 & 20例R@5 & 20例F & 既见12 R@5 & 既见12 F \\
+\midrule
+原顺序 & 80.00 & 55.00 & 78.47 & 58.33 \\
+MMR .7 & 80.00 & 55.00 & 75.69 & 50.00 \\
+原核DPP & 80.00 & 55.00 & 78.47 & 58.33 \\
+残差DPP .5 & 80.00 & 55.00 & 78.47 & 58.33 \\
+残差DPP 1 & 80.00 & 55.00 & 78.47 & 58.33 \\
+查询覆盖 .5 & 80.83 & 55.00 & 78.47 & 50.00 \\
+候选池上限 & 100.00 & 100.00 & 94.44 & 91.67 \\
+\bottomrule
+\end{tabularx}
+\par\vspace{2pt}{\footnotesize R@5与F单位均为百分比；候选池上限使用参考标签作事后上界，不是实际选择器。}
+\end{table*}
